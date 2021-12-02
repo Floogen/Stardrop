@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Semver;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,13 +10,21 @@ namespace Stardrop.Models
     public class Mod
     {
         public string UniqueId { get; set; }
+        public SemVersion Version { get; set; }
+        public string ParsedVersion { get { return Version.ToString(); } }
         public string Name { get; set; }
-        internal bool IsSelected { get; set; }
+        public string Description { get; set; }
+        public string Author { get; set; }
+        internal string Status { get; set; }
+        internal bool IsEnabled { get; set; }
 
-        public Mod(string uniqueId, string? name = null)
+        public Mod(string uniqueId, string version, string? name = null, string? description = null, string? author = null)
         {
             UniqueId = uniqueId;
+            Version = SemVersion.Parse(version);
             Name = String.IsNullOrEmpty(name) ? uniqueId : name;
+            Description = String.IsNullOrEmpty(description) ? String.Empty : description;
+            Author = String.IsNullOrEmpty(author) ? "Unknown" : author;
         }
     }
 }

@@ -6,24 +6,74 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Stardrop.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Stardrop">
+        Title="Stardrop"
+        MinWidth="250"
+        MinHeight="200">
 
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
-  <Grid  Width="640"
-         Height="238"
-         Background="LightBlue">
-    <ListBox x:Name="TheListBox" Items="{Binding Mods}">
-      <ListBox.ItemTemplate>
-        <DataTemplate>
-          <ListBoxItem IsSelected="{Binding IsSelected}">
-            <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Name}" />
-          </ListBoxItem>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-  </Grid>
+  <Window.Styles>
+    <Style Selector="ListBox.ItemContainerStyle">
+      <Setter Property="FontSize" Value="6"/>
+      <Setter Property="Background" Value="Red"/>
+    </Style>
+  </Window.Styles>
 
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="10" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="2*" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+
+    <Border Grid.Row="0" BorderBrush="DarkGray" BorderThickness="0 0 0 2">
+      <Menu Name="mainMenu" KeyboardNavigation.TabNavigation="None">
+        <MenuItem Header="File" />
+        <MenuItem Header="Options" />
+      </Menu>
+    </Border>
+    <!-- ToolBar -->
+    <Separator />
+
+    <DockPanel Name="toolBar" Grid.Row="2">
+      <TextBlock Text="Profile" Padding="7" Focusable="False"/>
+      <ComboBox x:Name="Profiles" SelectedIndex="0" Width="300">
+        <ComboBoxItem>Default</ComboBoxItem>
+      </ComboBox>
+    </DockPanel>
+
+    <Border Margin="5" Grid.Row="3" Grid.ColumnSpan="2" BorderBrush="DarkGray" BorderThickness="2">
+      <DataGrid Name="modGrid" AlternatingRowBackground="LightGray" CanUserSortColumns="True" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <DataGrid.Columns>
+          <DataGridTemplateColumn Header="Enabled" Width="0" CanUserResize="False">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <CheckBox IsChecked="{Binding IsEnabled}"/>
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
+          <DataGridTextColumn Header="Mod Name" Binding="{Binding Name}" Width="250"/>
+          <DataGridTextColumn Header="Author" Binding="{Binding Author}"/>
+          <DataGridTextColumn Header="Version" Binding="{Binding ParsedVersion}"/>
+          <DataGridTextColumn Header="Status" Binding="{Binding Status}"/>
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+
+    <Border Grid.Row="4" Grid.ColumnSpan="2" BorderBrush="DarkGray" BorderThickness="0 2 0 0">
+      <Menu Name="statusBar" KeyboardNavigation.TabNavigation="None">
+        <MenuItem Header="File" />
+        <MenuItem Header="Options" />
+      </Menu>
+    </Border>
+  </Grid>
 </Window>
