@@ -20,7 +20,8 @@ namespace Stardrop.Views
             // SMAPI_MODS_PATH is set via the profile dropdown on the UI
             var modView = new DataGridCollectionView(Mods.GetMods(Program.defaultModPath));
             modView.SortDescriptions.Add(dataGridSortDescription);
-            var modGrid = this.FindControl<DataGrid>("modGrid"); modGrid.IsReadOnly = true;
+            var modGrid = this.FindControl<DataGrid>("modGrid");
+            modGrid.IsReadOnly = true;
             modGrid.LoadingRow += Dg1_LoadingRow;
             modGrid.Sorting += (s, a) =>
             {
@@ -35,10 +36,29 @@ namespace Stardrop.Views
             };
             modGrid.Items = modView;
 
-
+            // Handle the mainMenu bar for drag events
+            var mainMenu = this.FindControl<Menu>("mainMenu");
+            mainMenu.PointerPressed += MainMenu_PointerPressed;
+            mainMenu.DoubleTapped += MainMenu_DoubleTapped;
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void MainMenu_DoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (!e.Handled)
+            {
+                this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
+            }
+        }
+
+        private void MainMenu_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        {
+            if (e.Pointer.IsPrimary && !e.Handled)
+            {
+                this.BeginMoveDrag(e);
+            }
         }
 
         private void Dg1_LoadingRow(object? sender, DataGridRowEventArgs e)
