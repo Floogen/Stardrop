@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Stardrop.MainWindow"
+        Title="Stardrop">
+  <Grid  Width="640"
+         Height="238"
+         Background="LightBlue">
+    <ListBox x:Name="TheListBox" Items="{Binding Mods}">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <ListBoxItem IsSelected="{Binding IsSelected}">
+            <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Path=Mod.Name}" />
+          </ListBoxItem>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </Grid>
+</Window>
