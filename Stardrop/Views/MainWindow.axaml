@@ -11,6 +11,7 @@
         MinHeight="200"
         Background="#031332"
         HasSystemDecorations="false"
+        CanResize="True"
         Icon="/Assets/icon.ico">
 
   <Design.DataContext>
@@ -76,7 +77,7 @@
       <ColumnDefinition Width="Auto" />
     </Grid.ColumnDefinitions>
 
-    <Border Grid.Row="0" BorderBrush="#ff9f2a" BorderThickness="0 0 0 2">
+    <Border Grid.Row="0" BorderBrush="#ff9f2a" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
       <Menu Name="mainMenu" KeyboardNavigation.TabNavigation="None">
         <Image Source="/Assets/icon.ico" Stretch="None"/>
         <MenuItem Header="File" Margin="-10 0 0 0" Foreground="#1cff96"/>
@@ -84,7 +85,7 @@
       </Menu>
     </Border>
     <TextBlock Text="☆ Stardrop ☆" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Foreground="#1cff96" />
-    <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None">
+    <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
       <Button Name="minimizeButton" i:Attached.Icon="mdi-window-minimize" Margin="0 0 -10 0" Foreground="White"  Background="Transparent"/>
       <Button Name="maximizeButton" i:Attached.Icon="mdi-window-maximize" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
       <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
@@ -92,13 +93,20 @@
     <!-- ToolBar -->
     <Separator />
 
-    <DockPanel Name="toolBar" Grid.Row="2">
+    <DockPanel Name="profileBar" Grid.Row="2" Grid.Column="0">
       <TextBlock Text="Profile" Foreground="White" Padding="7" Focusable="False"/>
       <ComboBox x:Name="Profiles" Background="#031332" Foreground="#1cff96" FontWeight="Bold" BorderBrush="#ff9f2a" SelectedIndex="0" Width="300">
         <ComboBoxItem>Default</ComboBoxItem>
         <ComboBoxItem>Modding</ComboBoxItem>
         <ComboBoxItem>Multiplayer</ComboBoxItem>
       </ComboBox>
+    </DockPanel>
+    <DockPanel Name="toolBar" Grid.Row="2"  Grid.Column="1">
+      <Button Name="smapi" Content="/Assets/icon.ico" Background="Transparent" HorizontalAlignment="Right" Width="60" Height="40" Margin="0 0 10 0">
+        <Panel>
+          <Image Source="/Assets/smapi.png" Stretch="Uniform" />
+        </Panel>
+      </Button>
     </DockPanel>
 
     <Border Margin="10" Grid.Row="3" Grid.ColumnSpan="2" BorderBrush="#ff9f2a" BorderThickness="2">
