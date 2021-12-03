@@ -1,8 +1,9 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Stardrop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Stardrop.Views.MainWindow"
         Title="Stardrop"
@@ -17,11 +18,35 @@
   </Design.DataContext>
 
   <Window.Styles>
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="LightGray"/>
+    </Style>
+    <Style Selector="Button:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="White"/>
+    </Style>
+    <Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Red"/>
+    </Style>
+    <Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="Pink"/>
+    </Style>
     <Style Selector="ListBox.ItemContainerStyle">
       <Setter Property="FontSize" Value="6"/>
       <Setter Property="Background" Value="Red"/>
     </Style>
+    <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="#ff9f2a"/>
+    </Style>
+    <Style Selector="ComboBoxItem">
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Foreground" Value="#1cff96"/>
+      <Setter Property="Background" Value="#2a0a84"/>
+    </Style>
+    <Style Selector="ComboBox /template/ Path#DropDownGlyph">
+      <Setter Property="Fill" Value="#ff9f2a"/>
+    </Style>
     <Style Selector="DataGridColumnHeader">
+      <Setter Property="FontWeight" Value="Bold"/>
       <Setter Property="Foreground" Value="#1cff96"/>
       <Setter Property="Background" Value="#2a0a84"/>
     </Style>
@@ -47,23 +72,30 @@
     <Border Grid.Row="0" BorderBrush="#ff9f2a" BorderThickness="0 0 0 2">
       <Menu Name="mainMenu" KeyboardNavigation.TabNavigation="None">
         <Image Source="/Assets/icon.ico" Stretch="None"/>
-        <MenuItem Header="File" Foreground="#1cff96"/>
-        <MenuItem Header="Options" Foreground="#1cff96"/>
+        <MenuItem Header="File" Margin="-10 0 0 0" Foreground="#1cff96"/>
+        <MenuItem Header="Options" Margin="-10 0 0 0" Foreground="#1cff96"/>
       </Menu>
     </Border>
+    <TextBlock Text="☆ Stardrop ☆" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Foreground="#1cff96" />
+    <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None">
+      <Button Name="minimizeButton" i:Attached.Icon="mdi-window-minimize" Margin="0 0 -10 0" Foreground="White"  Background="Transparent"/>
+      <Button Name="maximizeButton" i:Attached.Icon="mdi-window-maximize" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
+      <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
+    </Menu>
     <!-- ToolBar -->
     <Separator />
 
     <DockPanel Name="toolBar" Grid.Row="2">
-      <TextBlock Text="Profile" Foreground="#1cff96" Padding="7" Focusable="False"/>
-      <ComboBox x:Name="Profiles" SelectedIndex="0" Width="300">
+      <TextBlock Text="Profile" Foreground="White" Padding="7" Focusable="False"/>
+      <ComboBox x:Name="Profiles" Background="#031332" Foreground="#1cff96" FontWeight="Bold" BorderBrush="#ff9f2a" SelectedIndex="0" Width="300">
         <ComboBoxItem>Default</ComboBoxItem>
+        <ComboBoxItem>Modding</ComboBoxItem>
+        <ComboBoxItem>Multiplayer</ComboBoxItem>
       </ComboBox>
     </DockPanel>
 
     <Border Margin="10" Grid.Row="3" Grid.ColumnSpan="2" BorderBrush="#ff9f2a" BorderThickness="2">
       <DataGrid Name="modGrid" Foreground="White" Background="#801fe2" AlternatingRowBackground="#db67c4" CanUserSortColumns="True" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-
         <DataGrid.Columns>
           <DataGridTemplateColumn Header="Enabled" Width="0" CanUserResize="False">
             <DataGridTemplateColumn.CellTemplate>

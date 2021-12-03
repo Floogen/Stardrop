@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
+using Projektanker.Icons.Avalonia;
+using Projektanker.Icons.Avalonia.MaterialDesign;
 using Stardrop.Utilities;
 using System;
 
@@ -17,6 +19,9 @@ namespace Stardrop
         [STAThread]
         public static void Main(string[] args)
         {
+            // Register icon provider(s)
+            IconProvider.Register<MaterialDesignIconProvider>();
+
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
 

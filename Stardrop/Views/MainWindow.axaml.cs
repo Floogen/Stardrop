@@ -36,20 +36,30 @@ namespace Stardrop.Views
             };
             modGrid.Items = modView;
 
-            // Handle the mainMenu bar for drag events
+            // Handle the mainMenu bar for drag and related events
             var mainMenu = this.FindControl<Menu>("mainMenu");
             mainMenu.PointerPressed += MainMenu_PointerPressed;
             mainMenu.DoubleTapped += MainMenu_DoubleTapped;
+
+            // Handle buttons
+            this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
+            this.FindControl<Button>("maximizeButton").Click += delegate { AdjustWindowState(); };
+            this.FindControl<Button>("exitButton").Click += ExitButton_Click;
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void ExitButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            this.Close();
         }
 
         private void MainMenu_DoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if (!e.Handled)
             {
-                this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
+                AdjustWindowState();
             }
         }
 
@@ -64,6 +74,11 @@ namespace Stardrop.Views
         private void Dg1_LoadingRow(object? sender, DataGridRowEventArgs e)
         {
             e.Row.Header = e.Row.GetIndex() + 1;
+        }
+
+        private void AdjustWindowState()
+        {
+            this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
         }
 
         private void InitializeComponent()
