@@ -15,8 +15,9 @@ namespace Stardrop.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public string Author { get; set; }
-        internal string Status { get; set; }
-        internal bool IsEnabled { get; set; }
+        public string Requirements { get; set; }
+        public string Status { get; set; }
+        public bool IsEnabled { get; set; }
 
         public Mod(string uniqueId, string version, string? name = null, string? description = null, string? author = null)
         {

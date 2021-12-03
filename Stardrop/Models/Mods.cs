@@ -30,7 +30,6 @@ namespace Stardrop.Models
                     bool isEnabled = true;
                     if (fileInfo.DirectoryName.Replace(Program.defaultModPath, String.Empty)[0] == '.')
                     {
-                        Program.helper.Log($"HERE 123: {fileInfo.DirectoryName}", Utilities.Helper.Status.Alert);
                         isEnabled = false;
                     }
 
