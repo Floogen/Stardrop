@@ -45,6 +45,13 @@
     <Style Selector="ComboBox /template/ Path#DropDownGlyph">
       <Setter Property="Fill" Value="#ff9f2a"/>
     </Style>
+    <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+      <Setter Property="BorderBrush" Value="#031332" />
+      <Setter Property="Background" Value="#031332" />
+    </Style>
+    <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
+      <Setter Property="Fill" Value="#1cff96"/>
+    </Style>
     <Style Selector="DataGridColumnHeader">
       <Setter Property="FontWeight" Value="Bold"/>
       <Setter Property="Foreground" Value="#1cff96"/>
@@ -97,10 +104,10 @@
     <Border Margin="10" Grid.Row="3" Grid.ColumnSpan="2" BorderBrush="#ff9f2a" BorderThickness="2">
       <DataGrid Name="modGrid" Foreground="White" Background="#801fe2" AlternatingRowBackground="#db67c4" CanUserSortColumns="True" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
         <DataGrid.Columns>
-          <DataGridTemplateColumn Header="Enabled" Width="0" CanUserResize="False">
+          <DataGridTemplateColumn Header="Enabled" Width="25" CanUserResize="False">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <CheckBox IsChecked="{Binding IsEnabled}"/>
+                <CheckBox IsChecked="{Binding IsEnabled}" Margin="5 0 0 0"/>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
@@ -114,10 +121,10 @@
     </Border>
 
     <Border Grid.Row="4" Grid.ColumnSpan="2" BorderBrush="#ff9f2a" BorderThickness="0 2 0 0">
-      <Menu Name="statusBar" KeyboardNavigation.TabNavigation="None">
-        <MenuItem Header="File" Foreground="#1cff96"/>
-        <MenuItem Header="Options" Foreground="#1cff96"/>
-      </Menu>
+      <TextBlock Text="v1.0.0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0" Foreground="#1cff96"/>
     </Border>
+    <Menu Grid.Row="4" Grid.Column="0" Name="statusBar" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
+      <MenuItem Header="Nexus API Info Here" Foreground="#1cff96"/>
+    </Menu>
   </Grid>
 </Window>
