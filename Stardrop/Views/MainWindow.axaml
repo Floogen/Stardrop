@@ -58,6 +58,11 @@
       <Setter Property="Foreground" Value="#1cff96"/>
       <Setter Property="Background" Value="#2a0a84"/>
     </Style>
+    <Style Selector="DataGridColumnHeader[Content=Enabled]">
+      <Setter Property="Margin" Value="-13 0 0 0"/>
+      <Setter Property="Foreground" Value="#1cff96"/>
+      <Setter Property="Background" Value="#2a0a84"/>
+    </Style>
     <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
       <Setter Property="Fill" Value="#ff9f2a"/>
     </Style>
