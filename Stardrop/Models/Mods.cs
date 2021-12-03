@@ -40,7 +40,7 @@ namespace Stardrop.Models
                         continue;
                     }
 
-                    if (!mods.Any(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)))
+                    if (!mods.Any(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase) && m.Version.ToString().Equals(manifest.Version, StringComparison.OrdinalIgnoreCase)))
                     {
                         mods.Add(new Mod(manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author) { IsEnabled = isEnabled });
                     }
