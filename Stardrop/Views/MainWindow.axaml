@@ -53,6 +53,15 @@
     <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
       <Setter Property="Fill" Value="#1cff96"/>
     </Style>
+    <Style Selector="CheckBox#hideDisabledMods:unchecked /template/ Border#NormalRectangle">
+      <Setter Property="BorderBrush" Value="#ff9f2a" />
+    </Style>
+    <Style Selector="CheckBox#hideDisabledMods:checked /template/ Border#NormalRectangle">
+      <Setter Property="BorderBrush" Value="#ff9f2a" />
+    </Style>
+    <Style Selector="CheckBox#hideDisabledMods:pointerover /template/ ContentPresenter#ContentPresenter">
+      <Setter Property="TextBlock.Foreground" Value="#ff9f2a" />
+    </Style>
     <Style Selector="DataGridColumnHeader">
       <Setter Property="FontWeight" Value="Bold"/>
       <Setter Property="Foreground" Value="#1cff96"/>
@@ -66,6 +75,17 @@
     <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
       <Setter Property="Fill" Value="#ff9f2a"/>
     </Style>
+    <Style Selector="TextBox:focus">
+      <Setter Property="Foreground" Value="White"/>
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border">
+      <Setter Property="BorderBrush" Value="#1cff96"/>
+      <Setter Property="Background" Value="#3abcbc"/>
+    </Style>
+    <Style Selector="TextBox:not(:focus)">
+      <Setter Property="Foreground" Value="#1cff96"/>
+      <Setter Property="Background" Value="#031332"/>
+    </Style>
   </Window.Styles>
 
   <Grid>
@@ -74,6 +94,7 @@
       <RowDefinition Height="10" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
@@ -89,7 +110,7 @@
         <MenuItem Header="Options" Margin="-10 0 0 0" Foreground="#1cff96"/>
       </Menu>
     </Border>
-    <TextBlock Text="☆ Stardrop ☆" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Foreground="#1cff96" />
+    <TextBlock Text="☆ Stardrop ☆" Grid.Row="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Foreground="#1cff96" />
     <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
       <Button Name="minimizeButton" i:Attached.Icon="mdi-window-minimize" Margin="0 0 -10 0" Foreground="White"  Background="Transparent"/>
       <Button Name="maximizeButton" i:Attached.Icon="mdi-window-maximize" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
@@ -132,11 +153,14 @@
         </DataGrid.Columns>
       </DataGrid>
     </Border>
-
-    <Border Grid.Row="4" Grid.ColumnSpan="2" BorderBrush="#ff9f2a" BorderThickness="0 2 0 0">
+    <DockPanel Name="filterBar" Grid.Row="4" Grid.Column="0" Margin="7 0 0 5">
+      <TextBox Name="searchBox" Text="Filter" Height="10" Width="200" BorderBrush="#ff9f2a" HorizontalAlignment="Left"/>
+      <CheckBox Name="hideDisabledMods" Content="Hide Disabled Mods" Foreground="#1cff96" Margin="7 0 0 0"/>
+    </DockPanel>
+    <Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="#ff9f2a" BorderThickness="0 2 0 0">
       <TextBlock Text="v1.0.0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0" Foreground="#1cff96"/>
     </Border>
-    <Menu Grid.Row="4" Grid.Column="0" Name="statusBar" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
+    <Menu Grid.Row="5" Grid.Column="0" Name="statusBar" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
       <MenuItem Header="Nexus API Info Here" Foreground="#1cff96"/>
     </Menu>
   </Grid>
