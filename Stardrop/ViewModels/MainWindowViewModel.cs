@@ -17,6 +17,11 @@ namespace Stardrop.ViewModels
         public ObservableCollection<Mod> Mods { get; set; }
         public DataGridCollectionView DataView { get; set; }
 
+        private bool _hideDisabledMods;
+        public bool HideDisabledMods { get { return _hideDisabledMods; } set { _hideDisabledMods = value; UpdateFilter(); } }
+        private string _filterText;
+        public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }
+
         public MainWindowViewModel(string modsFilePath)
         {
             Mods = new ObservableCollection<Mod>();
@@ -62,19 +67,6 @@ namespace Stardrop.ViewModels
             DataView = new DataGridCollectionView(Mods);
             DataView.SortDescriptions.Add(dataGridSortDescription);
         }
-
-        internal void FilterModsByEnabledState(bool isEnabled)
-        {
-            if (isEnabled)
-            {
-                DataView.Filter = null;
-            }
-            else
-            {
-                DataView.Filter = m => (m as Mod).IsEnabled;
-            }
-        }
-
         public void EnableModsByProfile(Profile profile)
         {
             foreach (var mod in Mods)
@@ -85,6 +77,28 @@ namespace Stardrop.ViewModels
                     mod.IsEnabled = true;
                 }
             }
+        }
+
+        internal void UpdateFilter()
+        {
+            DataView.Filter = null;
+            DataView.Filter = ModFilter;
+        }
+
+        private bool ModFilter(object item)
+        {
+            var mod = item as Mod;
+
+            if (_hideDisabledMods && !mod.IsEnabled)
+            {
+                return false;
+            }
+            else if (!String.IsNullOrEmpty(_filterText) && !mod.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

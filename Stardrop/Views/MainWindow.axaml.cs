@@ -8,6 +8,7 @@ using Avalonia.Data;
 using Stardrop.ViewModels;
 using System.IO;
 using System.Linq;
+using System;
 
 namespace Stardrop.Views
 {
@@ -53,6 +54,9 @@ namespace Stardrop.Views
             this.FindControl<Button>("exitButton").Click += ExitButton_Click;
             this.FindControl<Button>("editProfilesButton").Click += EditProfiles_Click;
             this.FindControl<CheckBox>("hideDisabledMods").Click += HideDisabledModsButton_Click;
+
+            // Handle filtering via textbox
+            this.FindControl<TextBox>("searchBox").AddHandler(KeyUpEvent, (s, e) => _viewModel.FilterText = (s as TextBox).Text);
 #if DEBUG
             this.AttachDevTools();
 #endif
@@ -61,7 +65,7 @@ namespace Stardrop.Views
         private void HideDisabledModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var hideDisabledModsCheckBox = this.FindControl<CheckBox>("hideDisabledMods");
-            _viewModel.FilterModsByEnabledState(!(bool)hideDisabledModsCheckBox.IsChecked);
+            _viewModel.HideDisabledMods = (bool)hideDisabledModsCheckBox.IsChecked;
         }
 
         private void ProfileComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
