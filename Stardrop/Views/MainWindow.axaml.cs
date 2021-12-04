@@ -53,8 +53,9 @@ namespace Stardrop.Views
 
         private void EditProfiles_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var editor = new ProfileEditor() { Width = 500, Height = 400 };
-            editor.ShowDialog(this);
+            var editorWindow = new ProfileEditor();
+            editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            editorWindow.ShowDialog(this);
         }
 
         private void ExitButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

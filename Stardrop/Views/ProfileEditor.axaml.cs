@@ -65,8 +65,9 @@ namespace Stardrop.Views
 
         private void AddButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var naming = new ProfileNaming(_viewModel);
-            naming.ShowDialog(this);
+            var namingWindow = new ProfileNaming(_viewModel);
+            namingWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            namingWindow.ShowDialog(this);
         }
 
         private void ApplyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
