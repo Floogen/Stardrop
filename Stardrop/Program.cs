@@ -11,6 +11,7 @@ namespace Stardrop
     class Program
     {
         internal static Helper helper = new Helper();
+        internal static readonly string defaultProfileName = "Default";
         internal static string defaultModPath = @"E:\SteamLibrary\steamapps\common\Stardew Valley\Mods\";
         internal static string defaultHomePath = @"E:\SteamLibrary\steamapps\common\Stardew Valley\Stardrop\";
 

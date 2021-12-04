@@ -32,6 +32,8 @@ namespace Stardrop.Views
             // Load the profiles
             var profileListBox = this.FindControl<ListBox>("profileList");
             profileListBox.Items = _viewModel.Profiles;
+            profileListBox.SelectedIndex = 0;
+            profileListBox.SelectionChanged += ProfileListBox_SelectionChanged;
 
             // Handle the mainMenu bar for drag and related events
             var menuBar = this.FindControl<Menu>("menuBar");
@@ -48,6 +50,16 @@ namespace Stardrop.Views
             this.FindControl<Button>("copyButton").Click += CopyButton_Click;
         }
 
+        private void ProfileListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            var profile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
+            if (profile is not null)
+            {
+                this.FindControl<Button>("deleteButton").IsEnabled = !profile.IsProtected;
+                this.FindControl<Button>("renameButton").IsEnabled = !profile.IsProtected;
+            }
+        }
+
         private void CopyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var selectedProfile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
@@ -60,7 +72,7 @@ namespace Stardrop.Views
                 fileNameCopied = selectedProfile.Name + $" - Copy ({copyIndex})";
             }
 
-            _viewModel.Profiles.Add(new Profile(fileNameCopied, selectedProfile.EnabledModIds));
+            _viewModel.Profiles.Add(new Profile(fileNameCopied, false, selectedProfile.EnabledModIds));
         }
 
         private void RenameButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -72,8 +84,8 @@ namespace Stardrop.Views
 
         private void DeleteButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var profileListBox = this.FindControl<ListBox>("profileList");
-            _viewModel.Profiles.Remove(profileListBox.SelectedItem as Profile);
+            var profile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
+            _viewModel.Profiles.Remove(profile);
         }
 
         private void AddButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

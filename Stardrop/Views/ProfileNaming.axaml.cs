@@ -52,7 +52,7 @@ namespace Stardrop.Views
                     _profileEditor.Profiles.Remove(_renameTarget);
                 }
 
-                _profileEditor.Profiles.Add(new Profile(profileNameBox.Text, _renameTarget is null ? null : _renameTarget.EnabledModIds));
+                _profileEditor.Profiles.Add(new Profile(profileNameBox.Text, false, _renameTarget is null ? null : _renameTarget.EnabledModIds));
             }
 
             this.Close();

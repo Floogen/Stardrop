@@ -26,6 +26,9 @@
     <Style Selector="Button:pressed /template/ ContentPresenter">
       <Setter Property="Background" Value="White"/>
     </Style>
+    <Style Selector="Button[IsEnabled=False] /template/ ContentPresenter">
+      <Setter Property="Background" Value="Gray"/>
+    </Style>
     <Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="Red"/>
     </Style>
@@ -69,8 +72,8 @@
 
     <StackPanel Grid.Row="1" Grid.Column="1" Margin="0 45 0 0" Width="50">
       <Button Name="addButton" Margin="0 15 0 15" i:Attached.Icon="mdi-plus" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
-      <Button Name="deleteButton" Margin="0 15 0 15" i:Attached.Icon="mdi-minus" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
-      <Button Name="renameButton" Margin="0 15 0 15" i:Attached.Icon="mdi-pencil" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
+      <Button Name="deleteButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-minus" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
+      <Button Name="renameButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-pencil" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
       <Button Name="copyButton" Margin="0 15 0 15" i:Attached.Icon="mdi-content-copy" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
     </StackPanel>
 

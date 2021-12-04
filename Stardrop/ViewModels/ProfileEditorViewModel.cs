@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 
@@ -37,8 +38,7 @@ namespace Stardrop.ViewModels
                         continue;
                     }
 
-                    OldProfiles.Add(new Profile(profile.Name, profile.EnabledModIds));
-                    Profiles.Add(new Profile(profile.Name, profile.EnabledModIds));
+                    Profiles.Add(new Profile(profile.Name, profile.IsProtected, profile.EnabledModIds));
                 }
                 catch (Exception ex)
                 {
@@ -46,7 +46,12 @@ namespace Stardrop.ViewModels
                 }
             }
 
+            if (!Profiles.Any(p => p.Name == Program.defaultProfileName))
+            {
+                Profiles.Insert(0, new Profile(Program.defaultProfileName) { IsProtected = true });
+            }
 
+            OldProfiles = Profiles.ToList();
             _profileFilePath = profilesFilePath;
         }
 
