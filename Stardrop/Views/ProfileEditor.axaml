@@ -6,7 +6,7 @@
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
         x:Class="Stardrop.Views.ProfileEditor"
-        Title="Stardrop"
+        Title="Profiles"
         MinWidth="400"
         MinHeight="300"
         Width="500"
@@ -20,6 +20,12 @@
         Icon="/Assets/icon.ico">
 
   <Window.Styles>
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="LightGray"/>
+    </Style>
+    <Style Selector="Button:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="White"/>
+    </Style>
     <Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="Red"/>
     </Style>
@@ -32,11 +38,12 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
-      <RowDefinition Height="35" />
+      <RowDefinition Height="50" />
     </Grid.RowDefinitions>
 
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="50" />
     </Grid.ColumnDefinitions>
     <Border Grid.Row="0" BorderBrush="#ff9f2a" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
       <Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
@@ -48,7 +55,7 @@
       <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
     </Menu>
 
-    <Border Grid.Row="1" Margin="20 20 75 20" BorderBrush="#ff9f2a" BorderThickness="2">
+    <Border Grid.Row="1" Margin="20" BorderBrush="#ff9f2a" BorderThickness="2">
       <ListBox Name="profileList" Background="White" Foreground="Black">
         <ListBox.ItemTemplate>
           <DataTemplate>
@@ -59,5 +66,17 @@
         </ListBox.ItemTemplate>
       </ListBox>
     </Border>
+
+    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0 45 0 0" Width="50">
+      <Button Name="addButton" Margin="0 15 0 15" i:Attached.Icon="mdi-plus" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
+      <Button Name="deleteButton" Margin="0 15 0 15" i:Attached.Icon="mdi-minus" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
+      <Button Name="renameButton" Margin="0 15 0 15" i:Attached.Icon="mdi-pencil" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
+      <Button Name="copyButton" Margin="0 15 0 15" i:Attached.Icon="mdi-content-copy" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
+    </StackPanel>
+
+    <DockPanel Grid.Row="2" Grid.Column="1" Margin="0 0 0 10">
+      <Button Name="applyButton" i:Attached.Icon="mdi-check" Margin="-40 0 15 0" BorderBrush="#ff9f2a" Foreground="Green" Background="Transparent"/>
+      <Button Name="cancelButton" i:Attached.Icon="mdi-cancel" BorderBrush="#ff9f2a" Foreground="Red" Background="Transparent"/>
+    </DockPanel>
   </Grid>
 </Window>

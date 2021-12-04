@@ -22,6 +22,9 @@
     <PackageReference Include="semver" Version="2.0.6" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Views\ProfileNaming.axaml.cs">
+      <DependentUpon>ProfileNaming.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\ProfileEditor.axaml.cs">
       <DependentUpon>ProfileEditor.axaml</DependentUpon>
     </Compile>
