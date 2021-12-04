@@ -21,4 +21,9 @@
     <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="3.7.0" />
     <PackageReference Include="semver" Version="2.0.6" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\ProfileEditor.axaml.cs">
+      <DependentUpon>ProfileEditor.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

@@ -45,9 +45,16 @@ namespace Stardrop.Views
             this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
             this.FindControl<Button>("maximizeButton").Click += delegate { AdjustWindowState(); };
             this.FindControl<Button>("exitButton").Click += ExitButton_Click;
+            this.FindControl<Button>("editProfilesButton").Click += EditProfiles_Click;
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void EditProfiles_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var editor = new ProfileEditor() { Width = 500, Height = 400 };
+            editor.ShowDialog(this);
         }
 
         private void ExitButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
