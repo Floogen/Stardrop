@@ -130,7 +130,7 @@
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel>
-              <TextBlock Text="{Binding Path=Name}" />
+              <TextBlock Text="{Binding Path=Name}"/>
             </StackPanel>
           </DataTemplate>
         </ComboBox.ItemTemplate>
@@ -151,7 +151,7 @@
           <DataGridTemplateColumn Header="Enabled" Width="25" CanUserResize="False" CanUserSort="True" SortMemberPath="IsEnabled">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <CheckBox IsChecked="{Binding IsEnabled}" Margin="5 0 0 0"/>
+                <CheckBox Content="{Binding UniqueId}" IsChecked="{Binding IsEnabled}" Click="EnabledBox_Clicked" Margin="5 0 0 0"/>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>

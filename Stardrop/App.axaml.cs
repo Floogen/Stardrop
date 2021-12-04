@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Stardrop.ViewModels;
 using Stardrop.Views;
+using System.IO;
 
 namespace Stardrop
 {
@@ -19,7 +20,7 @@ namespace Stardrop
             {
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new MainWindowViewModel(),
+                    DataContext = new MainWindowViewModel(Program.defaultModPath),
                 };
             }
 

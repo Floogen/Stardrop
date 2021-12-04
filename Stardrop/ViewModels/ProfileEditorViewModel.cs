@@ -21,7 +21,8 @@ namespace Stardrop.ViewModels
             OldProfiles = new List<Profile>();
             Profiles = new ObservableCollection<Profile>();
 
-            DirectoryInfo profileDirectory = new DirectoryInfo(profilesFilePath);
+            _profileFilePath = profilesFilePath;
+            DirectoryInfo profileDirectory = new DirectoryInfo(_profileFilePath);
             foreach (var fileInfo in profileDirectory.GetFiles("*.json", SearchOption.AllDirectories))
             {
                 if (fileInfo.DirectoryName is null)
@@ -48,7 +49,9 @@ namespace Stardrop.ViewModels
 
             if (!Profiles.Any(p => p.Name == Program.defaultProfileName))
             {
-                Profiles.Insert(0, new Profile(Program.defaultProfileName) { IsProtected = true });
+                var defaultProfile = new Profile(Program.defaultProfileName) { IsProtected = true };
+                Profiles.Insert(0, defaultProfile);
+                CreateProfile(defaultProfile);
             }
             else if (Profiles.IndexOf(Profiles.First(p => p.Name == Program.defaultProfileName)) != 0)
             {
@@ -57,13 +60,12 @@ namespace Stardrop.ViewModels
             }
 
             OldProfiles = Profiles.ToList();
-            _profileFilePath = profilesFilePath;
         }
 
-        internal void CreateProfile(Profile profile)
+        internal void CreateProfile(Profile profile, bool force = false)
         {
             string fileFullName = Path.Combine(_profileFilePath, profile.Name + ".json");
-            if (File.Exists(fileFullName))
+            if (File.Exists(fileFullName) && !force)
             {
                 Program.helper.Log($"Attempted to create an already existing profile file ({profile.Name}) at the path {fileFullName}", Utilities.Helper.Status.Warning);
                 return;
@@ -82,6 +84,18 @@ namespace Stardrop.ViewModels
             }
 
             File.Delete(fileFullName);
+        }
+
+        internal void UpdateProfile(Profile profile, List<string> enabledModIds)
+        {
+            int profileIndex = Profiles.IndexOf(profile);
+            if (profileIndex == -1)
+            {
+                return;
+            }
+
+            Profiles[profileIndex].EnabledModIds = enabledModIds;
+            CreateProfile(profile, true);
         }
     }
 }

@@ -7,22 +7,27 @@ using System.ComponentModel;
 using Avalonia.Data;
 using Stardrop.ViewModels;
 using System.IO;
+using System.Linq;
 
 namespace Stardrop.Views
 {
     public partial class MainWindow : Window
     {
+        private readonly MainWindowViewModel _viewModel;
         private readonly ProfileEditorViewModel _editorView;
 
         public MainWindow()
         {
             InitializeComponent();
 
+            // Set the main window view
+            _viewModel = new MainWindowViewModel(Program.defaultModPath);
+
             var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
 
             // Set the path according to the environmental variable SMAPI_MODS_PATH
             // SMAPI_MODS_PATH is set via the profile dropdown on the UI
-            var modView = new DataGridCollectionView(Mods.GetMods(Program.defaultModPath));
+            var modView = new DataGridCollectionView(_viewModel.Mods);
             modView.SortDescriptions.Add(dataGridSortDescription);
             var modGrid = this.FindControl<DataGrid>("modGrid");
             modGrid.IsReadOnly = true;
@@ -59,6 +64,20 @@ namespace Stardrop.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void EnabledBox_Clicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var checkBox = e.Source as CheckBox;
+            if (checkBox is null)
+            {
+                return;
+            }
+
+            // Update the profile's enabled mods
+            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
+            var enabledModIds = this.FindControl<DataGrid>("modGrid").Items.Cast<Mod>().Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList();
+            _editorView.UpdateProfile(profile, enabledModIds);
         }
 
         private void EditProfiles_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
