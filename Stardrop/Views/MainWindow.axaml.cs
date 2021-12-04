@@ -157,8 +157,7 @@ namespace Stardrop.Views
 
             // Update the profile's enabled mods
             var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
-            var enabledModIds = this.FindControl<DataGrid>("modGrid").Items.Cast<Mod>().Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList();
-            _editorView.UpdateProfile(profile, enabledModIds);
+            _editorView.UpdateProfile(profile, _viewModel.Mods.Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList());
         }
 
         private void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
