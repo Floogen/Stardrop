@@ -49,6 +49,7 @@ namespace Stardrop.Views
             _editorView = new ProfileEditorViewModel(Path.Combine(Program.defaultHomePath, "Profiles"));
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
             profileComboBox.Items = _editorView.Profiles;
+            profileComboBox.SelectedIndex = 0;
 
             // Handle buttons
             this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };

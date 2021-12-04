@@ -50,6 +50,11 @@ namespace Stardrop.ViewModels
             {
                 Profiles.Insert(0, new Profile(Program.defaultProfileName) { IsProtected = true });
             }
+            else if (Profiles.IndexOf(Profiles.First(p => p.Name == Program.defaultProfileName)) != 0)
+            {
+                // Move the default profile to the top
+                Profiles.Move(Profiles.IndexOf(Profiles.First(p => p.Name == Program.defaultProfileName)), 0);
+            }
 
             OldProfiles = Profiles.ToList();
             _profileFilePath = profilesFilePath;
