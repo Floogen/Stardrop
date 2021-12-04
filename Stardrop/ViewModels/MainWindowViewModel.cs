@@ -1,8 +1,10 @@
+using Avalonia.Collections;
 using Stardrop.Models;
 using Stardrop.Models.SMAPI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,6 +15,7 @@ namespace Stardrop.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         public ObservableCollection<Mod> Mods { get; set; }
+        public DataGridCollectionView DataView { get; set; }
 
         public MainWindowViewModel(string modsFilePath)
         {
@@ -28,13 +31,6 @@ namespace Stardrop.ViewModels
 
                 try
                 {
-                    // By default, disable mods that are hidden from SMAPI by the user
-                    bool isEnabled = true;
-                    if (fileInfo.DirectoryName.Replace(Program.defaultModPath, String.Empty)[0] == '.')
-                    {
-                        isEnabled = false;
-                    }
-
                     var manifest = JsonSerializer.Deserialize<Manifest>(File.ReadAllText(fileInfo.FullName), new JsonSerializerOptions { AllowTrailingCommas = true });
                     if (manifest is null)
                     {
@@ -42,7 +38,7 @@ namespace Stardrop.ViewModels
                         continue;
                     }
 
-                    var mod = new Mod(manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author) { IsEnabled = isEnabled };
+                    var mod = new Mod(manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
                     if (!Mods.Any(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)))
                     {
                         Mods.Add(mod);
@@ -57,6 +53,24 @@ namespace Stardrop.ViewModels
                 catch (Exception ex)
                 {
                     Program.helper.Log($"Unable to load the manifest.json from {fileInfo.DirectoryName}: {ex}", Utilities.Helper.Status.Alert);
+                }
+            }
+
+            // Create data view
+            var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
+
+            DataView = new DataGridCollectionView(Mods);
+            DataView.SortDescriptions.Add(dataGridSortDescription);
+        }
+
+        public void EnableModsByProfile(Profile profile)
+        {
+            foreach (var mod in Mods)
+            {
+                mod.IsEnabled = false;
+                if (profile.EnabledModIds.Any(id => id.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    mod.IsEnabled = true;
                 }
             }
         }

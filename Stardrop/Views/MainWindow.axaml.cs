@@ -22,28 +22,14 @@ namespace Stardrop.Views
 
             // Set the main window view
             _viewModel = new MainWindowViewModel(Program.defaultModPath);
-
-            var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
+            DataContext = _viewModel;
 
             // Set the path according to the environmental variable SMAPI_MODS_PATH
             // SMAPI_MODS_PATH is set via the profile dropdown on the UI
-            var modView = new DataGridCollectionView(_viewModel.Mods);
-            modView.SortDescriptions.Add(dataGridSortDescription);
             var modGrid = this.FindControl<DataGrid>("modGrid");
             modGrid.IsReadOnly = true;
             modGrid.LoadingRow += Dg1_LoadingRow;
-            modGrid.Sorting += (s, a) =>
-            {
-                var binding = (a.Column as DataGridBoundColumn)?.Binding as Binding;
-
-                if (binding?.Path is string property
-                    && property == dataGridSortDescription.PropertyPath
-                    && !modView.SortDescriptions.Contains(dataGridSortDescription))
-                {
-                    modView.SortDescriptions.Add(dataGridSortDescription);
-                }
-            };
-            modGrid.Items = modView;
+            modGrid.Items = _viewModel.DataView;
 
             // Handle the mainMenu bar for drag and related events
             var mainMenu = this.FindControl<Menu>("mainMenu");
@@ -55,6 +41,11 @@ namespace Stardrop.Views
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
             profileComboBox.Items = _editorView.Profiles;
             profileComboBox.SelectedIndex = 0;
+            profileComboBox.SelectionChanged += ProfileComboBox_SelectionChanged;
+
+            // Update selected mods
+            var profile = profileComboBox.SelectedItem as Profile;
+            _viewModel.EnableModsByProfile(profile);
 
             // Handle buttons
             this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
@@ -64,6 +55,14 @@ namespace Stardrop.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void ProfileComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
+            _viewModel.EnableModsByProfile(profile);
+
+            var modGrid = this.FindControl<DataGrid>("modGrid");
         }
 
         private void EnabledBox_Clicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
