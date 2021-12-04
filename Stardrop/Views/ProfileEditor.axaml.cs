@@ -20,8 +20,16 @@ namespace Stardrop.Views
         {
             InitializeComponent();
 
+#if DEBUG
+            this.AttachDevTools();
+#endif
+        }
+
+        public ProfileEditor(ProfileEditorViewModel viewModel) : this()
+        {
+            _viewModel = viewModel;
+
             // Load the profiles
-            _viewModel = new ProfileEditorViewModel(Path.Combine(Program.defaultHomePath, "Profiles"));
             var profileListBox = this.FindControl<ListBox>("profileList");
             profileListBox.Items = _viewModel.Profiles;
 
@@ -38,10 +46,6 @@ namespace Stardrop.Views
             this.FindControl<Button>("deleteButton").Click += DeleteButton_Click;
             this.FindControl<Button>("renameButton").Click += RenameButton_Click;
             this.FindControl<Button>("copyButton").Click += CopyButton_Click;
-
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
 
         private void CopyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

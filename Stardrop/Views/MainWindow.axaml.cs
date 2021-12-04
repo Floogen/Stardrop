@@ -5,11 +5,15 @@ using Avalonia.Collections;
 using Stardrop.Models;
 using System.ComponentModel;
 using Avalonia.Data;
+using Stardrop.ViewModels;
+using System.IO;
 
 namespace Stardrop.Views
 {
     public partial class MainWindow : Window
     {
+        private readonly ProfileEditorViewModel _editorView;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -41,6 +45,11 @@ namespace Stardrop.Views
             mainMenu.PointerPressed += MainMenu_PointerPressed;
             mainMenu.DoubleTapped += MainMenu_DoubleTapped;
 
+            // Set profile list
+            _editorView = new ProfileEditorViewModel(Path.Combine(Program.defaultHomePath, "Profiles"));
+            var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
+            profileComboBox.Items = _editorView.Profiles;
+
             // Handle buttons
             this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
             this.FindControl<Button>("maximizeButton").Click += delegate { AdjustWindowState(); };
@@ -53,7 +62,7 @@ namespace Stardrop.Views
 
         private void EditProfiles_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var editorWindow = new ProfileEditor();
+            var editorWindow = new ProfileEditor(_editorView);
             editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             editorWindow.ShowDialog(this);
         }

@@ -126,11 +126,14 @@
 
     <DockPanel Name="profileBar" Grid.Row="2" Grid.Column="0">
       <TextBlock Text="Profile" Foreground="White" Padding="7" Focusable="False"/>
-      <ComboBox x:Name="Profiles" Background="#031332" Foreground="#1cff96" FontWeight="Bold" BorderBrush="#ff9f2a" SelectedIndex="0" Width="300">
-        <ComboBoxItem>Default</ComboBoxItem>
-        <ComboBoxItem>Modding</ComboBoxItem>
-        <ComboBoxItem>Multiplayer</ComboBoxItem>
-        <!-- See https://stackoverflow.com/questions/29840901/wpf-combobox-with-button-items -->
+      <ComboBox x:Name="profileComboBox" Background="#031332" Foreground="#1cff96" FontWeight="Bold" BorderBrush="#ff9f2a" SelectedIndex="0" Width="300">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel>
+              <TextBlock Text="{Binding Path=Name}" />
+            </StackPanel>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
       </ComboBox>
       <Button Name="editProfilesButton" i:Attached.Icon="mdi-playlist-edit" Margin="5 -7 0 0" Foreground="White" Background="Transparent" BorderBrush="#ff9f2a"/>
     </DockPanel>
