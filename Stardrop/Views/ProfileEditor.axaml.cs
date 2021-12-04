@@ -92,15 +92,18 @@ namespace Stardrop.Views
             // Remove any deleted profiles
             foreach (var profile in oldProfileList.Where(old => !currentProfileList.Any(p => p.Name == old.Name)))
             {
+                Program.helper.Log($"Deleting profile {profile.Name}");
                 _viewModel.DeleteProfile(profile);
             }
 
             // Add any created profiles
             foreach (var profile in currentProfileList.Where(current => !oldProfileList.Any(p => p.Name == current.Name)))
             {
+                Program.helper.Log($"Adding profile {profile.Name}");
                 _viewModel.CreateProfile(profile);
             }
 
+            _viewModel.OldProfiles = currentProfileList.ToList();
             this.Close();
         }
 
