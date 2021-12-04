@@ -114,7 +114,14 @@ namespace Stardrop.Views
 
         private void SearchBoxTimer_Tick(object? sender, EventArgs e)
         {
-            _viewModel.FilterText = this.FindControl<TextBox>("searchBox").Text;
+            var filterText = this.FindControl<TextBox>("searchBox").Text;
+            if (_viewModel.FilterText == filterText)
+            {
+                return;
+            }
+            _viewModel.FilterText = filterText;
+
+            // Ensure the ColumnFilter is set
             if (String.IsNullOrEmpty(_viewModel.ColumnFilter))
             {
                 var filterColumnBox = this.FindControl<ComboBox>("filterColumnBox");
