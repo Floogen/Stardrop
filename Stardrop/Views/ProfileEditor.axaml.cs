@@ -47,7 +47,16 @@ namespace Stardrop.Views
         private void CopyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var selectedProfile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
-            _viewModel.Profiles.Add(new Profile(selectedProfile.Name + " - Copy", selectedProfile.EnabledModIds));
+
+            int copyIndex = 1;
+            var fileNameCopied = selectedProfile.Name + $" - Copy ({copyIndex})";
+            while (_viewModel.Profiles.Any(p => p.Name == fileNameCopied))
+            {
+                copyIndex += 1;
+                fileNameCopied = selectedProfile.Name + $" - Copy ({copyIndex})";
+            }
+
+            _viewModel.Profiles.Add(new Profile(fileNameCopied, selectedProfile.EnabledModIds));
         }
 
         private void RenameButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
