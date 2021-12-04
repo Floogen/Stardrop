@@ -21,6 +21,8 @@ namespace Stardrop.ViewModels
         public bool HideDisabledMods { get { return _hideDisabledMods; } set { _hideDisabledMods = value; UpdateFilter(); } }
         private string _filterText;
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }
+        private string _columnFilter;
+        public string ColumnFilter { get { return _columnFilter; } set { _columnFilter = value; UpdateFilter(); } }
 
         public MainWindowViewModel(string modsFilePath)
         {
@@ -93,9 +95,20 @@ namespace Stardrop.ViewModels
             {
                 return false;
             }
-            else if (!String.IsNullOrEmpty(_filterText) && !mod.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+            if (!String.IsNullOrEmpty(_filterText) && !String.IsNullOrEmpty(_columnFilter))
             {
-                return false;
+                if (_columnFilter == "Mod Name" && !mod.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                else if (_columnFilter == "Author" && !mod.Author.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                else if (_columnFilter == "Requirements" && !mod.Requirements.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
             }
 
             return true;

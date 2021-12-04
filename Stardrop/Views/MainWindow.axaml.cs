@@ -9,6 +9,8 @@ using Stardrop.ViewModels;
 using System.IO;
 using System.Linq;
 using System;
+using Avalonia.Input;
+using Avalonia.Threading;
 
 namespace Stardrop.Views
 {
@@ -16,6 +18,7 @@ namespace Stardrop.Views
     {
         private readonly MainWindowViewModel _viewModel;
         private readonly ProfileEditorViewModel _editorView;
+        private DispatcherTimer _searchBoxTimer;
 
         public MainWindow()
         {
@@ -56,24 +59,55 @@ namespace Stardrop.Views
             this.FindControl<CheckBox>("hideDisabledMods").Click += HideDisabledModsButton_Click;
 
             // Handle filtering via textbox
-            this.FindControl<TextBox>("searchBox").AddHandler(KeyUpEvent, (s, e) => _viewModel.FilterText = (s as TextBox).Text);
+            this.FindControl<TextBox>("searchBox").AddHandler(KeyUpEvent, SearchBox_KeyUp);
+
+            // Handle filtering by filterColumnBox
+            var filterColumnBox = this.FindControl<ComboBox>("filterColumnBox");
+            filterColumnBox.SelectedIndex = 0;
+            filterColumnBox.SelectionChanged += FilterComboBox_SelectionChanged;
+
 #if DEBUG
             this.AttachDevTools();
 #endif
         }
 
+        private void SearchBox_KeyUp(object? sender, KeyEventArgs e)
+        {
+            if (_searchBoxTimer is null)
+            {
+                _searchBoxTimer = new DispatcherTimer();
+                _searchBoxTimer.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond / 2);
+                _searchBoxTimer.Tick += SearchBoxTimer_Tick;
+                _searchBoxTimer.Start();
+            }
+        }
+
+        private void SearchBoxTimer_Tick(object? sender, EventArgs e)
+        {
+            _viewModel.FilterText = this.FindControl<TextBox>("searchBox").Text;
+            if (String.IsNullOrEmpty(_viewModel.ColumnFilter))
+            {
+                var filterColumnBox = this.FindControl<ComboBox>("filterColumnBox");
+                _viewModel.ColumnFilter = (filterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
+            }
+        }
+
+        private void FilterComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            var filterColumnBox = (e.Source as ComboBox);
+            _viewModel.ColumnFilter = (filterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
+        }
+
         private void HideDisabledModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var hideDisabledModsCheckBox = this.FindControl<CheckBox>("hideDisabledMods");
+            var hideDisabledModsCheckBox = e.Source as CheckBox;
             _viewModel.HideDisabledMods = (bool)hideDisabledModsCheckBox.IsChecked;
         }
 
         private void ProfileComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
+            var profile = (e.Source as ComboBox).SelectedItem as Profile;
             _viewModel.EnableModsByProfile(profile);
-
-            var modGrid = this.FindControl<DataGrid>("modGrid");
         }
 
         private void EnabledBox_Clicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

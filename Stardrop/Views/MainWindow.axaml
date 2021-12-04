@@ -163,6 +163,11 @@
     </Border>
     <DockPanel Name="filterBar" Grid.Row="4" Grid.Column="0" Margin="7 0 0 5">
       <TextBox Name="searchBox" Watermark="Filter" Height="10" Width="250" BorderBrush="#ff9f2a" HorizontalAlignment="Left"/>
+      <ComboBox x:Name="filterColumnBox" Margin="5 0 0 0" Background="#031332" Foreground="#1cff96" FontWeight="Bold" BorderBrush="#ff9f2a" SelectedIndex="0" Width="150">
+        <ComboBoxItem Content="Mod Name" />
+        <ComboBoxItem Content="Author" />
+        <ComboBoxItem Content="Requirements" />
+      </ComboBox>
       <CheckBox Name="hideDisabledMods" Content="Hide Disabled Mods" Foreground="#1cff96" Margin="7 0 0 0"/>
     </DockPanel>
     <Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="#ff9f2a" BorderThickness="0 2 0 0">
