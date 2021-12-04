@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -11,6 +12,8 @@ namespace Stardrop.Models
 {
     public class Mod : INotifyPropertyChanged
     {
+        internal readonly FileInfo ModFileInfo;
+
         public string UniqueId { get; set; }
         public SemVersion Version { get; set; }
         public string ParsedVersion { get { return Version.ToString(); } }
@@ -22,9 +25,10 @@ namespace Stardrop.Models
         private bool _isEnabled { get; set; }
         public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); } }
 
-        public Mod(string uniqueId, string version, string? name = null, string? description = null, string? author = null)
+        public Mod(FileInfo modFileInfo, string uniqueId, string version, string? name = null, string? description = null, string? author = null)
         {
             UniqueId = uniqueId;
+            ModFileInfo = modFileInfo;
             Version = SemVersion.Parse(version);
             Name = String.IsNullOrEmpty(name) ? uniqueId : name;
             Description = String.IsNullOrEmpty(description) ? String.Empty : description;

@@ -135,7 +135,7 @@
       <Button Name="editProfilesButton" i:Attached.Icon="mdi-playlist-edit" Margin="5 -7 0 0" Foreground="White" Background="Transparent" BorderBrush="#ff9f2a"/>
     </DockPanel>
     <DockPanel Name="toolBar" Grid.Row="2"  Grid.Column="1">
-      <Button Name="smapi" Content="/Assets/icon.ico" Background="Transparent" HorizontalAlignment="Right" Width="60" Height="40" Margin="0 0 10 0">
+      <Button Name="smapiButton" Content="/Assets/icon.ico" Background="Transparent" HorizontalAlignment="Right" Width="60" Height="40" Margin="0 0 10 0">
         <Panel>
           <Image Source="/Assets/smapi.png" Stretch="Uniform" />
         </Panel>

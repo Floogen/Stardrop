@@ -45,7 +45,7 @@ namespace Stardrop.ViewModels
                         continue;
                     }
 
-                    var mod = new Mod(manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
+                    var mod = new Mod(fileInfo, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
                     if (!Mods.Any(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)))
                     {
                         Mods.Add(mod);

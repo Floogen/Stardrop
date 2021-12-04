@@ -11,6 +11,8 @@ using System.Linq;
 using System;
 using Avalonia.Input;
 using Avalonia.Threading;
+using System.Diagnostics;
+using Stardrop.Utilities.Linkage;
 
 namespace Stardrop.Views
 {
@@ -55,7 +57,8 @@ namespace Stardrop.Views
             this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
             this.FindControl<Button>("maximizeButton").Click += delegate { AdjustWindowState(); };
             this.FindControl<Button>("exitButton").Click += ExitButton_Click;
-            this.FindControl<Button>("editProfilesButton").Click += EditProfiles_Click;
+            this.FindControl<Button>("editProfilesButton").Click += EditProfilesButton_Click;
+            this.FindControl<Button>("smapiButton").Click += SmapiButton_Click; ;
             this.FindControl<CheckBox>("hideDisabledMods").Click += HideDisabledModsButton_Click;
 
             // Handle filtering via textbox
@@ -69,6 +72,33 @@ namespace Stardrop.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void SmapiButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            // Set the environment variable for the mod path
+            var enabledModsPath = Path.Combine(Program.defaultHomePath, "Selected Mods");
+            Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
+
+            // Clear any previous linked mods
+            foreach (var linkedModFolder in new DirectoryInfo(enabledModsPath).GetDirectories())
+            {
+                linkedModFolder.Delete(true);
+            }
+
+            // Link the currently enabled mods
+            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
+            foreach (string modId in profile.EnabledModIds)
+            {
+                var mod = _viewModel.Mods.First(m => m.UniqueId == modId);
+                DirectoryLink.Create(Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name), mod.ModFileInfo.DirectoryName, true);
+            }
+
+            Process smapi = new Process();
+            smapi.StartInfo.FileName = Path.Combine(Program.defaultGamePath, "StardewModdingAPI.exe");
+            smapi.Start();
+
+
         }
 
         private void SearchBox_KeyUp(object? sender, KeyEventArgs e)
@@ -124,7 +154,7 @@ namespace Stardrop.Views
             _editorView.UpdateProfile(profile, enabledModIds);
         }
 
-        private void EditProfiles_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var editorWindow = new ProfileEditor(_editorView);
             editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
