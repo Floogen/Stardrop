@@ -19,9 +19,6 @@
         CanResize="True"
         Icon="/Assets/icon.ico">
 
-  <Design.DataContext>
-    <vm:MainWindowViewModel/>
-  </Design.DataContext>
 
   <Window.Styles>
     <Style Selector="Button:pointerover /template/ ContentPresenter">

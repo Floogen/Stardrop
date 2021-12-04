@@ -63,6 +63,18 @@ namespace Stardrop.ViewModels
             DataView.SortDescriptions.Add(dataGridSortDescription);
         }
 
+        internal void FilterModsByEnabledState(bool isEnabled)
+        {
+            if (isEnabled)
+            {
+                DataView.Filter = null;
+            }
+            else
+            {
+                DataView.Filter = m => (m as Mod).IsEnabled;
+            }
+        }
+
         public void EnableModsByProfile(Profile profile)
         {
             foreach (var mod in Mods)

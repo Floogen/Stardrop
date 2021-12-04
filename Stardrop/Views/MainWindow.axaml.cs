@@ -52,9 +52,16 @@ namespace Stardrop.Views
             this.FindControl<Button>("maximizeButton").Click += delegate { AdjustWindowState(); };
             this.FindControl<Button>("exitButton").Click += ExitButton_Click;
             this.FindControl<Button>("editProfilesButton").Click += EditProfiles_Click;
+            this.FindControl<CheckBox>("hideDisabledMods").Click += HideDisabledModsButton_Click;
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void HideDisabledModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var hideDisabledModsCheckBox = this.FindControl<CheckBox>("hideDisabledMods");
+            _viewModel.FilterModsByEnabledState(!(bool)hideDisabledModsCheckBox.IsChecked);
         }
 
         private void ProfileComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
