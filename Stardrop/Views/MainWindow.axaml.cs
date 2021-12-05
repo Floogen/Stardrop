@@ -13,6 +13,9 @@ using Stardrop.Utilities.Linkage;
 using System.Threading.Tasks;
 using SharpCompress.Common;
 using SharpCompress.Archives;
+using SharpCompress.Readers;
+using System.Text.Json;
+using Stardrop.Models.SMAPI;
 
 namespace Stardrop.Views
 {
@@ -90,7 +93,7 @@ namespace Stardrop.Views
             warningWindow.ShowDialog(this);
         }
 
-        private void Drop(object sender, DragEventArgs e)
+        private async void Drop(object sender, DragEventArgs e)
         {
             if (!e.Data.Contains(DataFormats.FileNames))
             {
@@ -106,21 +109,30 @@ namespace Stardrop.Views
                     var archive = ArchiveFactory.Open(fileFullName);
 
                     // Verify the zip file has a manifest
-                    var hasManifest = false;
+                    Manifest? manifest = null;
                     foreach (var entry in archive.Entries)
                     {
                         if (entry.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase))
                         {
-                            hasManifest = true;
+                            using (Stream stream = entry.OpenEntryStream())
+                            {
+                                manifest = await JsonSerializer.DeserializeAsync<Manifest>(stream);
+                            }
                         }
                     }
 
                     // If the archive doesn't have a manifest, warn the user
-                    if (hasManifest)
+                    if (manifest is not null)
                     {
+                        string defaultInstallPath = Path.Combine(Program.defaultModPath, "Stardrop Installed Mods");
+                        if (_viewModel.Mods.First(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null)
+                        {
+                            // Ask if user wants to replace existing mod, unless manifest contains `DeleteOldVersion` is true
+                            defaultInstallPath = mod.ModFileInfo.Directory.Parent.FullName;
+                        }
                         foreach (var entry in archive.Entries)
                         {
-                            entry.WriteToDirectory(Path.Combine(Program.defaultModPath, "Stardrop Installed Mods"), new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
+                            entry.WriteToDirectory(defaultInstallPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
                         }
                     }
                     else
