@@ -1,10 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Collections;
 using Stardrop.Models;
-using System.ComponentModel;
-using Avalonia.Data;
 using Stardrop.ViewModels;
 using System.IO;
 using System.Linq;
@@ -14,8 +11,8 @@ using Avalonia.Threading;
 using System.Diagnostics;
 using Stardrop.Utilities.Linkage;
 using System.Threading.Tasks;
-using Avalonia.Interactivity;
-using System.IO.Compression;
+using SharpCompress.Common;
+using SharpCompress.Archives;
 
 namespace Stardrop.Views
 {
@@ -105,25 +102,30 @@ namespace Stardrop.Views
             {
                 try
                 {
-                    using (ZipArchive archive = ZipFile.OpenRead(fileFullName))
-                    {
-                        var hasManifest = false;
-                        foreach (ZipArchiveEntry entry in archive.Entries)
-                        {
-                            if (entry.Name.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
-                            {
-                                hasManifest = true;
-                            }
-                        }
+                    // Extract the archive data
+                    var archive = ArchiveFactory.Open(fileFullName);
 
-                        if (hasManifest)
+                    // Verify the zip file has a manifest
+                    var hasManifest = false;
+                    foreach (var entry in archive.Entries)
+                    {
+                        if (entry.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase))
                         {
-                            ZipFile.ExtractToDirectory(fileFullName, Path.Combine(Program.defaultModPath, "Stardrop Installed Mods"));
+                            hasManifest = true;
                         }
-                        else
+                    }
+
+                    // If the archive doesn't have a manifest, warn the user
+                    if (hasManifest)
+                    {
+                        foreach (var entry in archive.Entries)
                         {
-                            CreateWarningWindow($"No manifest.json found in \"{fileFullName}\"", "OK");
+                            entry.WriteToDirectory(Path.Combine(Program.defaultModPath, "Stardrop Installed Mods"), new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
                         }
+                    }
+                    else
+                    {
+                        CreateWarningWindow($"No manifest.json found in \"{fileFullName}\"", "OK");
                     }
                 }
                 catch (Exception ex)

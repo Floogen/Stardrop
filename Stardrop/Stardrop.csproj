@@ -20,6 +20,7 @@
     <PackageReference Include="Projektanker.Icons.Avalonia" Version="3.7.0" />
     <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="3.7.0" />
     <PackageReference Include="semver" Version="2.0.6" />
+    <PackageReference Include="SharpCompress" Version="0.30.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Views\ProfileNaming.axaml.cs">
