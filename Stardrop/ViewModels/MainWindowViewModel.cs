@@ -33,7 +33,22 @@ namespace Stardrop.ViewModels
 
         public MainWindowViewModel(string modsFilePath)
         {
-            Mods = new ObservableCollection<Mod>();
+            DiscoverMods(modsFilePath);
+
+            // Create data view
+            var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
+
+            DataView = new DataGridCollectionView(Mods);
+            DataView.SortDescriptions.Add(dataGridSortDescription);
+        }
+
+        public void DiscoverMods(string modsFilePath)
+        {
+            if (Mods is null)
+            {
+                Mods = new ObservableCollection<Mod>();
+            }
+            Mods.Clear();
 
             DirectoryInfo modDirectory = new DirectoryInfo(modsFilePath);
             foreach (var fileInfo in modDirectory.GetFiles("manifest.json", SearchOption.AllDirectories))
@@ -69,13 +84,8 @@ namespace Stardrop.ViewModels
                     Program.helper.Log($"Unable to load the manifest.json from {fileInfo.DirectoryName}: {ex}", Utilities.Helper.Status.Alert);
                 }
             }
-
-            // Create data view
-            var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
-
-            DataView = new DataGridCollectionView(Mods);
-            DataView.SortDescriptions.Add(dataGridSortDescription);
         }
+
         public void EnableModsByProfile(Profile profile)
         {
             foreach (var mod in Mods)

@@ -37,11 +37,17 @@ namespace Stardrop.Views
             // SMAPI_MODS_PATH is set via the profile dropdown on the UI
             var modGrid = this.FindControl<DataGrid>("modGrid");
             modGrid.IsReadOnly = true;
-            modGrid.LoadingRow += ModGrid_LoadingRow;
+            modGrid.LoadingRow += (sender, e) => { e.Row.Header = e.Row.GetIndex() + 1; };
             modGrid.Items = _viewModel.DataView;
             AddHandler(DragDrop.DropEvent, Drop);
-            AddHandler(DragDrop.DragOverEvent, DragOver);
-            AddHandler(DragDrop.DragLeaveEvent, DragLeave);
+            AddHandler(DragDrop.DragOverEvent, (sender, e) =>
+            {
+                _viewModel.DragOverColor = "#1cff96";
+            });
+            AddHandler(DragDrop.DragLeaveEvent, (sender, e) =>
+            {
+                _viewModel.DragOverColor = "#ff9f2a";
+            });
 
             // Handle the mainMenu bar for drag and related events
             var mainMenu = this.FindControl<Menu>("mainMenu");
@@ -80,14 +86,11 @@ namespace Stardrop.Views
 #endif
         }
 
-        private void DragLeave(object sender, RoutedEventArgs e)
+        private void CreateWarningWindow(string warningText, string buttonText)
         {
-            _viewModel.DragOverColor = "#ff9f2a";
-        }
-
-        private void DragOver(object sender, DragEventArgs e)
-        {
-            _viewModel.DragOverColor = "#1cff96";
+            var warningWindow = new WarningWindow(warningText, buttonText);
+            warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            warningWindow.ShowDialog(this);
         }
 
         private void Drop(object sender, DragEventArgs e)
@@ -100,23 +103,39 @@ namespace Stardrop.Views
             // Export zip to the default mods folder
             foreach (string fileFullName in e.Data.GetFileNames())
             {
-                using (ZipArchive archive = ZipFile.OpenRead(fileFullName))
+                try
                 {
-                    var hasManifest = false;
-                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    using (ZipArchive archive = ZipFile.OpenRead(fileFullName))
                     {
-                        if (entry.Name.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+                        var hasManifest = false;
+                        foreach (ZipArchiveEntry entry in archive.Entries)
                         {
-                            hasManifest = true;
+                            if (entry.Name.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+                            {
+                                hasManifest = true;
+                            }
+                        }
+
+                        if (hasManifest)
+                        {
+                            ZipFile.ExtractToDirectory(fileFullName, Path.Combine(Program.defaultModPath, "Stardrop Installed Mods"));
+                        }
+                        else
+                        {
+                            CreateWarningWindow($"No manifest.json found in \"{fileFullName}\"", "OK");
                         }
                     }
-
-                    if (hasManifest)
-                    {
-                        ZipFile.ExtractToDirectory(fileFullName, Path.Combine(Program.defaultModPath, "Stardrop Installed Mods"));
-                    }
+                }
+                catch (Exception ex)
+                {
+                    CreateWarningWindow($"Unable to load the file located at \"{fileFullName}\". See log file for more information.", "OK");
+                    Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
                 }
             }
+
+            // Refresh mod list
+            _viewModel.DiscoverMods(Program.defaultModPath);
+
             _viewModel.DragOverColor = "#ff9f2a";
         }
 
@@ -249,11 +268,6 @@ namespace Stardrop.Views
             {
                 this.BeginMoveDrag(e);
             }
-        }
-
-        private void ModGrid_LoadingRow(object? sender, DataGridRowEventArgs e)
-        {
-            e.Row.Header = e.Row.GetIndex() + 1;
         }
 
         private void AdjustWindowState()
