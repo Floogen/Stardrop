@@ -14,6 +14,7 @@ using Avalonia.Threading;
 using System.Diagnostics;
 using Stardrop.Utilities.Linkage;
 using System.Threading.Tasks;
+using Avalonia.Interactivity;
 
 namespace Stardrop.Views
 {
@@ -35,8 +36,11 @@ namespace Stardrop.Views
             // SMAPI_MODS_PATH is set via the profile dropdown on the UI
             var modGrid = this.FindControl<DataGrid>("modGrid");
             modGrid.IsReadOnly = true;
-            modGrid.LoadingRow += Dg1_LoadingRow;
+            modGrid.LoadingRow += ModGrid_LoadingRow;
             modGrid.Items = _viewModel.DataView;
+            AddHandler(DragDrop.DropEvent, Drop);
+            AddHandler(DragDrop.DragOverEvent, DragOver);
+            AddHandler(DragDrop.DragLeaveEvent, DragLeave);
 
             // Handle the mainMenu bar for drag and related events
             var mainMenu = this.FindControl<Menu>("mainMenu");
@@ -73,6 +77,26 @@ namespace Stardrop.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void DragLeave(object sender, RoutedEventArgs e)
+        {
+            _viewModel.DragOverColor = "#ff9f2a";
+        }
+
+        private void DragOver(object sender, DragEventArgs e)
+        {
+            _viewModel.DragOverColor = "#1cff96";
+        }
+
+        private void Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.Contains(DataFormats.Text))
+                Program.helper.Log(e.Data.GetText());
+            else if (e.Data.Contains(DataFormats.FileNames))
+                Program.helper.Log(string.Join(Environment.NewLine, e.Data.GetFileNames()));
+
+            _viewModel.DragOverColor = "#ff9f2a";
         }
 
         private async void SmapiButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -206,7 +230,7 @@ namespace Stardrop.Views
             }
         }
 
-        private void Dg1_LoadingRow(object? sender, DataGridRowEventArgs e)
+        private void ModGrid_LoadingRow(object? sender, DataGridRowEventArgs e)
         {
             e.Row.Header = e.Row.GetIndex() + 1;
         }

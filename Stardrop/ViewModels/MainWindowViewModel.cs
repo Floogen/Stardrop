@@ -15,7 +15,9 @@ namespace Stardrop.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        public bool _isLocked;
+        private string _dragOverColor = "#ff9f2a";
+        public string DragOverColor { get { return _dragOverColor; } set { this.RaiseAndSetIfChanged(ref _dragOverColor, value); } }
+        private bool _isLocked;
         public bool IsLocked { get { return _isLocked; } set { this.RaiseAndSetIfChanged(ref _isLocked, value); } }
         public ObservableCollection<Mod> Mods { get; set; }
         private int _enabledModCount;
