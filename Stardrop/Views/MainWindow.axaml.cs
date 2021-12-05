@@ -157,7 +157,11 @@ namespace Stardrop.Views
             var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
             foreach (string modId in profile.EnabledModIds)
             {
-                var mod = _viewModel.Mods.First(m => m.UniqueId == modId);
+                var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId == modId);
+                if (mod is null)
+                {
+                    continue;
+                }
                 DirectoryLink.Create(Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name), mod.ModFileInfo.DirectoryName, true);
             }
 
