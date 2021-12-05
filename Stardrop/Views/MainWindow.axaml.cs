@@ -15,6 +15,7 @@ using System.Diagnostics;
 using Stardrop.Utilities.Linkage;
 using System.Threading.Tasks;
 using Avalonia.Interactivity;
+using System.IO.Compression;
 
 namespace Stardrop.Views
 {
@@ -91,11 +92,31 @@ namespace Stardrop.Views
 
         private void Drop(object sender, DragEventArgs e)
         {
-            if (e.Data.Contains(DataFormats.Text))
-                Program.helper.Log(e.Data.GetText());
-            else if (e.Data.Contains(DataFormats.FileNames))
-                Program.helper.Log(string.Join(Environment.NewLine, e.Data.GetFileNames()));
+            if (!e.Data.Contains(DataFormats.FileNames))
+            {
+                return;
+            }
 
+            // Export zip to the default mods folder
+            foreach (string fileFullName in e.Data.GetFileNames())
+            {
+                using (ZipArchive archive = ZipFile.OpenRead(fileFullName))
+                {
+                    var hasManifest = false;
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        if (entry.Name.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+                        {
+                            hasManifest = true;
+                        }
+                    }
+
+                    if (hasManifest)
+                    {
+                        ZipFile.ExtractToDirectory(fileFullName, Path.Combine(Program.defaultModPath, "Stardrop Installed Mods"));
+                    }
+                }
+            }
             _viewModel.DragOverColor = "#ff9f2a";
         }
 
@@ -123,7 +144,7 @@ namespace Stardrop.Views
             {
                 _viewModel.IsLocked = true;
 
-                var warningWindow = new WarningWindow(smapi);
+                var warningWindow = new WarningWindow("Stardrop is locked while the SMAPI is running. Any changes made will not reflect until SMAPI is closed.", "Unlock", smapi);
                 warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 await warningWindow.ShowDialog(this);
 

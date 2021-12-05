@@ -34,8 +34,8 @@
     </Grid.ColumnDefinitions>
 
     <StackPanel Grid.Row="1">
-      <TextBlock Text="Stardrop is locked while the SMAPI is running. Any changes made will not reflect until SMAPI is closed." TextWrapping="Wrap" Foreground="#1cff96" HorizontalAlignment="Center" Margin="0 35 0 20"/>
-      <Button Name="unlockButton" Content="Unlock" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="#ff9f2a" Foreground="#1cff96" Background="Transparent"/>
+      <TextBlock Text="{Binding WarningText}" TextWrapping="Wrap" Foreground="#1cff96" HorizontalAlignment="Center" Margin="0 35 0 20"/>
+      <Button Name="unlockButton" Content="{Binding ButtonText}" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="#ff9f2a" Foreground="#1cff96" Background="Transparent"/>
     </StackPanel>
   </Grid>
 </Window>
