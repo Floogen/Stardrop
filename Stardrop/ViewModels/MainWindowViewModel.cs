@@ -1,4 +1,5 @@
 using Avalonia.Collections;
+using ReactiveUI;
 using Stardrop.Models;
 using Stardrop.Models.SMAPI;
 using System;
@@ -15,6 +16,8 @@ namespace Stardrop.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         public ObservableCollection<Mod> Mods { get; set; }
+        private int _enabledModCount;
+        public int EnabledModCount { get { return _enabledModCount; } set { this.RaiseAndSetIfChanged(ref _enabledModCount, value); } }
         public DataGridCollectionView DataView { get; set; }
 
         private bool _hideDisabledMods;

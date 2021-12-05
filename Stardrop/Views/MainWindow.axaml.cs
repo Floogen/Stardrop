@@ -145,6 +145,9 @@ namespace Stardrop.Views
         {
             var profile = (e.Source as ComboBox).SelectedItem as Profile;
             _viewModel.EnableModsByProfile(profile);
+
+            // Update the EnabledModCount
+            _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled).Count();
         }
 
         private void EnabledBox_Clicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -158,6 +161,9 @@ namespace Stardrop.Views
             // Update the profile's enabled mods
             var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
             _editorView.UpdateProfile(profile, _viewModel.Mods.Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList());
+
+            // Update the EnabledModCount
+            _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled).Count();
         }
 
         private void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
