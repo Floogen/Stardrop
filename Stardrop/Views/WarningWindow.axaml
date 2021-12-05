@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Stardrop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="150"
+        x:Class="Stardrop.Views.WarningWindow"
+        Title="Warning"
+        MinWidth="300"
+        MinHeight="150"
+        Width="300"
+        Height="150"
+        Background="#031332"
+        HasSystemDecorations="false"
+        Icon="/Assets/icon.ico">
+
+  <Window.Styles>
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1cff96"/>
+    </Style>
+    <Style Selector="Button:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="#ff9f2a"/>
+    </Style>
+  </Window.Styles>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+
+    <StackPanel Grid.Row="1">
+      <TextBlock Text="Stardrop is locked while the SMAPI is running. Any changes made will not reflect until SMAPI is closed." TextWrapping="Wrap" Foreground="#1cff96" HorizontalAlignment="Center" Margin="0 35 0 20"/>
+      <Button Name="unlockButton" Content="Unlock" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="#ff9f2a" Foreground="#1cff96" Background="Transparent"/>
+    </StackPanel>
+  </Grid>
+</Window>

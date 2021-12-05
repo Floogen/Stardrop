@@ -27,6 +27,10 @@
     <Style Selector="Button:pressed /template/ ContentPresenter">
       <Setter Property="Background" Value="White"/>
     </Style>
+    <Style Selector="Button[IsEnabled=false] /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="0.5"/>
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
     <Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="Red"/>
     </Style>
@@ -136,7 +140,7 @@
       <TextBlock Text="{Binding Path=EnabledModCount, StringFormat=Enabled Mods: {0}}" Foreground="#1cff96" VerticalAlignment="Center" Margin="10 0 0 2"/>
     </DockPanel>
     <DockPanel Name="toolBar" Grid.Row="2"  Grid.Column="1">
-      <Button Name="smapiButton" Content="/Assets/icon.ico" Background="Transparent" HorizontalAlignment="Right" Width="60" Height="40" VerticalAlignment="Center"  Margin="0 0 10 0">
+      <Button Name="smapiButton" IsEnabled="{Binding !IsLocked}" Content="/Assets/icon.ico" Background="Transparent" HorizontalAlignment="Right" Width="60" Height="40" VerticalAlignment="Center"  Margin="0 0 10 0">
         <Panel>
           <Image Source="/Assets/smapi.png" Stretch="Uniform" />
         </Panel>

@@ -15,6 +15,8 @@ namespace Stardrop.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        public bool _isLocked;
+        public bool IsLocked { get { return _isLocked; } set { this.RaiseAndSetIfChanged(ref _isLocked, value); } }
         public ObservableCollection<Mod> Mods { get; set; }
         private int _enabledModCount;
         public int EnabledModCount { get { return _enabledModCount; } set { this.RaiseAndSetIfChanged(ref _enabledModCount, value); } }

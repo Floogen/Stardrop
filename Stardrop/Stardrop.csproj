@@ -28,5 +28,8 @@
     <Compile Update="Views\ProfileEditor.axaml.cs">
       <DependentUpon>ProfileEditor.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\WarningWindow.axaml.cs">
+      <DependentUpon>WarningWindow.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

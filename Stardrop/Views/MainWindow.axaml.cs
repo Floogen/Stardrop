@@ -13,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Threading;
 using System.Diagnostics;
 using Stardrop.Utilities.Linkage;
+using System.Threading.Tasks;
 
 namespace Stardrop.Views
 {
@@ -58,7 +59,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("maximizeButton").Click += delegate { AdjustWindowState(); };
             this.FindControl<Button>("exitButton").Click += ExitButton_Click;
             this.FindControl<Button>("editProfilesButton").Click += EditProfilesButton_Click;
-            this.FindControl<Button>("smapiButton").Click += SmapiButton_Click; ;
+            this.FindControl<Button>("smapiButton").Click += SmapiButton_Click;
             this.FindControl<CheckBox>("hideDisabledMods").Click += HideDisabledModsButton_Click;
 
             // Handle filtering via textbox
@@ -74,7 +75,7 @@ namespace Stardrop.Views
 #endif
         }
 
-        private void SmapiButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void SmapiButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             // Set the environment variable for the mod path
             var enabledModsPath = Path.Combine(Program.defaultHomePath, "Selected Mods");
@@ -94,11 +95,22 @@ namespace Stardrop.Views
                 DirectoryLink.Create(Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name), mod.ModFileInfo.DirectoryName, true);
             }
 
-            Process smapi = new Process();
-            smapi.StartInfo.FileName = Path.Combine(Program.defaultGamePath, "StardewModdingAPI.exe");
-            smapi.Start();
+            using (Process smapi = Process.Start(Path.Combine(Program.defaultGamePath, "StardewModdingAPI.exe")))
+            {
+                _viewModel.IsLocked = true;
 
+                var warningWindow = new WarningWindow(smapi);
+                warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                await warningWindow.ShowDialog(this);
 
+                await WaitForProcessToClose(smapi);
+            }
+        }
+
+        private async Task WaitForProcessToClose(Process trackedProcess)
+        {
+            await trackedProcess.WaitForExitAsync();
+            _viewModel.IsLocked = false;
         }
 
         private void SearchBox_KeyUp(object? sender, KeyEventArgs e)
