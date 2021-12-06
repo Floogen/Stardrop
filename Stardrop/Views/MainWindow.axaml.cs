@@ -106,38 +106,39 @@ namespace Stardrop.Views
                 try
                 {
                     // Extract the archive data
-                    var archive = ArchiveFactory.Open(fileFullName);
-
-                    // Verify the zip file has a manifest
-                    Manifest? manifest = null;
-                    foreach (var entry in archive.Entries)
+                    using (var archive = ArchiveFactory.Open(fileFullName))
                     {
-                        if (entry.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase))
-                        {
-                            using (Stream stream = entry.OpenEntryStream())
-                            {
-                                manifest = await JsonSerializer.DeserializeAsync<Manifest>(stream);
-                            }
-                        }
-                    }
-
-                    // If the archive doesn't have a manifest, warn the user
-                    if (manifest is not null)
-                    {
-                        string defaultInstallPath = Path.Combine(Program.defaultModPath, "Stardrop Installed Mods");
-                        if (_viewModel.Mods.First(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null)
-                        {
-                            // Ask if user wants to replace existing mod, unless manifest contains `DeleteOldVersion` is true
-                            defaultInstallPath = mod.ModFileInfo.Directory.Parent.FullName;
-                        }
+                        // Verify the zip file has a manifest
+                        Manifest? manifest = null;
                         foreach (var entry in archive.Entries)
                         {
-                            entry.WriteToDirectory(defaultInstallPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
+                            if (entry.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase))
+                            {
+                                using (Stream stream = entry.OpenEntryStream())
+                                {
+                                    manifest = await JsonSerializer.DeserializeAsync<Manifest>(stream);
+                                }
+                            }
                         }
-                    }
-                    else
-                    {
-                        CreateWarningWindow($"No manifest.json found in \"{fileFullName}\"", "OK");
+
+                        // If the archive doesn't have a manifest, warn the user
+                        if (manifest is not null)
+                        {
+                            string defaultInstallPath = Path.Combine(Program.defaultModPath, "Stardrop Installed Mods");
+                            if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null)
+                            {
+                                // TODO: Ask if user wants to replace existing mod, unless manifest contains `DeleteOldVersion` is true
+                                defaultInstallPath = mod.ModFileInfo.Directory.Parent.FullName;
+                            }
+                            foreach (var entry in archive.Entries)
+                            {
+                                entry.WriteToDirectory(defaultInstallPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
+                            }
+                        }
+                        else
+                        {
+                            CreateWarningWindow($"No manifest.json found in \"{fileFullName}\"", "OK");
+                        }
                     }
                 }
                 catch (Exception ex)
