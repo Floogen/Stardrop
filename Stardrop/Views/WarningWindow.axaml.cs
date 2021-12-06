@@ -20,6 +20,9 @@ namespace Stardrop.Views
             _viewModel = new WarningWindowViewModel();
             DataContext = _viewModel;
 
+            this.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            this.SizeToContent = SizeToContent.Height;
+
 #if DEBUG
             this.AttachDevTools();
 #endif

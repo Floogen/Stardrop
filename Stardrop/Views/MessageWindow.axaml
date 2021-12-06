@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="150"
-        x:Class="Stardrop.Views.WarningWindow"
-        Title="Warning"
+        x:Class="Stardrop.Views.MessageWindow"
+        Title="Message"
         MinWidth="300"
         MinHeight="150"
         Width="300"
@@ -32,12 +32,13 @@
     </Grid.RowDefinitions>
 
     <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="25" />
       <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="25" />
     </Grid.ColumnDefinitions>
 
-    <StackPanel>
-      <TextBlock Grid.Row="0" Text="{Binding WarningText}" TextWrapping="Wrap" Foreground="#1cff96" HorizontalAlignment="Center" Margin="0 35 0 20"/>
-      <Button Grid.Row="1" Name="unlockButton" Content="{Binding ButtonText}" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="#ff9f2a" Foreground="#1cff96" Background="Transparent"/>
-    </StackPanel>
+    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MessageText}" TextWrapping="Wrap" Foreground="#1cff96" HorizontalAlignment="Center" Margin="0 35 0 20"/>
+    <Button Grid.Row="1"  Grid.Column="1" Name="positiveButton" Content="{Binding PositiveButtonText}" Click="PositiveButton_Click" HorizontalAlignment="Left" BorderBrush="#ff9f2a" Foreground="#1cff96" Background="Transparent" Margin="25 0 0 0"/>
+    <Button Grid.Row="1"  Grid.Column="1" Name="negativeButton" Content="{Binding NegativeButtonText}" Click="NegativeButton_Click" HorizontalAlignment="Right" BorderBrush="#ff9f2a" Foreground="#1cff96" Background="Transparent"  Margin="0 0 25 0"/>
   </Grid>
 </Window>

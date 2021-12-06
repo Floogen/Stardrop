@@ -89,7 +89,6 @@ namespace Stardrop.Views
         private void CreateWarningWindow(string warningText, string buttonText)
         {
             var warningWindow = new WarningWindow(warningText, buttonText);
-            warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             warningWindow.ShowDialog(this);
         }
 
@@ -127,7 +126,20 @@ namespace Stardrop.Views
                             string defaultInstallPath = Path.Combine(Program.defaultModPath, "Stardrop Installed Mods");
                             if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null)
                             {
-                                // TODO: Ask if user wants to replace existing mod, unless manifest contains `DeleteOldVersion` is true
+                                if (!manifest.DeleteOldVersion)
+                                {
+                                    var requestWindow = new MessageWindow($"An previous version of {manifest.Name} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended, however any config files will be lost.");
+                                    if (await requestWindow.ShowDialog<bool>(this))
+                                    {
+                                        // Delete old vesrion
+                                        var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
+                                        if (targetDirectory is not null)
+                                        {
+                                            targetDirectory.Delete(true);
+                                        }
+                                    }
+                                }
+
                                 defaultInstallPath = mod.ModFileInfo.Directory.Parent.FullName;
                             }
                             foreach (var entry in archive.Entries)
@@ -143,7 +155,7 @@ namespace Stardrop.Views
                 }
                 catch (Exception ex)
                 {
-                    CreateWarningWindow($"Unable to load the file located at \"{fileFullName}\". See log file for more information.", "OK");
+                    CreateWarningWindow($"Unable to load the file located at \"{fileFullName}\".\n\nSee log file for more information.", "OK");
                     Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
                 }
             }
