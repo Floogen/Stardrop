@@ -25,5 +25,8 @@ namespace Stardrop.Models.SMAPI
 
         /// <summary>The unique mod ID.</summary>
         public string UniqueID { get; set; }
+
+        // <summary>Custom property for Stardrop.</summary>
+        public bool DeleteOldVersion { get; set; }
     }
 }
