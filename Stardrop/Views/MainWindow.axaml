@@ -149,6 +149,13 @@
 
     <Border Name="dragOverBorder" Margin="10" DragDrop.AllowDrop="True" Grid.Row="3" Grid.ColumnSpan="2" BorderBrush="{Binding DragOverColor}" BorderThickness="2">
       <DataGrid Name="modGrid" Foreground="White" Background="#801fe2" AlternatingRowBackground="#db67c4" CanUserSortColumns="True" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <DataGrid.ContextMenu>
+          <ContextMenu ContextMenuOpening="GridMenu_Opening">
+            <MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenu_ChangeState" />
+            <MenuItem Header="Delete" Click="ModGridMenu_Delete" />
+            <MenuItem Header="Cancel" />
+          </ContextMenu>
+        </DataGrid.ContextMenu>
         <DataGrid.Columns>
           <DataGridTemplateColumn Header="Enabled" Width="25" CanUserResize="False" CanUserSort="True" SortMemberPath="IsEnabled">
             <DataGridTemplateColumn.CellTemplate>

@@ -208,6 +208,52 @@ namespace Stardrop.Views
             _viewModel.IsLocked = false;
         }
 
+        private void GridMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            var selectedMod = this.FindControl<DataGrid>("modGrid").SelectedItem as Mod;
+            if (selectedMod is null)
+            {
+                return;
+            }
+
+            _viewModel.ChangeStateText = selectedMod.IsEnabled ? "Disable" : "Enable";
+        }
+
+        private void ModGridMenu_ChangeState(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var selectedMod = this.FindControl<DataGrid>("modGrid").SelectedItem as Mod;
+            if (selectedMod is null)
+            {
+                return;
+            }
+
+            selectedMod.IsEnabled = !selectedMod.IsEnabled;
+            this.UpdateCurrentProfile();
+        }
+
+        private async void ModGridMenu_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var selectedMod = this.FindControl<DataGrid>("modGrid").SelectedItem as Mod;
+            if (selectedMod is null)
+            {
+                return;
+            }
+
+            var requestWindow = new MessageWindow($"Are you sure you'd like to delete {selectedMod.Name}? This cannot be undone.");
+            if (await requestWindow.ShowDialog<bool>(this))
+            {
+                // Delete old vesrion
+                var targetDirectory = new DirectoryInfo(selectedMod.ModFileInfo.DirectoryName);
+                if (targetDirectory is not null)
+                {
+                    targetDirectory.Delete(true);
+                }
+
+                // Refresh mod list
+                _viewModel.DiscoverMods(Program.defaultModPath);
+            }
+        }
+
         private void SearchBox_KeyUp(object? sender, KeyEventArgs e)
         {
             if (_searchBoxTimer is null)
@@ -265,12 +311,7 @@ namespace Stardrop.Views
                 return;
             }
 
-            // Update the profile's enabled mods
-            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
-            _editorView.UpdateProfile(profile, _viewModel.Mods.Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList());
-
-            // Update the EnabledModCount
-            _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled).Count();
+            this.UpdateCurrentProfile();
         }
 
         private void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -304,6 +345,16 @@ namespace Stardrop.Views
         private void AdjustWindowState()
         {
             this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
+        }
+
+        private void UpdateCurrentProfile()
+        {
+            // Update the profile's enabled mods
+            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
+            _editorView.UpdateProfile(profile, _viewModel.Mods.Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList());
+
+            // Update the EnabledModCount
+            _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled).Count();
         }
 
         private void InitializeComponent()
