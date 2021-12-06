@@ -3,6 +3,7 @@
         xmlns:vm="using:Stardrop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=netstandard"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Stardrop.Views.MainWindow"
@@ -21,6 +22,72 @@
 
 
   <Window.Styles>
+
+    <Style Selector="MenuItem:separator /template/ Separator">
+      <Setter Property="Background" Value="#031332"/>
+      <Setter Property="Height" Value="1000"/>
+    </Style>
+    <Style Selector="MenuItem.Bar">
+      <Setter Property="Foreground" Value="#1cff96"/>
+      <Setter Property="Background" Value="#031332"/>
+    </Style>
+    <Style Selector="MenuItem.Bar:selected /template/ ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="TextBlock.Foreground" Value="#ff9f2a"/>
+      <Setter Property="Background" Value="#031332"/>
+    </Style>
+    <Style Selector="MenuItem.Bar:selected /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="#031332" />
+      <Setter Property="BorderBrush" Value="#031332" />
+    </Style>
+    <Style Selector="Menu > MenuItem">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Name="PART_LayoutRoot"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}">
+            <Panel>
+              <ContentPresenter Name="PART_HeaderPresenter"
+                                Content="{TemplateBinding Header}"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Stretch"
+                                Margin="{TemplateBinding Padding}">
+                <ContentPresenter.DataTemplates>
+                  <DataTemplate DataType="sys:String">
+                    <AccessText Text="{Binding}" />
+                  </DataTemplate>
+                </ContentPresenter.DataTemplates>
+              </ContentPresenter>
+              <Popup Name="PART_Popup"
+                     WindowManagerAddShadowHint="False"
+                     MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                     IsLightDismissEnabled="True"
+                     IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
+                     OverlayInputPassThroughElement="{Binding $parent[Menu]}">
+                <Border Background="#031332"
+                        BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
+                        BorderThickness="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}"
+                        Padding="{DynamicResource MenuFlyoutPresenterThemePadding}"
+                        MaxWidth="{DynamicResource FlyoutThemeMaxWidth}"
+                        MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
+                        HorizontalAlignment="Stretch"
+                        CornerRadius="{DynamicResource OverlayCornerRadius}">
+                  <ScrollViewer Classes="menuscroller">
+                    <ItemsPresenter Name="PART_ItemsPresenter"
+                                    Items="{TemplateBinding Items}"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}"
+                                    ItemTemplate="{TemplateBinding ItemTemplate}"
+                                    Margin="{DynamicResource MenuFlyoutScrollerMargin}"
+                                    Grid.IsSharedSizeScope="True" />
+                  </ScrollViewer>
+                </Border>
+              </Popup>
+            </Panel>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
     <Style Selector="Button:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="LightGray"/>
     </Style>
@@ -112,8 +179,11 @@
     <Border Grid.Row="0" BorderBrush="#ff9f2a" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
       <Menu Name="mainMenu" KeyboardNavigation.TabNavigation="None">
         <Image Source="/Assets/icon.ico" Stretch="None"/>
-        <MenuItem Header="File" Margin="-10 0 0 0" Foreground="#1cff96"/>
-        <MenuItem Header="Options" Margin="-10 0 0 0" Foreground="#1cff96"/>
+        <MenuItem Header="File" Margin="-10 0 0 0"/>
+        <MenuItem Header="Options" Margin="-10 0 0 0" Classes="Bar">
+          <MenuItem Header="Enable All Mods" Classes="Bar"/>
+          <MenuItem Header="Disable All Mods" Classes="Bar"/>
+        </MenuItem>
       </Menu>
     </Border>
     <TextBlock Text="☆ Stardrop ☆" Grid.Row="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Foreground="#1cff96" />
