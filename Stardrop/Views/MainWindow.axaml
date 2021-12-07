@@ -181,6 +181,10 @@
           <Separator/>
           <MenuItem Header="Exit" Click="Exit_Click" Classes="Bar"/>
         </MenuItem>
+        <MenuItem Header="View" Margin="-10 0 0 0" Classes="Bar">
+          <MenuItem Header="Settings" Classes="Bar"/>
+          <MenuItem Header="Log File" Classes="Bar"/>
+        </MenuItem>
         <MenuItem Header="Tools" Margin="-10 0 0 0" Classes="Bar">
           <MenuItem Header="Check for Mod Updates" Click="ModUpdateCheck_Click" Classes="Bar"/>
           <Separator/>
@@ -189,7 +193,6 @@
           <Separator/>
           <MenuItem Header="Update Stardrop" Foreground="Gray" Classes="Bar"/>
         </MenuItem>
-        <MenuItem Header="Settings" Margin="-10 0 0 0" Classes="Bar"/>
       </Menu>
     </Border>
     <TextBlock Text="☆ Stardrop ☆" IsHitTestVisible="False" Grid.Row="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Foreground="#1cff96" />
