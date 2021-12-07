@@ -68,7 +68,7 @@ namespace Stardrop.Views
             // Handle buttons
             this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
             this.FindControl<Button>("maximizeButton").Click += delegate { AdjustWindowState(); };
-            this.FindControl<Button>("exitButton").Click += ExitButton_Click;
+            this.FindControl<Button>("exitButton").Click += Exit_Click;
             this.FindControl<Button>("editProfilesButton").Click += EditProfilesButton_Click;
             this.FindControl<Button>("smapiButton").Click += SmapiButton_Click;
             this.FindControl<CheckBox>("hideDisabledMods").Click += HideDisabledModsButton_Click;
@@ -321,7 +321,7 @@ namespace Stardrop.Views
             editorWindow.ShowDialog(this);
         }
 
-        private void ExitButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void Exit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             this.Close();
         }

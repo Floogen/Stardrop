@@ -179,7 +179,7 @@
           <Separator/>
           <MenuItem Header="Start SMAPI" Classes="Bar"/>
           <Separator/>
-          <MenuItem Header="Exit" Classes="Bar"/>
+          <MenuItem Header="Exit" Click="Exit_Click" Classes="Bar"/>
         </MenuItem>
         <MenuItem Header="Tools" Margin="-10 0 0 0" Classes="Bar">
           <MenuItem Header="Check for Mod Updates" Classes="Bar"/>
