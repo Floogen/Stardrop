@@ -166,7 +166,7 @@ namespace Stardrop.Views
             }
 
             selectedMod.IsEnabled = !selectedMod.IsEnabled;
-            this.UpdateCurrentProfile();
+            this.UpdateProfile(GetCurrentProfile());
         }
 
         private async void ModGridMenu_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -187,8 +187,14 @@ namespace Stardrop.Views
                     targetDirectory.Delete(true);
                 }
 
+                // Update the current profile
+                this.UpdateProfile(GetCurrentProfile());
+
                 // Refresh mod list
                 _viewModel.DiscoverMods(Program.defaultModPath);
+
+                // Refresh enabled mods
+                _viewModel.EnableModsByProfile(GetCurrentProfile());
             }
         }
 
@@ -249,7 +255,7 @@ namespace Stardrop.Views
                 return;
             }
 
-            this.UpdateCurrentProfile();
+            this.UpdateProfile(GetCurrentProfile());
         }
 
         private void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -283,7 +289,7 @@ namespace Stardrop.Views
                     mod.IsEnabled = true;
                 }
 
-                this.UpdateCurrentProfile();
+                this.UpdateProfile(GetCurrentProfile());
             }
         }
 
@@ -297,7 +303,7 @@ namespace Stardrop.Views
                     mod.IsEnabled = false;
                 }
 
-                this.UpdateCurrentProfile();
+                this.UpdateProfile(GetCurrentProfile());
             }
         }
 
@@ -329,10 +335,14 @@ namespace Stardrop.Views
             this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
         }
 
-        private void UpdateCurrentProfile()
+        private Profile GetCurrentProfile()
+        {
+            return this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
+        }
+
+        private void UpdateProfile(Profile profile)
         {
             // Update the profile's enabled mods
-            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
             _editorView.UpdateProfile(profile, _viewModel.Mods.Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList());
 
             // Update the EnabledModCount
@@ -358,7 +368,11 @@ namespace Stardrop.Views
                         Manifest? manifest = null;
                         foreach (var entry in archive.Entries)
                         {
-                            if (entry.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase))
+                            if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+                            else if (entry.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase))
                             {
                                 using (Stream stream = entry.OpenEntryStream())
                                 {
@@ -391,6 +405,11 @@ namespace Stardrop.Views
                             }
                             foreach (var entry in archive.Entries)
                             {
+                                if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+
                                 entry.WriteToDirectory(defaultInstallPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
                             }
                         }
@@ -407,8 +426,14 @@ namespace Stardrop.Views
                 }
             }
 
+            // Update the current profile
+            this.UpdateProfile(GetCurrentProfile());
+
             // Refresh mod list
             _viewModel.DiscoverMods(Program.defaultModPath);
+
+            // Refresh enabled mods
+            _viewModel.EnableModsByProfile(GetCurrentProfile());
         }
 
         private void InitializeComponent()
