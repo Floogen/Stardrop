@@ -79,6 +79,7 @@ namespace Stardrop.Views
         {
             var profileListBox = this.FindControl<ListBox>("profileList");
             var naming = new ProfileNaming(_viewModel, profileListBox.SelectedItem as Profile);
+            naming.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             naming.ShowDialog(this);
         }
 
