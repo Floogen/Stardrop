@@ -182,10 +182,10 @@
           <MenuItem Header="Exit" Click="Exit_Click" Classes="Bar"/>
         </MenuItem>
         <MenuItem Header="Tools" Margin="-10 0 0 0" Classes="Bar">
-          <MenuItem Header="Check for Mod Updates" Classes="Bar"/>
+          <MenuItem Header="Check for Mod Updates" Click="ModUpdateCheck_Click" Classes="Bar"/>
           <Separator/>
-          <MenuItem Header="Enable All Mods" Classes="Bar"/>
-          <MenuItem Header="Disable All Mods" Classes="Bar"/>
+          <MenuItem Header="Enable All Mods" Click="EnableAllMods_Click" Classes="Bar"/>
+          <MenuItem Header="Disable All Mods" Click="DisableAllMods_Click" Classes="Bar"/>
           <Separator/>
           <MenuItem Header="Update Stardrop" Foreground="Gray" Classes="Bar"/>
         </MenuItem>

@@ -99,7 +99,7 @@ namespace Stardrop.Views
                 return;
             }
 
-            AddMods(e.Data.GetFileNames()?.ToArray());
+            this.AddMods(e.Data.GetFileNames()?.ToArray());
 
             _viewModel.DragOverColor = "#ff9f2a";
         }
@@ -265,7 +265,40 @@ namespace Stardrop.Views
             dialog.Filters.Add(new FileDialogFilter() { Name = "Mod Archive (*.zip, *.7z, *.rar)", Extensions = { "zip", "7z", "rar" } });
             dialog.AllowMultiple = false;
 
-            AddMods(await dialog.ShowAsync(this));
+            this.AddMods(await dialog.ShowAsync(this));
+        }
+
+        private async void ModUpdateCheck_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            // TODO: Implement
+        }
+
+        private async void EnableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var requestWindow = new MessageWindow($"Enable all mods?\n\nNote: This cannot be undone.");
+            if (await requestWindow.ShowDialog<bool>(this))
+            {
+                foreach (var mod in _viewModel.Mods.Where(m => !m.IsEnabled))
+                {
+                    mod.IsEnabled = true;
+                }
+
+                this.UpdateCurrentProfile();
+            }
+        }
+
+        private async void DisableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var requestWindow = new MessageWindow($"Disable all mods?\n\nNote: This cannot be undone.");
+            if (await requestWindow.ShowDialog<bool>(this))
+            {
+                foreach (var mod in _viewModel.Mods.Where(m => m.IsEnabled))
+                {
+                    mod.IsEnabled = false;
+                }
+
+                this.UpdateCurrentProfile();
+            }
         }
 
         private void Exit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
