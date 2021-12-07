@@ -22,21 +22,16 @@
 
 
   <Window.Styles>
-
-    <Style Selector="MenuItem:separator /template/ Separator">
-      <Setter Property="Background" Value="#031332"/>
-      <Setter Property="Height" Value="1000"/>
+    <Style Selector="MenuItem.Bar Separator">
+      <Setter Property="Border.Background" Value="#ff9f2a"/>
     </Style>
     <Style Selector="MenuItem.Bar">
       <Setter Property="Foreground" Value="#1cff96"/>
-      <Setter Property="Background" Value="#031332"/>
     </Style>
     <Style Selector="MenuItem.Bar:selected /template/ ContentPresenter#PART_HeaderPresenter">
       <Setter Property="TextBlock.Foreground" Value="#ff9f2a"/>
-      <Setter Property="Background" Value="#031332"/>
     </Style>
     <Style Selector="MenuItem.Bar:selected /template/ Border#PART_LayoutRoot">
-      <Setter Property="Background" Value="#031332" />
       <Setter Property="BorderBrush" Value="#031332" />
     </Style>
     <Style Selector="Menu > MenuItem">
@@ -177,13 +172,24 @@
     </Grid.ColumnDefinitions>
 
     <Border Name="menuBorder" Grid.Row="0" BorderBrush="#ff9f2a" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
-      <Menu Name="mainMenu" Width="135" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
+      <Menu Name="mainMenu" Width="190" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
         <Image Source="/Assets/icon.ico" Stretch="None"/>
-        <MenuItem Header="File" Margin="-10 0 0 0"/>
-        <MenuItem Header="Options" Margin="-10 0 0 0" Classes="Bar">
+        <MenuItem Header="File" Margin="-10 0 0 0" Classes="Bar">
+          <MenuItem Header="Add Mod" Classes="Bar"/>
+          <Separator/>
+          <MenuItem Header="Start SMAPI" Classes="Bar"/>
+          <Separator/>
+          <MenuItem Header="Exit" Classes="Bar"/>
+        </MenuItem>
+        <MenuItem Header="Tools" Margin="-10 0 0 0" Classes="Bar">
+          <MenuItem Header="Check for Mod Updates" Classes="Bar"/>
+          <Separator/>
           <MenuItem Header="Enable All Mods" Classes="Bar"/>
           <MenuItem Header="Disable All Mods" Classes="Bar"/>
+          <Separator/>
+          <MenuItem Header="Update Stardrop" Foreground="Gray" Classes="Bar"/>
         </MenuItem>
+        <MenuItem Header="Settings" Margin="-10 0 0 0" Classes="Bar"/>
       </Menu>
     </Border>
     <TextBlock Text="☆ Stardrop ☆" IsHitTestVisible="False" Grid.Row="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Foreground="#1cff96" />
@@ -256,7 +262,7 @@
       <TextBlock Text="v1.0.0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0" Foreground="#1cff96"/>
     </Border>
     <Menu Grid.Row="5" Grid.Column="0" Name="statusBar" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
-      <MenuItem Header="Nexus API Info Here" Foreground="#1cff96"/>
+      <MenuItem Header="Mods Ready to Update: Click to Refresh" Classes="Bar"/>
     </Menu>
   </Grid>
 </Window>

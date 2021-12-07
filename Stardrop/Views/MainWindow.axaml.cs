@@ -51,8 +51,8 @@ namespace Stardrop.Views
 
             // Handle the mainMenu bar for drag and related events
             var menuBorder = this.FindControl<Border>("menuBorder");
-            menuBorder.PointerPressed += MainMenu_PointerPressed;
-            menuBorder.DoubleTapped += MainMenu_DoubleTapped;
+            menuBorder.PointerPressed += MainBar_PointerPressed;
+            menuBorder.DoubleTapped += MainBar_DoubleTapped;
 
             // Set profile list
             _editorView = new ProfileEditorViewModel(Path.Combine(Program.defaultHomePath, "Profiles"));
@@ -326,17 +326,17 @@ namespace Stardrop.Views
             this.Close();
         }
 
-        private void MainMenu_DoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void MainBar_DoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            if (!e.Handled)
+            var menu = this.FindControl<Menu>("mainMenu");
+            if (!menu.IsPointerOver && !e.Handled)
             {
                 AdjustWindowState();
             }
         }
 
-        private void MainMenu_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private void MainBar_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
-            var menu = this.FindControl<Border>("mainBorder");
             if (e.Pointer.IsPrimary && !e.Handled)
             {
                 this.BeginMoveDrag(e);
