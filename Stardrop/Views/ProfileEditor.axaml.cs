@@ -37,8 +37,8 @@ namespace Stardrop.Views
 
             // Handle the mainMenu bar for drag and related events
             var menuBar = this.FindControl<Menu>("menuBar");
-            menuBar.PointerPressed += MainMenu_PointerPressed;
-            menuBar.DoubleTapped += MainMenu_DoubleTapped;
+            menuBar.PointerPressed += MainBar_PointerPressed;
+            menuBar.DoubleTapped += MainBar_DoubleTapped;
 
             // Handle buttons
             this.FindControl<Button>("exitButton").Click += delegate { this.Close(); };
@@ -120,7 +120,7 @@ namespace Stardrop.Views
             this.Close();
         }
 
-        private void MainMenu_DoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void MainBar_DoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if (!e.Handled)
             {
@@ -128,7 +128,7 @@ namespace Stardrop.Views
             }
         }
 
-        private void MainMenu_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private void MainBar_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
             if (e.Pointer.IsPrimary && !e.Handled)
             {

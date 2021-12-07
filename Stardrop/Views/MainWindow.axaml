@@ -176,8 +176,8 @@
       <ColumnDefinition Width="Auto" />
     </Grid.ColumnDefinitions>
 
-    <Border Grid.Row="0" BorderBrush="#ff9f2a" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
-      <Menu Name="mainMenu" KeyboardNavigation.TabNavigation="None">
+    <Border Name="menuBorder" Grid.Row="0" BorderBrush="#ff9f2a" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
+      <Menu Name="mainMenu" Width="135" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
         <Image Source="/Assets/icon.ico" Stretch="None"/>
         <MenuItem Header="File" Margin="-10 0 0 0"/>
         <MenuItem Header="Options" Margin="-10 0 0 0" Classes="Bar">
@@ -186,7 +186,7 @@
         </MenuItem>
       </Menu>
     </Border>
-    <TextBlock Text="☆ Stardrop ☆" Grid.Row="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Foreground="#1cff96" />
+    <TextBlock Text="☆ Stardrop ☆" IsHitTestVisible="False" Grid.Row="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Foreground="#1cff96" />
     <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
       <Button Name="minimizeButton" i:Attached.Icon="mdi-window-minimize" Margin="0 0 -10 0" Foreground="White"  Background="Transparent"/>
       <Button Name="maximizeButton" i:Attached.Icon="mdi-window-maximize" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
