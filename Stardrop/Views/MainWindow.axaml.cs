@@ -70,7 +70,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("maximizeButton").Click += delegate { AdjustWindowState(); };
             this.FindControl<Button>("exitButton").Click += Exit_Click;
             this.FindControl<Button>("editProfilesButton").Click += EditProfilesButton_Click;
-            this.FindControl<Button>("smapiButton").Click += SmapiButton_Click;
+            this.FindControl<Button>("smapiButton").Click += Smapi_Click;
             this.FindControl<CheckBox>("hideDisabledMods").Click += HideDisabledModsButton_Click;
 
             // Handle filtering via textbox
@@ -99,74 +99,12 @@ namespace Stardrop.Views
                 return;
             }
 
-            // Export zip to the default mods folder
-            foreach (string fileFullName in e.Data.GetFileNames())
-            {
-                try
-                {
-                    // Extract the archive data
-                    using (var archive = ArchiveFactory.Open(fileFullName))
-                    {
-                        // Verify the zip file has a manifest
-                        Manifest? manifest = null;
-                        foreach (var entry in archive.Entries)
-                        {
-                            if (entry.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase))
-                            {
-                                using (Stream stream = entry.OpenEntryStream())
-                                {
-                                    manifest = await JsonSerializer.DeserializeAsync<Manifest>(stream);
-                                }
-                            }
-                        }
-
-                        // If the archive doesn't have a manifest, warn the user
-                        if (manifest is not null)
-                        {
-                            string defaultInstallPath = Path.Combine(Program.defaultModPath, "Stardrop Installed Mods");
-                            if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null)
-                            {
-                                if (!manifest.DeleteOldVersion)
-                                {
-                                    var requestWindow = new MessageWindow($"An previous version of {manifest.Name} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended, however any config files will be lost.");
-                                    if (await requestWindow.ShowDialog<bool>(this))
-                                    {
-                                        // Delete old vesrion
-                                        var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
-                                        if (targetDirectory is not null)
-                                        {
-                                            targetDirectory.Delete(true);
-                                        }
-                                    }
-                                }
-
-                                defaultInstallPath = mod.ModFileInfo.Directory.Parent.FullName;
-                            }
-                            foreach (var entry in archive.Entries)
-                            {
-                                entry.WriteToDirectory(defaultInstallPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
-                            }
-                        }
-                        else
-                        {
-                            CreateWarningWindow($"No manifest.json found in \"{fileFullName}\"", "OK");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CreateWarningWindow($"Unable to load the file located at \"{fileFullName}\".\n\nSee log file for more information.", "OK");
-                    Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
-                }
-            }
-
-            // Refresh mod list
-            _viewModel.DiscoverMods(Program.defaultModPath);
+            AddMods(e.Data.GetFileNames()?.ToArray());
 
             _viewModel.DragOverColor = "#ff9f2a";
         }
 
-        private async void SmapiButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void Smapi_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             // Set the environment variable for the mod path
             var enabledModsPath = Path.Combine(Program.defaultHomePath, "Selected Mods");
@@ -321,6 +259,15 @@ namespace Stardrop.Views
             editorWindow.ShowDialog(this);
         }
 
+        private async void AddMod_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filters.Add(new FileDialogFilter() { Name = "Mod Archive (*.zip, *.7z, *.rar)", Extensions = { "zip", "7z", "rar" } });
+            dialog.AllowMultiple = false;
+
+            AddMods(await dialog.ShowAsync(this));
+        }
+
         private void Exit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             this.Close();
@@ -357,6 +304,78 @@ namespace Stardrop.Views
 
             // Update the EnabledModCount
             _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled).Count();
+        }
+
+        private async void AddMods(string[]? filePaths)
+        {
+            if (filePaths is null)
+            {
+                return;
+            }
+
+            // Export zip to the default mods folder
+            foreach (string fileFullName in filePaths)
+            {
+                try
+                {
+                    // Extract the archive data
+                    using (var archive = ArchiveFactory.Open(fileFullName))
+                    {
+                        // Verify the zip file has a manifest
+                        Manifest? manifest = null;
+                        foreach (var entry in archive.Entries)
+                        {
+                            if (entry.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase))
+                            {
+                                using (Stream stream = entry.OpenEntryStream())
+                                {
+                                    manifest = await JsonSerializer.DeserializeAsync<Manifest>(stream);
+                                }
+                            }
+                        }
+
+                        // If the archive doesn't have a manifest, warn the user
+                        if (manifest is not null)
+                        {
+                            string defaultInstallPath = Path.Combine(Program.defaultModPath, "Stardrop Installed Mods");
+                            if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null)
+                            {
+                                if (!manifest.DeleteOldVersion)
+                                {
+                                    var requestWindow = new MessageWindow($"An previous version of {manifest.Name} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended, however any config files will be lost.");
+                                    if (await requestWindow.ShowDialog<bool>(this))
+                                    {
+                                        // Delete old vesrion
+                                        var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
+                                        if (targetDirectory is not null)
+                                        {
+                                            targetDirectory.Delete(true);
+                                        }
+                                    }
+                                }
+
+                                defaultInstallPath = mod.ModFileInfo.Directory.Parent.FullName;
+                            }
+                            foreach (var entry in archive.Entries)
+                            {
+                                entry.WriteToDirectory(defaultInstallPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
+                            }
+                        }
+                        else
+                        {
+                            CreateWarningWindow($"No manifest.json found in \"{fileFullName}\"", "OK");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    CreateWarningWindow($"Unable to load the file located at \"{fileFullName}\".\n\nSee log file for more information.", "OK");
+                    Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
+                }
+            }
+
+            // Refresh mod list
+            _viewModel.DiscoverMods(Program.defaultModPath);
         }
 
         private void InitializeComponent()

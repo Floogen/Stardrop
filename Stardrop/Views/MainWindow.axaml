@@ -175,9 +175,9 @@
       <Menu Name="mainMenu" Width="190" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
         <Image Source="/Assets/icon.ico" Stretch="None"/>
         <MenuItem Header="File" Margin="-10 0 0 0" Classes="Bar">
-          <MenuItem Header="Add Mod" Classes="Bar"/>
+          <MenuItem Header="Add Mod" Click="AddMod_Click" Classes="Bar"/>
           <Separator/>
-          <MenuItem Header="Start SMAPI" Classes="Bar"/>
+          <MenuItem Header="Start SMAPI" Click="Smapi_Click" Classes="Bar"/>
           <Separator/>
           <MenuItem Header="Exit" Click="Exit_Click" Classes="Bar"/>
         </MenuItem>
