@@ -337,7 +337,8 @@ namespace Stardrop.Views
 
         private void MainBar_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
-            if (e.Pointer.IsPrimary && !e.Handled)
+            var menu = this.FindControl<Menu>("mainMenu");
+            if (e.Pointer.IsPrimary && !menu.IsOpen && !e.Handled)
             {
                 this.BeginMoveDrag(e);
             }
