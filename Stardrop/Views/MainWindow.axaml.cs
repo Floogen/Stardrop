@@ -16,6 +16,7 @@ using SharpCompress.Archives;
 using SharpCompress.Readers;
 using System.Text.Json;
 using Stardrop.Models.SMAPI;
+using Stardrop.Utilities.SMAPI;
 
 namespace Stardrop.Views
 {
@@ -110,23 +111,7 @@ namespace Stardrop.Views
             var enabledModsPath = Path.Combine(Program.defaultHomePath, "Selected Mods");
             Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
 
-            // Clear any previous linked mods
-            foreach (var linkedModFolder in new DirectoryInfo(enabledModsPath).GetDirectories())
-            {
-                linkedModFolder.Delete(true);
-            }
-
-            // Link the currently enabled mods
-            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
-            foreach (string modId in profile.EnabledModIds)
-            {
-                var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId == modId);
-                if (mod is null)
-                {
-                    continue;
-                }
-                DirectoryLink.Create(Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name), mod.ModFileInfo.DirectoryName, true);
-            }
+            this.UpdateEnabledModsFolder(enabledModsPath);
 
             using (Process smapi = Process.Start(Path.Combine(Program.defaultGamePath, "StardewModdingAPI.exe")))
             {
@@ -276,7 +261,66 @@ namespace Stardrop.Views
 
         private async void ModUpdateCheck_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            // TODO: Implement
+            // TODO: Add logic to only check once the previous check is over an hour old
+            this.FindControl<Menu>("mainMenu").Close();
+
+            // Set the environment variable for the mod path
+            var enabledModsPath = Path.Combine(Program.defaultHomePath, "Selected Mods");
+            Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
+
+            this.UpdateEnabledModsFolder(enabledModsPath);
+
+            using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(true)))
+            {
+                if (smapi is null)
+                {
+                    // TODO: Log failure here
+                    return;
+                }
+
+                FileSystemWatcher observer = new FileSystemWatcher(Program.smapiLogPath) { Filter = "*.txt", EnableRaisingEvents = true, NotifyFilter = NotifyFilters.Size };
+                var result = observer.WaitForChanged(WatcherChangeTypes.Changed, 60000);
+
+                // Kill SMAPI
+                smapi.Kill();
+
+                // Check if our observer timed out
+                FileInfo smapiLog = new FileInfo(Path.Combine(Program.smapiLogPath, result.Name));
+                if (result.TimedOut || smapiLog is null)
+                {
+                    // TODO: Notify user that we were unable to check SMAPI's log
+                    return;
+                }
+
+                // Parse SMAPI's log
+                GameDetails? gameDetails = null;
+                using (var fileStream = new FileStream(smapiLog.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var reader = new StreamReader(fileStream))
+                {
+                    while (reader.Peek() >= 0)
+                    {
+                        var line = reader.ReadLine();
+                        if (Program.gameDetailsPattern.IsMatch(line))
+                        {
+                            var match = Program.gameDetailsPattern.Match(line);
+                            gameDetails = new GameDetails(match.Groups["gameVersion"].ToString(), match.Groups["smapiVersion"].ToString(), match.Groups["system"].ToString());
+                        }
+                    }
+                }
+
+                if (gameDetails is null)
+                {
+                    // TODO: Notify user that we were unable to parse SMAPI's log
+                    return;
+                }
+
+                // Fetch the mods to see if there are updates available
+                var modUpdateData = await SMAPI.GetModUpdateData(gameDetails, _viewModel.Mods.ToList());
+                foreach (var mod in modUpdateData.Where(m => m.SuggestedUpdate is not null))
+                {
+                    Program.helper.Log(mod.SuggestedUpdate.Url);
+                }
+            }
         }
 
         private async void EnableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -434,6 +478,27 @@ namespace Stardrop.Views
 
             // Refresh enabled mods
             _viewModel.EnableModsByProfile(GetCurrentProfile());
+        }
+
+        private void UpdateEnabledModsFolder(string enabledModsPath)
+        {
+            // Clear any previous linked mods
+            foreach (var linkedModFolder in new DirectoryInfo(enabledModsPath).GetDirectories())
+            {
+                linkedModFolder.Delete(true);
+            }
+
+            // Link the currently enabled mods
+            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
+            foreach (string modId in profile.EnabledModIds)
+            {
+                var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId == modId);
+                if (mod is null)
+                {
+                    continue;
+                }
+                DirectoryLink.Create(Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name), mod.ModFileInfo.DirectoryName, true);
+            }
         }
 
         private void InitializeComponent()
