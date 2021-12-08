@@ -261,8 +261,18 @@ namespace Stardrop.Views
 
         private async void ModUpdateCheck_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            // TODO: Add logic to only check once the previous check is over an hour old
-            this.FindControl<Menu>("mainMenu").Close();
+            // TODO: Add logic to only check once the previous check is over an hour old\
+
+
+            // Close the menu, as it will remain open until the process is complete
+            var mainMenu = this.FindControl<Menu>("mainMenu");
+            if (mainMenu.IsOpen)
+            {
+                mainMenu.Close();
+            }
+
+            // Update the status to let the user know the update is polling
+            _viewModel.UpdateStatusText = "Updating...";
 
             // Set the environment variable for the mod path
             var enabledModsPath = Path.Combine(Program.defaultHomePath, "Selected Mods");
@@ -316,10 +326,18 @@ namespace Stardrop.Views
 
                 // Fetch the mods to see if there are updates available
                 var modUpdateData = await SMAPI.GetModUpdateData(gameDetails, _viewModel.Mods.ToList());
-                foreach (var mod in modUpdateData.Where(m => m.SuggestedUpdate is not null))
+                foreach (var modItem in _viewModel.Mods)
                 {
-                    Program.helper.Log(mod.SuggestedUpdate.Url);
+                    modItem.Status = String.Empty;
+                    if (modUpdateData.Any(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.SuggestedUpdate is not null))
+                    {
+                        modItem.Status = modUpdateData.First(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase)).SuggestedUpdate.Url;
+                        Program.helper.Log(modItem.Status);
+                    }
                 }
+
+                // Update the status to let the user know the update is finished
+                _viewModel.UpdateStatusText = $"Mods Ready to Update: {modUpdateData.Where(m => m.SuggestedUpdate is not null).Count()}";
             }
         }
 

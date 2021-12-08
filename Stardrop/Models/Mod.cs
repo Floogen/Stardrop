@@ -21,7 +21,8 @@ namespace Stardrop.Models
         public string Description { get; set; }
         public string Author { get; set; }
         public string Requirements { get; set; }
-        public string Status { get; set; }
+        private string _status { get; set; }
+        public string Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); } }
         private bool _isEnabled { get; set; }
         public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); } }
 

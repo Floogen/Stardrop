@@ -6,10 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Stardrop.ViewModels
 {
@@ -32,6 +36,8 @@ namespace Stardrop.ViewModels
         public string ColumnFilter { get { return _columnFilter; } set { _columnFilter = value; UpdateFilter(); } }
         private string _changeStateText;
         public string ChangeStateText { get { return _changeStateText; } set { this.RaiseAndSetIfChanged(ref _changeStateText, value); } }
+        private string _updateStatusText = "Mods Ready to Update: Click to Refresh";
+        public string UpdateStatusText { get { return _updateStatusText; } set { this.RaiseAndSetIfChanged(ref _updateStatusText, value); } }
 
         public MainWindowViewModel(string modsFilePath)
         {
@@ -42,6 +48,50 @@ namespace Stardrop.ViewModels
 
             DataView = new DataGridCollectionView(Mods);
             DataView.SortDescriptions.Add(dataGridSortDescription);
+        }
+
+        public void OpenBrowser(string url)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                // If no associated application/json MimeType is found xdg-open opens retrun error
+                // but it tries to open it anyway using the console editor (nano, vim, other..)
+                ShellExec($"xdg-open {url}", waitForExit: false);
+            }
+            else
+            {
+                using Process process = Process.Start(new ProcessStartInfo
+                {
+                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
+                    Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"{url}" : "",
+                    CreateNoWindow = true,
+                    UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                });
+            }
+        }
+
+        private static void ShellExec(string cmd, bool waitForExit = true)
+        {
+            var escapedArgs = Regex.Replace(cmd, "(?=[`~!#&*()|;'<>])", "\\")
+                .Replace("\"", "\\\\\\\"");
+
+            using (var process = Process.Start(
+                new ProcessStartInfo
+                {
+                    FileName = "/bin/sh",
+                    Arguments = $"-c \"{escapedArgs}\"",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                }
+            ))
+            {
+                if (waitForExit)
+                {
+                    process.WaitForExit();
+                }
+            }
         }
 
         public void DiscoverMods(string modsFilePath)

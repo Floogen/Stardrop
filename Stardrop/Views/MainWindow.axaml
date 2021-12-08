@@ -93,6 +93,21 @@
       <Setter Property="Opacity" Value="0.5"/>
       <Setter Property="Background" Value="Transparent"/>
     </Style>
+    <Style Selector="Button#statusButton">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Foreground" Value="#1cff96" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button#statusButton:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="TextBlock.Foreground" Value="White" />
+    </Style>
+    <Style Selector="Button#statusButton:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="TextBlock.Foreground" Value="#ff9f2a" />
+    </Style>
     <Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="Red"/>
     </Style>
@@ -133,12 +148,12 @@
     <Style Selector="DataGridColumnHeader">
       <Setter Property="FontWeight" Value="Bold"/>
       <Setter Property="Foreground" Value="#1cff96"/>
-      <Setter Property="Background" Value="#2a0a84"/>
+      <Setter Property="Background" Value="#2E2E2E"/>
     </Style>
     <Style Selector="DataGridColumnHeader[Content=Enabled]">
       <Setter Property="Margin" Value="-13 0 0 0"/>
       <Setter Property="Foreground" Value="#1cff96"/>
-      <Setter Property="Background" Value="#2a0a84"/>
+      <Setter Property="Background" Value="#2E2E2E"/>
     </Style>
     <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
       <Setter Property="Fill" Value="#ff9f2a"/>
@@ -227,7 +242,7 @@
     </DockPanel>
 
     <Border Name="dragOverBorder" Margin="10" DragDrop.AllowDrop="True" Grid.Row="3" Grid.ColumnSpan="2" BorderBrush="{Binding DragOverColor}" BorderThickness="2">
-      <DataGrid Name="modGrid" Foreground="White" Background="#801fe2" AlternatingRowBackground="#db67c4" CanUserSortColumns="True" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+      <DataGrid Name="modGrid" Foreground="White" Background="#6B6B6B" AlternatingRowBackground="#525252" CanUserSortColumns="True" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
         <DataGrid.ContextMenu>
           <ContextMenu ContextMenuOpening="GridMenu_Opening">
             <MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenu_ChangeState" />
@@ -248,7 +263,13 @@
           <DataGridTextColumn Header="Author" Binding="{Binding Author}"/>
           <DataGridTextColumn Header="Requirements" Binding="{Binding Requirements}"/>
           <DataGridTextColumn Header="Version" Binding="{Binding ParsedVersion}"/>
-          <DataGridTextColumn Header="Status" Binding="{Binding Status}"/>
+          <DataGridTemplateColumn Header="Status" SortMemberPath="Status">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <Button Name="statusButton" Content="{Binding Status}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Status}" />
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
         </DataGrid.Columns>
       </DataGrid>
     </Border>
@@ -265,7 +286,7 @@
       <TextBlock Text="v1.0.0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0" Foreground="#1cff96"/>
     </Border>
     <Menu Grid.Row="5" Grid.Column="0" Name="statusBar" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
-      <MenuItem Header="Mods Ready to Update: Click to Refresh" Classes="Bar"/>
+      <MenuItem Header="{Binding UpdateStatusText}" Click="ModUpdateCheck_Click" Classes="Bar"/>
     </Menu>
   </Grid>
 </Window>
