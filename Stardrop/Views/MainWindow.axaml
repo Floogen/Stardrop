@@ -266,7 +266,7 @@
           <DataGridTemplateColumn Header="Status" SortMemberPath="Status">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <Button Name="statusButton" Content="{Binding Status}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Status}" />
+                <Button Name="statusButton" Content="{Binding Status}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Uri}" />
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>

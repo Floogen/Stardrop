@@ -119,7 +119,7 @@ namespace Stardrop.ViewModels
                         continue;
                     }
 
-                    var mod = new Mod(fileInfo, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
+                    var mod = new Mod(manifest, fileInfo, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
                     if (!Mods.Any(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)))
                     {
                         Mods.Add(mod);
@@ -148,6 +148,9 @@ namespace Stardrop.ViewModels
                     mod.IsEnabled = true;
                 }
             }
+
+            // Update the EnabledModCount
+            EnabledModCount = Mods.Where(m => m.IsEnabled).Count();
         }
 
         internal void UpdateFilter()

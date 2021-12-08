@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Stardrop.Models.SMAPI
 {
-    class Manifest
+    public class Manifest
     {
         // Based on SMAPI's Manfiest.cs: https://github.com/Pathoschild/SMAPI/blob/c10685b03574e967c1bf48aafc814f60196812ec/src/SMAPI.Toolkit/Serialization/Models/Manifest.cs
 
@@ -16,6 +16,9 @@ namespace Stardrop.Models.SMAPI
 
         /// <summary>A brief description of the mod.</summary>
         public string Description { get; set; }
+
+        /// <summary>The namespaced mod IDs to query for updates (like <c>Nexus:541</c>).</summary>
+        public string[] UpdateKeys { get; set; }
 
         /// <summary>The mod author's name.</summary>
         public string Author { get; set; }

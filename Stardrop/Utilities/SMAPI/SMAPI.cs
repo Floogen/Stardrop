@@ -28,7 +28,7 @@ namespace Stardrop.Utilities.SMAPI
             List<ModSearchEntry> searchEntries = new List<ModSearchEntry>();
             foreach (var mod in mods)
             {
-                searchEntries.Add(new ModSearchEntry(mod.UniqueId, mod.Version, null));
+                searchEntries.Add(new ModSearchEntry(mod.UniqueId, mod.Version, mod.Manifest.UpdateKeys));
             }
 
             // Create the body to be sent via the POST request

@@ -17,6 +17,7 @@ using SharpCompress.Readers;
 using System.Text.Json;
 using Stardrop.Models.SMAPI;
 using Stardrop.Utilities.SMAPI;
+using Stardrop.Models.SMAPI.Web;
 
 namespace Stardrop.Views
 {
@@ -325,19 +326,44 @@ namespace Stardrop.Views
                 }
 
                 // Fetch the mods to see if there are updates available
+                int updateCount = 0;
                 var modUpdateData = await SMAPI.GetModUpdateData(gameDetails, _viewModel.Mods.ToList());
                 foreach (var modItem in _viewModel.Mods)
                 {
+                    modItem.Uri = String.Empty;
                     modItem.Status = String.Empty;
-                    if (modUpdateData.Any(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.SuggestedUpdate is not null))
+
+                    var suggestedUpdateData = modUpdateData.Where(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.SuggestedUpdate is not null).Select(m => m.SuggestedUpdate).FirstOrDefault();
+                    var metaData = modUpdateData.Where(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.Metadata is not null).Select(m => m.Metadata).FirstOrDefault();
+                    if (suggestedUpdateData is not null)
                     {
-                        modItem.Status = modUpdateData.First(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase)).SuggestedUpdate.Url;
-                        Program.helper.Log(modItem.Status);
+                        modItem.Uri = suggestedUpdateData.Url;
+                        modItem.Status = $"Update Available ({suggestedUpdateData.Version})";
+                        if (metaData is not null && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
+                        {
+                            modItem.Status = $"[{metaData.CompatibilityStatus}] Update Available ({suggestedUpdateData.Version})";
+                        }
+
+                        updateCount++;
+                    }
+                    else if (metaData is not null && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
+                    {
+                        modItem.Status = $"[{metaData.CompatibilityStatus}] Compatibility Issue";
+                        if (metaData.CompatibilityStatus == ModEntryMetadata.WikiCompatibilityStatus.Unofficial && metaData.Unofficial is not null)
+                        {
+                            modItem.Uri = metaData.Unofficial.Url;
+
+                            updateCount++;
+                        }
+                        else if (metaData.Main is not null)
+                        {
+                            modItem.Uri = metaData.Main.Url;
+                        }
                     }
                 }
 
                 // Update the status to let the user know the update is finished
-                _viewModel.UpdateStatusText = $"Mods Ready to Update: {modUpdateData.Where(m => m.SuggestedUpdate is not null).Count()}";
+                _viewModel.UpdateStatusText = $"Mods Ready to Update: {updateCount}";
             }
         }
 

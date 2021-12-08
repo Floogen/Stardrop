@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Stardrop.Models.SMAPI.Web
@@ -37,9 +38,15 @@ namespace Stardrop.Models.SMAPI.Web
             Obsolete
         }
 
+        /// <summary>The main version.</summary>
+        public ModEntryVersion Main { get; set; }
+
+        /// <summary>The latest unofficial version, if newer than <see cref="Main"/> and <see cref="Optional"/>.</summary>
+        public ModEntryVersion Unofficial { get; set; }
 
         // Based on SMAPI's ModExtendedMetadataModel.cs: https://github.com/Pathoschild/SMAPI/blob/develop/src/SMAPI.Toolkit/Framework/Clients/WebApi/ModExtendedMetadataModel.cs
-        public string CompatibilityStatus { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public WikiCompatibilityStatus CompatibilityStatus { get; set; }
 
         /// <summary>The human-readable summary of the compatibility status or workaround, without HTML formatting.</summary>
         public string CompatibilitySummary { get; set; }
