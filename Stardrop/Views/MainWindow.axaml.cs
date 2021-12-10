@@ -20,6 +20,7 @@ using Stardrop.Utilities.SMAPI;
 using Stardrop.Models.SMAPI.Web;
 using Stardrop.Models.Data;
 using Stardrop.Utilities;
+using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 
 namespace Stardrop.Views
 {
@@ -68,6 +69,9 @@ namespace Stardrop.Views
             // Update selected mods
             var profile = profileComboBox.SelectedItem as Profile;
             _viewModel.EnableModsByProfile(profile);
+
+            // Check if we have any cached updates for mods
+            CheckForModUpdates(true);
 
             // Handle buttons
             this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
@@ -264,6 +268,62 @@ namespace Stardrop.Views
 
         private async void ModUpdateCheck_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            CheckForModUpdates(false);
+        }
+
+        private async void EnableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var requestWindow = new MessageWindow($"Enable all mods?\n\nNote: This cannot be undone.");
+            if (await requestWindow.ShowDialog<bool>(this))
+            {
+                foreach (var mod in _viewModel.Mods.Where(m => !m.IsEnabled))
+                {
+                    mod.IsEnabled = true;
+                }
+
+                this.UpdateProfile(GetCurrentProfile());
+            }
+        }
+
+        private async void DisableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var requestWindow = new MessageWindow($"Disable all mods?\n\nNote: This cannot be undone.");
+            if (await requestWindow.ShowDialog<bool>(this))
+            {
+                foreach (var mod in _viewModel.Mods.Where(m => m.IsEnabled))
+                {
+                    mod.IsEnabled = false;
+                }
+
+                this.UpdateProfile(GetCurrentProfile());
+            }
+        }
+
+        private void Exit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void MainBar_DoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var menu = this.FindControl<Menu>("mainMenu");
+            if (!menu.IsPointerOver && !e.Handled)
+            {
+                AdjustWindowState();
+            }
+        }
+
+        private void MainBar_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        {
+            var menu = this.FindControl<Menu>("mainMenu");
+            if (e.Pointer.IsPrimary && !menu.IsOpen && !e.Handled)
+            {
+                this.BeginMoveDrag(e);
+            }
+        }
+
+        private async void CheckForModUpdates(bool probe)
+        {
             int modsToUpdate = 0;
 
             // Only check once the previous check is over an hour old
@@ -283,13 +343,15 @@ namespace Stardrop.Views
                         if (modItem.IsModOutdated(modUpdateInfo.SuggestedVersion))
                         {
                             modItem.Uri = modUpdateInfo.Link;
+                            modItem.SuggestedVersion = modUpdateInfo.SuggestedVersion;
                             modItem.Status = modUpdateInfo.Status;
 
                             modsToUpdate++;
                         }
-                        if (modUpdateInfo.Status.Contains("Compatibility Issue"))
+                        if (modUpdateInfo.Status != WikiCompatibilityStatus.Unknown && modUpdateInfo.Status != WikiCompatibilityStatus.Ok)
                         {
                             modItem.Uri = modUpdateInfo.Link;
+                            modItem.SuggestedVersion = modUpdateInfo.SuggestedVersion;
                             modItem.Status = modUpdateInfo.Status;
                         }
                     }
@@ -298,6 +360,12 @@ namespace Stardrop.Views
                     _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
                     return;
                 }
+            }
+
+            // Check if this was just a probe
+            if (probe)
+            {
+                return;
             }
 
             // Close the menu, as it will remain open until the process is complete
@@ -365,46 +433,47 @@ namespace Stardrop.Views
                 var modUpdateData = await SMAPI.GetModUpdateData(gameDetails, _viewModel.Mods.ToList());
                 foreach (var modItem in _viewModel.Mods)
                 {
-                    modItem.Uri = String.Empty;
-                    modItem.Status = String.Empty;
+                    var link = String.Empty;
+                    var recommendedVersion = String.Empty;
+                    var status = WikiCompatibilityStatus.Unknown;
 
                     // Prep the data to be checked
                     var suggestedUpdateData = modUpdateData.Where(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.SuggestedUpdate is not null).Select(m => m.SuggestedUpdate).FirstOrDefault();
                     var metaData = modUpdateData.Where(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.Metadata is not null).Select(m => m.Metadata).FirstOrDefault();
-
-                    var recommendedVersion = modItem.ParsedVersion;
                     if (suggestedUpdateData is not null)
                     {
-                        modItem.Uri = suggestedUpdateData.Url;
-                        modItem.Status = $"Update Available ({suggestedUpdateData.Version})";
-                        if (metaData is not null && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
+                        link = suggestedUpdateData.Url;
+                        if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Ok)
                         {
-                            modItem.Status = $"[{metaData.CompatibilityStatus}] Update Available ({suggestedUpdateData.Version})";
+                            status = metaData.CompatibilityStatus;
                         }
                         recommendedVersion = suggestedUpdateData.Version;
 
                         modsToUpdate++;
                     }
-                    else if (metaData is not null && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
+                    else if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
                     {
-                        modItem.Status = $"[{metaData.CompatibilityStatus}] Compatibility Issue";
-                        if (metaData.CompatibilityStatus == ModEntryMetadata.WikiCompatibilityStatus.Unofficial && metaData.Unofficial is not null)
+                        status = metaData.CompatibilityStatus;
+                        if (metaData.CompatibilityStatus == WikiCompatibilityStatus.Unofficial && metaData.Unofficial is not null)
                         {
-                            modItem.Uri = metaData.Unofficial.Url;
+                            link = metaData.Unofficial.Url;
                             recommendedVersion = metaData.Unofficial.Version;
 
                             modsToUpdate++;
                         }
                         else if (metaData.Main is not null)
                         {
-                            modItem.Uri = metaData.Main.Url;
+                            link = metaData.Main.Url;
                             recommendedVersion = metaData.Main.Version;
                         }
                     }
 
-                    if (!String.IsNullOrEmpty(modItem.Status))
+                    modItem.Uri = link;
+                    modItem.SuggestedVersion = recommendedVersion;
+                    modItem.Status = status;
+                    if (!String.IsNullOrEmpty(modItem.ParsedStatus))
                     {
-                        updateCache.Mods.Add(new ModUpdateInfo(modItem.UniqueId, recommendedVersion, modItem.Status, modItem.Uri));
+                        updateCache.Mods.Add(new ModUpdateInfo(modItem.UniqueId, recommendedVersion, status, modItem.Uri));
                     }
                 }
 
@@ -414,57 +483,6 @@ namespace Stardrop.Views
 
                 // Update the status to let the user know the update is finished
                 _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
-            }
-        }
-
-        private async void EnableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            var requestWindow = new MessageWindow($"Enable all mods?\n\nNote: This cannot be undone.");
-            if (await requestWindow.ShowDialog<bool>(this))
-            {
-                foreach (var mod in _viewModel.Mods.Where(m => !m.IsEnabled))
-                {
-                    mod.IsEnabled = true;
-                }
-
-                this.UpdateProfile(GetCurrentProfile());
-            }
-        }
-
-        private async void DisableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            var requestWindow = new MessageWindow($"Disable all mods?\n\nNote: This cannot be undone.");
-            if (await requestWindow.ShowDialog<bool>(this))
-            {
-                foreach (var mod in _viewModel.Mods.Where(m => m.IsEnabled))
-                {
-                    mod.IsEnabled = false;
-                }
-
-                this.UpdateProfile(GetCurrentProfile());
-            }
-        }
-
-        private void Exit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
-        private void MainBar_DoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            var menu = this.FindControl<Menu>("mainMenu");
-            if (!menu.IsPointerOver && !e.Handled)
-            {
-                AdjustWindowState();
-            }
-        }
-
-        private void MainBar_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
-        {
-            var menu = this.FindControl<Menu>("mainMenu");
-            if (e.Pointer.IsPrimary && !menu.IsOpen && !e.Handled)
-            {
-                this.BeginMoveDrag(e);
             }
         }
 

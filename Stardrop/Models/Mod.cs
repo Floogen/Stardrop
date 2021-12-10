@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 
 namespace Stardrop.Models
 {
@@ -19,16 +20,34 @@ namespace Stardrop.Models
         public string UniqueId { get; set; }
         public SemVersion Version { get; set; }
         public string ParsedVersion { get { return Version.ToString(); } }
+        public string SuggestedVersion { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Author { get; set; }
         public string Requirements { get; set; }
         private string _uri { get; set; }
         public string Uri { get { return _uri; } set { _uri = value; NotifyPropertyChanged("Uri"); } }
-        private string _status { get; set; }
-        public string Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); } }
         private bool _isEnabled { get; set; }
         public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); } }
+        private WikiCompatibilityStatus _status { get; set; }
+        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("ParsedStatus"); } }
+        public string ParsedStatus
+        {
+            get
+            {
+                if (!String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
+                {
+                    return $"Update Available ({SuggestedVersion})";
+                }
+                else if (_status == WikiCompatibilityStatus.Broken)
+                {
+                    return $"[Broken] Compatibility Issue";
+                }
+
+                return String.Empty;
+            }
+        }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         public Mod(Manifest manifest, FileInfo modFileInfo, string uniqueId, string version, string? name = null, string? description = null, string? author = null)
