@@ -14,10 +14,6 @@ namespace Stardrop
     {
         internal static Helper helper = new Helper();
         internal static readonly string defaultProfileName = "Default";
-        internal static string defaultGamePath = @"E:\SteamLibrary\steamapps\common\Stardew Valley\";
-        internal static string defaultModPath = @"E:\SteamLibrary\steamapps\common\Stardew Valley\Mods\";
-        internal static string defaultHomePath = @"E:\SteamLibrary\steamapps\common\Stardew Valley\Stardrop\";
-        internal static string smapiLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StardewValley", "ErrorLogs");
         internal static readonly Regex gameDetailsPattern = new Regex(@"SMAPI (?<smapiVersion>.+) with Stardew Valley (?<gameVersion>.+) on (?<system>.+)");
 
         // Initialization code. Don't use any Avalonia, third-party APIs or any
@@ -30,6 +26,9 @@ namespace Stardrop
             IconProvider.Register<MaterialDesignIconProvider>();
 
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+
+            // TODO: Load settings file here and pass it to Pathing
+            Pathing.EstablishPaths();
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.

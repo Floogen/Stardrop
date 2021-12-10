@@ -30,6 +30,7 @@ namespace Stardrop.Models
         private bool _isEnabled { get; set; }
         public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); } }
 
+        public event PropertyChangedEventHandler PropertyChanged;
         public Mod(Manifest manifest, FileInfo modFileInfo, string uniqueId, string version, string? name = null, string? description = null, string? author = null)
         {
             Manifest = manifest;
@@ -42,11 +43,17 @@ namespace Stardrop.Models
             Author = String.IsNullOrEmpty(author) ? "Unknown" : author;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public bool IsModOutdated(string version)
+        {
+            return SemVersion.Parse(version) > Version;
+        }
+
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
         {
             if (PropertyChanged != null)
+            {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
     }
 }

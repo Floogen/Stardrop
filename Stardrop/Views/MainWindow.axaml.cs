@@ -18,6 +18,8 @@ using System.Text.Json;
 using Stardrop.Models.SMAPI;
 using Stardrop.Utilities.SMAPI;
 using Stardrop.Models.SMAPI.Web;
+using Stardrop.Models.Data;
+using Stardrop.Utilities;
 
 namespace Stardrop.Views
 {
@@ -32,7 +34,7 @@ namespace Stardrop.Views
             InitializeComponent();
 
             // Set the main window view
-            _viewModel = new MainWindowViewModel(Program.defaultModPath);
+            _viewModel = new MainWindowViewModel(Pathing.defaultModPath);
             DataContext = _viewModel;
 
             // Set the path according to the environmental variable SMAPI_MODS_PATH
@@ -57,7 +59,7 @@ namespace Stardrop.Views
             menuBorder.DoubleTapped += MainBar_DoubleTapped;
 
             // Set profile list
-            _editorView = new ProfileEditorViewModel(Path.Combine(Program.defaultHomePath, "Profiles"));
+            _editorView = new ProfileEditorViewModel(Pathing.GetProfilesFolderPath());
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
             profileComboBox.Items = _editorView.Profiles;
             profileComboBox.SelectedIndex = 0;
@@ -109,12 +111,12 @@ namespace Stardrop.Views
         private async void Smapi_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             // Set the environment variable for the mod path
-            var enabledModsPath = Path.Combine(Program.defaultHomePath, "Selected Mods");
+            var enabledModsPath = Pathing.GetSelectedModsFolderPath();
             Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
 
             this.UpdateEnabledModsFolder(enabledModsPath);
 
-            using (Process smapi = Process.Start(Path.Combine(Program.defaultGamePath, "StardewModdingAPI.exe")))
+            using (Process smapi = Process.Start(Pathing.GetSmapiPath()))
             {
                 _viewModel.IsLocked = true;
 
@@ -177,7 +179,7 @@ namespace Stardrop.Views
                 this.UpdateProfile(GetCurrentProfile());
 
                 // Refresh mod list
-                _viewModel.DiscoverMods(Program.defaultModPath);
+                _viewModel.DiscoverMods(Pathing.defaultModPath);
 
                 // Refresh enabled mods
                 _viewModel.EnableModsByProfile(GetCurrentProfile());
@@ -262,8 +264,41 @@ namespace Stardrop.Views
 
         private async void ModUpdateCheck_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            // TODO: Add logic to only check once the previous check is over an hour old\
+            int modsToUpdate = 0;
 
+            // Only check once the previous check is over an hour old
+            if (File.Exists(Pathing.GetVersionCachePath()))
+            {
+                var oldUpdateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                if (oldUpdateCache is not null && oldUpdateCache.LastRuntime > DateTime.Now.AddHours(-1))
+                {
+                    foreach (var modItem in _viewModel.Mods)
+                    {
+                        var modUpdateInfo = oldUpdateCache.Mods.FirstOrDefault(m => m.UniqueId.Equals(modItem.UniqueId));
+                        if (modUpdateInfo is null)
+                        {
+                            continue;
+                        }
+
+                        if (modItem.IsModOutdated(modUpdateInfo.SuggestedVersion))
+                        {
+                            modItem.Uri = modUpdateInfo.Link;
+                            modItem.Status = modUpdateInfo.Status;
+
+                            modsToUpdate++;
+                        }
+                        if (modUpdateInfo.Status.Contains("Compatibility Issue"))
+                        {
+                            modItem.Uri = modUpdateInfo.Link;
+                            modItem.Status = modUpdateInfo.Status;
+                        }
+                    }
+
+                    // Update the status to let the user know the update is finished
+                    _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
+                    return;
+                }
+            }
 
             // Close the menu, as it will remain open until the process is complete
             var mainMenu = this.FindControl<Menu>("mainMenu");
@@ -276,7 +311,7 @@ namespace Stardrop.Views
             _viewModel.UpdateStatusText = "Updating...";
 
             // Set the environment variable for the mod path
-            var enabledModsPath = Path.Combine(Program.defaultHomePath, "Selected Mods");
+            var enabledModsPath = Path.Combine(Pathing.GetSelectedModsFolderPath());
             Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
 
             this.UpdateEnabledModsFolder(enabledModsPath);
@@ -289,14 +324,14 @@ namespace Stardrop.Views
                     return;
                 }
 
-                FileSystemWatcher observer = new FileSystemWatcher(Program.smapiLogPath) { Filter = "*.txt", EnableRaisingEvents = true, NotifyFilter = NotifyFilters.Size };
+                FileSystemWatcher observer = new FileSystemWatcher(Pathing.smapiLogPath) { Filter = "*.txt", EnableRaisingEvents = true, NotifyFilter = NotifyFilters.Size };
                 var result = observer.WaitForChanged(WatcherChangeTypes.Changed, 60000);
 
                 // Kill SMAPI
                 smapi.Kill();
 
                 // Check if our observer timed out
-                FileInfo smapiLog = new FileInfo(Path.Combine(Program.smapiLogPath, result.Name));
+                FileInfo smapiLog = new FileInfo(Path.Combine(Pathing.smapiLogPath, result.Name));
                 if (result.TimedOut || smapiLog is null)
                 {
                     // TODO: Notify user that we were unable to check SMAPI's log
@@ -326,15 +361,18 @@ namespace Stardrop.Views
                 }
 
                 // Fetch the mods to see if there are updates available
-                int updateCount = 0;
+                var updateCache = new UpdateCache(DateTime.Now);
                 var modUpdateData = await SMAPI.GetModUpdateData(gameDetails, _viewModel.Mods.ToList());
                 foreach (var modItem in _viewModel.Mods)
                 {
                     modItem.Uri = String.Empty;
                     modItem.Status = String.Empty;
 
+                    // Prep the data to be checked
                     var suggestedUpdateData = modUpdateData.Where(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.SuggestedUpdate is not null).Select(m => m.SuggestedUpdate).FirstOrDefault();
                     var metaData = modUpdateData.Where(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.Metadata is not null).Select(m => m.Metadata).FirstOrDefault();
+
+                    var recommendedVersion = modItem.ParsedVersion;
                     if (suggestedUpdateData is not null)
                     {
                         modItem.Uri = suggestedUpdateData.Url;
@@ -343,8 +381,9 @@ namespace Stardrop.Views
                         {
                             modItem.Status = $"[{metaData.CompatibilityStatus}] Update Available ({suggestedUpdateData.Version})";
                         }
+                        recommendedVersion = suggestedUpdateData.Version;
 
-                        updateCount++;
+                        modsToUpdate++;
                     }
                     else if (metaData is not null && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
                     {
@@ -352,18 +391,29 @@ namespace Stardrop.Views
                         if (metaData.CompatibilityStatus == ModEntryMetadata.WikiCompatibilityStatus.Unofficial && metaData.Unofficial is not null)
                         {
                             modItem.Uri = metaData.Unofficial.Url;
+                            recommendedVersion = metaData.Unofficial.Version;
 
-                            updateCount++;
+                            modsToUpdate++;
                         }
                         else if (metaData.Main is not null)
                         {
                             modItem.Uri = metaData.Main.Url;
+                            recommendedVersion = metaData.Main.Version;
                         }
+                    }
+
+                    if (!String.IsNullOrEmpty(modItem.Status))
+                    {
+                        updateCache.Mods.Add(new ModUpdateInfo(modItem.UniqueId, recommendedVersion, modItem.Status, modItem.Uri));
                     }
                 }
 
+                // Cache the update data
+                Directory.CreateDirectory(Pathing.GetCacheFolderPath());
+                File.WriteAllText(Pathing.GetVersionCachePath(), JsonSerializer.Serialize(updateCache, new JsonSerializerOptions() { WriteIndented = true }));
+
                 // Update the status to let the user know the update is finished
-                _viewModel.UpdateStatusText = $"Mods Ready to Update: {updateCount}";
+                _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
             }
         }
 
@@ -472,7 +522,7 @@ namespace Stardrop.Views
                         // If the archive doesn't have a manifest, warn the user
                         if (manifest is not null)
                         {
-                            string defaultInstallPath = Path.Combine(Program.defaultModPath, "Stardrop Installed Mods");
+                            string defaultInstallPath = Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods");
                             if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null)
                             {
                                 if (!manifest.DeleteOldVersion)
@@ -518,7 +568,7 @@ namespace Stardrop.Views
             this.UpdateProfile(GetCurrentProfile());
 
             // Refresh mod list
-            _viewModel.DiscoverMods(Program.defaultModPath);
+            _viewModel.DiscoverMods(Pathing.defaultModPath);
 
             // Refresh enabled mods
             _viewModel.EnableModsByProfile(GetCurrentProfile());

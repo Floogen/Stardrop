@@ -17,7 +17,7 @@ namespace Stardrop.Utilities.SMAPI
     {
         public static ProcessStartInfo GetPrepareProcess(bool hideConsole)
         {
-            ProcessStartInfo processInfo = new ProcessStartInfo(Path.Combine(Program.defaultGamePath, "StardewModdingAPI.exe"));
+            ProcessStartInfo processInfo = new ProcessStartInfo(Pathing.GetSmapiPath());
             processInfo.CreateNoWindow = hideConsole;
 
             return processInfo;
