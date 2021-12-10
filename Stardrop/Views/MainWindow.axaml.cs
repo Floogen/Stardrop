@@ -21,6 +21,7 @@ using Stardrop.Models.SMAPI.Web;
 using Stardrop.Models.Data;
 using Stardrop.Utilities;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
+using System.Collections.Generic;
 
 namespace Stardrop.Views
 {
@@ -71,7 +72,7 @@ namespace Stardrop.Views
             _viewModel.EnableModsByProfile(profile);
 
             // Check if we have any cached updates for mods
-            CheckForModUpdates(true);
+            CheckForModUpdates(_viewModel.Mods.ToList(), probe: true);
 
             // Handle buttons
             this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
@@ -107,7 +108,11 @@ namespace Stardrop.Views
                 return;
             }
 
-            this.AddMods(e.Data.GetFileNames()?.ToArray());
+            var addeMods = await this.AddMods(e.Data.GetFileNames()?.ToArray());
+
+            // TODO: Add optional setting to disable checking for updates when a new mod is installed
+            await CheckForModUpdates(addeMods, useCache: true, skipCacheCheck: true);
+            await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
             _viewModel.DragOverColor = "#ff9f2a";
         }
@@ -187,6 +192,9 @@ namespace Stardrop.Views
 
                 // Refresh enabled mods
                 _viewModel.EnableModsByProfile(GetCurrentProfile());
+
+                // Refresh the update data
+                await CheckForModUpdates(_viewModel.Mods.ToList(), probe: true);
             }
         }
 
@@ -268,7 +276,10 @@ namespace Stardrop.Views
 
         private async void ModUpdateCheck_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            CheckForModUpdates(false);
+            if (!IsUpdateCacheValid())
+            {
+                await CheckForModUpdates(_viewModel.Mods.ToList());
+            }
         }
 
         private async void EnableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -322,17 +333,33 @@ namespace Stardrop.Views
             }
         }
 
-        private async void CheckForModUpdates(bool probe)
+        private bool IsUpdateCacheValid()
+        {
+            if (!File.Exists(Pathing.GetVersionCachePath()))
+            {
+                return false;
+            }
+
+            var updateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            if (updateCache is null)
+            {
+                return false;
+            }
+
+            return updateCache.LastRuntime > DateTime.Now.AddHours(-1);
+        }
+
+        private async Task<UpdateCache?> GetCachedModUpdates(List<Mod> mods, bool skipCacheCheck = false)
         {
             int modsToUpdate = 0;
+            UpdateCache? oldUpdateCache = null;
 
-            // Only check once the previous check is over an hour old
             if (File.Exists(Pathing.GetVersionCachePath()))
             {
-                var oldUpdateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
-                if (oldUpdateCache is not null && oldUpdateCache.LastRuntime > DateTime.Now.AddHours(-1))
+                oldUpdateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                if (oldUpdateCache is not null && (skipCacheCheck || oldUpdateCache.LastRuntime > DateTime.Now.AddHours(-1)))
                 {
-                    foreach (var modItem in _viewModel.Mods)
+                    foreach (var modItem in mods)
                     {
                         var modUpdateInfo = oldUpdateCache.Mods.FirstOrDefault(m => m.UniqueId.Equals(modItem.UniqueId));
                         if (modUpdateInfo is null)
@@ -355,12 +382,19 @@ namespace Stardrop.Views
                             modItem.Status = modUpdateInfo.Status;
                         }
                     }
-
-                    // Update the status to let the user know the update is finished
-                    _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
-                    return;
                 }
             }
+
+            // Update the status to let the user know the update is finished
+            _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
+
+            return oldUpdateCache;
+        }
+
+        private async Task CheckForModUpdates(List<Mod> mods, bool useCache = false, bool probe = false, bool skipCacheCheck = false)
+        {
+            // Only check once the previous check is over an hour old
+            UpdateCache? oldUpdateCache = await GetCachedModUpdates(mods, skipCacheCheck);
 
             // Check if this was just a probe
             if (probe)
@@ -429,9 +463,15 @@ namespace Stardrop.Views
                 }
 
                 // Fetch the mods to see if there are updates available
-                var updateCache = new UpdateCache(DateTime.Now);
-                var modUpdateData = await SMAPI.GetModUpdateData(gameDetails, _viewModel.Mods.ToList());
-                foreach (var modItem in _viewModel.Mods)
+                if (useCache && oldUpdateCache is not null)
+                {
+                    oldUpdateCache.LastRuntime = DateTime.Now;
+                }
+
+                int modsToUpdate = 0;
+                var updateCache = useCache ? oldUpdateCache : new UpdateCache(DateTime.Now);
+                var modUpdateData = await SMAPI.GetModUpdateData(gameDetails, mods);
+                foreach (var modItem in mods)
                 {
                     var link = String.Empty;
                     var recommendedVersion = String.Empty;
@@ -471,9 +511,18 @@ namespace Stardrop.Views
                     modItem.Uri = link;
                     modItem.SuggestedVersion = recommendedVersion;
                     modItem.Status = status;
+
                     if (!String.IsNullOrEmpty(modItem.ParsedStatus))
                     {
-                        updateCache.Mods.Add(new ModUpdateInfo(modItem.UniqueId, recommendedVersion, status, modItem.Uri));
+                        if (updateCache.Mods.FirstOrDefault(m => m.UniqueId.Equals(modItem.UniqueId)) is ModUpdateInfo modInfo && modInfo is not null)
+                        {
+                            modInfo.SuggestedVersion = recommendedVersion;
+                            modInfo.Status = status;
+                        }
+                        else
+                        {
+                            updateCache.Mods.Add(new ModUpdateInfo(modItem.UniqueId, recommendedVersion, status, modItem.Uri));
+                        }
                     }
                 }
 
@@ -505,11 +554,12 @@ namespace Stardrop.Views
             _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled).Count();
         }
 
-        private async void AddMods(string[]? filePaths)
+        private async Task<List<Mod>> AddMods(string[]? filePaths)
         {
+            var addedMods = new List<Mod>();
             if (filePaths is null)
             {
-                return;
+                return addedMods;
             }
 
             // Export zip to the default mods folder
@@ -568,6 +618,8 @@ namespace Stardrop.Views
 
                                 entry.WriteToDirectory(defaultInstallPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
                             }
+
+                            addedMods.Add(new Mod(manifest, null, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
                         }
                         else
                         {
@@ -590,6 +642,8 @@ namespace Stardrop.Views
 
             // Refresh enabled mods
             _viewModel.EnableModsByProfile(GetCurrentProfile());
+
+            return addedMods;
         }
 
         private void UpdateEnabledModsFolder(string enabledModsPath)

@@ -30,13 +30,17 @@ namespace Stardrop.Models
         private bool _isEnabled { get; set; }
         public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); } }
         private WikiCompatibilityStatus _status { get; set; }
-        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("ParsedStatus"); } }
+        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); } }
         public string ParsedStatus
         {
             get
             {
                 if (!String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
                 {
+                    if (_status == WikiCompatibilityStatus.Unofficial)
+                    {
+                        return $"Unofficial Update Available ({SuggestedVersion})";
+                    }
                     return $"Update Available ({SuggestedVersion})";
                 }
                 else if (_status == WikiCompatibilityStatus.Broken)

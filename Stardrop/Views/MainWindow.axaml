@@ -5,6 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:sys="clr-namespace:System;assembly=netstandard"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:it="using:Avalonia.Xaml.Interactivity"
+        xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Stardrop.Views.MainWindow"
         Title="Stardrop"
@@ -266,7 +268,24 @@
           <DataGridTemplateColumn Header="Status" SortMemberPath="Status">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <Button Name="statusButton" Content="{Binding Status}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Uri}" />
+                <Button Name="statusButton" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Uri}">
+                  <it:Interaction.Behaviors>
+                    <ia:DataTriggerBehavior Binding="{Binding Status}"
+                                            ComparisonCondition="Equal"
+                                            Value="Broken">
+                      <ia:ChangePropertyAction TargetObject="{Binding #statusButton}"
+                                               PropertyName="Foreground"
+                                               Value="#f74040" />
+                    </ia:DataTriggerBehavior>
+                    <ia:DataTriggerBehavior Binding="{Binding Status}"
+                                            ComparisonCondition="Equal"
+                                            Value="Unofficial">
+                      <ia:ChangePropertyAction TargetObject="{Binding #statusButton}"
+                                               PropertyName="Foreground"
+                                               Value="#fdfd2e" />
+                    </ia:DataTriggerBehavior>
+                  </it:Interaction.Behaviors>
+                </Button>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
