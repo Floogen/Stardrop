@@ -143,7 +143,22 @@ namespace Stardrop.Views
             _viewModel.IsLocked = false;
         }
 
-        private void GridMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        private void ModGridMenuColumn_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+        }
+
+        private void ModGridMenuColumn_ChangeSort(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+
+        }
+
+        private void ModGridColumnMenu_ChangeVisibility(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+
+        }
+
+        private void ModGridMenuRow_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
             var selectedMod = this.FindControl<DataGrid>("modGrid").SelectedItem as Mod;
             if (selectedMod is null)
@@ -154,7 +169,7 @@ namespace Stardrop.Views
             _viewModel.ChangeStateText = selectedMod.IsEnabled ? "Disable" : "Enable";
         }
 
-        private void ModGridMenu_ChangeState(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ModGridMenuRow_ChangeState(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var selectedMod = this.FindControl<DataGrid>("modGrid").SelectedItem as Mod;
             if (selectedMod is null)
@@ -166,7 +181,7 @@ namespace Stardrop.Views
             this.UpdateProfile(GetCurrentProfile());
         }
 
-        private async void ModGridMenu_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void ModGridMenuRow_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var selectedMod = this.FindControl<DataGrid>("modGrid").SelectedItem as Mod;
             if (selectedMod is null)

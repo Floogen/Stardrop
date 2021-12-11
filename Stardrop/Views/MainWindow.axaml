@@ -245,13 +245,26 @@
 
     <Border Name="dragOverBorder" Margin="10" DragDrop.AllowDrop="True" Grid.Row="3" Grid.ColumnSpan="2" BorderBrush="{Binding DragOverColor}" BorderThickness="2">
       <DataGrid Name="modGrid" Foreground="White" Background="#6B6B6B" AlternatingRowBackground="#525252" CanUserSortColumns="True" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-        <DataGrid.ContextMenu>
-          <ContextMenu ContextMenuOpening="GridMenu_Opening">
-            <MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenu_ChangeState" />
-            <MenuItem Header="Delete" Click="ModGridMenu_Delete" />
+        <DataGrid.Resources>
+          <ContextMenu x:Key="GridColumnContextMenu" DataContext="{Binding $parent[DataGrid].DataContext}" ContextMenuOpening="ModGridMenuColumn_Opening">
+            <!-- <MenuItem Header="{Binding SortText}" Click="ModGridMenuColumn_ChangeSort" />-->
+            <!-- <MenuItem Header="Hide" Click="ModGridColumnMenu_ChangeVisibility" />-->
             <MenuItem Header="Cancel" />
           </ContextMenu>
-        </DataGrid.ContextMenu>
+          <ContextMenu x:Key="GridRowContextMenu" DataContext="{Binding $parent[DataGrid].DataContext}" ContextMenuOpening="ModGridMenuRow_Opening">
+            <MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" />
+            <MenuItem Header="Delete" Click="ModGridMenuRow_Delete" />
+            <MenuItem Header="Cancel" />
+          </ContextMenu>
+        </DataGrid.Resources>
+        <DataGrid.Styles>
+          <Style Selector="DataGridColumnHeader">
+            <Setter Property="ContextMenu" Value="{StaticResource GridColumnContextMenu}" />
+          </Style>
+          <Style Selector="DataGridRow">
+            <Setter Property="ContextMenu" Value="{StaticResource GridRowContextMenu}" />
+          </Style>
+        </DataGrid.Styles>
         <DataGrid.Columns>
           <DataGridTemplateColumn Header="Enabled" Width="25" CanUserResize="False" CanUserSort="True" SortMemberPath="IsEnabled">
             <DataGridTemplateColumn.CellTemplate>

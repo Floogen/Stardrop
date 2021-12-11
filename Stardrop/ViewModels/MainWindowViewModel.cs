@@ -38,6 +38,8 @@ namespace Stardrop.ViewModels
         public string ChangeStateText { get { return _changeStateText; } set { this.RaiseAndSetIfChanged(ref _changeStateText, value); } }
         private string _updateStatusText = "Mods Ready to Update: Click to Refresh";
         public string UpdateStatusText { get { return _updateStatusText; } set { this.RaiseAndSetIfChanged(ref _updateStatusText, value); } }
+        private string _sortText;
+        public string SortText { get { return _sortText; } set { this.RaiseAndSetIfChanged(ref _sortText, value); } }
 
         public MainWindowViewModel(string modsFilePath)
         {
