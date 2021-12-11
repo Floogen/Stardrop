@@ -278,7 +278,7 @@
           <DataGridTextColumn Header="Author" Binding="{Binding Author}"/>
           <DataGridTextColumn Header="Requirements" Binding="{Binding Requirements}"/>
           <DataGridTextColumn Header="Version" Binding="{Binding ParsedVersion}"/>
-          <DataGridTemplateColumn Header="Status" SortMemberPath="Status">
+          <DataGridTemplateColumn Header="Status" SortMemberPath="ParsedStatus">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
                 <Button Name="statusButton" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Uri}">
