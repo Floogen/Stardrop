@@ -74,6 +74,11 @@ namespace Stardrop.Views
             // Check if we have any cached updates for mods
             CheckForModUpdates(_viewModel.Mods.ToList(), probe: true);
 
+            if (!IsUpdateCacheValid())
+            {
+                _viewModel.UpdateStatusText = "Mods Ready to Update: Click to Refresh";
+            }
+
             // Handle buttons
             this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
             this.FindControl<Button>("maximizeButton").Click += delegate { AdjustWindowState(); };
@@ -295,6 +300,10 @@ namespace Stardrop.Views
             {
                 await CheckForModUpdates(_viewModel.Mods.ToList());
             }
+            else
+            {
+                CreateWarningWindow($"Updates can only be requested once an hour.\n\nPlease try again in {GetMinutesBeforeAllowedUpdate()} minute(s).", "OK");
+            }
         }
 
         private async void EnableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -364,6 +373,22 @@ namespace Stardrop.Views
             return updateCache.LastRuntime > DateTime.Now.AddHours(-1);
         }
 
+        private int GetMinutesBeforeAllowedUpdate()
+        {
+            if (!File.Exists(Pathing.GetVersionCachePath()))
+            {
+                return 0;
+            }
+
+            var updateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            if (updateCache is null)
+            {
+                return 0;
+            }
+
+            return (int)(updateCache.LastRuntime - DateTime.Now.AddHours(-1)).TotalMinutes;
+        }
+
         private async Task<UpdateCache?> GetCachedModUpdates(List<Mod> mods, bool skipCacheCheck = false)
         {
             int modsToUpdate = 0;
@@ -401,6 +426,7 @@ namespace Stardrop.Views
             }
 
             // Update the status to let the user know the update is finished
+            _viewModel.ModsWithCachedUpdates = modsToUpdate;
             _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
 
             return oldUpdateCache;
@@ -546,6 +572,7 @@ namespace Stardrop.Views
                 File.WriteAllText(Pathing.GetVersionCachePath(), JsonSerializer.Serialize(updateCache, new JsonSerializerOptions() { WriteIndented = true }));
 
                 // Update the status to let the user know the update is finished
+                _viewModel.ModsWithCachedUpdates = modsToUpdate;
                 _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
             }
         }

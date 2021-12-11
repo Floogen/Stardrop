@@ -274,7 +274,7 @@
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
           <DataGridTextColumn Header="Mod Name" Binding="{Binding Name}" Width="250"/>
-          <DataGridTextColumn Header="Unique ID" IsVisible="True" Binding="{Binding UniqueId}"/>
+          <DataGridTextColumn Header="Unique ID" IsVisible="False" Binding="{Binding UniqueId}"/>
           <DataGridTextColumn Header="Author" Binding="{Binding Author}"/>
           <DataGridTextColumn Header="Requirements" Binding="{Binding Requirements}"/>
           <DataGridTextColumn Header="Version" Binding="{Binding ParsedVersion}"/>
