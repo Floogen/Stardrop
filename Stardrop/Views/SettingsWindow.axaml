@@ -35,6 +35,10 @@
     <Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
       <Setter Property="Background" Value="Pink"/>
     </Style>
+    <Style Selector="TextBox:pointerover /template/ Border">
+      <Setter Property="BorderBrush" Value="#1cff96"/>
+      <Setter Property="Background" Value="#031332"/>
+    </Style>
     <Style Selector="TextBox:focus">
       <Setter Property="Foreground" Value="#1cff96"/>
     </Style>

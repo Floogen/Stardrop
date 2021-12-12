@@ -14,7 +14,7 @@ namespace Stardrop
 {
     class Program
     {
-        internal static Helper helper = new Helper();
+        internal static Helper helper = new Helper("log", ".txt", Pathing.relativeLogPath);
         internal static Settings settings = new Settings();
         internal static readonly string defaultProfileName = "Default";
         internal static readonly Regex gameDetailsPattern = new Regex(@"SMAPI (?<smapiVersion>.+) with Stardew Valley (?<gameVersion>.+) on (?<system>.+)");
@@ -25,6 +25,9 @@ namespace Stardrop
         [STAThread]
         public static void Main(string[] args)
         {
+            // Verify the log folder path is created
+            Directory.CreateDirectory(Pathing.relativeLogPath);
+
             // Verify the settings folder path is created
             Directory.CreateDirectory(Pathing.relativeSettingsPath);
             if (File.Exists(Pathing.GetSettingsPath()))

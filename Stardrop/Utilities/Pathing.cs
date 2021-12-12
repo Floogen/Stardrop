@@ -10,6 +10,7 @@ namespace Stardrop.Utilities
     public static class Pathing
     {
         internal const string relativeSettingsPath = @"Settings\";
+        internal const string relativeLogPath = @"Logs\";
 
         internal static string defaultGamePath;
         internal static string defaultModPath;
@@ -26,6 +27,7 @@ namespace Stardrop.Utilities
         {
             if (smapiPath is not null)
             {
+                defaultGamePath = smapiPath;
                 defaultModPath = Path.Combine(smapiPath, "Mods");
             }
         }

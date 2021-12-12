@@ -221,26 +221,7 @@ namespace Stardrop.Views
                 return;
             }
 
-            var fileFolderPath = selectedMod.ModFileInfo.DirectoryName;
-            try
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    Process.Start("explorer", fileFolderPath.Replace("&", "^&"));
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    Process.Start("xdg-open", fileFolderPath);
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    Process.Start("open", fileFolderPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Program.helper.Log($"Unable to open the folder path ({fileFolderPath}) due to the following exception: {ex}", Helper.Status.Alert);
-            }
+            OpenNativeExplorer(selectedMod.ModFileInfo.DirectoryName);
         }
 
         private async void ModGridMenuRow_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -350,6 +331,12 @@ namespace Stardrop.Views
             {
                 _viewModel.DiscoverMods(Pathing.defaultModPath);
             }
+        }
+
+        private void LogFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            //Path.Combine(Directory.GetCurrentDirectory(), Pathing.relativeLogPath)
+            OpenNativeExplorer(Pathing.relativeLogPath);
         }
 
         private async void AddMod_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -785,6 +772,29 @@ namespace Stardrop.Views
                     continue;
                 }
                 DirectoryLink.Create(Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name), mod.ModFileInfo.DirectoryName, true);
+            }
+        }
+
+        private void OpenNativeExplorer(string folderPath)
+        {
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    Process.Start("explorer", folderPath.Replace("&", "^&"));
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", folderPath);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", folderPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to open the folder path ({folderPath}) due to the following exception: {ex}", Helper.Status.Alert);
             }
         }
 

@@ -97,7 +97,6 @@ namespace Stardrop.ViewModels
 
         public void DiscoverMods(string modsFilePath)
         {
-            // TODO: Check for any cached update status file (within last hour)
             if (Mods is null)
             {
                 Mods = new ObservableCollection<Mod>();

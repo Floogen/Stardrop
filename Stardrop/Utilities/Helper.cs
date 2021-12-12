@@ -23,11 +23,12 @@ namespace Stardrop.Utilities
         // Used for identifying different statuses when logging
         public enum Status { Debug, Alert, Warning, Info };
 
-        public Helper(string fileName = "log", string fileExtension = ".txt")
+        public Helper(string fileName = "log", string fileExtension = ".txt", string path = null)
         {
             // Set the log file name and extension
             logFileName = fileName;
             logFileExtension = fileExtension;
+            basePath = String.IsNullOrEmpty(path) ? basePath : path;
 
             // Delete any previous log file
             if (File.Exists(GetLogPath()))

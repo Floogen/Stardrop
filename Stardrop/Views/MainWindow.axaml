@@ -203,7 +203,7 @@
         </MenuItem>
         <MenuItem Header="View" Margin="-10 0 0 0" Classes="Bar">
           <MenuItem Header="Settings" Click="Settings_Click" Classes="Bar"/>
-          <MenuItem Header="Log File" Classes="Bar"/>
+          <MenuItem Header="Log File" Click="LogFile_Click" Classes="Bar"/>
         </MenuItem>
         <MenuItem Header="Tools" Margin="-10 0 0 0" Classes="Bar">
           <MenuItem Header="Check for Mod Updates" Click="ModUpdateCheck_Click" Classes="Bar"/>
