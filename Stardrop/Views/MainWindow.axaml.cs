@@ -66,6 +66,10 @@ namespace Stardrop.Views
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
             profileComboBox.Items = _editorView.Profiles;
             profileComboBox.SelectedIndex = 0;
+            if (_editorView.Profiles.FirstOrDefault(p => p.Name == Program.settings.LastSelectedProfileName) is Profile oldProfile && oldProfile is not null)
+            {
+                profileComboBox.SelectedItem = oldProfile;
+            }
             profileComboBox.SelectionChanged += ProfileComboBox_SelectionChanged;
 
             // Update selected mods
@@ -99,6 +103,14 @@ namespace Stardrop.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Program.settings.LastSelectedProfileName = GetCurrentProfile().Name;
+
+            // Write the settings cache
+            File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
         private void MainWindow_Opened(object? sender, EventArgs e)
