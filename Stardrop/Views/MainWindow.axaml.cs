@@ -140,10 +140,10 @@ namespace Stardrop.Views
                 return;
             }
 
-            var addeMods = await this.AddMods(e.Data.GetFileNames()?.ToArray());
+            var addedMods = await this.AddMods(e.Data.GetFileNames()?.ToArray());
 
-            // TODO: Add optional setting to disable checking for updates when a new mod is installed
-            await CheckForModUpdates(addeMods, useCache: true, skipCacheCheck: true);
+            // TODO: Add optional setting to disable checking for updates when a new mod is installed?
+            await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
             _viewModel.DragOverColor = "#ff9f2a";
@@ -529,7 +529,8 @@ namespace Stardrop.Views
             {
                 if (smapi is null)
                 {
-                    // TODO: Log failure here
+                    CreateWarningWindow($"Unable to start SMAPI.", "OK");
+                    Program.helper.Log($"SMAPI was unable to start via Process.Start", Helper.Status.Alert);
                     return;
                 }
 
@@ -543,7 +544,8 @@ namespace Stardrop.Views
                 FileInfo smapiLog = new FileInfo(Path.Combine(Pathing.smapiLogPath, result.Name));
                 if (result.TimedOut || smapiLog is null)
                 {
-                    // TODO: Notify user that we were unable to check SMAPI's log
+                    CreateWarningWindow($"Unable to check SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
+                    Program.helper.Log($"SMAPI started but Stardrop was unable to access SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
                     return;
                 }
 
@@ -565,7 +567,8 @@ namespace Stardrop.Views
 
                 if (gameDetails is null)
                 {
-                    // TODO: Notify user that we were unable to parse SMAPI's log
+                    CreateWarningWindow($"Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
+                    Program.helper.Log($"SMAPI started but Stardrop was unable to read SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
                     return;
                 }
 
