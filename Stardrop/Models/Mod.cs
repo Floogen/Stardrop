@@ -1,4 +1,5 @@
-﻿using Semver;
+﻿using Avalonia.Media;
+using Semver;
 using Stardrop.Models.SMAPI;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,8 @@ namespace Stardrop.Models
         private bool _isEnabled { get; set; }
         public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); } }
         private WikiCompatibilityStatus _status { get; set; }
-        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); } }
+        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; UpdateMessageBrush(); NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); } }
+        public Brush StatusBrush { get; set; }
         public string ParsedStatus
         {
             get
@@ -69,6 +71,26 @@ namespace Stardrop.Models
         public bool IsModOutdated(string version)
         {
             return SemVersion.Parse(version) > Version;
+        }
+
+        private void UpdateMessageBrush()
+        {
+            var converter = new BrushConverter();
+
+            switch (Status)
+            {
+                case WikiCompatibilityStatus.Broken:
+                    StatusBrush = (Brush)converter.ConvertFrom("#f74040");
+                    break;
+                case WikiCompatibilityStatus.Unofficial:
+                    StatusBrush = (Brush)converter.ConvertFrom("#fdfd2e");
+                    break;
+                default:
+                    StatusBrush = (Brush)converter.ConvertFrom("#1cff96");
+                    break;
+            }
+
+            NotifyPropertyChanged("StatusBrush");
         }
 
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")

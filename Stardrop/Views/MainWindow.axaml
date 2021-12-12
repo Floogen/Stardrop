@@ -285,24 +285,7 @@
           <DataGridTemplateColumn Header="Status" SortMemberPath="ParsedStatus">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <Button Name="statusButton" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Uri}">
-                  <it:Interaction.Behaviors>
-                    <ia:DataTriggerBehavior Binding="{Binding Status}"
-                                            ComparisonCondition="Equal"
-                                            Value="Broken">
-                      <ia:ChangePropertyAction TargetObject="{Binding #statusButton}"
-                                               PropertyName="Foreground"
-                                               Value="#f74040" />
-                    </ia:DataTriggerBehavior>
-                    <ia:DataTriggerBehavior Binding="{Binding Status}"
-                                            ComparisonCondition="Equal"
-                                            Value="Unofficial">
-                      <ia:ChangePropertyAction TargetObject="{Binding #statusButton}"
-                                               PropertyName="Foreground"
-                                               Value="#fdfd2e" />
-                    </ia:DataTriggerBehavior>
-                  </it:Interaction.Behaviors>
-                </Button>
+                <Button Name="statusButton" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Uri}" Foreground="{Binding StatusBrush}"/>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
