@@ -24,20 +24,22 @@
     </Style>
   </Window.Styles>
 
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="25" />
-    </Grid.RowDefinitions>
+  <Border BorderBrush="#ff9f2a" BorderThickness="1">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="25" />
+      </Grid.RowDefinitions>
 
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*" />
-    </Grid.ColumnDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
 
-    <StackPanel>
-      <TextBlock Grid.Row="0" Text="{Binding WarningText}" TextWrapping="Wrap" Foreground="#1cff96" HorizontalAlignment="Center" Margin="0 35 0 20"/>
-      <Button Grid.Row="1" Name="unlockButton" Content="{Binding ButtonText}" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="#ff9f2a" Foreground="#1cff96" Background="Transparent"/>
-    </StackPanel>
-  </Grid>
+      <StackPanel>
+        <TextBlock Grid.Row="0" Text="{Binding WarningText}" TextWrapping="Wrap" Foreground="#1cff96" HorizontalAlignment="Center" TextAlignment="Center"  Margin="0 35 0 20"/>
+        <Button Grid.Row="2" Name="unlockButton" Content="{Binding ButtonText}" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="#ff9f2a" Foreground="#1cff96" Background="Transparent"/>
+      </StackPanel>
+    </Grid>
+  </Border>
 </Window>

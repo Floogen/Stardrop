@@ -20,6 +20,8 @@
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="-1"
         CanResize="True"
+        Opened="MainWindow_Opened"
+        WindowStartupLocation="CenterScreen"
         Icon="/Assets/icon.ico">
 
 
@@ -199,7 +201,7 @@
           <MenuItem Header="Exit" Click="Exit_Click" Classes="Bar"/>
         </MenuItem>
         <MenuItem Header="View" Margin="-10 0 0 0" Classes="Bar">
-          <MenuItem Header="Settings" Classes="Bar"/>
+          <MenuItem Header="Settings" Click="Settings_Click" Classes="Bar"/>
           <MenuItem Header="Log File" Classes="Bar"/>
         </MenuItem>
         <MenuItem Header="Tools" Margin="-10 0 0 0" Classes="Bar">

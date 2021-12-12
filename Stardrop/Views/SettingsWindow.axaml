@@ -4,13 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
-        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
-        x:Class="Stardrop.Views.ProfileEditor"
-        Title="Profiles"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+        x:Class="Stardrop.Views.SettingsWindow"
+        Title="Settings"
         MinWidth="400"
-        MinHeight="300"
-        Width="500"
-        Height="400"
+        MinHeight="200"
+        Width="400"
+        Height="200"
         Background="#031332"
         HasSystemDecorations="true"
         ExtendClientAreaToDecorationsHint="true"
@@ -35,10 +35,23 @@
     <Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
       <Setter Property="Background" Value="Pink"/>
     </Style>
+    <Style Selector="TextBox:focus">
+      <Setter Property="Foreground" Value="#1cff96"/>
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border">
+      <Setter Property="BorderBrush" Value="#1cff96"/>
+      <Setter Property="Background" Value="#031332"/>
+    </Style>
+    <Style Selector="TextBox:not(:focus)">
+      <Setter Property="Foreground" Value="#1cff96"/>
+      <Setter Property="Background" Value="#031332"/>
+    </Style>
   </Window.Styles>
+
 
   <Grid>
     <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="50" />
@@ -51,33 +64,20 @@
     <Border Grid.Row="0" BorderBrush="#ff9f2a" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
       <Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
         <Image Source="/Assets/icon.ico" Stretch="None"/>
-        <TextBlock Text="Profiles" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left"  Foreground="#1cff96" />
+        <TextBlock Text="Settings" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#1cff96" />
       </Menu>
     </Border>
     <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
       <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
     </Menu>
 
-    <Border Grid.Row="1" Margin="20" BorderBrush="#ff9f2a" BorderThickness="2">
-      <ListBox Name="profileList" Background="White" Foreground="Black">
-        <ListBox.ItemTemplate>
-          <DataTemplate>
-            <StackPanel>
-              <TextBlock Text="{Binding Path=Name}"/>
-            </StackPanel>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-    </Border>
-
-    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0 45 0 0" Width="50">
-      <Button Name="addButton" Margin="0 15 0 15" i:Attached.Icon="mdi-plus" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
-      <Button Name="deleteButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-minus" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
-      <Button Name="renameButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-pencil" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
-      <Button Name="copyButton" Margin="0 15 0 15" i:Attached.Icon="mdi-content-copy" BorderBrush="#ff9f2a" Foreground="White" Background="Transparent"/>
+    <StackPanel Grid.Row="1" Margin="10 10 0 0">
+      <TextBlock Text="SMAPI Path" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#1cff96" />
+      <TextBox Name="smapiFolderPathBox" IsReadOnly="True" ToolTip.Tip="The file path of StardewModdingAPI.exe" Margin="10 10 0 0" Height="10" Width="350" BorderBrush="#ff9f2a" HorizontalAlignment="Left"/>
+      <Button Name="smapiFolderButton" Margin="0 -32 0 0" i:Attached.Icon="mdi-folder" Foreground="White" Background="Transparent" HorizontalAlignment="Right"/>
     </StackPanel>
 
-    <DockPanel Grid.Row="2" Grid.Column="1" Margin="0 0 0 10">
+    <DockPanel Grid.Row="3" Grid.Column="1" Margin="0 0 0 0">
       <Button Name="applyButton" ToolTip.Tip="Save Changes" i:Attached.Icon="mdi-check" Margin="-40 0 15 0" BorderBrush="#ff9f2a" Foreground="Green" Background="Transparent"/>
       <Button Name="cancelButton" ToolTip.Tip="Cancel" i:Attached.Icon="mdi-cancel" BorderBrush="#ff9f2a" Foreground="Red" Background="Transparent"/>
     </DockPanel>

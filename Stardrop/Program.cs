@@ -3,9 +3,11 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.MaterialDesign;
+using Stardrop.Models;
 using Stardrop.Utilities;
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Stardrop
@@ -13,6 +15,7 @@ namespace Stardrop
     class Program
     {
         internal static Helper helper = new Helper();
+        internal static Settings settings = new Settings();
         internal static readonly string defaultProfileName = "Default";
         internal static readonly Regex gameDetailsPattern = new Regex(@"SMAPI (?<smapiVersion>.+) with Stardew Valley (?<gameVersion>.+) on (?<system>.+)");
 
@@ -22,13 +25,20 @@ namespace Stardrop
         [STAThread]
         public static void Main(string[] args)
         {
+            // Verify the settings folder path is created
+            Directory.CreateDirectory(Pathing.relativeSettingsPath);
+            if (File.Exists(Pathing.GetSettingsPath()))
+            {
+                settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(Pathing.GetSettingsPath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            }
+
+            // Establishe file and folders paths
+            Pathing.EstablishPaths(Directory.GetCurrentDirectory(), settings.SMAPIFolderPath);
+
             // Register icon provider(s)
             IconProvider.Register<MaterialDesignIconProvider>();
 
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-
-            // TODO: Load settings file here and pass it to Pathing
-            Pathing.EstablishPaths();
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.

@@ -9,14 +9,30 @@ namespace Stardrop.Utilities
 {
     public static class Pathing
     {
-        internal static string defaultGamePath = @"E:\SteamLibrary\steamapps\common\Stardew Valley\";
-        internal static string defaultModPath = @"E:\SteamLibrary\steamapps\common\Stardew Valley\Mods\";
-        internal static string defaultHomePath = @"E:\SteamLibrary\steamapps\common\Stardew Valley\Stardrop\";
+        internal const string relativeSettingsPath = @"Settings\";
+
+        internal static string defaultGamePath;
+        internal static string defaultModPath;
+        internal static string defaultHomePath;
         internal static string smapiLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StardewValley", "ErrorLogs");
 
-        internal static void EstablishPaths()
+        internal static void EstablishPaths(string homePath, string smapiPath)
         {
-            // TODO: Implement this!
+            defaultHomePath = homePath;
+            SetModPath(smapiPath);
+        }
+
+        internal static void SetModPath(string smapiPath)
+        {
+            if (smapiPath is not null)
+            {
+                defaultModPath = Path.Combine(smapiPath, "Mods");
+            }
+        }
+
+        internal static string GetSettingsPath()
+        {
+            return Path.Combine(relativeSettingsPath, "settings.json");
         }
 
         public static string GetProfilesFolderPath()

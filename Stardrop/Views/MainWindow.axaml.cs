@@ -101,6 +101,14 @@ namespace Stardrop.Views
 #endif
         }
 
+        private void MainWindow_Opened(object? sender, EventArgs e)
+        {
+            if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
+            {
+                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
+            }
+        }
+
         private void CreateWarningWindow(string warningText, string buttonText)
         {
             var warningWindow = new WarningWindow(warningText, buttonText);
@@ -109,6 +117,12 @@ namespace Stardrop.Views
 
         private async void Drop(object sender, DragEventArgs e)
         {
+            if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
+            {
+                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
+                return;
+            }
+
             if (!e.Data.Contains(DataFormats.FileNames))
             {
                 return;
@@ -316,8 +330,24 @@ namespace Stardrop.Views
             editorWindow.ShowDialog(this);
         }
 
+        private async void Settings_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var editorWindow = new SettingsWindow();
+            editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            if (await editorWindow.ShowDialog<bool>(this))
+            {
+                _viewModel.DiscoverMods(Pathing.defaultModPath);
+            }
+        }
+
         private async void AddMod_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
+            {
+                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
+                return;
+            }
+
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Filters.Add(new FileDialogFilter() { Name = "Mod Archive (*.zip, *.7z, *.rar)", Extensions = { "zip", "7z", "rar" } });
             dialog.AllowMultiple = false;
@@ -327,6 +357,12 @@ namespace Stardrop.Views
 
         private async void ModUpdateCheck_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            if (Pathing.defaultModPath is null)
+            {
+                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
+                return;
+            }
+
             if (!IsUpdateCacheValid())
             {
                 await CheckForModUpdates(_viewModel.Mods.ToList());

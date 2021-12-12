@@ -104,6 +104,11 @@ namespace Stardrop.ViewModels
             }
             Mods.Clear();
 
+            if (modsFilePath is null || !Directory.Exists(modsFilePath))
+            {
+                return;
+            }
+
             DirectoryInfo modDirectory = new DirectoryInfo(modsFilePath);
             foreach (var fileInfo in modDirectory.GetFiles("manifest.json", SearchOption.AllDirectories))
             {
