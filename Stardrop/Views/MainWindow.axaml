@@ -252,6 +252,7 @@
             <MenuItem Header="Cancel" />
           </ContextMenu>
           <ContextMenu x:Key="GridRowContextMenu" DataContext="{Binding $parent[DataGrid].DataContext}" ContextMenuOpening="ModGridMenuRow_Opening">
+            <MenuItem Header="Open Containing Folder" Click="ModGridMenuRow_OpenFolderPath" />
             <MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" />
             <MenuItem Header="Delete" Click="ModGridMenuRow_Delete" />
             <MenuItem Header="Cancel" />

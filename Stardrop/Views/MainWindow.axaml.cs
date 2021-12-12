@@ -22,6 +22,7 @@ using Stardrop.Models.Data;
 using Stardrop.Utilities;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Stardrop.Views
 {
@@ -184,6 +185,36 @@ namespace Stardrop.Views
 
             selectedMod.IsEnabled = !selectedMod.IsEnabled;
             this.UpdateProfile(GetCurrentProfile());
+        }
+
+        private void ModGridMenuRow_OpenFolderPath(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var selectedMod = this.FindControl<DataGrid>("modGrid").SelectedItem as Mod;
+            if (selectedMod is null || selectedMod.ModFileInfo is null)
+            {
+                return;
+            }
+
+            var fileFolderPath = selectedMod.ModFileInfo.DirectoryName;
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    Process.Start("explorer", fileFolderPath.Replace("&", "^&"));
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", fileFolderPath);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", fileFolderPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to open the folder path ({fileFolderPath}) due to the following exception: {ex}", Helper.Status.Alert);
+            }
         }
 
         private async void ModGridMenuRow_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
