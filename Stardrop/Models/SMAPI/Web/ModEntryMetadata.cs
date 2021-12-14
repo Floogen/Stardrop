@@ -38,13 +38,16 @@ namespace Stardrop.Models.SMAPI.Web
             Obsolete
         }
 
+        // Based on SMAPI's ModExtendedMetadataModel.cs: https://github.com/Pathoschild/SMAPI/blob/develop/src/SMAPI.Toolkit/Framework/Clients/WebApi/ModExtendedMetadataModel.cs
+        /// <summary>The mod's display name.</summary>
+        public string Name { get; set; }
+
         /// <summary>The main version.</summary>
         public ModEntryVersion Main { get; set; }
 
         /// <summary>The latest unofficial version, if newer than <see cref="Main"/> and <see cref="Optional"/>.</summary>
         public ModEntryVersion Unofficial { get; set; }
 
-        // Based on SMAPI's ModExtendedMetadataModel.cs: https://github.com/Pathoschild/SMAPI/blob/develop/src/SMAPI.Toolkit/Framework/Clients/WebApi/ModExtendedMetadataModel.cs
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public WikiCompatibilityStatus CompatibilityStatus { get; set; }
 

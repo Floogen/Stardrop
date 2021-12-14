@@ -25,7 +25,8 @@ namespace Stardrop.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public string Author { get; set; }
-        public string Requirements { get; set; }
+        public List<ManifestDependency> _requirements { get; set; }
+        public List<ManifestDependency> Requirements { get { return _requirements; } set { _requirements = value; NotifyPropertyChanged("Requirements"); } }
         private string _uri { get; set; }
         public string Uri { get { return _uri; } set { _uri = value; NotifyPropertyChanged("Uri"); } }
         private bool _isEnabled { get; set; }
@@ -66,10 +67,17 @@ namespace Stardrop.Models
             Name = String.IsNullOrEmpty(name) ? uniqueId : name;
             Description = String.IsNullOrEmpty(description) ? String.Empty : description;
             Author = String.IsNullOrEmpty(author) ? "Unknown" : author;
+
+            Requirements = new List<ManifestDependency>();
         }
 
         public bool IsModOutdated(string version)
         {
+            if (String.IsNullOrEmpty(version))
+            {
+                return false;
+            }
+
             return SemVersion.Parse(version) > Version;
         }
 

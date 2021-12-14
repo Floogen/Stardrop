@@ -1,7 +1,9 @@
 using Avalonia.Collections;
 using ReactiveUI;
 using Stardrop.Models;
+using Stardrop.Models.Data;
 using Stardrop.Models.SMAPI;
+using Stardrop.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -108,6 +110,13 @@ namespace Stardrop.ViewModels
                 return;
             }
 
+            // Get cached key data
+            List<ModKeyInfo> modKeysCache = new List<ModKeyInfo>();
+            if (File.Exists(Pathing.GetKeyCachePath()))
+            {
+                modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            }
+
             DirectoryInfo modDirectory = new DirectoryInfo(modsFilePath);
             foreach (var fileInfo in modDirectory.GetFiles("manifest.json", SearchOption.AllDirectories))
             {
@@ -126,6 +135,20 @@ namespace Stardrop.ViewModels
                     }
 
                     var mod = new Mod(manifest, fileInfo, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
+                    if (manifest.ContentPackFor is not null)
+                    {
+                        var dependencyKey = modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(manifest.ContentPackFor.UniqueID, StringComparison.OrdinalIgnoreCase));
+                        mod.Requirements.Add(new ManifestDependency(manifest.ContentPackFor.UniqueID, manifest.ContentPackFor.MinimumVersion, true) { Name = dependencyKey is null ? manifest.ContentPackFor.UniqueID : dependencyKey.Name });
+                    }
+                    if (manifest.Dependencies is not null)
+                    {
+                        foreach (var dependency in manifest.Dependencies)
+                        {
+                            var dependencyKey = modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(dependency.UniqueID, StringComparison.OrdinalIgnoreCase));
+                            mod.Requirements.Add(new ManifestDependency(dependency.UniqueID, dependency.MinimumVersion, dependency.IsRequired) { Name = dependencyKey is null ? dependency.UniqueID : dependencyKey.Name });
+                        }
+                    }
+
                     if (!Mods.Any(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)))
                     {
                         Mods.Add(mod);
@@ -141,6 +164,21 @@ namespace Stardrop.ViewModels
                 {
                     Program.helper.Log($"Unable to load the manifest.json from {fileInfo.DirectoryName}: {ex}", Utilities.Helper.Status.Alert);
                 }
+            }
+
+            // Remove the requirements for any mods that have their requirements already installed
+            foreach (var mod in Mods)
+            {
+                var requirements = new List<ManifestDependency>();
+                foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
+                {
+                    if (!Mods.Any(m => m.UniqueId.Equals(requirement.UniqueID)) || Mods.First(m => m.UniqueId.Equals(requirement.UniqueID)) is Mod matchedMod && matchedMod.IsModOutdated(requirement.MinimumVersion))
+                    {
+                        requirements.Add(requirement);
+                    }
+                }
+
+                mod.Requirements = requirements;
             }
         }
 
@@ -183,7 +221,7 @@ namespace Stardrop.ViewModels
                 {
                     return false;
                 }
-                else if (_columnFilter == "Requirements" && !mod.Requirements.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                else if (_columnFilter == "Requirements" && !mod.Requirements.Any(r => r.UniqueID.Equals(_filterText, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }

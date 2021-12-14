@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Stardrop.Models.SMAPI
 {
-    class GameDetails
+    public class GameDetails
     {
         public enum OS
         {
@@ -26,6 +26,11 @@ namespace Stardrop.Models.SMAPI
         /// <summary>The operating system.</summary>
         public OS System { get; set; }
 
+        public GameDetails()
+        {
+
+        }
+
         public GameDetails(string gameVersion, string smapiVersion, string system)
         {
             GameVersion = gameVersion;
@@ -43,6 +48,16 @@ namespace Stardrop.Models.SMAPI
             {
                 System = OS.Linux;
             }
+        }
+
+        public bool HasSMAPIUpdated(string version)
+        {
+            if (String.IsNullOrEmpty(version))
+            {
+                return false;
+            }
+
+            return SemVersion.Parse(version) != SemVersion.Parse(SmapiVersion);
         }
     }
 }

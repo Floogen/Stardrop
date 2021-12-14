@@ -61,6 +61,8 @@ namespace Stardrop.Views
             menuBorder.PointerPressed += MainBar_PointerPressed;
             menuBorder.DoubleTapped += MainBar_DoubleTapped;
 
+            // HEADER: "Value cannot be null. (Parameter 'path1')" error clears removing the below chunk
+
             // Set profile list
             _editorView = new ProfileEditorViewModel(Pathing.GetProfilesFolderPath());
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
@@ -83,6 +85,8 @@ namespace Stardrop.Views
             {
                 _viewModel.UpdateStatusText = "Mods Ready to Update: Click to Refresh";
             }
+
+            // FOOTER: "Value cannot be null. (Parameter 'path1')" error clears removing the above chunk
 
             // Handle buttons
             this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
@@ -550,22 +554,26 @@ namespace Stardrop.Views
                 }
 
                 // Parse SMAPI's log
-                GameDetails? gameDetails = null;
-                using (var fileStream = new FileStream(smapiLog.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                using (var reader = new StreamReader(fileStream))
+                if (Program.settings.GameDetails is null || Program.settings.GameDetails.HasSMAPIUpdated(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion))
                 {
-                    while (reader.Peek() >= 0)
+                    Program.helper.Log($"Grabbing game details (SMAPI / SDV versions) from SMAPI's log file.");
+
+                    using (var fileStream = new FileStream(smapiLog.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (var reader = new StreamReader(fileStream))
                     {
-                        var line = reader.ReadLine();
-                        if (Program.gameDetailsPattern.IsMatch(line))
+                        while (reader.Peek() >= 0)
                         {
-                            var match = Program.gameDetailsPattern.Match(line);
-                            gameDetails = new GameDetails(match.Groups["gameVersion"].ToString(), match.Groups["smapiVersion"].ToString(), match.Groups["system"].ToString());
+                            var line = reader.ReadLine();
+                            if (Program.gameDetailsPattern.IsMatch(line))
+                            {
+                                var match = Program.gameDetailsPattern.Match(line);
+                                Program.settings.GameDetails = new GameDetails(match.Groups["gameVersion"].ToString(), match.Groups["smapiVersion"].ToString(), match.Groups["system"].ToString());
+                            }
                         }
                     }
                 }
 
-                if (gameDetails is null)
+                if (Program.settings.GameDetails is null)
                 {
                     CreateWarningWindow($"Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
                     Program.helper.Log($"SMAPI started but Stardrop was unable to read SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
@@ -580,7 +588,7 @@ namespace Stardrop.Views
 
                 int modsToUpdate = 0;
                 var updateCache = useCache ? oldUpdateCache : new UpdateCache(DateTime.Now);
-                var modUpdateData = await SMAPI.GetModUpdateData(gameDetails, mods);
+                var modUpdateData = await SMAPI.GetModUpdateData(Program.settings.GameDetails, mods);
                 foreach (var modItem in mods)
                 {
                     var link = String.Empty;
@@ -637,8 +645,30 @@ namespace Stardrop.Views
                 }
 
                 // Cache the update data
-                Directory.CreateDirectory(Pathing.GetCacheFolderPath());
                 File.WriteAllText(Pathing.GetVersionCachePath(), JsonSerializer.Serialize(updateCache, new JsonSerializerOptions() { WriteIndented = true }));
+
+                // Get cached key data
+                List<ModKeyInfo> modKeysCache = new List<ModKeyInfo>();
+                if (File.Exists(Pathing.GetKeyCachePath()))
+                {
+                    modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                }
+
+                // Update the cached key data
+                foreach (var modEntry in modUpdateData.Where(m => m.Metadata is not null))
+                {
+                    if (modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(modEntry.Id)) is ModKeyInfo keyInfo && keyInfo is not null)
+                    {
+                        keyInfo.Name = modEntry.Metadata.Name;
+                    }
+                    else
+                    {
+                        modKeysCache.Add(new ModKeyInfo() { Name = modEntry.Metadata.Name, UniqueId = modEntry.Id });
+                    }
+                }
+
+                // Cache the key data
+                File.WriteAllText(Pathing.GetKeyCachePath(), JsonSerializer.Serialize(modKeysCache, new JsonSerializerOptions() { WriteIndented = true }));
 
                 // Update the status to let the user know the update is finished
                 _viewModel.ModsWithCachedUpdates = modsToUpdate;

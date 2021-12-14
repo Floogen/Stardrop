@@ -30,6 +30,10 @@ namespace Stardrop.Utilities.SMAPI
             {
                 searchEntries.Add(new ModSearchEntry(mod.UniqueId, mod.Version, mod.Manifest.UpdateKeys));
             }
+            foreach (var requirementKey in mods.SelectMany(m => m.Requirements))
+            {
+                searchEntries.Add(new ModSearchEntry() { Id = requirementKey.UniqueID });
+            }
 
             // Create the body to be sent via the POST request
             ModSearchData searchData = new ModSearchData(searchEntries, gameDetails.SmapiVersion, gameDetails.GameVersion, gameDetails.System.ToString(), true);

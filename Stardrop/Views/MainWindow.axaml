@@ -96,18 +96,18 @@
       <Setter Property="Opacity" Value="0.5"/>
       <Setter Property="Background" Value="Transparent"/>
     </Style>
-    <Style Selector="Button#statusButton">
+    <Style Selector="Button.hyperlink">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
       <Setter Property="Foreground" Value="#1cff96" />
       <Setter Property="HorizontalAlignment" Value="Center" />
       <Setter Property="Cursor" Value="Hand" />
     </Style>
-    <Style Selector="Button#statusButton:pointerover /template/ ContentPresenter">
+    <Style Selector="Button.hyperlink:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="TextBlock.Foreground" Value="White" />
     </Style>
-    <Style Selector="Button#statusButton:pressed /template/ ContentPresenter">
+    <Style Selector="Button.hyperlink:pressed /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="TextBlock.Foreground" Value="#ff9f2a" />
     </Style>
@@ -116,10 +116,6 @@
     </Style>
     <Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
       <Setter Property="Background" Value="Pink"/>
-    </Style>
-    <Style Selector="ListBox.ItemContainerStyle">
-      <Setter Property="FontSize" Value="6"/>
-      <Setter Property="Background" Value="Red"/>
     </Style>
     <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
       <Setter Property="Background" Value="#ff9f2a"/>
@@ -163,6 +159,17 @@
     </Style>
     <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
       <Setter Property="Fill" Value="#ff9f2a"/>
+    </Style>
+    <Style Selector="ListBox.ItemContainerStyle">
+      <Setter Property="FontSize" Value="6"/>
+      <Setter Property="Background" Value="Red"/>
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
     <Style Selector="TextBox:focus">
       <Setter Property="Foreground" Value="White"/>
@@ -293,11 +300,22 @@
               <TextBlock Text="Author" TextAlignment="Center"/>
             </DataGridTextColumn.Header>
           </DataGridTextColumn>
-          <DataGridTextColumn Binding="{Binding Requirements}" CellStyleClasses="centered">
-            <DataGridTextColumn.Header>
-              <TextBlock Text="Requirements" TextAlignment="Center" />
-            </DataGridTextColumn.Header>
-          </DataGridTextColumn>
+          <DataGridTemplateColumn CellStyleClasses="centered">
+            <DataGridTemplateColumn.Header>
+              <TextBlock Text="Missing Requirements" TextAlignment="Center" />
+            </DataGridTemplateColumn.Header>
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <ListBox Items="{Binding Requirements}" Background="Transparent">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <Button Content="{Binding Path=Name}" Classes="hyperlink" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding GenericLink}" Foreground="#ff9f2a"/>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
           <DataGridTextColumn Binding="{Binding ParsedVersion}" CellStyleClasses="centered">
             <DataGridTextColumn.Header>
               <TextBlock Text="Version" TextAlignment="Center" />
@@ -309,7 +327,7 @@
             </DataGridTemplateColumn.Header>
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <Button Name="statusButton" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Uri}" Foreground="{Binding StatusBrush}"/>
+                <Button Name="statusButton" Classes="hyperlink" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Uri}" Foreground="{Binding StatusBrush}"/>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>

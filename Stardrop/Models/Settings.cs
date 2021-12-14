@@ -1,4 +1,5 @@
 ﻿using Semver;
+using Stardrop.Models.SMAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +12,6 @@ namespace Stardrop.Models
     {
         public string LastSelectedProfileName { get; set; }
         public string SMAPIFolderPath { get; set; }
+        public GameDetails GameDetails { get; set; }
     }
 }

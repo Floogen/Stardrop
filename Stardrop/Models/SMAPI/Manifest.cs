@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Stardrop.Models.SMAPI
@@ -28,6 +29,14 @@ namespace Stardrop.Models.SMAPI
 
         /// <summary>The unique mod ID.</summary>
         public string UniqueID { get; set; }
+
+        /// <summary>The mod which will read this as a content pack. Mutually exclusive with <see cref="Manifest.EntryDll"/>.</summary>
+        //[JsonConverter(typeof(ManifestContentPackForConverter))]
+        public ManifestContentPackFor ContentPackFor { get; set; }
+
+        /// <summary>The other mods that must be loaded before this mod.</summary>
+        //[JsonConverter(typeof(ManifestDependencyArrayConverter))]
+        public ManifestDependency[] Dependencies { get; set; }
 
         // <summary>Custom property for Stardrop.</summary>
         public bool DeleteOldVersion { get; set; }
