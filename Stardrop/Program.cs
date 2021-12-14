@@ -14,7 +14,7 @@ namespace Stardrop
 {
     class Program
     {
-        internal static Helper helper = new Helper("log", ".txt", Pathing.relativeLogPath);
+        internal static Helper helper;
         internal static Settings settings = new Settings();
         internal static readonly string defaultProfileName = "Default";
         internal static readonly Regex gameDetailsPattern = new Regex(@"SMAPI (?<smapiVersion>.+) with Stardew Valley (?<gameVersion>.+) on (?<system>.+)");
@@ -25,18 +25,24 @@ namespace Stardrop
         [STAThread]
         public static void Main(string[] args)
         {
-            // Verify the log folder path is created
-            Directory.CreateDirectory(Pathing.relativeLogPath);
+            // Establish file and folders paths
+            Pathing.SetHomePath(Directory.GetCurrentDirectory());
+
+            // Set up our logger
+            helper = new Helper("log", ".txt", Pathing.GetLogFolderPath());
+
+            // Verify the folder paths are created
+            Directory.CreateDirectory(Pathing.GetCacheFolderPath());
+            Directory.CreateDirectory(Pathing.GetLogFolderPath());
+            Directory.CreateDirectory(Pathing.GetProfilesFolderPath());
+            Directory.CreateDirectory(Pathing.GetSelectedModsFolderPath());
 
             // Verify the settings folder path is created
-            Directory.CreateDirectory(Pathing.relativeSettingsPath);
             if (File.Exists(Pathing.GetSettingsPath()))
             {
                 settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(Pathing.GetSettingsPath()), new JsonSerializerOptions { AllowTrailingCommas = true });
             }
-
-            // Establishe file and folders paths
-            Pathing.EstablishPaths(Directory.GetCurrentDirectory(), settings.SMAPIFolderPath);
+            Pathing.SetModPath(settings.SMAPIFolderPath);
 
             // Register icon provider(s)
             IconProvider.Register<MaterialDesignIconProvider>();

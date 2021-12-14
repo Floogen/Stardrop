@@ -9,7 +9,7 @@ namespace Stardrop.Utilities
 {
     public static class Pathing
     {
-        internal const string relativeSettingsPath = @"Settings\";
+        internal const string relativeDataPath = @"Data\";
         internal const string relativeLogPath = @"Logs\";
 
         internal static string defaultGamePath;
@@ -19,8 +19,13 @@ namespace Stardrop.Utilities
 
         internal static void EstablishPaths(string homePath, string smapiPath)
         {
-            defaultHomePath = homePath;
+            SetHomePath(homePath);
             SetModPath(smapiPath);
+        }
+
+        internal static void SetHomePath(string homePath)
+        {
+            defaultHomePath = Path.Combine(homePath, relativeDataPath);
         }
 
         internal static void SetModPath(string smapiPath)
@@ -32,9 +37,14 @@ namespace Stardrop.Utilities
             }
         }
 
+        internal static string GetLogFolderPath()
+        {
+            return Path.Combine(defaultHomePath, relativeLogPath);
+        }
+
         internal static string GetSettingsPath()
         {
-            return Path.Combine(relativeSettingsPath, "settings.json");
+            return Path.Combine(defaultHomePath, "Settings.json");
         }
 
         public static string GetProfilesFolderPath()
@@ -49,6 +59,7 @@ namespace Stardrop.Utilities
 
         public static string GetSmapiPath()
         {
+            Program.helper.Log(Path.Combine(defaultGamePath, "StardewModdingAPI.exe"));
             return Path.Combine(defaultGamePath, "StardewModdingAPI.exe");
         }
 
@@ -59,7 +70,11 @@ namespace Stardrop.Utilities
 
         public static string GetVersionCachePath()
         {
-            return Path.Combine(defaultHomePath, "Cache", "Versions.json");
+            return Path.Combine(GetCacheFolderPath(), "Versions.json");
+        }
+        internal static string GetKeyCachePath()
+        {
+            return Path.Combine(GetCacheFolderPath(), "Keys.json");
         }
     }
 }
