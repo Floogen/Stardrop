@@ -5,8 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:sys="clr-namespace:System;assembly=netstandard"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
-        xmlns:it="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-        xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Stardrop.Views.MainWindow"
         Title="Stardrop"
@@ -150,6 +148,9 @@
     <Style Selector="CheckBox#hideDisabledMods:pointerover /template/ ContentPresenter#ContentPresenter">
       <Setter Property="TextBlock.Foreground" Value="#ff9f2a" />
     </Style>
+    <Style Selector="DataGridCell.centered">
+      <Setter Property="TextBlock.HorizontalAlignment" Value="Center"/>
+    </Style>
     <Style Selector="DataGridColumnHeader">
       <Setter Property="FontWeight" Value="Bold"/>
       <Setter Property="Foreground" Value="#1cff96"/>
@@ -277,12 +278,35 @@
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
-          <DataGridTextColumn Header="Mod Name" Binding="{Binding Name}" Width="250"/>
-          <DataGridTextColumn Header="Unique ID" IsVisible="False" Binding="{Binding UniqueId}"/>
-          <DataGridTextColumn Header="Author" Binding="{Binding Author}"/>
-          <DataGridTextColumn Header="Requirements" Binding="{Binding Requirements}"/>
-          <DataGridTextColumn Header="Version" Binding="{Binding ParsedVersion}"/>
-          <DataGridTemplateColumn Header="Status" SortMemberPath="ParsedStatus">
+          <DataGridTextColumn Binding="{Binding Name}" Width="250">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="Mod Name" TextAlignment="Center" />
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn Binding="{Binding UniqueId}" IsVisible="False">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="Unique ID" TextAlignment="Center" />
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn Binding="{Binding Author}" CellStyleClasses="centered">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="Author" TextAlignment="Center"/>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn Binding="{Binding Requirements}" CellStyleClasses="centered">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="Requirements" TextAlignment="Center" />
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn Binding="{Binding ParsedVersion}" CellStyleClasses="centered">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="Version" TextAlignment="Center" />
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTemplateColumn SortMemberPath="ParsedStatus" CellStyleClasses="centered">
+            <DataGridTemplateColumn.Header>
+              <TextBlock Text="Status" TextAlignment="Center" />
+            </DataGridTemplateColumn.Header>
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
                 <Button Name="statusButton" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Uri}" Foreground="{Binding StatusBrush}"/>
