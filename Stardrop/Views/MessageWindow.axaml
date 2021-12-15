@@ -11,16 +11,16 @@
         MinHeight="150"
         Width="300"
         Height="150"
-        Background="#031332"
+        Background="{DynamicResource ThemeBackgroundBrush}"
         HasSystemDecorations="false"
         Icon="/Assets/icon.ico">
 
   <Window.Styles>
     <Style Selector="Button:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#1cff96"/>
+      <Setter Property="Background" Value="{DynamicResource ThemeForegroundBrush}"/>
     </Style>
     <Style Selector="Button:pressed /template/ ContentPresenter">
-      <Setter Property="Background" Value="#ff9f2a"/>
+      <Setter Property="Background" Value="{DynamicResource HighlightBrush}"/>
     </Style>
   </Window.Styles>
 
@@ -37,8 +37,8 @@
       <ColumnDefinition Width="25" />
     </Grid.ColumnDefinitions>
 
-    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MessageText}" TextWrapping="Wrap" Foreground="#1cff96" HorizontalAlignment="Center" Margin="0 35 0 20"/>
-    <Button Grid.Row="1"  Grid.Column="1" Name="positiveButton" Content="{Binding PositiveButtonText}" Click="PositiveButton_Click" HorizontalAlignment="Left" BorderBrush="#ff9f2a" Foreground="#1cff96" Background="Transparent" Margin="25 0 0 0"/>
-    <Button Grid.Row="1"  Grid.Column="1" Name="negativeButton" Content="{Binding NegativeButtonText}" Click="NegativeButton_Click" HorizontalAlignment="Right" BorderBrush="#ff9f2a" Foreground="#1cff96" Background="Transparent"  Margin="0 0 25 0"/>
+    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MessageText}" TextWrapping="Wrap" Foreground="{DynamicResource ThemeForegroundBrush}" HorizontalAlignment="Center" Margin="0 35 0 20"/>
+    <Button Grid.Row="1"  Grid.Column="1" Name="positiveButton" Content="{Binding PositiveButtonText}" Click="PositiveButton_Click" HorizontalAlignment="Left" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" Margin="25 0 0 0"/>
+    <Button Grid.Row="1"  Grid.Column="1" Name="negativeButton" Content="{Binding NegativeButtonText}" Click="NegativeButton_Click" HorizontalAlignment="Right" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"  Margin="0 0 25 0"/>
   </Grid>
 </Window>

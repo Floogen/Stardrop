@@ -11,7 +11,7 @@
         MinHeight="200"
         Width="400"
         Height="200"
-        Background="#031332"
+        Background="{DynamicResource ThemeBackgroundBrush}"
         HasSystemDecorations="true"
         ExtendClientAreaToDecorationsHint="true"
         ExtendClientAreaChromeHints="NoChrome"
@@ -36,19 +36,19 @@
       <Setter Property="Background" Value="Pink"/>
     </Style>
     <Style Selector="TextBox:pointerover /template/ Border">
-      <Setter Property="BorderBrush" Value="#1cff96"/>
-      <Setter Property="Background" Value="#031332"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeForegroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     </Style>
     <Style Selector="TextBox:focus">
-      <Setter Property="Foreground" Value="#1cff96"/>
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
     </Style>
     <Style Selector="TextBox:focus /template/ Border">
-      <Setter Property="BorderBrush" Value="#1cff96"/>
-      <Setter Property="Background" Value="#031332"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeForegroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     </Style>
     <Style Selector="TextBox:not(:focus)">
-      <Setter Property="Foreground" Value="#1cff96"/>
-      <Setter Property="Background" Value="#031332"/>
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     </Style>
   </Window.Styles>
 
@@ -65,10 +65,10 @@
       <ColumnDefinition Width="*" />
       <ColumnDefinition Width="50" />
     </Grid.ColumnDefinitions>
-    <Border Grid.Row="0" BorderBrush="#ff9f2a" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
+    <Border Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
       <Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
         <Image Source="/Assets/icon.ico" Stretch="None"/>
-        <TextBlock Text="Settings" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#1cff96" />
+        <TextBlock Text="Settings" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
       </Menu>
     </Border>
     <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
@@ -76,14 +76,14 @@
     </Menu>
 
     <StackPanel Grid.Row="1" Margin="10 10 0 0">
-      <TextBlock Text="SMAPI Path" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#1cff96" />
-      <TextBox Name="smapiFolderPathBox" IsReadOnly="True" ToolTip.Tip="The file path of StardewModdingAPI.exe" Margin="10 10 0 0" Height="10" Width="350" BorderBrush="#ff9f2a" HorizontalAlignment="Left"/>
+      <TextBlock Text="SMAPI Path" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+      <TextBox Name="smapiFolderPathBox" IsReadOnly="True" ToolTip.Tip="The file path of StardewModdingAPI.exe" Margin="10 10 0 0" Height="10" Width="350" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
       <Button Name="smapiFolderButton" Margin="0 -32 0 0" i:Attached.Icon="mdi-folder" Foreground="White" Background="Transparent" HorizontalAlignment="Right"/>
     </StackPanel>
 
     <DockPanel Grid.Row="3" Grid.Column="1" Margin="0 0 0 0">
-      <Button Name="applyButton" ToolTip.Tip="Save Changes" i:Attached.Icon="mdi-check" Margin="-40 0 15 0" BorderBrush="#ff9f2a" Foreground="Green" Background="Transparent"/>
-      <Button Name="cancelButton" ToolTip.Tip="Cancel" i:Attached.Icon="mdi-cancel" BorderBrush="#ff9f2a" Foreground="Red" Background="Transparent"/>
+      <Button Name="applyButton" ToolTip.Tip="Save Changes" i:Attached.Icon="mdi-check" Margin="-40 0 15 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent"/>
+      <Button Name="cancelButton" ToolTip.Tip="Cancel" i:Attached.Icon="mdi-cancel" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
     </DockPanel>
   </Grid>
 </Window>

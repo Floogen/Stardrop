@@ -11,7 +11,7 @@
         MinHeight="150"
         Width="300"
         Height="150"
-        Background="#031332"
+        Background="{DynamicResource ThemeBackgroundBrush}"
         Icon="/Assets/icon.ico">
 
   <Window.Styles>
@@ -27,6 +27,18 @@
     <Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
       <Setter Property="Background" Value="Pink"/>
     </Style>
+    <Style Selector="TextBox:focus">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}"/>
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource HighlightBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}"/>
+    </Style>
+    <Style Selector="TextBox:not(:focus)">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource DataGridRowBackground}"/>
+    </Style>
   </Window.Styles>
 
   <Grid>
@@ -39,14 +51,14 @@
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
 
-    <Border Grid.Row="0" Margin="35 50 35 0" BorderBrush="#ff9f2a" BorderThickness="2">
-      <TextBox Name="profileNameBox" />
+    <Border Grid.Row="0" Margin="35 50 35 0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
+      <TextBox Name="profileNameBox" Background="{DynamicResource DataGridRowBackground}" Foreground="{DynamicResource ThemeForegroundHighBrush}" />
     </Border>
 
 
     <DockPanel Grid.Row="1" Margin="0 0 0 10">
-      <Button Name="applyButton" i:Attached.Icon="mdi-check" Margin="25 0 0 0" HorizontalAlignment="Left" BorderBrush="#ff9f2a" Foreground="Green" Background="Transparent"/>
-      <Button Name="cancelButton" i:Attached.Icon="mdi-cancel" Margin="0 0 25 0" HorizontalAlignment="Right" BorderBrush="#ff9f2a" Foreground="Red" Background="Transparent"/>
+      <Button Name="applyButton" i:Attached.Icon="mdi-check" Margin="25 0 0 0" HorizontalAlignment="Left" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent"/>
+      <Button Name="cancelButton" i:Attached.Icon="mdi-cancel" Margin="0 0 25 0" HorizontalAlignment="Right" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
     </DockPanel>
   </Grid>
 </Window>
