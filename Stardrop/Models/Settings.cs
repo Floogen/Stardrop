@@ -10,6 +10,7 @@ namespace Stardrop.Models
 {
     public class Settings
     {
+        public string Theme { get; set; }
         public string LastSelectedProfileName { get; set; }
         public string SMAPIFolderPath { get; set; }
         public GameDetails GameDetails { get; set; }

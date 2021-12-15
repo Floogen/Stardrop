@@ -2,23 +2,29 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Stardrop.Models;
 using Stardrop.Utilities;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 namespace Stardrop.Views
 {
     public partial class SettingsWindow : Window
     {
+        private IStyle _oldTheme;
+        private string _oldThemeName;
+
         public SettingsWindow()
         {
             InitializeComponent();
 
             // Handle buttons
-            this.FindControl<Button>("exitButton").Click += delegate { this.Close(false); };
-            this.FindControl<Button>("cancelButton").Click += delegate { this.Close(false); };
+            this.FindControl<Button>("exitButton").Click += Exit_Click;
+            this.FindControl<Button>("cancelButton").Click += Exit_Click;
             this.FindControl<Button>("smapiFolderButton").Click += SmapiFolderButton_Click;
             this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
 
@@ -27,9 +33,45 @@ namespace Stardrop.Views
             {
                 this.FindControl<TextBox>("smapiFolderPathBox").Text = Program.settings.SMAPIFolderPath;
             }
+
+            // Handle adding the themes
+            Dictionary<string, IStyle> themes = new Dictionary<string, IStyle>();
+            foreach (string fileFullName in Directory.EnumerateFiles("Themes", "*.xaml"))
+            {
+                try
+                {
+                    var themeName = Path.GetFileNameWithoutExtension(fileFullName);
+                    themes[themeName] = AvaloniaRuntimeXamlLoader.Parse<Styles>(File.ReadAllText(fileFullName));
+                    Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Unable to load theme on {Path.GetFileNameWithoutExtension(fileFullName)}: {ex}", Helper.Status.Warning);
+                }
+            }
+
+            var themeComboBox = this.FindControl<ComboBox>("themeComboBox");
+            themeComboBox.Items = themes.Keys;
+            themeComboBox.SelectedItem = !themes.ContainsKey(Program.settings.Theme) ? themes.Keys.First() : Program.settings.Theme;
+            themeComboBox.SelectionChanged += (sender, e) =>
+            {
+                var themeName = themeComboBox.SelectedItem.ToString();
+                Application.Current.Styles[0] = themes[themeName];
+                Program.settings.Theme = themeName;
+            };
+
+            _oldTheme = Application.Current.Styles[0];
+            _oldThemeName = Program.settings.Theme;
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void Exit_Click(object? sender, RoutedEventArgs e)
+        {
+            Application.Current.Styles[0] = _oldTheme;
+            Program.settings.Theme = _oldThemeName;
+            this.Close(false);
         }
 
         private async void SmapiFolderButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

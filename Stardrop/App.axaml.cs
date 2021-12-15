@@ -34,7 +34,7 @@ namespace Stardrop
                 }
             }
 
-            Styles.Insert(0, themes.Values.First());
+            Current.Styles.Insert(0, !themes.ContainsKey(Program.settings.Theme) ? themes.Values.First() : themes[Program.settings.Theme]);
         }
 
         public override void OnFrameworkInitializationCompleted()
