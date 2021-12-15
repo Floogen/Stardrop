@@ -529,33 +529,33 @@ namespace Stardrop.Views
 
             this.UpdateEnabledModsFolder(enabledModsPath);
 
-            using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(true)))
+            if (Program.settings.GameDetails is null || Program.settings.GameDetails.HasSMAPIUpdated(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion))
             {
-                if (smapi is null)
+                using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(true)))
                 {
-                    CreateWarningWindow($"Unable to start SMAPI.", "OK");
-                    Program.helper.Log($"SMAPI was unable to start via Process.Start", Helper.Status.Alert);
-                    return;
-                }
+                    if (smapi is null)
+                    {
+                        CreateWarningWindow($"Unable to start SMAPI.", "OK");
+                        Program.helper.Log($"SMAPI was unable to start via Process.Start", Helper.Status.Alert);
+                        return;
+                    }
 
-                FileSystemWatcher observer = new FileSystemWatcher(Pathing.smapiLogPath) { Filter = "*.txt", EnableRaisingEvents = true, NotifyFilter = NotifyFilters.Size };
-                var result = observer.WaitForChanged(WatcherChangeTypes.Changed, 60000);
+                    FileSystemWatcher observer = new FileSystemWatcher(Pathing.smapiLogPath) { Filter = "*.txt", EnableRaisingEvents = true, NotifyFilter = NotifyFilters.Size };
+                    var result = observer.WaitForChanged(WatcherChangeTypes.Changed, 60000);
 
-                // Kill SMAPI
-                smapi.Kill();
+                    // Kill SMAPI
+                    smapi.Kill();
 
-                // Check if our observer timed out
-                FileInfo smapiLog = new FileInfo(Path.Combine(Pathing.smapiLogPath, result.Name));
-                if (result.TimedOut || smapiLog is null)
-                {
-                    CreateWarningWindow($"Unable to check SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
-                    Program.helper.Log($"SMAPI started but Stardrop was unable to access SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
-                    return;
-                }
+                    // Check if our observer timed out
+                    FileInfo smapiLog = new FileInfo(Path.Combine(Pathing.smapiLogPath, result.Name));
+                    if (result.TimedOut || smapiLog is null)
+                    {
+                        CreateWarningWindow($"Unable to check SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
+                        Program.helper.Log($"SMAPI started but Stardrop was unable to access SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
+                        return;
+                    }
 
-                // Parse SMAPI's log
-                if (Program.settings.GameDetails is null || Program.settings.GameDetails.HasSMAPIUpdated(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion))
-                {
+                    // Parse SMAPI's log
                     Program.helper.Log($"Grabbing game details (SMAPI / SDV versions) from SMAPI's log file.");
 
                     using (var fileStream = new FileStream(smapiLog.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -572,108 +572,107 @@ namespace Stardrop.Views
                         }
                     }
                 }
+            }
+            if (Program.settings.GameDetails is null)
+            {
+                CreateWarningWindow($"Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
+                Program.helper.Log($"SMAPI started but Stardrop was unable to read SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
+                return;
+            }
 
-                if (Program.settings.GameDetails is null)
+            // Fetch the mods to see if there are updates available
+            if (useCache && oldUpdateCache is not null)
+            {
+                oldUpdateCache.LastRuntime = DateTime.Now;
+            }
+
+            int modsToUpdate = 0;
+            var updateCache = useCache ? oldUpdateCache : new UpdateCache(DateTime.Now);
+            var modUpdateData = await SMAPI.GetModUpdateData(Program.settings.GameDetails, mods);
+            foreach (var modItem in mods)
+            {
+                var link = String.Empty;
+                var recommendedVersion = String.Empty;
+                var status = WikiCompatibilityStatus.Unknown;
+
+                // Prep the data to be checked
+                var suggestedUpdateData = modUpdateData.Where(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.SuggestedUpdate is not null).Select(m => m.SuggestedUpdate).FirstOrDefault();
+                var metaData = modUpdateData.Where(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.Metadata is not null).Select(m => m.Metadata).FirstOrDefault();
+                if (suggestedUpdateData is not null)
                 {
-                    CreateWarningWindow($"Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
-                    Program.helper.Log($"SMAPI started but Stardrop was unable to read SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
-                    return;
-                }
-
-                // Fetch the mods to see if there are updates available
-                if (useCache && oldUpdateCache is not null)
-                {
-                    oldUpdateCache.LastRuntime = DateTime.Now;
-                }
-
-                int modsToUpdate = 0;
-                var updateCache = useCache ? oldUpdateCache : new UpdateCache(DateTime.Now);
-                var modUpdateData = await SMAPI.GetModUpdateData(Program.settings.GameDetails, mods);
-                foreach (var modItem in mods)
-                {
-                    var link = String.Empty;
-                    var recommendedVersion = String.Empty;
-                    var status = WikiCompatibilityStatus.Unknown;
-
-                    // Prep the data to be checked
-                    var suggestedUpdateData = modUpdateData.Where(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.SuggestedUpdate is not null).Select(m => m.SuggestedUpdate).FirstOrDefault();
-                    var metaData = modUpdateData.Where(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.Metadata is not null).Select(m => m.Metadata).FirstOrDefault();
-                    if (suggestedUpdateData is not null)
+                    link = suggestedUpdateData.Url;
+                    if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Ok)
                     {
-                        link = suggestedUpdateData.Url;
-                        if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Ok)
-                        {
-                            status = metaData.CompatibilityStatus;
-                        }
-                        recommendedVersion = suggestedUpdateData.Version;
+                        status = metaData.CompatibilityStatus;
+                    }
+                    recommendedVersion = suggestedUpdateData.Version;
+
+                    modsToUpdate++;
+                }
+                else if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
+                {
+                    status = metaData.CompatibilityStatus;
+                    if (metaData.CompatibilityStatus == WikiCompatibilityStatus.Unofficial && metaData.Unofficial is not null)
+                    {
+                        link = metaData.Unofficial.Url;
+                        recommendedVersion = metaData.Unofficial.Version;
 
                         modsToUpdate++;
                     }
-                    else if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
+                    else if (metaData.Main is not null)
                     {
-                        status = metaData.CompatibilityStatus;
-                        if (metaData.CompatibilityStatus == WikiCompatibilityStatus.Unofficial && metaData.Unofficial is not null)
-                        {
-                            link = metaData.Unofficial.Url;
-                            recommendedVersion = metaData.Unofficial.Version;
-
-                            modsToUpdate++;
-                        }
-                        else if (metaData.Main is not null)
-                        {
-                            link = metaData.Main.Url;
-                            recommendedVersion = metaData.Main.Version;
-                        }
-                    }
-
-                    modItem.Uri = link;
-                    modItem.SuggestedVersion = recommendedVersion;
-                    modItem.Status = status;
-
-                    if (!String.IsNullOrEmpty(modItem.ParsedStatus))
-                    {
-                        if (updateCache.Mods.FirstOrDefault(m => m.UniqueId.Equals(modItem.UniqueId)) is ModUpdateInfo modInfo && modInfo is not null)
-                        {
-                            modInfo.SuggestedVersion = recommendedVersion;
-                            modInfo.Status = status;
-                        }
-                        else
-                        {
-                            updateCache.Mods.Add(new ModUpdateInfo(modItem.UniqueId, recommendedVersion, status, modItem.Uri));
-                        }
+                        link = metaData.Main.Url;
+                        recommendedVersion = metaData.Main.Version;
                     }
                 }
 
-                // Cache the update data
-                File.WriteAllText(Pathing.GetVersionCachePath(), JsonSerializer.Serialize(updateCache, new JsonSerializerOptions() { WriteIndented = true }));
+                modItem.Uri = link;
+                modItem.SuggestedVersion = recommendedVersion;
+                modItem.Status = status;
 
-                // Get cached key data
-                List<ModKeyInfo> modKeysCache = new List<ModKeyInfo>();
-                if (File.Exists(Pathing.GetKeyCachePath()))
+                if (!String.IsNullOrEmpty(modItem.ParsedStatus))
                 {
-                    modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
-                }
-
-                // Update the cached key data
-                foreach (var modEntry in modUpdateData.Where(m => m.Metadata is not null))
-                {
-                    if (modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(modEntry.Id)) is ModKeyInfo keyInfo && keyInfo is not null)
+                    if (updateCache.Mods.FirstOrDefault(m => m.UniqueId.Equals(modItem.UniqueId)) is ModUpdateInfo modInfo && modInfo is not null)
                     {
-                        keyInfo.Name = modEntry.Metadata.Name;
+                        modInfo.SuggestedVersion = recommendedVersion;
+                        modInfo.Status = status;
                     }
                     else
                     {
-                        modKeysCache.Add(new ModKeyInfo() { Name = modEntry.Metadata.Name, UniqueId = modEntry.Id });
+                        updateCache.Mods.Add(new ModUpdateInfo(modItem.UniqueId, recommendedVersion, status, modItem.Uri));
                     }
                 }
-
-                // Cache the key data
-                File.WriteAllText(Pathing.GetKeyCachePath(), JsonSerializer.Serialize(modKeysCache, new JsonSerializerOptions() { WriteIndented = true }));
-
-                // Update the status to let the user know the update is finished
-                _viewModel.ModsWithCachedUpdates = modsToUpdate;
-                _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
             }
+
+            // Cache the update data
+            File.WriteAllText(Pathing.GetVersionCachePath(), JsonSerializer.Serialize(updateCache, new JsonSerializerOptions() { WriteIndented = true }));
+
+            // Get cached key data
+            List<ModKeyInfo> modKeysCache = new List<ModKeyInfo>();
+            if (File.Exists(Pathing.GetKeyCachePath()))
+            {
+                modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            }
+
+            // Update the cached key data
+            foreach (var modEntry in modUpdateData.Where(m => m.Metadata is not null))
+            {
+                if (modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(modEntry.Id)) is ModKeyInfo keyInfo && keyInfo is not null)
+                {
+                    keyInfo.Name = modEntry.Metadata.Name;
+                }
+                else
+                {
+                    modKeysCache.Add(new ModKeyInfo() { Name = modEntry.Metadata.Name, UniqueId = modEntry.Id });
+                }
+            }
+
+            // Cache the key data
+            File.WriteAllText(Pathing.GetKeyCachePath(), JsonSerializer.Serialize(modKeysCache, new JsonSerializerOptions() { WriteIndented = true }));
+
+            // Update the status to let the user know the update is finished
+            _viewModel.ModsWithCachedUpdates = modsToUpdate;
+            _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
         }
 
         private void AdjustWindowState()

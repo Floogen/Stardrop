@@ -59,7 +59,6 @@ namespace Stardrop.Utilities
 
         public static string GetSmapiPath()
         {
-            Program.helper.Log(Path.Combine(defaultGamePath, "StardewModdingAPI.exe"));
             return Path.Combine(defaultGamePath, "StardewModdingAPI.exe");
         }
 
