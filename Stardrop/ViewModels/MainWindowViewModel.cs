@@ -55,6 +55,11 @@ namespace Stardrop.ViewModels
 
         public void OpenBrowser(string url)
         {
+            if (String.IsNullOrEmpty(url))
+            {
+                return;
+            }
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 // If no associated application/json MimeType is found xdg-open opens retrun error
