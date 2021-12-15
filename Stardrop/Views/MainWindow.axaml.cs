@@ -334,6 +334,7 @@ namespace Stardrop.Views
             if (await editorWindow.ShowDialog<bool>(this))
             {
                 _viewModel.DiscoverMods(Pathing.defaultModPath);
+                await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
             }
         }
 
