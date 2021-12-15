@@ -404,7 +404,7 @@
     </Border>
     <DockPanel Name="filterBar" Grid.Row="4" Grid.Column="0" Margin="7 0 0 5">
       <TextBox Name="searchBox" Watermark="Filter" Height="10" Width="250" BorderBrush="{DynamicResource HighlightForegroundBrush}" HorizontalAlignment="Left"/>
-      <ComboBox x:Name="filterColumnBox" Margin="5 0 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightForegroundBrush}" SelectedIndex="0" Width="150">
+      <ComboBox x:Name="filterColumnBox" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightForegroundBrush}" SelectedIndex="0" Width="150">
         <ComboBoxItem Content="Mod Name" />
         <ComboBoxItem Content="Author" />
         <ComboBoxItem Content="Requirements" />
