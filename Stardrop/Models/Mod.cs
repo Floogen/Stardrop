@@ -25,7 +25,7 @@ namespace Stardrop.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public string Author { get; set; }
-        public List<ManifestDependency> _requirements { get; set; }
+        private List<ManifestDependency> _requirements { get; set; }
         public List<ManifestDependency> Requirements { get { return _requirements; } set { _requirements = value; NotifyPropertyChanged("Requirements"); } }
         private string _uri { get; set; }
         public string Uri { get { return _uri; } set { _uri = value; NotifyPropertyChanged("Uri"); } }
