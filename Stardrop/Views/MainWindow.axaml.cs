@@ -340,7 +340,7 @@ namespace Stardrop.Views
         private void LogFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             //Path.Combine(Directory.GetCurrentDirectory(), Pathing.relativeLogPath)
-            OpenNativeExplorer(Pathing.relativeLogPath);
+            OpenNativeExplorer(Pathing.GetLogFolderPath());
         }
 
         private async void AddMod_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
