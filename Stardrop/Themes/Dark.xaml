@@ -28,7 +28,7 @@
       <SolidColorBrush x:Key="HighlightForegroundBrush" Color="{DynamicResource NeonOrange}"/>
       <SolidColorBrush x:Key="ThemeAccentBrush4" Color="{DynamicResource OrangeColor}" />
       <SolidColorBrush x:Key="ThemeAccentBrush3" Color="{DynamicResource BrightOrangeColor}" />
-      <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource GrayBlue}" />
+      <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource PerfectGray}" />
       <SolidColorBrush x:Key="ThemeControlMidHighBrush" Color="{DynamicResource White}"
                    Opacity="0.3" />
       <SolidColorBrush x:Key="ThemeForegroundHighBrush" Color="{DynamicResource White}" />
@@ -50,7 +50,7 @@
       <SolidColorBrush x:Key="DataGridRowForeground" Color="{DynamicResource White}" />
       <SolidColorBrush x:Key="AlternativeDataGridRowBackground" Color="{DynamicResource OffGray}" />
       <SolidColorBrush x:Key="ComboBoxItemBackgroundBrush" Color="{DynamicResource DarkGray}" />
-      <SolidColorBrush x:Key="ComboBoxItemSelectedBackgroundBrush" Color="{DynamicResource GrayBlue}" />
+      <SolidColorBrush x:Key="ComboBoxItemSelectedBackgroundBrush" Color="{DynamicResource NeonMint}" />
       <SolidColorBrush x:Key="UpdateAvailableBrush" Color="{DynamicResource NeonMint}" />
       <SolidColorBrush x:Key="UpdateBrokenBrush" Color="{DynamicResource NeonRed}" />
       <SolidColorBrush x:Key="UpdateUnofficialBrush" Color="{DynamicResource NeonYellow}" />
