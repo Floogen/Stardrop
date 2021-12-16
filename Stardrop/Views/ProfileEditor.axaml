@@ -55,15 +55,15 @@
       </Menu>
     </Border>
     <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
-      <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
+      <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
     </Menu>
 
     <Border Grid.Row="1" Margin="20" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
-      <ListBox Name="profileList" Background="{DynamicResource AlternativeDataGridRowBackground}" Foreground="{DynamicResource ThemeForegroundHighBrush}">
+      <ListBox Name="profileList" Background="{DynamicResource DataGridRowBackground}" Foreground="{DynamicResource ThemeForegroundBrush}">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <StackPanel>
-              <TextBlock Text="{Binding Path=Name}" Foreground="{DynamicResource ThemeForegroundHighBrush}"/>
+              <TextBlock Text="{Binding Path=Name}"/>
             </StackPanel>
           </DataTemplate>
         </ListBox.ItemTemplate>
@@ -71,10 +71,10 @@
     </Border>
 
     <StackPanel Grid.Row="1" Grid.Column="1" Margin="0 45 0 0" Width="50">
-      <Button Name="addButton" Margin="0 15 0 15" i:Attached.Icon="mdi-plus" BorderBrush="{DynamicResource HighlightBrush}" Foreground="White" Background="Transparent"/>
-      <Button Name="deleteButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-minus" BorderBrush="{DynamicResource HighlightBrush}" Foreground="White" Background="Transparent"/>
-      <Button Name="renameButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-pencil" BorderBrush="{DynamicResource HighlightBrush}" Foreground="White" Background="Transparent"/>
-      <Button Name="copyButton" Margin="0 15 0 15" i:Attached.Icon="mdi-content-copy" BorderBrush="{DynamicResource HighlightBrush}" Foreground="White" Background="Transparent"/>
+      <Button Name="addButton" Margin="0 15 0 15" i:Attached.Icon="mdi-plus" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+      <Button Name="deleteButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-minus" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+      <Button Name="renameButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-pencil" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+      <Button Name="copyButton" Margin="0 15 0 15" i:Attached.Icon="mdi-content-copy" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
     </StackPanel>
 
     <DockPanel Grid.Row="2" Grid.Column="1" Margin="0 0 0 10">

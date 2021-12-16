@@ -156,13 +156,13 @@
       </Menu>
     </Border>
     <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
-      <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
+      <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
     </Menu>
 
     <StackPanel Grid.Row="1" Margin="10 10 0 0">
       <TextBlock Text="SMAPI Path" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
       <TextBox Name="smapiFolderPathBox" IsReadOnly="True" ToolTip.Tip="The file path of StardewModdingAPI.exe" Margin="10 10 0 0" Height="10" Width="350" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
-      <Button Name="smapiFolderButton" Margin="0 -32 0 0" i:Attached.Icon="mdi-folder" Foreground="White" Background="Transparent" HorizontalAlignment="Right"/>
+      <Button Name="smapiFolderButton" Margin="0 -32 0 0" i:Attached.Icon="mdi-folder" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" HorizontalAlignment="Right"/>
     </StackPanel>
 
     <StackPanel Grid.Row="2" Margin="10 10 0 0">

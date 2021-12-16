@@ -9,6 +9,8 @@
       <Color x:Key="NeonOrange">#ff9f2a</Color>
       <Color x:Key="DarkSeaBlue">#031332</Color>
       <Color x:Key="NeonMint">#1cff96</Color>
+      <Color x:Key="NeonRed">#f74040</Color>
+      <Color x:Key="NeonYellow">#fdfd2e</Color>
       <Color x:Key="DarkPurple">#2a0a84</Color>
       <Color x:Key="DarkGray">#2E2E2E</Color>
       <Color x:Key="GrayBlue">#3abcbc</Color>
@@ -48,6 +50,9 @@
       <SolidColorBrush x:Key="AlternativeDataGridRowBackground" Color="{DynamicResource OffGray}" />
       <SolidColorBrush x:Key="ComboBoxItemBackgroundBrush" Color="{DynamicResource DarkGray}" />
       <SolidColorBrush x:Key="ComboBoxItemSelectedBackgroundBrush" Color="{DynamicResource GrayBlue}" />
+      <SolidColorBrush x:Key="UpdateAvailableBrush" Color="{DynamicResource NeonMint}" />
+      <SolidColorBrush x:Key="UpdateBrokenBrush" Color="{DynamicResource NeonRed}" />
+      <SolidColorBrush x:Key="UpdateUnofficialBrush" Color="{DynamicResource NeonYellow}" />
 
     </Style.Resources>
   </Style>

@@ -307,15 +307,15 @@
     </Border>
     <TextBlock Text="☆ Stardrop ☆" IsHitTestVisible="False" Grid.Row="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Foreground="{DynamicResource ThemeForegroundBrush}" />
     <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
-      <Button Name="minimizeButton" i:Attached.Icon="mdi-window-minimize" Margin="0 0 -10 0" Foreground="White"  Background="Transparent"/>
-      <Button Name="maximizeButton" i:Attached.Icon="mdi-window-maximize" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
-      <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="White" Background="Transparent"/>
+      <Button Name="minimizeButton" i:Attached.Icon="mdi-window-minimize" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}"  Background="Transparent"/>
+      <Button Name="maximizeButton" i:Attached.Icon="mdi-window-maximize" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+      <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
     </Menu>
     <!-- ToolBar -->
     <Separator />
 
     <DockPanel Name="profileBar" Grid.Row="2" Grid.Column="0">
-      <TextBlock Text="Profile" Foreground="White" Padding="7" Focusable="False" VerticalAlignment="Center" />
+      <TextBlock Text="Profile" Foreground="{DynamicResource ThemeForegroundBrush}" Padding="7" Focusable="False" VerticalAlignment="Center" />
       <ComboBox x:Name="profileComboBox" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center"  FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="300">
         <ComboBox.ItemTemplate>
           <DataTemplate>
@@ -325,7 +325,7 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <Button Name="editProfilesButton" i:Attached.Icon="mdi-playlist-edit" VerticalAlignment="Center"  Margin="5 0 0 0" Foreground="White" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
+      <Button Name="editProfilesButton" i:Attached.Icon="mdi-playlist-edit" VerticalAlignment="Center"  Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
       <TextBlock Text="{Binding Path=EnabledModCount, StringFormat=Enabled Mods: {0}}" Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center" Margin="10 0 0 2"/>
     </DockPanel>
     <DockPanel Name="toolBar" Grid.Row="2"  Grid.Column="1">
