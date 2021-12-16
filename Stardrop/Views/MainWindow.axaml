@@ -382,7 +382,7 @@
               <TextBlock Text="Author" TextAlignment="Center"/>
             </DataGridTextColumn.Header>
           </DataGridTextColumn>
-          <DataGridTemplateColumn CellStyleClasses="centered">
+          <DataGridTemplateColumn SortMemberPath="Requirements.Count" CellStyleClasses="centered">
             <DataGridTemplateColumn.Header>
               <TextBlock Text="Missing Requirements" TextAlignment="Center" />
             </DataGridTemplateColumn.Header>
