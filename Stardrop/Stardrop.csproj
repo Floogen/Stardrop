@@ -15,6 +15,7 @@
     <None Remove=".gitignore" />
     <None Remove="Assets\icon.ico" />
     <None Remove="Assets\smapi.png" />
+    <None Remove="Themes\Dark.xaml" />
     <None Remove="Themes\Light.xaml" />
     <None Remove="Themes\Solarized-Lite.xaml" />
   </ItemGroup>
@@ -47,6 +48,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Content>
     <Content Update="Themes\Solarized-Lite.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Content>
+    <Content Update="Themes\Dark.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Content>
