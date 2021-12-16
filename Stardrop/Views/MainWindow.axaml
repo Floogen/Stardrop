@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:sys="clr-namespace:System;assembly=netstandard"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:conv="clr-namespace:Stardrop.Converters;assembly=Stardrop"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Stardrop.Views.MainWindow"
         Title="Stardrop"
@@ -22,6 +23,10 @@
         Closing="MainWindow_Closing"
         WindowStartupLocation="CenterScreen"
         Icon="/Assets/icon.ico">
+
+  <Window.Resources>
+    <conv:EnumConverter x:Key="EnumToStringConverter"/>
+  </Window.Resources>
 
   <Window.Styles>
     <Style Selector="MenuItem.Bar Separator">
@@ -101,6 +106,15 @@
       <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
       <Setter Property="HorizontalAlignment" Value="Center" />
       <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.status">
+      <Setter Property="Foreground" Value="{DynamicResource UpdateAvailableBrush}" />
+    </Style>
+    <Style Selector="Button.status[Tag=Broken]">
+      <Setter Property="Foreground" Value="{DynamicResource UpdateBrokenBrush}" />
+    </Style>
+    <Style Selector="Button.status[Tag=Unofficial]">
+      <Setter Property="Foreground" Value="{DynamicResource UpdateUnofficialBrush}" />
     </Style>
     <Style Selector="Button.hyperlink:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
@@ -267,7 +281,7 @@
       <ColumnDefinition Width="Auto" />
     </Grid.ColumnDefinitions>
 
-    <Border Name="menuBorder" Grid.Row="0" BorderBrush="{DynamicResource HighlightForegroundBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
+    <Border Name="menuBorder" Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
       <Menu Name="mainMenu" Width="190" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
         <Image Source="/Assets/icon.ico" Stretch="None"/>
         <MenuItem Header="File" Margin="-10 0 0 0" Classes="Bar">
@@ -302,7 +316,7 @@
 
     <DockPanel Name="profileBar" Grid.Row="2" Grid.Column="0">
       <TextBlock Text="Profile" Foreground="White" Padding="7" Focusable="False" VerticalAlignment="Center" />
-      <ComboBox x:Name="profileComboBox" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center"  FontWeight="Bold" BorderBrush="{DynamicResource HighlightForegroundBrush}" SelectedIndex="0" Width="300">
+      <ComboBox x:Name="profileComboBox" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center"  FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="300">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel>
@@ -311,7 +325,7 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <Button Name="editProfilesButton" i:Attached.Icon="mdi-playlist-edit" VerticalAlignment="Center"  Margin="5 0 0 0" Foreground="White" Background="Transparent" BorderBrush="{DynamicResource HighlightForegroundBrush}"/>
+      <Button Name="editProfilesButton" i:Attached.Icon="mdi-playlist-edit" VerticalAlignment="Center"  Margin="5 0 0 0" Foreground="White" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
       <TextBlock Text="{Binding Path=EnabledModCount, StringFormat=Enabled Mods: {0}}" Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center" Margin="10 0 0 2"/>
     </DockPanel>
     <DockPanel Name="toolBar" Grid.Row="2"  Grid.Column="1">
@@ -323,7 +337,7 @@
     </DockPanel>
 
     <Border Name="dragOverBorder" Margin="10" DragDrop.AllowDrop="True" Grid.Row="3" Grid.ColumnSpan="2" BorderBrush="{Binding DragOverColor}" BorderThickness="2">
-      <DataGrid Name="modGrid" Foreground="White" Background="{DynamicResource DataGridRowBackground}" AlternatingRowBackground="{DynamicResource AlternativeDataGridRowBackground}" CanUserSortColumns="True" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+      <DataGrid Name="modGrid" Foreground="{DynamicResource DataGridRowForeground}" Background="{DynamicResource DataGridRowBackground}" AlternatingRowBackground="{DynamicResource AlternativeDataGridRowBackground}" CanUserSortColumns="True" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
         <DataGrid.Resources>
           <ContextMenu x:Key="GridColumnContextMenu" DataContext="{Binding $parent[DataGrid].DataContext}" ContextMenuOpening="ModGridMenuColumn_Opening">
             <!-- <MenuItem Header="{Binding SortText}" Click="ModGridMenuColumn_ChangeSort" />-->
@@ -395,7 +409,7 @@
             </DataGridTemplateColumn.Header>
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <Button Name="statusButton" Classes="hyperlink" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Uri}" Foreground="{Binding StatusBrush}"/>
+                <Button Name="statusButton" Tag="{Binding Status, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Uri}"/>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
@@ -403,15 +417,15 @@
       </DataGrid>
     </Border>
     <DockPanel Name="filterBar" Grid.Row="4" Grid.Column="0" Margin="7 0 0 5">
-      <TextBox Name="searchBox" Watermark="Filter" Height="10" Width="250" BorderBrush="{DynamicResource HighlightForegroundBrush}" HorizontalAlignment="Left"/>
-      <ComboBox x:Name="filterColumnBox" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightForegroundBrush}" SelectedIndex="0" Width="150">
+      <TextBox Name="searchBox" Watermark="Filter" Height="10" Width="250" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
+      <ComboBox x:Name="filterColumnBox" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="150">
         <ComboBoxItem Content="Mod Name" />
         <ComboBoxItem Content="Author" />
         <ComboBoxItem Content="Requirements" />
       </ComboBox>
       <CheckBox Name="hideDisabledMods" Content="Hide Disabled Mods" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0"/>
     </DockPanel>
-    <Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightForegroundBrush}" BorderThickness="0 2 0 0">
+    <Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 2 0 0">
       <TextBlock Text="v1.0.0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0" Foreground="{DynamicResource ThemeForegroundBrush}"/>
     </Border>
     <Menu Grid.Row="5" Grid.Column="0" Name="statusBar" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">

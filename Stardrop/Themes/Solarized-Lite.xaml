@@ -44,6 +44,7 @@
       <!-- Custom brushes -->
       <SolidColorBrush x:Key="DataGridHeaderBrush" Color="{DynamicResource DarkGray}" />
       <SolidColorBrush x:Key="DataGridRowBackground" Color="{DynamicResource PerfectGray}" />
+      <SolidColorBrush x:Key="DataGridRowForeground" Color="{DynamicResource White}" />
       <SolidColorBrush x:Key="AlternativeDataGridRowBackground" Color="{DynamicResource OffGray}" />
       <SolidColorBrush x:Key="ComboBoxItemBackgroundBrush" Color="{DynamicResource DarkGray}" />
       <SolidColorBrush x:Key="ComboBoxItemSelectedBackgroundBrush" Color="{DynamicResource GrayBlue}" />
