@@ -171,19 +171,24 @@ namespace Stardrop.ViewModels
                 }
             }
 
-            // Remove the requirements for any mods that have their requirements already installed
+            EvaluateRequirements();
+        }
+
+        public void EvaluateRequirements()
+        {
+            // Flag any missing requirements
             foreach (var mod in Mods)
             {
-                var requirements = new List<ManifestDependency>();
                 foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
                 {
                     if (!Mods.Any(m => m.UniqueId.Equals(requirement.UniqueID)) || Mods.First(m => m.UniqueId.Equals(requirement.UniqueID)) is Mod matchedMod && matchedMod.IsModOutdated(requirement.MinimumVersion))
                     {
-                        requirements.Add(requirement);
+                        requirement.IsMissing = true;
                     }
                 }
 
-                mod.Requirements = requirements;
+                mod.NotifyPropertyChanged("Requirements");
+                mod.NotifyPropertyChanged("MissingRequirements");
             }
         }
 

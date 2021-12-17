@@ -26,7 +26,8 @@ namespace Stardrop.Models
         public string Description { get; set; }
         public string Author { get; set; }
         private List<ManifestDependency> _requirements { get; set; }
-        public List<ManifestDependency> Requirements { get { return _requirements; } set { _requirements = value; NotifyPropertyChanged("Requirements"); } }
+        public List<ManifestDependency> Requirements { get { return _requirements; } set { _requirements = value; NotifyPropertyChanged("Requirements"); NotifyPropertyChanged("MissingRequirements"); } }
+        public List<ManifestDependency> MissingRequirements { get { return _requirements.Where(r => r.IsMissing && r.IsRequired).ToList(); } }
         private string _uri { get; set; }
         public string Uri { get { return _uri; } set { _uri = value; NotifyPropertyChanged("Uri"); } }
         private bool _isEnabled { get; set; }
@@ -79,7 +80,7 @@ namespace Stardrop.Models
             return SemVersion.Parse(version) > Version;
         }
 
-        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        internal void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
         {
             if (PropertyChanged != null)
             {

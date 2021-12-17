@@ -20,8 +20,9 @@ namespace Stardrop.Models.SMAPI
         /// <summary>Whether the dependency must be installed to use the mod.</summary>
         public bool IsRequired { get; set; }
 
-        // <summary>Custom property for Stardrop.</summary>
+        // <summary>Custom properties for Stardrop.</summary>
         public string Name { get; set; }
+        public bool IsMissing { get; set; }
         public string GenericLink { get { return $"https://smapi.io/mods#{Name.Replace(" ", "_")}"; } }
 
         public ManifestDependency(string uniqueId, string minimumVersion, bool isRequired = false)

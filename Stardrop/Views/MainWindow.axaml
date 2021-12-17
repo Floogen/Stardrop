@@ -382,13 +382,13 @@
               <TextBlock Text="Author" TextAlignment="Center"/>
             </DataGridTextColumn.Header>
           </DataGridTextColumn>
-          <DataGridTemplateColumn SortMemberPath="Requirements.Count" CellStyleClasses="centered">
+          <DataGridTemplateColumn SortMemberPath="MissingRequirements.Count" CellStyleClasses="centered">
             <DataGridTemplateColumn.Header>
               <TextBlock Text="Missing Requirements" TextAlignment="Center" />
             </DataGridTemplateColumn.Header>
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <ListBox Items="{Binding Requirements}" Background="Transparent">
+                <ListBox Items="{Binding MissingRequirements}" Background="Transparent">
                   <ListBox.ItemTemplate>
                     <DataTemplate>
                       <Button Content="{Binding Path=Name}" Classes="hyperlink" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding GenericLink}" Foreground="{DynamicResource HighlightForegroundBrush}"/>

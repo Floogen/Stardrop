@@ -150,6 +150,8 @@ namespace Stardrop.Views
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
+            _viewModel.EvaluateRequirements();
+
             _viewModel.DragOverColor = "#ff9f2a";
         }
 
@@ -315,6 +317,21 @@ namespace Stardrop.Views
             if (checkBox is null)
             {
                 return;
+            }
+
+            // Get the mod based on the checkbox's content (which contaisn the UniqueId)
+            var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(checkBox.Content));
+            if (mod is not null && mod.IsEnabled)
+            {
+                // Enable any existing requirements
+                foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
+                {
+                    var requiredMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase));
+                    if (requiredMod is not null)
+                    {
+                        requiredMod.IsEnabled = true;
+                    }
+                }
             }
 
             this.UpdateProfile(GetCurrentProfile());
