@@ -367,7 +367,7 @@
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
-          <DataGridTextColumn Binding="{Binding Name}" Width="250">
+          <DataGridTextColumn Binding="{Binding Name}">
             <DataGridTextColumn.Header>
               <TextBlock Text="Mod Name" TextAlignment="Center" />
             </DataGridTextColumn.Header>
