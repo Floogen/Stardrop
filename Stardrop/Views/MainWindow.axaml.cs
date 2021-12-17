@@ -23,6 +23,7 @@ using Stardrop.Utilities;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Reflection;
 
 namespace Stardrop.Views
 {
@@ -37,7 +38,7 @@ namespace Stardrop.Views
             InitializeComponent();
 
             // Set the main window view
-            _viewModel = new MainWindowViewModel(Pathing.defaultModPath);
+            _viewModel = new MainWindowViewModel(Pathing.defaultModPath, typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
             DataContext = _viewModel;
 
             // Set the path according to the environmental variable SMAPI_MODS_PATH

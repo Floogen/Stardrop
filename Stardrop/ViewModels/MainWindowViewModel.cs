@@ -41,10 +41,12 @@ namespace Stardrop.ViewModels
         private string _updateStatusText = "Mods Ready to Update: Click to Refresh";
         public string UpdateStatusText { get { return _updateStatusText; } set { this.RaiseAndSetIfChanged(ref _updateStatusText, value); } }
         public int ModsWithCachedUpdates { get; set; }
+        public string Version { get; set; }
 
-        public MainWindowViewModel(string modsFilePath)
+        public MainWindowViewModel(string modsFilePath, string version)
         {
             DiscoverMods(modsFilePath);
+            Version = $"v{version}";
 
             // Create data view
             var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
