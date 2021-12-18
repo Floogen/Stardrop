@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Stardrop.Utilities.SMAPI
+namespace Stardrop.Utilities.External
 {
     static class SMAPI
     {

@@ -16,7 +16,7 @@ using SharpCompress.Archives;
 using SharpCompress.Readers;
 using System.Text.Json;
 using Stardrop.Models.SMAPI;
-using Stardrop.Utilities.SMAPI;
+using Stardrop.Utilities.External;
 using Stardrop.Models.SMAPI.Web;
 using Stardrop.Models.Data;
 using Stardrop.Utilities;
@@ -24,6 +24,7 @@ using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Reflection;
+using Semver;
 
 namespace Stardrop.Views
 {
@@ -118,8 +119,19 @@ namespace Stardrop.Views
             File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
-        private void MainWindow_Opened(object? sender, EventArgs e)
+        private async void MainWindow_Opened(object? sender, EventArgs e)
         {
+            // Check if current version is the latest
+            var versionToUri = await GitHub.GetLatestRelease();
+            if (versionToUri is not null && SemVersion.TryParse(versionToUri?.Key, out var latestVersion) && SemVersion.TryParse(_viewModel.Version, out var currentVersion) && latestVersion > currentVersion)
+            {
+                var requestWindow = new MessageWindow($"An update is available for Stardrop.\n\nWould you like to download it now?");
+                if (await requestWindow.ShowDialog<bool>(this))
+                {
+                    _viewModel.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
+                }
+            }
+
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
                 CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
