@@ -31,23 +31,30 @@ namespace Stardrop
             // Set up our logger
             helper = new Helper("log", ".txt", Pathing.GetLogFolderPath());
 
-            // Verify the folder paths are created
-            Directory.CreateDirectory(Pathing.GetCacheFolderPath());
-            Directory.CreateDirectory(Pathing.GetLogFolderPath());
-            Directory.CreateDirectory(Pathing.GetProfilesFolderPath());
-            Directory.CreateDirectory(Pathing.GetSelectedModsFolderPath());
-
-            // Verify the settings folder path is created
-            if (File.Exists(Pathing.GetSettingsPath()))
+            try
             {
-                settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(Pathing.GetSettingsPath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                // Verify the folder paths are created
+                Directory.CreateDirectory(Pathing.GetCacheFolderPath());
+                Directory.CreateDirectory(Pathing.GetLogFolderPath());
+                Directory.CreateDirectory(Pathing.GetProfilesFolderPath());
+                Directory.CreateDirectory(Pathing.GetSelectedModsFolderPath());
+
+                // Verify the settings folder path is created
+                if (File.Exists(Pathing.GetSettingsPath()))
+                {
+                    settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(Pathing.GetSettingsPath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                }
+                Pathing.SetModPath(settings.SMAPIFolderPath);
+
+                // Register icon provider(s)
+                IconProvider.Register<MaterialDesignIconProvider>();
+
+                BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
             }
-            Pathing.SetModPath(settings.SMAPIFolderPath);
-
-            // Register icon provider(s)
-            IconProvider.Register<MaterialDesignIconProvider>();
-
-            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            catch (Exception ex)
+            {
+                helper.Log(ex, Helper.Status.Alert);
+            }
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.
@@ -55,8 +62,7 @@ namespace Stardrop
         {
             return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .LogToTrace()
-                .UseReactiveUI();
+                .LogToTrace();
         }
     }
 }
