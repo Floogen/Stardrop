@@ -21,21 +21,20 @@ namespace Stardrop.Utilities.External
 
             // Create a throwaway client
             HttpClient client = new HttpClient();
-            var response = await client.GetAsync("https://api.github.com/repos/Floogen/FashionSense/releases/latest");
-
-            if (response.Content is not null)
+            try
             {
-                try
+                var response = await client.GetAsync("https://api.github.com/repos/Floogen/FashionSense/releases/latest");
+
+                if (response.Content is not null)
                 {
                     dynamic parsedContent = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
                     versionToUri = new KeyValuePair<string, string>(parsedContent.tag_name, parsedContent.html_url);
                 }
-                catch (Exception ex)
-                {
-                    Program.helper.Log($"Failed to get latest the version of Stardrop: {ex}", Helper.Status.Alert);
-                }
             }
-
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to get latest the version of Stardrop: {ex}", Helper.Status.Alert);
+            }
             client.Dispose();
 
             return versionToUri;
