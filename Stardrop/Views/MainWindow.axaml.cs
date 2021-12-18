@@ -158,6 +158,12 @@ namespace Stardrop.Views
 
         private async void Smapi_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            if (Program.settings.SMAPIFolderPath is null || !File.Exists(Pathing.GetSmapiPath()))
+            {
+                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
+                return;
+            }
+
             // Set the environment variable for the mod path
             var enabledModsPath = Pathing.GetSelectedModsFolderPath();
             Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
