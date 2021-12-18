@@ -301,7 +301,7 @@
           <MenuItem Header="Enable All Mods" Click="EnableAllMods_Click" Classes="Bar"/>
           <MenuItem Header="Disable All Mods" Click="DisableAllMods_Click" Classes="Bar"/>
           <Separator/>
-          <MenuItem Header="Update Stardrop" Foreground="Gray" Classes="Bar"/>
+          <MenuItem Header="Stardrop Repository" Classes="Bar" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop"/>
         </MenuItem>
       </Menu>
     </Border>
