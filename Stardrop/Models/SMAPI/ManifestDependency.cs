@@ -1,13 +1,14 @@
 ﻿using Semver;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Stardrop.Models.SMAPI
 {
-    public class ManifestDependency
+    public class ManifestDependency : INotifyPropertyChanged
     {
         // Based on SMAPI's IManifestDependency.cs: https://github.com/Pathoschild/SMAPI/blob/develop/src/SMAPI.Toolkit.CoreInterfaces/IManifestDependency.cs
 
@@ -21,15 +22,24 @@ namespace Stardrop.Models.SMAPI
         public bool IsRequired { get; set; }
 
         // <summary>Custom properties for Stardrop.</summary>
-        public string Name { get; set; }
+        private string _name { get; set; }
+        public string Name { get { return _name; } set { _name = value; NotifyPropertyChanged("Name"); } }
         public bool IsMissing { get; set; }
         public string GenericLink { get { return $"https://smapi.io/mods#{Name.Replace(" ", "_")}"; } }
 
+        public event PropertyChangedEventHandler? PropertyChanged;
         public ManifestDependency(string uniqueId, string minimumVersion, bool isRequired = false)
         {
             UniqueID = uniqueId;
             MinimumVersion = minimumVersion;
             IsRequired = isRequired;
+        }
+
+        private void NotifyPropertyChanged(string propertyName)
+        {
+            var handler = PropertyChanged;
+            if (handler != null)
+                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

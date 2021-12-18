@@ -708,6 +708,9 @@ namespace Stardrop.Views
                 // Cache the key data
                 File.WriteAllText(Pathing.GetKeyCachePath(), JsonSerializer.Serialize(modKeysCache, new JsonSerializerOptions() { WriteIndented = true }));
 
+                // Re-evaluate all mod requirements (to check for cached names)
+                _viewModel.EvaluateRequirements();
+
                 // Update the status to let the user know the update is finished
                 _viewModel.ModsWithCachedUpdates = modsToUpdate;
                 _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";

@@ -178,6 +178,13 @@ namespace Stardrop.ViewModels
 
         public void EvaluateRequirements()
         {
+            // Get cached key data
+            List<ModKeyInfo> modKeysCache = new List<ModKeyInfo>();
+            if (File.Exists(Pathing.GetKeyCachePath()))
+            {
+                modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            }
+
             // Flag any missing requirements
             foreach (var mod in Mods)
             {
@@ -186,6 +193,12 @@ namespace Stardrop.ViewModels
                     if (!Mods.Any(m => m.UniqueId.Equals(requirement.UniqueID)) || Mods.First(m => m.UniqueId.Equals(requirement.UniqueID)) is Mod matchedMod && matchedMod.IsModOutdated(requirement.MinimumVersion))
                     {
                         requirement.IsMissing = true;
+
+                        if (modKeysCache is not null)
+                        {
+                            var dependencyKey = modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase));
+                            requirement.Name = dependencyKey is null ? requirement.UniqueID : dependencyKey.Name;
+                        }
                     }
                 }
 
