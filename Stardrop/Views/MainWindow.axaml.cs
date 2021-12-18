@@ -349,7 +349,10 @@ namespace Stardrop.Views
         {
             var editorWindow = new SettingsWindow();
             editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            await editorWindow.ShowDialog<bool>(this);
+            if (await editorWindow.ShowDialog<bool>(this))
+            {
+                _viewModel.DiscoverMods(Pathing.defaultModPath);
+            }
         }
 
         private void LogFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
