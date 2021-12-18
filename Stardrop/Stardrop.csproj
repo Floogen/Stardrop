@@ -9,6 +9,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>E:\SteamLibrary\steamapps\common\Stardew Valley\Stardrop\Internals\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <Content Include="Themes\*" CopyToOutputDirectory="PreserveNewest" />
