@@ -85,7 +85,7 @@ namespace Stardrop.Views
 
         private void SetSMAPIPath(string[]? filePaths)
         {
-            if (filePaths is null)
+            if (filePaths is null || filePaths.Count() == 0)
             {
                 return;
             }
