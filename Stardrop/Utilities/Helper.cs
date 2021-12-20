@@ -47,7 +47,7 @@ namespace Stardrop.Utilities
 
         public string GetLogPath()
         {
-            return basePath + logFileName + logFileExtension;
+            return Path.Combine(basePath, String.Concat(logFileName, logFileExtension));
         }
 
         public void DisableTracing()

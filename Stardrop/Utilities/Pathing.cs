@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,13 +10,12 @@ namespace Stardrop.Utilities
 {
     public static class Pathing
     {
-        internal const string relativeDataPath = @"Data\";
-        internal const string relativeLogPath = @"Logs\";
+        internal const string relativeDataPath = @"Data";
+        internal const string relativeLogPath = @"Logs";
 
         internal static string defaultGamePath;
         internal static string defaultModPath;
         internal static string defaultHomePath;
-        internal static string smapiLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StardewValley", "ErrorLogs");
 
         internal static void EstablishPaths(string homePath, string smapiPath)
         {
@@ -60,6 +60,11 @@ namespace Stardrop.Utilities
         public static string GetSmapiPath()
         {
             return Path.Combine(defaultGamePath, "StardewModdingAPI.exe");
+        }
+
+        internal static string GetSmapiLogFolderPath()
+        {
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StardewValley", "ErrorLogs");
         }
 
         public static string GetCacheFolderPath()

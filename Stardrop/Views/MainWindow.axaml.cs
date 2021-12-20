@@ -286,7 +286,7 @@ namespace Stardrop.Views
             if (_searchBoxTimer is null)
             {
                 _searchBoxTimer = new DispatcherTimer();
-                _searchBoxTimer.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond / 2);
+                _searchBoxTimer.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 250);
                 _searchBoxTimer.Tick += SearchBoxTimer_Tick;
                 _searchBoxTimer.Start();
             }
@@ -578,14 +578,14 @@ namespace Stardrop.Views
                             return;
                         }
 
-                        FileSystemWatcher observer = new FileSystemWatcher(Pathing.smapiLogPath) { Filter = "*.txt", EnableRaisingEvents = true, NotifyFilter = NotifyFilters.Size };
+                        FileSystemWatcher observer = new FileSystemWatcher(Pathing.GetSmapiLogFolderPath()) { Filter = "*.txt", EnableRaisingEvents = true, NotifyFilter = NotifyFilters.Size };
                         var result = observer.WaitForChanged(WatcherChangeTypes.Changed, 60000);
 
                         // Kill SMAPI
                         smapi.Kill();
 
                         // Check if our observer timed out
-                        FileInfo smapiLog = new FileInfo(Path.Combine(Pathing.smapiLogPath, result.Name));
+                        FileInfo smapiLog = new FileInfo(Path.Combine(Pathing.GetSmapiLogFolderPath(), result.Name));
                         if (result.TimedOut || smapiLog is null)
                         {
                             CreateWarningWindow($"Unable to check SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
