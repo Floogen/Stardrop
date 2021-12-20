@@ -926,8 +926,6 @@ namespace Stardrop.Views
                     };
 
                     var process = Process.Start(processInfo);
-
-                    //Program.helper.Log(processInfo.Arguments);
                 }
             }
         }
@@ -946,7 +944,14 @@ namespace Stardrop.Views
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    Process.Start("open", folderPath);
+                    var processInfo = new ProcessStartInfo
+                    {
+                        FileName = folderPath,
+                        CreateNoWindow = false,
+                        UseShellExecute = true
+                    };
+
+                    var process = Process.Start(processInfo);
                 }
             }
             catch (Exception ex)
