@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace Stardrop.Views
@@ -77,7 +78,14 @@ namespace Stardrop.Views
         private async void SmapiFolderButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Filters.Add(new FileDialogFilter() { Name = "StardewModdingAPI.exe", Extensions = { "exe" } });
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                dialog.Filters.Add(new FileDialogFilter() { Name = "StardewModdingAPI.exe", Extensions = { "exe" } });
+            }
+            else
+            {
+                dialog.Filters.Add(new FileDialogFilter() { Name = "StardewValley"});
+            }
             dialog.AllowMultiple = false;
 
             this.SetSMAPIPath(await dialog.ShowAsync(this));
@@ -90,10 +98,17 @@ namespace Stardrop.Views
                 return;
             }
 
-            var smapiFileInfo = new FileInfo(filePaths[0]);
-            if (!smapiFileInfo.Name.Equals("StardewModdingAPI.exe", StringComparison.OrdinalIgnoreCase))
+            
+            var targetSmapiName = "StardewModdingAPI.exe";
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                new WarningWindow("The given file isn't StardewModdingAPI.exe\n\nReverting to previous path.", "OK").ShowDialog(this);
+                targetSmapiName = "StardewValley";
+            }
+
+            var smapiFileInfo = new FileInfo(filePaths[0]);
+            if (!smapiFileInfo.Name.Equals(targetSmapiName, StringComparison.OrdinalIgnoreCase))
+            {
+                new WarningWindow($"The given file isn't {targetSmapiName}\n\nReverting to previous path.", "OK").ShowDialog(this);
                 return;
             }
 

@@ -23,7 +23,7 @@ namespace Stardrop.Models.SMAPI
 
         // <summary>Custom properties for Stardrop.</summary>
         private string _name { get; set; }
-        public string Name { get { return _name; } set { _name = value; NotifyPropertyChanged("Name"); } }
+        public string Name { get { return _name; } set { _name = value; NotifyPropertyChanged("Name"); NotifyPropertyChanged("GenericLink"); } }
         public bool IsMissing { get; set; }
         public string GenericLink { get { return $"https://smapi.io/mods#{Name.Replace(" ", "_")}"; } }
 

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Stardrop.Utilities.External;
 using Stardrop.ViewModels;
 using System;
 using System.Diagnostics;
@@ -11,7 +12,7 @@ namespace Stardrop.Views
     public partial class WarningWindow : Window
     {
         private readonly WarningWindowViewModel _viewModel;
-        private Process _trackedProcess;
+        private bool _closeOnTrue;
 
         public WarningWindow()
         {
@@ -34,16 +35,16 @@ namespace Stardrop.Views
             _viewModel.ButtonText = buttonText;
         }
 
-        public WarningWindow(string warningText, string buttonText, Process process) : this(warningText, buttonText)
+        public WarningWindow(string warningText, string buttonText, bool closeOnTrue) : this(warningText, buttonText)
         {
-            _trackedProcess = process;
+            _closeOnTrue = closeOnTrue;
         }
 
         public override void Show()
         {
             base.Show();
 
-            if (_trackedProcess is not null)
+            if (_closeOnTrue)
             {
                 WaitForProcessToClose();
             }
@@ -51,7 +52,10 @@ namespace Stardrop.Views
 
         private async Task WaitForProcessToClose()
         {
-            await _trackedProcess.WaitForExitAsync();
+            while (SMAPI.IsRunning)
+            {
+                await Task.Delay(500);
+            }
             this.Close();
         }
 

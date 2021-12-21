@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -15,12 +16,57 @@ namespace Stardrop.Utilities.External
 {
     static class SMAPI
     {
+        internal static bool IsRunning = false;
+        internal static Process Process;
+
         public static ProcessStartInfo GetPrepareProcess(bool hideConsole)
         {
-            ProcessStartInfo processInfo = new ProcessStartInfo(Pathing.GetSmapiPath());
-            processInfo.CreateNoWindow = hideConsole;
+            var arguments = String.Empty;
+            var smapiInfo = new FileInfo(Pathing.GetSmapiPath());
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                arguments = $"-c \"open -n -a Terminal.app --args SMAPI_MODS_PATH='{Pathing.GetSelectedModsFolderPath()}' '{Pathing.GetSmapiPath().Replace("StardewModdingAPI", "StardewValley")}'\"";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "chmod",
+                        Arguments = $"u+x \"{Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Scripts", "SMAPI_linux.sh")}\"",
+                        CreateNoWindow = true
+                    }
+                }.Start();
+
+                arguments = $"'{Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Scripts", "SMAPI_linux.sh")}' '{Pathing.GetSelectedModsFolderPath()}' '{Pathing.GetSmapiPath()}'";
+                //arguments = $"-c \"open -a Terminal.app StardewModdingAPI --args --mods-path '{Pathing.GetSelectedModsFolderPath()}'\"";
+                // arguments = $"-c \"open -a Terminal.app '{Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Scripts", "SMAPI_linux.sh")}' --args '{Pathing.GetSelectedModsFolderPath()}' '{Pathing.GetSmapiPath()}'\"";
+            }
+
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? smapiInfo.FullName : "/bin/bash",
+                Arguments = arguments,
+                WorkingDirectory = smapiInfo.DirectoryName,
+                RedirectStandardOutput = false,
+                RedirectStandardError = false,
+                CreateNoWindow = hideConsole,
+                UseShellExecute = false
+            };
+            processInfo.EnvironmentVariables["SMAPI_MODS_PATH"] = Pathing.GetSelectedModsFolderPath();
 
             return processInfo;
+        }
+
+        public static string GetProcessName()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return "StardewModdingAPI";
+            }
+
+            return "StardewModdingA";
         }
 
         public async static Task<List<ModEntry>> GetModUpdateData(GameDetails gameDetails, List<Mod> mods)

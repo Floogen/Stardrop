@@ -33,6 +33,7 @@ namespace Stardrop.Views
         private readonly MainWindowViewModel _viewModel;
         private readonly ProfileEditorViewModel _editorView;
         private DispatcherTimer _searchBoxTimer;
+        private DispatcherTimer _smapiProcessTimer;
 
         public MainWindow()
         {
@@ -106,9 +107,22 @@ namespace Stardrop.Views
             filterColumnBox.SelectedIndex = 0;
             filterColumnBox.SelectionChanged += FilterComboBox_SelectionChanged;
 
+            // Have to register this even here, as MacOS doesn't detect it via axaml during build
+            this.PropertyChanged += MainWindow_PropertyChanged;
+
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private async void MainWindow_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if(e.Property == WindowStateProperty && (WindowState)e.OldValue == WindowState.Minimized && SMAPI.IsRunning)
+            {
+                var warningWindow = new WarningWindow("Stardrop is locked while the SMAPI is running. Any changes made will not reflect until SMAPI is closed.", "Unlock", true);
+                warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                await warningWindow.ShowDialog(this);
+            }
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -182,22 +196,34 @@ namespace Stardrop.Views
 
             this.UpdateEnabledModsFolder(enabledModsPath);
 
-            using (Process smapi = Process.Start(Pathing.GetSmapiPath()))
+            using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
             {
+                SMAPI.IsRunning = true;
                 _viewModel.IsLocked = true;
 
-                var warningWindow = new WarningWindow("Stardrop is locked while the SMAPI is running. Any changes made will not reflect until SMAPI is closed.", "Unlock", smapi);
-                warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                await warningWindow.ShowDialog(this);
+                _smapiProcessTimer = new DispatcherTimer();
+                _smapiProcessTimer.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 500);
+                _smapiProcessTimer.Tick += _smapiProcessTimer_Tick;
+                _smapiProcessTimer.Start();
 
-                await WaitForProcessToClose(smapi);
+                this.WindowState = WindowState.Minimized;
             }
         }
 
-        private async Task WaitForProcessToClose(Process trackedProcess)
+        private void _smapiProcessTimer_Tick(object? sender, EventArgs e)
         {
-            await trackedProcess.WaitForExitAsync();
-            _viewModel.IsLocked = false;
+            if (SMAPI.Process is null)
+            {
+                SMAPI.Process = Process.GetProcessesByName(SMAPI.GetProcessName()).FirstOrDefault();
+            }
+            else if (SMAPI.Process.HasExited || Process.GetProcessesByName(SMAPI.GetProcessName()).FirstOrDefault() is null)
+            {
+                SMAPI.Process = null;
+                SMAPI.IsRunning = false;
+
+                _viewModel.IsLocked = false;
+                _smapiProcessTimer.IsEnabled = false;
+            }
         }
 
         private void ModGridMenuColumn_Opening(object sender, System.ComponentModel.CancelEventArgs e)
@@ -286,7 +312,7 @@ namespace Stardrop.Views
             if (_searchBoxTimer is null)
             {
                 _searchBoxTimer = new DispatcherTimer();
-                _searchBoxTimer.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 250);
+                _searchBoxTimer.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond / 2);
                 _searchBoxTimer.Tick += SearchBoxTimer_Tick;
                 _searchBoxTimer.Start();
             }
@@ -569,43 +595,75 @@ namespace Stardrop.Views
 
                 if (Program.settings.GameDetails is null || Program.settings.GameDetails.HasSMAPIUpdated(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion))
                 {
-                    using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(true)))
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        if (smapi is null)
+                        var smapiLogPath = Path.Combine(Pathing.GetSmapiLogFolderPath(), "SMAPI-latest.txt");
+                        if (File.Exists(smapiLogPath))
                         {
-                            CreateWarningWindow($"Unable to start SMAPI.", "OK");
-                            Program.helper.Log($"SMAPI was unable to start via Process.Start", Helper.Status.Alert);
-                            return;
-                        }
+                            // Parse SMAPI's log
+                            Program.helper.Log($"Grabbing game details (SMAPI / SDV versions) from SMAPI's log file.");
 
-                        FileSystemWatcher observer = new FileSystemWatcher(Pathing.GetSmapiLogFolderPath()) { Filter = "*.txt", EnableRaisingEvents = true, NotifyFilter = NotifyFilters.Size };
-                        var result = observer.WaitForChanged(WatcherChangeTypes.Changed, 60000);
-
-                        // Kill SMAPI
-                        smapi.Kill();
-
-                        // Check if our observer timed out
-                        FileInfo smapiLog = new FileInfo(Path.Combine(Pathing.GetSmapiLogFolderPath(), result.Name));
-                        if (result.TimedOut || smapiLog is null)
-                        {
-                            CreateWarningWindow($"Unable to check SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
-                            Program.helper.Log($"SMAPI started but Stardrop was unable to access SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
-                            return;
-                        }
-
-                        // Parse SMAPI's log
-                        Program.helper.Log($"Grabbing game details (SMAPI / SDV versions) from SMAPI's log file.");
-
-                        using (var fileStream = new FileStream(smapiLog.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        using (var reader = new StreamReader(fileStream))
-                        {
-                            while (reader.Peek() >= 0)
+                            using (var fileStream = new FileStream(smapiLogPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                            using (var reader = new StreamReader(fileStream))
                             {
-                                var line = reader.ReadLine();
-                                if (Program.gameDetailsPattern.IsMatch(line))
+                                while (reader.Peek() >= 0)
                                 {
-                                    var match = Program.gameDetailsPattern.Match(line);
-                                    Program.settings.GameDetails = new GameDetails(match.Groups["gameVersion"].ToString(), match.Groups["smapiVersion"].ToString(), match.Groups["system"].ToString());
+                                    var line = reader.ReadLine();
+                                    if (Program.gameDetailsPattern.IsMatch(line))
+                                    {
+                                        var match = Program.gameDetailsPattern.Match(line);
+                                        Program.settings.GameDetails = new GameDetails(match.Groups["gameVersion"].ToString(), match.Groups["smapiVersion"].ToString(), match.Groups["system"].ToString());
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            CreateWarningWindow("Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.", "OK");
+                            Program.helper.Log($"Unable to locate SMAPI-latest.txt", Helper.Status.Alert);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(true)))
+                        {
+                            if (smapi is null)
+                            {
+                                CreateWarningWindow($"Unable to start SMAPI.", "OK");
+                                Program.helper.Log($"SMAPI was unable to start via Process.Start", Helper.Status.Alert);
+                                return;
+                            }
+
+                            FileSystemWatcher observer = new FileSystemWatcher(Pathing.GetSmapiLogFolderPath()) { Filter = "*.txt", EnableRaisingEvents = true, NotifyFilter = NotifyFilters.Size };
+                            var result = observer.WaitForChanged(WatcherChangeTypes.Changed, 60000);
+
+                            // Kill SMAPI
+                            smapi.Kill();
+
+                            // Check if our observer timed out
+                            FileInfo smapiLog = new FileInfo(Path.Combine(Pathing.GetSmapiLogFolderPath(), result.Name));
+                            if (result.TimedOut || smapiLog is null)
+                            {
+                                CreateWarningWindow($"Unable to check SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
+                                Program.helper.Log($"SMAPI started but Stardrop was unable to access SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
+                                return;
+                            }
+
+                            // Parse SMAPI's log
+                            Program.helper.Log($"Grabbing game details (SMAPI / SDV versions) from SMAPI's log file.");
+
+                            using (var fileStream = new FileStream(smapiLog.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                            using (var reader = new StreamReader(fileStream))
+                            {
+                                while (reader.Peek() >= 0)
+                                {
+                                    var line = reader.ReadLine();
+                                    if (Program.gameDetailsPattern.IsMatch(line))
+                                    {
+                                        var match = Program.gameDetailsPattern.Match(line);
+                                        Program.settings.GameDetails = new GameDetails(match.Groups["gameVersion"].ToString(), match.Groups["smapiVersion"].ToString(), match.Groups["system"].ToString());
+                                    }
                                 }
                             }
                         }
@@ -850,7 +908,27 @@ namespace Stardrop.Views
                 {
                     continue;
                 }
-                DirectoryLink.Create(Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name), mod.ModFileInfo.DirectoryName, true);
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    DirectoryLink.Create(Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name), mod.ModFileInfo.DirectoryName, true);
+                }
+                else
+                {
+                    var processInfo = new ProcessStartInfo
+                    {
+                        FileName = "/bin/bash",
+                        Arguments = $"-c \"ln -s '{mod.ModFileInfo.DirectoryName}' '{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}'\"",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+
+                    var process = Process.Start(processInfo);
+
+                    //Program.helper.Log(processInfo.Arguments);
+                }
             }
         }
 
