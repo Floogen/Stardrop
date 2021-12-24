@@ -76,6 +76,8 @@
   </ItemGroup>
 
   <Target Name="FolderProfile - Linux" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='linux-x64'">
+    <Exec Command="del Stardrop.zip 2>nul" WorkingDirectory="$(PublishDir)" />
+
     <Copy SourceFiles="@(RenameExecutableLinux)" DestinationFiles="@(RenameExecutableLinux-&gt;Replace('Stardrop','Internal'))" />
     <Copy SourceFiles="@(RenameDatabaseLinux)" DestinationFiles="@(RenameDatabaseLinux-&gt;Replace('Stardrop','Internal'))" />
     <Delete Files="@(RenameExecutableLinux);@(RenameDatabaseLinux)" />
@@ -103,6 +105,8 @@
   </ItemGroup>
 
   <Target Name="FolderProfile - MacOS" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='osx-x64'">
+    <Exec Command="del Stardrop.zip 2>nul" WorkingDirectory="$(PublishDir)" />
+
     <Exec Command="@(WSL) mkdir @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
 
     <Exec Command="@(WSL) mv Themes @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
@@ -121,6 +125,8 @@
   </ItemGroup>
 
   <Target Name="FolderProfile - Windows" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='win-x64'">
+    <Exec Command="del Stardrop.zip 2>nul" WorkingDirectory="$(PublishDir)" />
+
     <Exec Command="@(WSL) mkdir @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
 
     <Exec Command="@(WSL) mv Themes @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
