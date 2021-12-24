@@ -21,6 +21,13 @@ namespace Stardrop.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        private string ChromeHint { get; set; } = "NoChrome";
+        private bool HasSystemDecorations { get; set; } = true;
+        private bool ShowTitle { get; set; } = true;
+        private bool ShowMainMenu { get; set; } = true;
+        private bool ShowWindowMenu { get; set; } = true;
+
+
         private string _dragOverColor = "#ff9f2a";
         public string DragOverColor { get { return _dragOverColor; } set { this.RaiseAndSetIfChanged(ref _dragOverColor, value); } }
         private bool _isLocked;
@@ -36,8 +43,6 @@ namespace Stardrop.ViewModels
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }
         private string _columnFilter;
         public string ColumnFilter { get { return _columnFilter; } set { _columnFilter = value; UpdateFilter(); } }
-        private string _changeStateText;
-        public string ChangeStateText { get { return _changeStateText; } set { this.RaiseAndSetIfChanged(ref _changeStateText, value); } }
         private string _updateStatusText = "Mods Ready to Update: Click to Refresh";
         public string UpdateStatusText { get { return _updateStatusText; } set { this.RaiseAndSetIfChanged(ref _updateStatusText, value); } }
         public int ModsWithCachedUpdates { get; set; }
@@ -53,6 +58,20 @@ namespace Stardrop.ViewModels
 
             DataView = new DataGridCollectionView(Mods);
             DataView.SortDescriptions.Add(dataGridSortDescription);
+
+            // Do OS specific setup
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                ChromeHint = "Default";
+                ShowMainMenu = false;
+                ShowWindowMenu = false;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                ChromeHint = "Default";
+                ShowWindowMenu = false;
+                ShowTitle = false;
+            }
         }
 
         public void OpenBrowser(string url)

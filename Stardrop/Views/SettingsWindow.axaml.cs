@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Stardrop.Models;
 using Stardrop.Utilities;
+using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +23,9 @@ namespace Stardrop.Views
         public SettingsWindow()
         {
             InitializeComponent();
+
+            // Set the datacontext
+            DataContext = new SettingsWindowViewModel();
 
             // Handle buttons
             this.FindControl<Button>("exitButton").Click += Exit_Click;
@@ -63,6 +67,7 @@ namespace Stardrop.Views
 
             _oldTheme = Application.Current.Styles[0];
             _oldThemeName = Program.settings.Theme;
+
 #if DEBUG
             this.AttachDevTools();
 #endif
@@ -84,35 +89,11 @@ namespace Stardrop.Views
             }
             else
             {
-                dialog.Filters.Add(new FileDialogFilter() { Name = "StardewValley"});
+                dialog.Filters.Add(new FileDialogFilter() { Name = "StardewModdingAPI", Extensions = { "*" } });
             }
             dialog.AllowMultiple = false;
 
             this.SetSMAPIPath(await dialog.ShowAsync(this));
-        }
-
-        private void SetSMAPIPath(string[]? filePaths)
-        {
-            if (filePaths is null || filePaths.Count() == 0)
-            {
-                return;
-            }
-
-            
-            var targetSmapiName = "StardewModdingAPI.exe";
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                targetSmapiName = "StardewValley";
-            }
-
-            var smapiFileInfo = new FileInfo(filePaths[0]);
-            if (!smapiFileInfo.Name.Equals(targetSmapiName, StringComparison.OrdinalIgnoreCase))
-            {
-                new WarningWindow($"The given file isn't {targetSmapiName}\n\nReverting to previous path.", "OK").ShowDialog(this);
-                return;
-            }
-
-            this.FindControl<TextBox>("smapiFolderPathBox").Text = smapiFileInfo.DirectoryName;
         }
 
         private void ApplyButton_Click(object? sender, RoutedEventArgs e)
@@ -125,6 +106,30 @@ namespace Stardrop.Views
             File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, new JsonSerializerOptions() { WriteIndented = true }));
 
             this.Close(true);
+        }
+
+        private void SetSMAPIPath(string[]? filePaths)
+        {
+            if (filePaths is null || filePaths.Count() == 0)
+            {
+                return;
+            }
+
+
+            var targetSmapiName = "StardewModdingAPI.exe";
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                targetSmapiName = "StardewModdingAPI";
+            }
+
+            var smapiFileInfo = new FileInfo(filePaths[0]);
+            if (!smapiFileInfo.Name.Equals(targetSmapiName, StringComparison.OrdinalIgnoreCase))
+            {
+                new WarningWindow($"The given file isn't {targetSmapiName}\n\nReverting to previous path.", "OK").ShowDialog(this);
+                return;
+            }
+
+            this.FindControl<TextBox>("smapiFolderPathBox").Text = smapiFileInfo.DirectoryName;
         }
 
         private void InitializeComponent()

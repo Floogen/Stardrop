@@ -61,6 +61,7 @@ namespace Stardrop
         public static AppBuilder BuildAvaloniaApp()
         {
             return AppBuilder.Configure<App>()
+                .UseReactiveUI()
                 .UsePlatformDetect()
                 .LogToTrace();
         }

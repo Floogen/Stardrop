@@ -17,7 +17,8 @@ namespace Stardrop.Views
         public WarningWindow()
         {
             InitializeComponent();
-            // Set the main window view
+
+            // Set the datacontext
             _viewModel = new WarningWindowViewModel();
             DataContext = _viewModel;
 

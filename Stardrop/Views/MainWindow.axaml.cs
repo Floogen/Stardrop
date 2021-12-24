@@ -117,7 +117,7 @@ namespace Stardrop.Views
 
         private async void MainWindow_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if(e.Property == WindowStateProperty && (WindowState)e.OldValue == WindowState.Minimized && SMAPI.IsRunning)
+            if (e.Property == WindowStateProperty && (WindowState)e.OldValue == WindowState.Minimized && SMAPI.IsRunning)
             {
                 var warningWindow = new WarningWindow("Stardrop is locked while the SMAPI is running. Any changes made will not reflect until SMAPI is closed.", "Unlock", true);
                 warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -182,34 +182,6 @@ namespace Stardrop.Views
             _viewModel.DragOverColor = "#ff9f2a";
         }
 
-        private async void Smapi_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            if (Program.settings.SMAPIFolderPath is null || !File.Exists(Pathing.GetSmapiPath()))
-            {
-                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
-                return;
-            }
-
-            // Set the environment variable for the mod path
-            var enabledModsPath = Pathing.GetSelectedModsFolderPath();
-            Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
-
-            this.UpdateEnabledModsFolder(enabledModsPath);
-
-            using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
-            {
-                SMAPI.IsRunning = true;
-                _viewModel.IsLocked = true;
-
-                _smapiProcessTimer = new DispatcherTimer();
-                _smapiProcessTimer.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 500);
-                _smapiProcessTimer.Tick += _smapiProcessTimer_Tick;
-                _smapiProcessTimer.Start();
-
-                this.WindowState = WindowState.Minimized;
-            }
-        }
-
         private void _smapiProcessTimer_Tick(object? sender, EventArgs e)
         {
             if (SMAPI.Process is null)
@@ -223,38 +195,14 @@ namespace Stardrop.Views
 
                 _viewModel.IsLocked = false;
                 _smapiProcessTimer.IsEnabled = false;
+
+                this.WindowState = WindowState.Normal;
             }
-        }
-
-        private void ModGridMenuColumn_Opening(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-
-        }
-
-        private void ModGridMenuColumn_ChangeSort(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-
-        }
-
-        private void ModGridColumnMenu_ChangeVisibility(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-
-        }
-
-        private void ModGridMenuRow_Opening(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            var selectedMod = this.FindControl<DataGrid>("modGrid").SelectedItem as Mod;
-            if (selectedMod is null)
-            {
-                return;
-            }
-
-            _viewModel.ChangeStateText = selectedMod.IsEnabled ? "Disable" : "Enable";
         }
 
         private void ModGridMenuRow_ChangeState(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var selectedMod = this.FindControl<DataGrid>("modGrid").SelectedItem as Mod;
+            var selectedMod = (sender as MenuItem).DataContext as Mod;
             if (selectedMod is null)
             {
                 return;
@@ -266,8 +214,8 @@ namespace Stardrop.Views
 
         private void ModGridMenuRow_OpenFolderPath(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var selectedMod = this.FindControl<DataGrid>("modGrid").SelectedItem as Mod;
-            if (selectedMod is null || selectedMod.ModFileInfo is null)
+            var selectedMod = (sender as MenuItem).DataContext as Mod;
+            if (selectedMod is null)
             {
                 return;
             }
@@ -277,7 +225,7 @@ namespace Stardrop.Views
 
         private async void ModGridMenuRow_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var selectedMod = this.FindControl<DataGrid>("modGrid").SelectedItem as Mod;
+            var selectedMod = (sender as MenuItem).DataContext as Mod;
             if (selectedMod is null)
             {
                 return;
@@ -364,17 +312,31 @@ namespace Stardrop.Views
                 return;
             }
 
-            // Get the mod based on the checkbox's content (which contaisn the UniqueId)
+            // Get the mod based on the checkbox's content (which contains the UniqueId)
             var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(checkBox.Content));
-            if (mod is not null && mod.IsEnabled)
+            if (mod is not null)
             {
-                // Enable any existing requirements
-                foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
+                if (mod.IsEnabled)
                 {
-                    var requiredMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase));
-                    if (requiredMod is not null)
+                    // Enable any existing requirements
+                    foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
                     {
-                        requiredMod.IsEnabled = true;
+                        var requiredMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase));
+                        if (requiredMod is not null)
+                        {
+                            requiredMod.IsEnabled = true;
+                        }
+                    }
+                }
+                else
+                {
+                    // Disable any mods that require it requirements
+                    foreach (var childMod in _viewModel.Mods.Where(m => m.Requirements.Any(r => r.UniqueID.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase))))
+                    {
+                        if (childMod is not null)
+                        {
+                            childMod.IsEnabled = false;
+                        }
                     }
                 }
             }
@@ -389,84 +351,83 @@ namespace Stardrop.Views
             editorWindow.ShowDialog(this);
         }
 
-        private async void Settings_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        // Menu related click events
+        private void Smapi_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var editorWindow = new SettingsWindow();
-            editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            if (await editorWindow.ShowDialog<bool>(this))
-            {
-                _viewModel.DiscoverMods(Pathing.defaultModPath);
-            }
+            StartSMAPI();
         }
 
-        private void LogFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void Smapi_Click(object? sender, EventArgs e)
         {
-            //Path.Combine(Directory.GetCurrentDirectory(), Pathing.relativeLogPath)
-            OpenNativeExplorer(Pathing.GetLogFolderPath());
+            StartSMAPI();
         }
 
         private async void AddMod_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
-            {
-                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
-                return;
-            }
+            await HandleModAdd();
+        }
 
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Filters.Add(new FileDialogFilter() { Name = "Mod Archive (*.zip, *.7z, *.rar)", Extensions = { "zip", "7z", "rar" } });
-            dialog.AllowMultiple = false;
+        private async void AddMod_Click(object? sender, EventArgs e)
+        {
+            await HandleModAdd();
+        }
 
-            this.AddMods(await dialog.ShowAsync(this));
+        private async void Settings_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            await DisplaySettingsWindow();
+        }
+
+        private async void Settings_Click(object? sender, EventArgs e)
+        {
+            await DisplaySettingsWindow();
+        }
+
+        private void LogFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            OpenNativeExplorer(Pathing.GetLogFolderPath());
+        }
+
+        private void LogFile_Click(object? sender, EventArgs e)
+        {
+            OpenNativeExplorer(Pathing.GetLogFolderPath());
         }
 
         private async void ModUpdateCheck_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            if (Pathing.defaultModPath is null)
-            {
-                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
-                return;
-            }
+            await HandleModUpdateCheck();
+        }
 
-            if (!IsUpdateCacheValid())
-            {
-                await CheckForModUpdates(_viewModel.Mods.ToList());
-            }
-            else
-            {
-                CreateWarningWindow($"Updates can only be requested once an hour.\n\nPlease try again in {GetMinutesBeforeAllowedUpdate()} minute(s).", "OK");
-            }
+        private async void ModUpdateCheck_Click(object? sender, EventArgs e)
+        {
+            await HandleModUpdateCheck();
         }
 
         private async void EnableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var requestWindow = new MessageWindow($"Enable all mods?\n\nNote: This cannot be undone.");
-            if (await requestWindow.ShowDialog<bool>(this))
-            {
-                foreach (var mod in _viewModel.Mods.Where(m => !m.IsEnabled))
-                {
-                    mod.IsEnabled = true;
-                }
+            await HandleBulkModStateChange(true);
+        }
 
-                this.UpdateProfile(GetCurrentProfile());
-            }
+        private async void EnableAllMods_Click(object? sender, EventArgs e)
+        {
+            await HandleBulkModStateChange(true);
         }
 
         private async void DisableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var requestWindow = new MessageWindow($"Disable all mods?\n\nNote: This cannot be undone.");
-            if (await requestWindow.ShowDialog<bool>(this))
-            {
-                foreach (var mod in _viewModel.Mods.Where(m => m.IsEnabled))
-                {
-                    mod.IsEnabled = false;
-                }
+            await HandleBulkModStateChange(false);
+        }
 
-                this.UpdateProfile(GetCurrentProfile());
-            }
+        private async void DisableAllMods_Click(object? sender, EventArgs e)
+        {
+            await HandleBulkModStateChange(false);
         }
 
         private void Exit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Exit_Click(object? sender, EventArgs e)
         {
             this.Close();
         }
@@ -486,6 +447,100 @@ namespace Stardrop.Views
             if (e.Pointer.IsPrimary && !menu.IsOpen && !e.Handled)
             {
                 this.BeginMoveDrag(e);
+            }
+        }
+
+        // End of events
+        private void StartSMAPI()
+        {
+            if (Program.settings.SMAPIFolderPath is null || !File.Exists(Pathing.GetSmapiPath()))
+            {
+                CreateWarningWindow($"Unable to locate StardewModdingAPI\n\nPlease set the correct file path under\nView > Settings", "OK");
+                if (Program.settings.SMAPIFolderPath is null)
+                {
+                    Program.helper.Log("No path given for StardewModdingAPI.", Helper.Status.Warning);
+                }
+                else
+                {
+                    Program.helper.Log($"Bad path given for StardewModdingAPI: {Pathing.GetSmapiPath()}", Helper.Status.Warning);
+                }
+                return;
+            }
+
+            // Set the environment variable for the mod path
+            var enabledModsPath = Pathing.GetSelectedModsFolderPath();
+            Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
+
+            this.UpdateEnabledModsFolder(enabledModsPath);
+
+            using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
+            {
+                SMAPI.IsRunning = true;
+                _viewModel.IsLocked = true;
+
+                _smapiProcessTimer = new DispatcherTimer();
+                _smapiProcessTimer.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 500);
+                _smapiProcessTimer.Tick += _smapiProcessTimer_Tick;
+                _smapiProcessTimer.Start();
+
+                this.WindowState = WindowState.Minimized;
+            }
+        }
+
+        private async Task HandleModAdd()
+        {
+            if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
+            {
+                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
+                return;
+            }
+
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filters.Add(new FileDialogFilter() { Name = "Mod Archive (*.zip, *.7z, *.rar)", Extensions = { "zip", "7z", "rar" } });
+            dialog.AllowMultiple = false;
+
+            await this.AddMods(await dialog.ShowAsync(this));
+        }
+
+        private async Task DisplaySettingsWindow()
+        {
+            var editorWindow = new SettingsWindow();
+            editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            if (await editorWindow.ShowDialog<bool>(this))
+            {
+                _viewModel.DiscoverMods(Pathing.defaultModPath);
+            }
+        }
+
+        private async Task HandleModUpdateCheck()
+        {
+            if (Pathing.defaultModPath is null)
+            {
+                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
+                return;
+            }
+
+            if (!IsUpdateCacheValid())
+            {
+                await CheckForModUpdates(_viewModel.Mods.ToList());
+            }
+            else
+            {
+                CreateWarningWindow($"Updates can only be requested once an hour.\n\nPlease try again in {GetMinutesBeforeAllowedUpdate()} minute(s).", "OK");
+            }
+        }
+
+        private async Task HandleBulkModStateChange(bool enableState)
+        {
+            var requestWindow = new MessageWindow($"{(enableState ? "Enable" : "Disable")} all mods?\n\nNote: This cannot be undone.");
+            if (await requestWindow.ShowDialog<bool>(this))
+            {
+                foreach (var mod in _viewModel.Mods.Where(m => m.IsEnabled != enableState))
+                {
+                    mod.IsEnabled = enableState;
+                }
+
+                this.UpdateProfile(GetCurrentProfile());
             }
         }
 

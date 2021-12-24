@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
@@ -13,6 +14,8 @@ namespace Stardrop.ViewModels
     {
         public ObservableCollection<Profile> Profiles { get; set; }
         public List<Profile> OldProfiles { get; set; }
+        public string ToolTip_Save { get; set; }
+        public string ToolTip_Cancel { get; set; }
 
         private readonly string _profileFilePath;
 
@@ -60,6 +63,17 @@ namespace Stardrop.ViewModels
             }
 
             OldProfiles = Profiles.ToList();
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                ToolTip_Save = "Save Changes";
+                ToolTip_Cancel = "Cancel";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                // TEMPORARY FIX: Due to bug with Avalonia on Linux platforms, tooltips currently cause crashes when they disappear
+                // To work around this, tooltips are purposely not displayed
+            }
         }
 
         internal void CreateProfile(Profile profile, bool force = false)

@@ -31,7 +31,8 @@ namespace Stardrop.Models
         private string _uri { get; set; }
         public string Uri { get { return _uri; } set { _uri = value; NotifyPropertyChanged("Uri"); } }
         private bool _isEnabled { get; set; }
-        public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); } }
+        public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); NotifyPropertyChanged("ChangeStateText"); } }
+        public string ChangeStateText { get { return IsEnabled ? "Disable" : "Enable"; } }
         private WikiCompatibilityStatus _status { get; set; }
         public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); } }
         public string ParsedStatus

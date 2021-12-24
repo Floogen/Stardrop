@@ -29,19 +29,7 @@ namespace Stardrop.Utilities.External
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = "chmod",
-                        Arguments = $"u+x \"{Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Scripts", "SMAPI_linux.sh")}\"",
-                        CreateNoWindow = true
-                    }
-                }.Start();
-
-                arguments = $"'{Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Scripts", "SMAPI_linux.sh")}' '{Pathing.GetSelectedModsFolderPath()}' '{Pathing.GetSmapiPath()}'";
-                //arguments = $"-c \"open -a Terminal.app StardewModdingAPI --args --mods-path '{Pathing.GetSelectedModsFolderPath()}'\"";
-                // arguments = $"-c \"open -a Terminal.app '{Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Scripts", "SMAPI_linux.sh")}' --args '{Pathing.GetSelectedModsFolderPath()}' '{Pathing.GetSmapiPath()}'\"";
+                arguments = $"\"{Pathing.GetSmapiPath().Replace("StardewModdingAPI", "StardewValley")}\"";
             }
 
             var processInfo = new ProcessStartInfo
@@ -61,12 +49,12 @@ namespace Stardrop.Utilities.External
 
         public static string GetProcessName()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return "StardewModdingAPI";
+                return "StardewModdingA";
             }
 
-            return "StardewModdingA";
+            return "StardewModdingAPI";
         }
 
         public async static Task<List<ModEntry>> GetModUpdateData(GameDetails gameDetails, List<Mod> mods)

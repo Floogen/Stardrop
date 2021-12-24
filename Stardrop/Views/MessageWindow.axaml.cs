@@ -15,6 +15,7 @@ namespace Stardrop.Views
         public MessageWindow()
         {
             InitializeComponent();
+
             // Set the main window view
             _viewModel = new MessageWindowViewModel();
             DataContext = _viewModel;

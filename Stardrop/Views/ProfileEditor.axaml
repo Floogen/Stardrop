@@ -78,8 +78,8 @@
     </StackPanel>
 
     <DockPanel Grid.Row="2" Grid.Column="1" Margin="0 0 0 10">
-      <Button Name="applyButton" ToolTip.Tip="Save Changes" i:Attached.Icon="mdi-check" Margin="-40 0 15 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent"/>
-      <Button Name="cancelButton" ToolTip.Tip="Cancel" i:Attached.Icon="mdi-cancel" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
+      <Button Name="applyButton" ToolTip.Tip="{Binding ToolTip_Save}" i:Attached.Icon="mdi-check" Margin="-40 0 15 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent"/>
+      <Button Name="cancelButton" ToolTip.Tip="{Binding ToolTip_Cancel}" i:Attached.Icon="mdi-cancel" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
     </DockPanel>
   </Grid>
 </Window>
