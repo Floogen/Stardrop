@@ -105,7 +105,7 @@
   </ItemGroup>
 
   <Target Name="FolderProfile - MacOS" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='osx-x64'">
-    <Exec Command="del Stardrop.zip 2>nul" WorkingDirectory="$(PublishDir)" />
+    <Exec Command="del Stardrop.zip 2&gt;nul" WorkingDirectory="$(PublishDir)" />
 
     <Exec Command="@(WSL) mkdir @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
 
@@ -114,6 +114,8 @@
     <Exec Command="@(WSL) mv Stardrop Stardrop.pdb @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
 
     <Exec Command="ren @(TempFolderPath) Stardrop" WorkingDirectory="$(PublishDir)" />
+    <Exec Command="@(WSL) chmod +x Stardrop" WorkingDirectory="$(PublishDir)/Stardrop" />
+
     <Exec Command="@(WSL) zip -r Stardrop.zip Stardrop" WorkingDirectory="$(PublishDir)" />
     <Exec Command="rmdir Stardrop /S /Q" WorkingDirectory="$(PublishDir)" />
   </Target>
