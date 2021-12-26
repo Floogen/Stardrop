@@ -10,9 +10,6 @@ namespace Stardrop.Utilities
 {
     public static class Pathing
     {
-        internal const string relativeDataPath = @"Data";
-        internal const string relativeLogPath = @"Logs";
-
         internal static string defaultGamePath;
         internal static string defaultModPath;
         internal static string defaultHomePath;
@@ -25,7 +22,7 @@ namespace Stardrop.Utilities
 
         internal static void SetHomePath(string homePath)
         {
-            defaultHomePath = Path.Combine(homePath, relativeDataPath);
+            defaultHomePath = Path.Combine(homePath, "Stardrop", "Data");
         }
 
         internal static void SetModPath(string smapiPath)
@@ -39,7 +36,7 @@ namespace Stardrop.Utilities
 
         internal static string GetLogFolderPath()
         {
-            return Path.Combine(defaultHomePath, relativeLogPath);
+            return Path.Combine(defaultHomePath, "Logs");
         }
 
         internal static string GetSettingsPath()
