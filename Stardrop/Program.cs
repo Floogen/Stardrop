@@ -6,7 +6,9 @@ using Projektanker.Icons.Avalonia.MaterialDesign;
 using Stardrop.Models;
 using Stardrop.Utilities;
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -25,6 +27,9 @@ namespace Stardrop
         [STAThread]
         public static void Main(string[] args)
         {
+            // Enforce the directory's path
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
+
             // Establish file and folders paths
             Pathing.SetHomePath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
