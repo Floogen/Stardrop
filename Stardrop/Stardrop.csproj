@@ -21,6 +21,7 @@
     <None Remove=".gitignore" />
     <None Remove="Assets\icon.ico" />
     <None Remove="Assets\smapi.png" />
+    <None Remove="Assets\Stardrop.icns" />
     <None Remove="Assets\Stardrop.sh" />
     <None Remove="Themes\Dark.xaml" />
     <None Remove="Themes\Light.xaml" />
@@ -76,7 +77,7 @@
   </ItemGroup>
 
   <Target Name="FolderProfile - Linux" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='linux-x64'">
-    <Exec Command="del Stardrop.zip 2>nul" WorkingDirectory="$(PublishDir)" />
+    <Exec Command="del Stardrop.zip 2&gt;nul" WorkingDirectory="$(PublishDir)" />
 
     <Copy SourceFiles="@(RenameExecutableLinux)" DestinationFiles="@(RenameExecutableLinux-&gt;Replace('Stardrop','Internal'))" />
     <Copy SourceFiles="@(RenameDatabaseLinux)" DestinationFiles="@(RenameDatabaseLinux-&gt;Replace('Stardrop','Internal'))" />
@@ -102,22 +103,24 @@
   <ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='osx-x64'">
     <WSL Include="C:\Windows\Sysnative\wsl.exe" />
     <TempFolderPath Include="Stardrop_Temp" />
+    <AppFolderPath Include="$(ProjectDir)Assets\Stardrop.app" />
+    <MacOSFolderPath Include="Stardrop.app\Contents\MacOS" />
   </ItemGroup>
 
   <Target Name="FolderProfile - MacOS" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='osx-x64'">
     <Exec Command="del Stardrop.zip 2&gt;nul" WorkingDirectory="$(PublishDir)" />
 
-    <Exec Command="@(WSL) mkdir @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
+    <Exec Command='xcopy /E /I /Y "@(AppFolderPath)" Stardrop.app' WorkingDirectory="$(PublishDir)"/>
 
-    <Exec Command="@(WSL) mv Themes @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="@(WSL) mv *.dylib @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="@(WSL) mv Stardrop Stardrop.pdb @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
+    <Exec Command="move Themes @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
+    <Exec Command="move *.dylib @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
+    <Exec Command="move Stardrop @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
+    <Exec Command="move Stardrop.pdb @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
 
-    <Exec Command="ren @(TempFolderPath) Stardrop" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="@(WSL) chmod +x Stardrop" WorkingDirectory="$(PublishDir)/Stardrop" />
+    <Exec Command="@(WSL) chmod +x Stardrop" WorkingDirectory="$(PublishDir)@(MacOSFolderPath)" />
 
-    <Exec Command="@(WSL) zip -r Stardrop.zip Stardrop" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="rmdir Stardrop /S /Q" WorkingDirectory="$(PublishDir)" />
+    <Exec Command="@(WSL) zip -r Stardrop.zip Stardrop.app" WorkingDirectory="$(PublishDir)" />
+    <Exec Command="rmdir Stardrop.app /S /Q" WorkingDirectory="$(PublishDir)" />
   </Target>
 
 
@@ -126,8 +129,13 @@
     <TempFolderPath Include="Stardrop_Temp" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <Folder Include="Assets\Stardrop.app\Contents\MacOS\" />
+  </ItemGroup>
+
   <Target Name="FolderProfile - Windows" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='win-x64'">
-    <Exec Command="del Stardrop.zip 2>nul" WorkingDirectory="$(PublishDir)" />
+    <Exec Command="del Stardrop.zip 2&gt;nul" WorkingDirectory="$(PublishDir)" />
 
     <Exec Command="@(WSL) mkdir @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
 
