@@ -129,11 +129,6 @@
     <TempFolderPath Include="Stardrop_Temp" />
   </ItemGroup>
 
-
-  <ItemGroup>
-    <Folder Include="Assets\Stardrop.app\Contents\MacOS\" />
-  </ItemGroup>
-
   <Target Name="FolderProfile - Windows" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='win-x64'">
     <Exec Command="del Stardrop.zip 2&gt;nul" WorkingDirectory="$(PublishDir)" />
 
