@@ -87,6 +87,10 @@ namespace Stardrop.Views
             {
                 dialog.Filters.Add(new FileDialogFilter() { Name = "StardewModdingAPI.exe", Extensions = { "exe" } });
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                dialog.Filters.Add(new FileDialogFilter() { Name = "StardewModdingAPI" });
+            }
             else
             {
                 dialog.Filters.Add(new FileDialogFilter() { Name = "StardewModdingAPI", Extensions = { "*" } });
