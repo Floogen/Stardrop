@@ -25,7 +25,7 @@ namespace Stardrop.Utilities.External
             var smapiInfo = new FileInfo(Pathing.GetSmapiPath());
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                arguments = $"-c \"open -n -a Terminal.app --args SMAPI_MODS_PATH='{Pathing.GetSelectedModsFolderPath()}' '{Pathing.GetSmapiPath().Replace("StardewModdingAPI", "StardewValley")}'\"";
+                arguments = $"-c \"SMAPI_MODS_PATH='{Pathing.GetSelectedModsFolderPath()}'; '{Pathing.GetSmapiPath().Replace("StardewModdingAPI", "StardewValley")}'\"";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
