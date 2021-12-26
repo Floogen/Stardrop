@@ -26,7 +26,7 @@ namespace Stardrop
         public static void Main(string[] args)
         {
             // Establish file and folders paths
-            Pathing.SetHomePath(Directory.GetCurrentDirectory());
+            Pathing.SetHomePath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
             // Set up our logger
             helper = new Helper("log", ".txt", Pathing.GetLogFolderPath());
