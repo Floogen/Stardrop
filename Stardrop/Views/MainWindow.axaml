@@ -287,6 +287,7 @@
       </NativeMenuItem>
       <NativeMenuItem Header="Tools">
         <NativeMenu>
+          <NativeMenuItem Header="Refresh Mod List" Click="ModListRefresh_Click" />
           <NativeMenuItem Header="Check for Mod Updates" Click="ModUpdateCheck_Click" />
           <NativeMenuItemSeparator/>
           <NativeMenuItem Header="Enable All Mods" Click="EnableAllMods_Click" />
@@ -328,6 +329,7 @@
           <MenuItem Header="Log File" Click="LogFile_Click" Classes="Bar"/>
         </MenuItem>
         <MenuItem Header="Tools" Margin="-10 0 0 0" Classes="Bar">
+          <MenuItem Header="Refresh Mod List" Click="ModListRefresh_Click" Classes="Bar"/>
           <MenuItem Header="Check for Mod Updates" Click="ModUpdateCheck_Click" Classes="Bar"/>
           <Separator/>
           <MenuItem Header="Enable All Mods" Click="EnableAllMods_Click" Classes="Bar"/>

@@ -405,6 +405,16 @@ namespace Stardrop.Views
             await HandleModUpdateCheck();
         }
 
+        private async void ModListRefresh_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            await HandleModListRefresh();
+        }
+
+        private async void ModListRefresh_Click(object? sender, EventArgs e)
+        {
+            await HandleModListRefresh();
+        }
+
         private async void EnableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             await HandleBulkModStateChange(true);
@@ -545,6 +555,20 @@ namespace Stardrop.Views
 
                 this.UpdateProfile(GetCurrentProfile());
             }
+        }
+
+        private async Task HandleModListRefresh()
+        {
+            // Refresh mod list
+            _viewModel.DiscoverMods(Pathing.defaultModPath);
+
+            // Refresh enabled mods
+            _viewModel.EnableModsByProfile(GetCurrentProfile());
+
+            // Refresh cached mods
+            await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+
+            _viewModel.EvaluateRequirements();
         }
 
         private bool IsUpdateCacheValid()
