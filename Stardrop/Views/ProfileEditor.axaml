@@ -35,6 +35,14 @@
     <Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
       <Setter Property="Background" Value="Pink"/>
     </Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}"/>
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
+    </Style>
   </Window.Styles>
 
   <Grid>
