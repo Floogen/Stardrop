@@ -58,7 +58,7 @@
 
     <DockPanel Grid.Row="1" Margin="0 0 0 10">
       <Button Name="applyButton" i:Attached.Icon="mdi-check" Margin="25 0 0 0" HorizontalAlignment="Left" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent"/>
-      <Button Name="cancelButton" i:Attached.Icon="mdi-cancel" Margin="0 0 25 0" HorizontalAlignment="Right" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
+      <Button Name="cancelButton" IsCancel="True" i:Attached.Icon="mdi-cancel" Margin="0 0 25 0" HorizontalAlignment="Right" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
     </DockPanel>
   </Grid>
 </Window>
