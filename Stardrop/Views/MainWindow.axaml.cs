@@ -650,80 +650,34 @@ namespace Stardrop.Views
 
                 if (Program.settings.GameDetails is null || Program.settings.GameDetails.HasSMAPIUpdated(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion))
                 {
-                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    var smapiLogPath = Path.Combine(Pathing.GetSmapiLogFolderPath(), "SMAPI-latest.txt");
+                    if (File.Exists(smapiLogPath))
                     {
-                        var smapiLogPath = Path.Combine(Pathing.GetSmapiLogFolderPath(), "SMAPI-latest.txt");
-                        if (File.Exists(smapiLogPath))
-                        {
-                            // Parse SMAPI's log
-                            Program.helper.Log($"Grabbing game details (SMAPI / SDV versions) from SMAPI's log file.");
+                        // Parse SMAPI's log
+                        Program.helper.Log($"Grabbing game details (SMAPI / SDV versions) from SMAPI's log file.");
 
-                            using (var fileStream = new FileStream(smapiLogPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            using (var reader = new StreamReader(fileStream))
+                        using (var fileStream = new FileStream(smapiLogPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (var reader = new StreamReader(fileStream))
+                        {
+                            while (reader.Peek() >= 0)
                             {
-                                while (reader.Peek() >= 0)
+                                var line = reader.ReadLine();
+                                if (Program.gameDetailsPattern.IsMatch(line))
                                 {
-                                    var line = reader.ReadLine();
-                                    if (Program.gameDetailsPattern.IsMatch(line))
-                                    {
-                                        var match = Program.gameDetailsPattern.Match(line);
-                                        Program.settings.GameDetails = new GameDetails(match.Groups["gameVersion"].ToString(), match.Groups["smapiVersion"].ToString(), match.Groups["system"].ToString());
-                                    }
+                                    var match = Program.gameDetailsPattern.Match(line);
+                                    Program.settings.GameDetails = new GameDetails(match.Groups["gameVersion"].ToString(), match.Groups["smapiVersion"].ToString(), match.Groups["system"].ToString());
                                 }
                             }
-                        }
-                        else
-                        {
-                            CreateWarningWindow("Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.", "OK");
-                            Program.helper.Log($"Unable to locate SMAPI-latest.txt", Helper.Status.Alert);
-                            return;
                         }
                     }
                     else
                     {
-                        using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(true)))
-                        {
-                            if (smapi is null)
-                            {
-                                CreateWarningWindow($"Unable to start SMAPI.", "OK");
-                                Program.helper.Log($"SMAPI was unable to start via Process.Start", Helper.Status.Alert);
-                                return;
-                            }
-
-                            FileSystemWatcher observer = new FileSystemWatcher(Pathing.GetSmapiLogFolderPath()) { Filter = "*.txt", EnableRaisingEvents = true, NotifyFilter = NotifyFilters.Size };
-                            var result = observer.WaitForChanged(WatcherChangeTypes.Changed, 60000);
-
-                            // Kill SMAPI
-                            smapi.Kill();
-
-                            // Check if our observer timed out
-                            FileInfo smapiLog = new FileInfo(Path.Combine(Pathing.GetSmapiLogFolderPath(), result.Name));
-                            if (result.TimedOut || smapiLog is null)
-                            {
-                                CreateWarningWindow($"Unable to check SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
-                                Program.helper.Log($"SMAPI started but Stardrop was unable to access SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
-                                return;
-                            }
-
-                            // Parse SMAPI's log
-                            Program.helper.Log($"Grabbing game details (SMAPI / SDV versions) from SMAPI's log file.");
-
-                            using (var fileStream = new FileStream(smapiLog.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            using (var reader = new StreamReader(fileStream))
-                            {
-                                while (reader.Peek() >= 0)
-                                {
-                                    var line = reader.ReadLine();
-                                    if (Program.gameDetailsPattern.IsMatch(line))
-                                    {
-                                        var match = Program.gameDetailsPattern.Match(line);
-                                        Program.settings.GameDetails = new GameDetails(match.Groups["gameVersion"].ToString(), match.Groups["smapiVersion"].ToString(), match.Groups["system"].ToString());
-                                    }
-                                }
-                            }
-                        }
+                        CreateWarningWindow("Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.", "OK");
+                        Program.helper.Log($"Unable to locate SMAPI-latest.txt", Helper.Status.Alert);
+                        return;
                     }
                 }
+
                 if (Program.settings.GameDetails is null)
                 {
                     CreateWarningWindow($"Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
