@@ -82,11 +82,14 @@ namespace Stardrop.Views
             _viewModel.EnableModsByProfile(profile);
 
             // Check if we have any cached updates for mods
-            CheckForModUpdates(_viewModel.Mods.ToList(), probe: true);
-
             if (!IsUpdateCacheValid())
             {
-                _viewModel.UpdateStatusText = "Mods Ready to Update: Click to Refresh";
+                _viewModel.UpdateStatusText = "Updating"; // "Mods Ready to Update: Click to Refresh";
+                CheckForModUpdates(_viewModel.Mods.ToList(), useCache: true);
+            }
+            else
+            {
+                CheckForModUpdates(_viewModel.Mods.ToList(), probe: true);
             }
 
             // FOOTER: "Value cannot be null. (Parameter 'path1')" error clears removing the above chunk
