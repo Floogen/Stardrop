@@ -512,7 +512,12 @@ namespace Stardrop.Views
             dialog.Filters.Add(new FileDialogFilter() { Name = "Mod Archive (*.zip, *.7z, *.rar)", Extensions = { "zip", "7z", "rar" } });
             dialog.AllowMultiple = false;
 
-            await this.AddMods(await dialog.ShowAsync(this));
+            var addedMods = await this.AddMods(await dialog.ShowAsync(this));
+
+            await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
+            await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+
+            _viewModel.EvaluateRequirements();
         }
 
         private async Task DisplaySettingsWindow()
