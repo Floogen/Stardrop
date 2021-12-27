@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
@@ -24,6 +25,20 @@ namespace Stardrop.Models
         public string SuggestedVersion { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public string GetDescriptionToolTip
+        {
+            get
+            {
+                // TEMPORARY FIX: Due to bug with Avalonia on Linux platforms, tooltips currently cause crashes when they disappear
+                // To work around this, tooltips are purposely not displayed
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    return String.Empty;
+                }
+
+                return Description;
+            }
+        }
         public string Author { get; set; }
         private List<ManifestDependency> _requirements { get; set; }
         public List<ManifestDependency> Requirements { get { return _requirements; } set { _requirements = value; NotifyPropertyChanged("Requirements"); NotifyPropertyChanged("MissingRequirements"); } }

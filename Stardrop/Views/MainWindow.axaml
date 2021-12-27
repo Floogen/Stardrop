@@ -231,7 +231,9 @@
       <Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
     </Style>
     <Style Selector="DataGridCell.centered">
+      <Setter Property="TextBlock.TextAlignment" Value="Center"/>
       <Setter Property="TextBlock.HorizontalAlignment" Value="Center"/>
+      <Setter Property="TextBlock.VerticalAlignment" Value="Center"/>
     </Style>
     <Style Selector="DataGridColumnHeader">
       <Setter Property="FontWeight" Value="Bold"/>
@@ -397,11 +399,16 @@
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
-          <DataGridTextColumn Binding="{Binding Name}">
-            <DataGridTextColumn.Header>
+          <DataGridTemplateColumn SortMemberPath="Name">
+            <DataGridTemplateColumn.Header>
               <TextBlock Text="Mod Name" TextAlignment="Center" />
-            </DataGridTextColumn.Header>
-          </DataGridTextColumn>
+            </DataGridTemplateColumn.Header>
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Name}" ToolTip.Tip="{Binding GetDescriptionToolTip}" TextAlignment="Left" VerticalAlignment="Center" Margin="7 0 0 0" />
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
           <DataGridTextColumn Binding="{Binding UniqueId}" IsVisible="False">
             <DataGridTextColumn.Header>
               <TextBlock Text="Unique ID" TextAlignment="Center" />
@@ -409,7 +416,7 @@
           </DataGridTextColumn>
           <DataGridTextColumn Binding="{Binding Author}" CellStyleClasses="centered">
             <DataGridTextColumn.Header>
-              <TextBlock Text="Author" TextAlignment="Center"/>
+              <TextBlock Text="Author" TextAlignment="Center" />
             </DataGridTextColumn.Header>
           </DataGridTextColumn>
           <DataGridTemplateColumn SortMemberPath="MissingRequirements.Count" CellStyleClasses="centered">
@@ -433,7 +440,7 @@
               <TextBlock Text="Version" TextAlignment="Center" />
             </DataGridTextColumn.Header>
           </DataGridTextColumn>
-          <DataGridTemplateColumn SortMemberPath="ParsedStatus" CellStyleClasses="centered">
+          <DataGridTemplateColumn SortMemberPath="ParsedStatus" CellStyleClasses="centered" >
             <DataGridTemplateColumn.Header>
               <TextBlock Text="Status" TextAlignment="Center" />
             </DataGridTemplateColumn.Header>
