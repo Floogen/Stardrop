@@ -21,14 +21,16 @@ namespace Stardrop.Utilities.External
 
             // Create a throwaway client
             HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "Stardrop - SDV Mod Manager");
+
             try
             {
-                var response = await client.GetAsync("https://api.github.com/repos/Floogen/FashionSense/releases/latest");
+                var response = await client.GetAsync("https://api.github.com/repos/Floogen/Stardrop/releases/latest");
 
                 if (response.Content is not null)
                 {
-                    dynamic parsedContent = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-                    versionToUri = new KeyValuePair<string, string>(parsedContent.tag_name, parsedContent.html_url);
+                    JsonDocument parsedContent = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+                    versionToUri = new KeyValuePair<string, string>(parsedContent.RootElement.GetProperty("tag_name").ToString(), parsedContent.RootElement.GetProperty("html_url").ToString());
                 }
             }
             catch (Exception ex)

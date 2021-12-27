@@ -293,6 +293,7 @@
           <NativeMenuItem Header="Enable All Mods" Click="EnableAllMods_Click" />
           <NativeMenuItem Header="Disable All Mods" Click="DisableAllMods_Click" />
           <NativeMenuItemSeparator/>
+          <NativeMenuItem Header="Check for Stardrop Update" Click="StardropUpdate_Click" />
           <NativeMenuItem Header="Stardrop Repository" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop"/>
         </NativeMenu>
       </NativeMenuItem>
@@ -335,6 +336,7 @@
           <MenuItem Header="Enable All Mods" Click="EnableAllMods_Click" Classes="Bar"/>
           <MenuItem Header="Disable All Mods" Click="DisableAllMods_Click" Classes="Bar"/>
           <Separator/>
+          <MenuItem Header="Check for Stardrop Update" Click="StardropUpdate_Click" Classes="Bar"/>
           <MenuItem Header="Stardrop Repository" Classes="Bar" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop"/>
         </MenuItem>
       </Menu>

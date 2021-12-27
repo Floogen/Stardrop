@@ -138,16 +138,7 @@ namespace Stardrop.Views
 
         private async void MainWindow_Opened(object? sender, EventArgs e)
         {
-            // Check if current version is the latest
-            var versionToUri = await GitHub.GetLatestRelease();
-            if (versionToUri is not null && SemVersion.TryParse(versionToUri?.Key, out var latestVersion) && SemVersion.TryParse(_viewModel.Version, out var currentVersion) && latestVersion > currentVersion)
-            {
-                var requestWindow = new MessageWindow($"An update is available for Stardrop.\n\nWould you like to download it now?");
-                if (await requestWindow.ShowDialog<bool>(this))
-                {
-                    _viewModel.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
-                }
-            }
+            await HandleStardropUpdateCheck();
 
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
@@ -405,6 +396,16 @@ namespace Stardrop.Views
             await HandleModUpdateCheck();
         }
 
+        private async void StardropUpdate_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            await HandleStardropUpdateCheck();
+        }
+
+        private async void StardropUpdate_Click(object? sender, EventArgs e)
+        {
+            await HandleStardropUpdateCheck();
+        }
+
         private async void ModListRefresh_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             await HandleModListRefresh();
@@ -527,6 +528,20 @@ namespace Stardrop.Views
             if (await editorWindow.ShowDialog<bool>(this))
             {
                 _viewModel.DiscoverMods(Pathing.defaultModPath);
+            }
+        }
+
+        private async Task HandleStardropUpdateCheck()
+        {
+            // Check if current version is the latest
+            var versionToUri = await GitHub.GetLatestRelease();
+            if (versionToUri is not null && SemVersion.TryParse(versionToUri?.Key.Replace("v", String.Empty), out var latestVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), out var currentVersion) && latestVersion > currentVersion)
+            {
+                var requestWindow = new MessageWindow($"An update (v{latestVersion}) is available for Stardrop.\n\nWould you like to download it now?");
+                if (await requestWindow.ShowDialog<bool>(this))
+                {
+                    _viewModel.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
+                }
             }
         }
 
