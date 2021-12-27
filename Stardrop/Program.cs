@@ -9,6 +9,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -38,6 +39,8 @@ namespace Stardrop
 
             try
             {
+                helper.Log($"{Environment.NewLine}-- Startup Data --{Environment.NewLine}Time: {DateTime.Now}{Environment.NewLine}OS: {RuntimeInformation.OSDescription}{Environment.NewLine}Version: {typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}{Environment.NewLine}----------------------{Environment.NewLine}");
+
                 // Verify the folder paths are created
                 Directory.CreateDirectory(Pathing.GetCacheFolderPath());
                 Directory.CreateDirectory(Pathing.GetLogFolderPath());
