@@ -818,6 +818,10 @@ namespace Stardrop.Views
                 }
 
                 // Cache the update data
+                if (!Directory.Exists(Pathing.GetCacheFolderPath()))
+                {
+                    Directory.CreateDirectory(Pathing.GetCacheFolderPath());
+                }
                 File.WriteAllText(Pathing.GetVersionCachePath(), JsonSerializer.Serialize(updateCache, new JsonSerializerOptions() { WriteIndented = true }));
 
                 // Get cached key data

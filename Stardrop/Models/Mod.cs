@@ -88,12 +88,22 @@ namespace Stardrop.Models
 
         public bool IsModOutdated(string version)
         {
-            if (String.IsNullOrEmpty(version))
+            if (String.IsNullOrEmpty(version) || !HasValidVersion())
             {
                 return false;
             }
 
             return SemVersion.Parse(version) > Version;
+        }
+
+        public bool HasValidVersion()
+        {
+            if (Version.Prerelease.Equals("bad-version", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         internal void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
