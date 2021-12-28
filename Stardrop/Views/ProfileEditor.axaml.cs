@@ -89,11 +89,16 @@ namespace Stardrop.Views
             _viewModel.Profiles.Remove(profile);
         }
 
-        private void AddButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void AddButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var namingWindow = new ProfileNaming(_viewModel);
             namingWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            namingWindow.ShowDialog(this);
+
+            var profile = await namingWindow.ShowDialog<Profile>(this);
+            if (profile is not null && _viewModel.OldProfiles.Any(p => p.Name == profile.Name))
+            {
+                await new WarningWindow($"Unable to add {profile.Name}, a profile already exists under that name!", "OK").ShowDialog(this);
+            }
         }
 
         private void ApplyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

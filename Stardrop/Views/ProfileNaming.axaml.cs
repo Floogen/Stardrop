@@ -31,7 +31,7 @@ namespace Stardrop.Views
             _renameTarget = renameTarget;
 
             // Handle buttons
-            this.FindControl<Button>("cancelButton").Click += delegate { this.Close(); };
+            this.FindControl<Button>("cancelButton").Click += delegate { this.Close(null); };
             this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
 
             // Give focus to textbox
@@ -45,6 +45,7 @@ namespace Stardrop.Views
             // Save any changes made
             var profileNameBox = this.FindControl<TextBox>("profileNameBox");
 
+            Profile addedProfile = null;
             if (!String.IsNullOrEmpty(profileNameBox.Text))
             {
                 if (_renameTarget is not null)
@@ -52,10 +53,14 @@ namespace Stardrop.Views
                     _profileEditor.Profiles.Remove(_renameTarget);
                 }
 
-                _profileEditor.Profiles.Add(new Profile(profileNameBox.Text, false, _renameTarget is null ? null : _renameTarget.EnabledModIds));
+                addedProfile = new Profile(profileNameBox.Text, false, _renameTarget is null ? null : _renameTarget.EnabledModIds);
+                if (!_profileEditor.Profiles.Any(p => p.Name == addedProfile.Name))
+                {
+                    _profileEditor.Profiles.Add(addedProfile);
+                }
             }
 
-            this.Close();
+            this.Close(addedProfile);
         }
 
         private void ProfileNameBox_KeyDown(object? sender, KeyEventArgs e)
