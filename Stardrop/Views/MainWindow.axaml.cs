@@ -346,14 +346,21 @@ namespace Stardrop.Views
         private async void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
-            var oldProfileIndex = profileComboBox.SelectedIndex;
+            var oldProfile = profileComboBox.SelectedItem as Profile;
 
             var editorWindow = new ProfileEditor(_editorView);
             editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             await editorWindow.ShowDialog(this);
 
             // Restore the previously selected profile
-            profileComboBox.SelectedIndex = oldProfileIndex;
+            if (_editorView.Profiles.Any(p => p.Name == oldProfile.Name))
+            {
+                profileComboBox.SelectedItem = oldProfile;
+            }
+            else
+            {
+                profileComboBox.SelectedIndex = 0;
+            }
         }
 
         // Menu related click events
