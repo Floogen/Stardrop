@@ -739,7 +739,7 @@ namespace Stardrop.Views
                 }
 
                 int modsToUpdate = 0;
-                var updateCache = useCache ? oldUpdateCache : new UpdateCache(DateTime.Now);
+                var updateCache = useCache && oldUpdateCache is not null ? oldUpdateCache : new UpdateCache(DateTime.Now);
                 var modUpdateData = await SMAPI.GetModUpdateData(Program.settings.GameDetails, mods);
                 foreach (var modItem in mods)
                 {
