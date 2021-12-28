@@ -1,9 +1,11 @@
 ﻿using Semver;
+using Stardrop.Models.SMAPI.Converters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Stardrop.Models.SMAPI
@@ -19,6 +21,7 @@ namespace Stardrop.Models.SMAPI
         public string MinimumVersion { get; set; }
 
         /// <summary>Whether the dependency must be installed to use the mod.</summary>
+        [JsonConverter(typeof(BooleanConverterAssumeTrue))]
         public bool IsRequired { get; set; }
 
         // <summary>Custom properties for Stardrop.</summary>
