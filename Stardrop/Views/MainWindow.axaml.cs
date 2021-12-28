@@ -9,7 +9,6 @@ using System;
 using Avalonia.Input;
 using Avalonia.Threading;
 using System.Diagnostics;
-using Stardrop.Utilities.Linkage;
 using System.Threading.Tasks;
 using SharpCompress.Common;
 using SharpCompress.Archives;
@@ -990,23 +989,24 @@ namespace Stardrop.Views
                     continue;
                 }
 
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                var processInfo = new ProcessStartInfo
                 {
-                    DirectoryLink.Create(Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name), mod.ModFileInfo.DirectoryName, true);
-                }
-                else
-                {
-                    var processInfo = new ProcessStartInfo
-                    {
-                        FileName = "/bin/bash",
-                        Arguments = $"-c \"ln -s '{mod.ModFileInfo.DirectoryName}' '{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}'\"",
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    };
+                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash",
+                    Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C mklink /J \"{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}\" \"{mod.ModFileInfo.DirectoryName}\"" : $" - c \"ln -s '{mod.ModFileInfo.DirectoryName}' '{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}'\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                };
+                //Program.helper.Log($"Linking mod folders via the following command: {processInfo.FileName} {processInfo.Arguments}");
 
-                    var process = Process.Start(processInfo);
+                try
+                {
+                    Process.Start(processInfo);
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Failed to link mod folder via the following command: {processInfo.FileName} {processInfo.Arguments}{Environment.NewLine}{ex}");
                 }
             }
         }
