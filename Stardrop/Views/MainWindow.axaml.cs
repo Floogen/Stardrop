@@ -292,6 +292,11 @@ namespace Stardrop.Views
         private void ProfileComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             var profile = (e.Source as ComboBox).SelectedItem as Profile;
+            if (profile is null)
+            {
+                return;
+            }
+
             _viewModel.EnableModsByProfile(profile);
 
             // Update the EnabledModCount
@@ -338,11 +343,17 @@ namespace Stardrop.Views
             this.UpdateProfile(GetCurrentProfile());
         }
 
-        private void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
+            var oldProfileIndex = profileComboBox.SelectedIndex;
+
             var editorWindow = new ProfileEditor(_editorView);
             editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            editorWindow.ShowDialog(this);
+            await editorWindow.ShowDialog(this);
+
+            // Restore the previously selected profile
+            profileComboBox.SelectedIndex = oldProfileIndex;
         }
 
         // Menu related click events
