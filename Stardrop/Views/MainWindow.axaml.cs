@@ -487,7 +487,7 @@ namespace Stardrop.Views
         // End of events
         private void StartSMAPI()
         {
-            Program.helper.Log("Starting SMAPI", Helper.Status.Debug);
+            Program.helper.Log($"Starting SMAPI at path: {Program.settings.SMAPIFolderPath}", Helper.Status.Debug);
             if (Program.settings.SMAPIFolderPath is null || !File.Exists(Pathing.GetSmapiPath()))
             {
                 CreateWarningWindow($"Unable to locate StardewModdingAPI\n\nPlease set the correct file path under\nView > Settings", "OK");
