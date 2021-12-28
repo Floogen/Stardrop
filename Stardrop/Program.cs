@@ -39,7 +39,7 @@ namespace Stardrop
 
             try
             {
-                helper.Log($"{Environment.NewLine}-- Startup Data --{Environment.NewLine}Time: {DateTime.Now}{Environment.NewLine}OS: {RuntimeInformation.OSDescription}{Environment.NewLine}Version: {typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}{Environment.NewLine}----------------------{Environment.NewLine}");
+                helper.Log($"{Environment.NewLine}-- Startup Data --{Environment.NewLine}Time: {DateTime.Now}{Environment.NewLine}OS: {RuntimeInformation.OSDescription}{Environment.NewLine}Settings Directory: {Pathing.defaultHomePath}{Environment.NewLine}Active Directory: {Directory.GetCurrentDirectory()}{Environment.NewLine}Version: {typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}{Environment.NewLine}----------------------{Environment.NewLine}");
 
                 // Verify the folder paths are created
                 Directory.CreateDirectory(Pathing.GetCacheFolderPath());
