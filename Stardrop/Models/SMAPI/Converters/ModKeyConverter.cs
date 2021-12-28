@@ -29,8 +29,10 @@ namespace Stardrop.Models.SMAPI.Converters
                 {
                     modKeys.Add($"Nexus: {reader.GetInt32()}");
                 }
-
-                modKeys.Add(reader.GetString());
+                else
+                {
+                    modKeys.Add(reader.GetString());
+                }
             }
 
             // Should not reach here, due to reader.TokenType == JsonTokenType.EndArray
