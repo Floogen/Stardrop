@@ -78,7 +78,7 @@ namespace Stardrop.Models
             ModFileInfo = modFileInfo;
 
             UniqueId = uniqueId;
-            Version = SemVersion.Parse(version);
+            Version = SemVersion.TryParse(version, out var parsedVersion) ? parsedVersion : new SemVersion(0, 0, 0, "bad-version");
             Name = String.IsNullOrEmpty(name) ? uniqueId : name;
             Description = String.IsNullOrEmpty(description) ? String.Empty : description;
             Author = String.IsNullOrEmpty(author) ? "Unknown" : author;
