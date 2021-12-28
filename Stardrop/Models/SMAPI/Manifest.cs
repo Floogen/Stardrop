@@ -1,4 +1,5 @@
 ﻿using Semver;
+using Stardrop.Models.SMAPI.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace Stardrop.Models.SMAPI
         public string Description { get; set; }
 
         /// <summary>The namespaced mod IDs to query for updates (like <c>Nexus:541</c>).</summary>
+        [JsonConverter(typeof(ModKeyConverter))]
         public string[] UpdateKeys { get; set; }
 
         /// <summary>The mod author's name.</summary>
