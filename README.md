@@ -10,6 +10,10 @@ Profiles are also supported, allowing users to have multiple mod groups for spec
 
 See the [GitBook pages](https://floogen.gitbook.io/stardrop/) for detailed documentation on how to install, update and use Stardrop.
 
+## Downloading Stardrop
+
+See the [release page](https://github.com/Floogen/Stardrop/releases/latest) for the latest builds.
+
 # Gallery
 
 ![](https://imgur.com/WdjwfnG.gif)
