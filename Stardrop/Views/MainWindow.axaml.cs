@@ -184,6 +184,8 @@ namespace Stardrop.Views
             }
             else if (SMAPI.Process.HasExited || Process.GetProcessesByName(SMAPI.GetProcessName()).FirstOrDefault() is null)
             {
+                Program.helper.Log("SMAPI has exited, restoring Stardrop", Helper.Status.Debug);
+
                 SMAPI.Process = null;
                 SMAPI.IsRunning = false;
 
@@ -485,6 +487,7 @@ namespace Stardrop.Views
         // End of events
         private void StartSMAPI()
         {
+            Program.helper.Log("Starting SMAPI", Helper.Status.Debug);
             if (Program.settings.SMAPIFolderPath is null || !File.Exists(Pathing.GetSmapiPath()))
             {
                 CreateWarningWindow($"Unable to locate StardewModdingAPI\n\nPlease set the correct file path under\nView > Settings", "OK");
