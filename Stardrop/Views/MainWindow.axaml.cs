@@ -901,7 +901,7 @@ namespace Stardrop.Views
                             {
                                 using (Stream stream = entry.OpenEntryStream())
                                 {
-                                    manifest = await JsonSerializer.DeserializeAsync<Manifest>(stream);
+                                    manifest = await JsonSerializer.DeserializeAsync<Manifest>(stream, new JsonSerializerOptions() { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
                                 }
                             }
                         }
