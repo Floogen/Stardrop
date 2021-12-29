@@ -467,7 +467,7 @@
       <CheckBox Name="hideDisabledMods" Content="Hide Disabled Mods" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0"/>
     </DockPanel>
     <Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 2 0 0">
-      <Button Content="{Binding Version}" Classes="hyperlink" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop/releases/latest" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0"/>
+      <Button Content="{Binding Version}" Classes="hyperlink" Command="{Binding OpenBrowser}" CommandParameter="https://www.nexusmods.com/stardewvalley/mods/10455" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0"/>
     </Border>
     <Menu Grid.Row="5" Grid.Column="0" Name="statusBar" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
       <MenuItem Header="{Binding UpdateStatusText}" Click="ModUpdateCheck_Click" Classes="Bar"/>

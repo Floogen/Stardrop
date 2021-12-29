@@ -417,12 +417,12 @@ namespace Stardrop.Views
 
         private async void StardropUpdate_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            await HandleStardropUpdateCheck();
+            await HandleStardropUpdateCheck(true);
         }
 
         private async void StardropUpdate_Click(object? sender, EventArgs e)
         {
-            await HandleStardropUpdateCheck();
+            await HandleStardropUpdateCheck(true);
         }
 
         private async void ModListRefresh_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -551,17 +551,33 @@ namespace Stardrop.Views
             }
         }
 
-        private async Task HandleStardropUpdateCheck()
+        private async Task HandleStardropUpdateCheck(bool manualCheck = false)
         {
+            SemVersion? latestVersion = null;
+            bool updateAvailable = false;
+
             // Check if current version is the latest
             var versionToUri = await GitHub.GetLatestRelease();
-            if (versionToUri is not null && SemVersion.TryParse(versionToUri?.Key.Replace("v", String.Empty), out var latestVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), out var currentVersion) && latestVersion > currentVersion)
+            if (versionToUri is not null && SemVersion.TryParse(versionToUri?.Key.Replace("v", String.Empty), out latestVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), out var currentVersion) && latestVersion > currentVersion)
+            {
+                updateAvailable = true;
+            }
+
+            // If an update is available, notify the user otherwise let them know Stardrop is up-to-date
+            if (updateAvailable)
             {
                 var requestWindow = new MessageWindow($"An update (v{latestVersion}) is available for Stardrop.\n\nWould you like to download it now?");
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
-                    _viewModel.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
+                    _viewModel.OpenBrowser("https://www.nexusmods.com/stardewvalley/mods/10455?tab=files");
+
+                    // TODO: Make it a setting to determine if the link goes to the GitHub repository or Nexus
+                    //_viewModel.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
                 }
+            }
+            else if (manualCheck)
+            {
+                CreateWarningWindow($"Stardrop is up-to-date.\n\n{_viewModel.Version} is the latest version.", "OK");
             }
         }
 
