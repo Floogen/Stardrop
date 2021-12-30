@@ -362,7 +362,14 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <Button Name="editProfilesButton" i:Attached.Icon="mdi-playlist-edit" VerticalAlignment="Center"  Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
-      <TextBlock Text="{Binding Path=EnabledModCount, StringFormat=Enabled Mods: {0}}" Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center" Margin="10 0 0 2"/>
+      <TextBlock Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center" Margin="10 0 0 2">
+        <TextBlock.Text>
+          <MultiBinding StringFormat="Enabled Mods: {0} | Total Mods: {1}">
+            <Binding Path="EnabledModCount" />
+            <Binding Path="Mods.Count" />
+          </MultiBinding>
+        </TextBlock.Text>
+      </TextBlock>
     </DockPanel>
     <DockPanel Name="toolBar" Grid.Row="2"  Grid.Column="1">
       <Button Name="smapiButton" IsEnabled="{Binding !IsLocked}" Content="/Assets/icon.ico" Background="Transparent" HorizontalAlignment="Right" Width="60" Height="40" VerticalAlignment="Center"  Margin="0 0 10 0">
