@@ -319,25 +319,12 @@ namespace Stardrop.Views
                 if (mod.IsEnabled)
                 {
                     // Enable any existing requirements
-                    foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
-                    {
-                        var requiredMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase));
-                        if (requiredMod is not null)
-                        {
-                            requiredMod.IsEnabled = true;
-                        }
-                    }
+                    EnableRequirements(mod);
                 }
                 else
                 {
                     // Disable any mods that require it requirements
-                    foreach (var childMod in _viewModel.Mods.Where(m => m.Requirements.Any(r => r.UniqueID.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase))))
-                    {
-                        if (childMod is not null)
-                        {
-                            childMod.IsEnabled = false;
-                        }
-                    }
+                    DisableRequirements(mod);
                 }
             }
 
@@ -880,6 +867,35 @@ namespace Stardrop.Views
         private void AdjustWindowState()
         {
             this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
+        }
+
+        private void EnableRequirements(Mod mod)
+        {
+            foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
+            {
+                var requiredMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase));
+                if (requiredMod is not null)
+                {
+                    requiredMod.IsEnabled = true;
+
+                    // Enable the requirement's requirements
+                    EnableRequirements(requiredMod);
+                }
+            }
+        }
+
+        private void DisableRequirements(Mod mod)
+        {
+            foreach (var childMod in _viewModel.Mods.Where(m => m.Requirements.Any(r => r.UniqueID.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase))))
+            {
+                if (childMod is not null)
+                {
+                    childMod.IsEnabled = false;
+
+                    // Disable the requirement's requirements
+                    DisableRequirements(childMod);
+                }
+            }
         }
 
         private Profile GetCurrentProfile()
