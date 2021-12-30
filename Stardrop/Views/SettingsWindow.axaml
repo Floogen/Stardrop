@@ -8,9 +8,9 @@
         x:Class="Stardrop.Views.SettingsWindow"
         Title="Settings"
         MinWidth="400"
-        MinHeight="200"
+        MinHeight="250"
         Width="400"
-        Height="200"
+        Height="250"
         Background="{DynamicResource ThemeBackgroundBrush}"
         HasSystemDecorations="true"
         ExtendClientAreaToDecorationsHint="true"
@@ -34,6 +34,22 @@
     </Style>
     <Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
       <Setter Property="Background" Value="Pink"/>
+    </Style>
+    <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBackgroundBrush}" />
+      <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    </Style>
+    <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
+      <Setter Property="Fill" Value="{DynamicResource ThemeForegroundBrush}"/>
+    </Style>
+    <Style Selector="CheckBox:unchecked /template/ Border#NormalRectangle">
+      <Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
+    </Style>
+    <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+      <Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
+    </Style>
+    <Style Selector="CheckBox:pointerover /template/ ContentPresenter#ContentPresenter">
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
     </Style>
     <Style Selector="ComboBoxItem">
       <Setter Property="FontWeight" Value="Bold"/>
@@ -141,6 +157,7 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="50" />
     </Grid.RowDefinitions>
@@ -170,7 +187,12 @@
       <ComboBox Name="themeComboBox" ToolTip.Tip="{Binding ToolTip_Theme}" Margin="10 10 0 0" Width="150" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
     </StackPanel>
 
-    <DockPanel Grid.Row="3" Grid.Column="1" Margin="0 0 0 0">
+    <StackPanel Grid.Row="3" Margin="10 25 0 0">
+      <TextBlock Text="Miscellaneous" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+      <CheckBox Content="Ignore Hidden Folders" ToolTip.Tip="{Binding ToolTip_IgnoreHiddenFolders}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+    </StackPanel>
+
+    <DockPanel Grid.Row="4" Grid.Column="1" Margin="0 0 0 0">
       <Button Name="applyButton" ToolTip.Tip="{Binding ToolTip_Save}" i:Attached.Icon="mdi-check" Margin="-40 0 15 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent"/>
       <Button Name="cancelButton" IsCancel="True" ToolTip.Tip="{Binding ToolTip_Cancel}" i:Attached.Icon="mdi-cancel" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
     </DockPanel>

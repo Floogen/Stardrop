@@ -15,6 +15,7 @@ namespace Stardrop.ViewModels
     {
         public string ToolTip_SMAPI { get; set; }
         public string ToolTip_Theme { get; set; }
+        public string ToolTip_IgnoreHiddenFolders { get; set; }
         public string ToolTip_Save { get; set; }
         public string ToolTip_Cancel { get; set; }
 
@@ -24,6 +25,7 @@ namespace Stardrop.ViewModels
             {
                 ToolTip_SMAPI = "The file path of StardewModdingAPI";
                 ToolTip_Theme = "The current theme of Stardrop";
+                ToolTip_IgnoreHiddenFolders = "If checked, Stardrop will ignore any mods which have a parent folder that start with \".\"";
                 ToolTip_Save = "Save Changes";
                 ToolTip_Cancel = "Cancel";
             }
