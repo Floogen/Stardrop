@@ -33,7 +33,7 @@ namespace Stardrop.Models
                 // To work around this, tooltips are purposely not displayed
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    return String.Empty;
+                    return null;
                 }
 
                 return Description;
