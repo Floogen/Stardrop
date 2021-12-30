@@ -172,7 +172,7 @@
         <TextBlock Text="Settings" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
       </Menu>
     </Border>
-    <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
+    <Menu Name="windowMenu" IsVisible="{Binding ShowMainMenu}" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
       <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
     </Menu>
 

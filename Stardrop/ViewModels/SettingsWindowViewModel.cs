@@ -25,6 +25,9 @@ namespace Stardrop.ViewModels
         public string ToolTip_Save { get; set; }
         public string ToolTip_Cancel { get; set; }
 
+        // Other UI controls
+        public bool ShowMainMenu { get; set; }
+
         public SettingsWindowViewModel()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -40,6 +43,8 @@ namespace Stardrop.ViewModels
                 // TEMPORARY FIX: Due to bug with Avalonia on Linux platforms, tooltips currently cause crashes when they disappear
                 // To work around this, tooltips are purposely not displayed
             }
+
+            ShowMainMenu = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         }
     }
 }
