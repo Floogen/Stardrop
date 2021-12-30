@@ -52,7 +52,18 @@ namespace Stardrop
                 {
                     settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(Pathing.GetSettingsPath()), new JsonSerializerOptions { AllowTrailingCommas = true });
                 }
-                Pathing.SetModPath(settings.SMAPIFolderPath);
+
+                // Set the default paths
+                if (!String.IsNullOrEmpty(settings.ModFolderPath))
+                {
+                    Pathing.SetSmapiPath(settings.SMAPIFolderPath);
+                    Pathing.SetModPath(settings.ModFolderPath);
+                }
+                else
+                {
+                    Pathing.SetSmapiPath(settings.SMAPIFolderPath, true);
+                    settings.ModFolderPath = Pathing.defaultModPath;
+                }
 
                 // Register icon provider(s)
                 IconProvider.Register<MaterialDesignIconProvider>();

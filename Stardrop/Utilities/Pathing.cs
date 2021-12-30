@@ -14,23 +14,29 @@ namespace Stardrop.Utilities
         internal static string defaultModPath;
         internal static string defaultHomePath;
 
-        internal static void EstablishPaths(string homePath, string smapiPath)
-        {
-            SetHomePath(homePath);
-            SetModPath(smapiPath);
-        }
-
         internal static void SetHomePath(string homePath)
         {
             defaultHomePath = Path.Combine(homePath, "Stardrop", "Data");
         }
 
-        internal static void SetModPath(string smapiPath)
+        internal static void SetSmapiPath(string smapiPath, bool useDefaultModPath = false)
         {
             if (smapiPath is not null)
             {
                 defaultGamePath = smapiPath;
-                defaultModPath = Path.Combine(smapiPath, "Mods");
+
+                if (useDefaultModPath)
+                {
+                    defaultModPath = Path.Combine(smapiPath, "Mods");
+                }
+            }
+        }
+
+        internal static void SetModPath(string modPath)
+        {
+            if (modPath is not null)
+            {
+                defaultModPath = modPath;
             }
         }
 

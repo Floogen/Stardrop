@@ -31,7 +31,14 @@ namespace Stardrop.Views
             this.FindControl<Button>("exitButton").Click += Exit_Click;
             this.FindControl<Button>("cancelButton").Click += Exit_Click;
             this.FindControl<Button>("smapiFolderButton").Click += SmapiFolderButton_Click;
+            this.FindControl<Button>("modFolderButton").Click += ModFolderButton_Click;
             this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
+
+            // Push the focus for the textboxes to the end of their strings
+            var smapiTextBox = this.FindControl<TextBox>("smapiFolderPathBox");
+            var modFolderTextBox = this.FindControl<TextBox>("modFolderPathBox");
+            SetTextboxTextFocusToEnd(smapiTextBox, smapiTextBox.Text);
+            SetTextboxTextFocusToEnd(modFolderTextBox, modFolderTextBox.Text);
 
             // Handle adding the themes
             Dictionary<string, IStyle> themes = new Dictionary<string, IStyle>();
@@ -94,6 +101,20 @@ namespace Stardrop.Views
             this.SetSMAPIPath(await dialog.ShowAsync(this));
         }
 
+        private async void ModFolderButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            OpenFolderDialog dialog = new OpenFolderDialog()
+            {
+                Title = "Select the mod folder"
+            };
+
+            var folderPath = await dialog.ShowAsync(this);
+            if (!String.IsNullOrEmpty(folderPath))
+            {
+                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modFolderPathBox"), folderPath);
+            }
+        }
+
         private void ApplyButton_Click(object? sender, RoutedEventArgs e)
         {
             // Write the settings cache
@@ -123,7 +144,22 @@ namespace Stardrop.Views
                 return;
             }
 
-            this.FindControl<TextBox>("smapiFolderPathBox").Text = smapiFileInfo.DirectoryName;
+            SetTextboxTextFocusToEnd(this.FindControl<TextBox>("smapiFolderPathBox"), smapiFileInfo.DirectoryName);
+            if (String.IsNullOrEmpty(Program.settings.ModFolderPath))
+            {
+                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modFolderPathBox"), Pathing.defaultModPath);
+            }
+        }
+
+        private void SetTextboxTextFocusToEnd(TextBox textBox, string text)
+        {
+            if (String.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            textBox.Text = text;
+            textBox.CaretIndex = text.Length - 1;
         }
 
         private void InitializeComponent()
