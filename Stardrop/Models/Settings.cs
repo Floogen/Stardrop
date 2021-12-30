@@ -16,5 +16,10 @@ namespace Stardrop.Models
         public string ModFolderPath { get; set; }
         public bool IgnoreHiddenFolders { get; set; } = true;
         public GameDetails GameDetails { get; set; }
+
+        public Settings ShallowCopy()
+        {
+            return (Settings)this.MemberwiseClone();
+        }
     }
 }

@@ -17,8 +17,8 @@ namespace Stardrop.Views
 {
     public partial class SettingsWindow : Window
     {
-        private IStyle _oldTheme;
-        private string _oldThemeName;
+        private Settings _oldSettings;
+        private Dictionary<string, IStyle> _themes = new Dictionary<string, IStyle>();
 
         public SettingsWindow()
         {
@@ -41,13 +41,12 @@ namespace Stardrop.Views
             SetTextboxTextFocusToEnd(modFolderTextBox, modFolderTextBox.Text);
 
             // Handle adding the themes
-            Dictionary<string, IStyle> themes = new Dictionary<string, IStyle>();
             foreach (string fileFullName in Directory.EnumerateFiles("Themes", "*.xaml"))
             {
                 try
                 {
                     var themeName = Path.GetFileNameWithoutExtension(fileFullName);
-                    themes[themeName] = AvaloniaRuntimeXamlLoader.Parse<Styles>(File.ReadAllText(fileFullName));
+                    _themes[themeName] = AvaloniaRuntimeXamlLoader.Parse<Styles>(File.ReadAllText(fileFullName));
                     Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
                 }
                 catch (Exception ex)
@@ -57,17 +56,17 @@ namespace Stardrop.Views
             }
 
             var themeComboBox = this.FindControl<ComboBox>("themeComboBox");
-            themeComboBox.Items = themes.Keys;
-            themeComboBox.SelectedItem = !themes.ContainsKey(Program.settings.Theme) ? themes.Keys.First() : Program.settings.Theme;
+            themeComboBox.Items = _themes.Keys;
+            themeComboBox.SelectedItem = !_themes.ContainsKey(Program.settings.Theme) ? _themes.Keys.First() : Program.settings.Theme;
             themeComboBox.SelectionChanged += (sender, e) =>
             {
                 var themeName = themeComboBox.SelectedItem.ToString();
-                Application.Current.Styles[0] = themes[themeName];
+                Application.Current.Styles[0] = _themes[themeName];
                 Program.settings.Theme = themeName;
             };
 
-            _oldTheme = Application.Current.Styles[0];
-            _oldThemeName = Program.settings.Theme;
+            // Cache the old settings
+            _oldSettings = Program.settings.ShallowCopy();
 
 #if DEBUG
             this.AttachDevTools();
@@ -76,8 +75,9 @@ namespace Stardrop.Views
 
         private void Exit_Click(object? sender, RoutedEventArgs e)
         {
-            Application.Current.Styles[0] = _oldTheme;
-            Program.settings.Theme = _oldThemeName;
+            Application.Current.Styles[0] = _themes[_oldSettings.Theme];
+            Program.settings = _oldSettings;
+
             this.Close(false);
         }
 
@@ -107,6 +107,11 @@ namespace Stardrop.Views
             {
                 Title = "Select the mod folder"
             };
+
+            if (!String.IsNullOrEmpty(Program.settings.ModFolderPath))
+            {
+                dialog.Directory = Program.settings.ModFolderPath;
+            }
 
             var folderPath = await dialog.ShowAsync(this);
             if (!String.IsNullOrEmpty(folderPath))
