@@ -214,7 +214,7 @@ namespace Stardrop.ViewModels
             {
                 foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
                 {
-                    if (!Mods.Any(m => m.UniqueId.Equals(requirement.UniqueID)) || Mods.First(m => m.UniqueId.Equals(requirement.UniqueID)) is Mod matchedMod && matchedMod.IsModOutdated(requirement.MinimumVersion))
+                    if (!Mods.Any(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase)) || Mods.First(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod matchedMod && matchedMod.IsModOutdated(requirement.MinimumVersion))
                     {
                         requirement.IsMissing = true;
 
