@@ -867,6 +867,8 @@ namespace Stardrop.Views
                 // Update the status to let the user know the update is finished
                 _viewModel.ModsWithCachedUpdates = modsToUpdate;
                 _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
+
+                Program.helper.Log($"Mod update check {(useCache ? "via cache" : "via smapi.io")} completed without error");
             }
             catch (Exception ex)
             {
@@ -1001,6 +1003,8 @@ namespace Stardrop.Views
 
             // Link the currently enabled mods
             var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
+            Program.helper.Log($"Creating links for all enabled mods from profile {profile.Name}");
+
             foreach (string modId in profile.EnabledModIds)
             {
                 var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId == modId);
@@ -1028,6 +1032,8 @@ namespace Stardrop.Views
                 {
                     Program.helper.Log($"Failed to link mod folder via the following command: {processInfo.FileName} {processInfo.Arguments}{Environment.NewLine}{ex}");
                 }
+
+                Program.helper.Log($"Folder link created for {mod.Name} [{mod.Version}]");
             }
         }
 
