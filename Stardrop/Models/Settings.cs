@@ -13,6 +13,7 @@ namespace Stardrop.Models
         public string Theme { get; set; } = "Stardrop";
         public string LastSelectedProfileName { get; set; }
         public string SMAPIFolderPath { get; set; }
+        public bool IgnoreHiddenFolders { get; set; } = false;
         public GameDetails GameDetails { get; set; }
     }
 }

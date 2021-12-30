@@ -33,12 +33,6 @@ namespace Stardrop.Views
             this.FindControl<Button>("smapiFolderButton").Click += SmapiFolderButton_Click;
             this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
 
-            // Handle textbox
-            if (Program.settings.SMAPIFolderPath is not null)
-            {
-                this.FindControl<TextBox>("smapiFolderPathBox").Text = Program.settings.SMAPIFolderPath;
-            }
-
             // Handle adding the themes
             Dictionary<string, IStyle> themes = new Dictionary<string, IStyle>();
             foreach (string fileFullName in Directory.EnumerateFiles("Themes", "*.xaml"))
@@ -102,10 +96,6 @@ namespace Stardrop.Views
 
         private void ApplyButton_Click(object? sender, RoutedEventArgs e)
         {
-            // Update our local settings
-            Program.settings.SMAPIFolderPath = this.FindControl<TextBox>("smapiFolderPathBox").Text;
-            Pathing.SetModPath(Program.settings.SMAPIFolderPath);
-
             // Write the settings cache
             File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, new JsonSerializerOptions() { WriteIndented = true }));
 

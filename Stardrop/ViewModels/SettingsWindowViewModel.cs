@@ -1,5 +1,6 @@
 using ReactiveUI;
 using Stardrop.Models;
+using Stardrop.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,6 +14,11 @@ namespace Stardrop.ViewModels
 {
     public class SettingsWindowViewModel : ViewModelBase
     {
+        // Setting bindings
+        public string SMAPIPath { get { return Program.settings.SMAPIFolderPath; } set { Program.settings.SMAPIFolderPath = value; Pathing.SetModPath(Program.settings.SMAPIFolderPath); } }
+        public bool IgnoreHiddenFolders { get { return Program.settings.IgnoreHiddenFolders; } set { Program.settings.IgnoreHiddenFolders = value; } }
+
+        // Tooltips
         public string ToolTip_SMAPI { get; set; }
         public string ToolTip_Theme { get; set; }
         public string ToolTip_IgnoreHiddenFolders { get; set; }

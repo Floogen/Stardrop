@@ -178,7 +178,7 @@
 
     <StackPanel Grid.Row="1" Margin="10 10 0 0">
       <TextBlock Text="SMAPI Path" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
-      <TextBox Name="smapiFolderPathBox" IsReadOnly="True" ToolTip.Tip="{Binding ToolTip_SMAPI}" Margin="10 10 0 0" Height="10" Width="350" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
+      <TextBox Name="smapiFolderPathBox" Text="{Binding SMAPIPath}" IsReadOnly="True" ToolTip.Tip="{Binding ToolTip_SMAPI}" Margin="10 10 0 0" Height="10" Width="350" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
       <Button Name="smapiFolderButton" Margin="0 -32 0 0" i:Attached.Icon="mdi-folder" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" HorizontalAlignment="Right"/>
     </StackPanel>
 
@@ -189,7 +189,7 @@
 
     <StackPanel Grid.Row="3" Margin="10 25 0 0">
       <TextBlock Text="Miscellaneous" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
-      <CheckBox Content="Ignore Hidden Folders" ToolTip.Tip="{Binding ToolTip_IgnoreHiddenFolders}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+      <CheckBox Name="ignoreHiddenFoldersCheckbox" IsChecked="{Binding IgnoreHiddenFolders}" Content="Ignore Hidden Folders" ToolTip.Tip="{Binding ToolTip_IgnoreHiddenFolders}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
     </StackPanel>
 
     <DockPanel Grid.Row="4" Grid.Column="1" Margin="0 0 0 0">
