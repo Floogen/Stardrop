@@ -400,6 +400,7 @@
           </Style>
           <Style Selector="DataGridRow">
             <Setter Property="ContextMenu" Value="{StaticResource GridRowContextMenu}" />
+            <Setter Property="ToolTip.Tip" Value="{Binding GetDescriptionToolTip}" />
           </Style>
         </DataGrid.Styles>
         <DataGrid.Columns>
@@ -416,7 +417,7 @@
             </DataGridTemplateColumn.Header>
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <TextBlock Text="{Binding Name}" ToolTip.Tip="{Binding GetDescriptionToolTip}" TextAlignment="Left" VerticalAlignment="Center" Margin="7 0 0 0" />
+                <TextBlock Text="{Binding Name}" TextAlignment="Left" VerticalAlignment="Center" Margin="7 0 0 0" />
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
