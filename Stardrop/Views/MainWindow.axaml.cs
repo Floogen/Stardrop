@@ -958,6 +958,11 @@ namespace Stardrop.Views
                                     continue;
                                 }
 
+                                // Create the default location if it doesn't exist
+                                if (!Directory.Exists(defaultInstallPath))
+                                {
+                                    Directory.CreateDirectory(defaultInstallPath);
+                                }
                                 entry.WriteToDirectory(defaultInstallPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
                             }
 
