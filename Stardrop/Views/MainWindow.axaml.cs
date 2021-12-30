@@ -714,6 +714,7 @@ namespace Stardrop.Views
                 {
                     return;
                 }
+                Program.helper.Log($"Attempting to check for mod updates {(useCache ? "via cache" : "via smapi.io")}");
 
                 // Close the menu, as it will remain open until the process is complete
                 var mainMenu = this.FindControl<Menu>("mainMenu");
