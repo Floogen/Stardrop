@@ -547,7 +547,7 @@ namespace Stardrop.Views
             editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (await editorWindow.ShowDialog<bool>(this))
             {
-                _viewModel.DiscoverMods(Pathing.defaultModPath);
+                await HandleModListRefresh();
             }
         }
 
