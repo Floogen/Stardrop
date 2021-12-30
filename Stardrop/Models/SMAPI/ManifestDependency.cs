@@ -31,7 +31,7 @@ namespace Stardrop.Models.SMAPI
         public string GenericLink { get { return $"https://smapi.io/mods#{Name.Replace(" ", "_")}"; } }
 
         public event PropertyChangedEventHandler? PropertyChanged;
-        public ManifestDependency(string uniqueId, string minimumVersion, bool isRequired = false)
+        public ManifestDependency(string uniqueId, string minimumVersion, bool isRequired = true)
         {
             UniqueID = uniqueId;
             MinimumVersion = minimumVersion;
