@@ -74,16 +74,44 @@ namespace Stardrop.Utilities.External
 
             // Create a throwaway client
             HttpClient client = new HttpClient();
-            var requestPackage = new StringContent(JsonSerializer.Serialize(searchData), Encoding.UTF8, "application/json");
-
+            var parsedRequest = JsonSerializer.Serialize(searchData, new JsonSerializerOptions() { WriteIndented = true });
+            var requestPackage = new StringContent(parsedRequest, Encoding.UTF8, "application/json");
             var response = await client.PostAsync("https://smapi.io/api/v3.0/mods", requestPackage);
 
             List<ModEntry> modUpdateData = new List<ModEntry>();
-            if (response.Content is not null)
+            if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
             {
                 // In the name of the Nine Divines, why is JsonSerializer.Deserialize case sensitive by default???
+                string content = await response.Content.ReadAsStringAsync();
+                modUpdateData = JsonSerializer.Deserialize<List<ModEntry>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                modUpdateData = JsonSerializer.Deserialize<List<ModEntry>>(await response.Content.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (modUpdateData is null || modUpdateData.Count == 0)
+                {
+                    Program.helper.Log($"Mod update data was not parsable from smapi.io");
+                    Program.helper.Log($"Response from smapi.io:\n{content}");
+                    Program.helper.Log($"Our request to smapi.io:\n{parsedRequest}");
+                }
+            }
+            else
+            {
+                if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    Program.helper.Log($"Bad status given from smapi.io: {response.StatusCode}");
+                    if (response.Content is not null)
+                    {
+                        Program.helper.Log($"Response from smapi.io:\n{await response.Content.ReadAsStringAsync()}");
+                    }
+                }
+                else if (response.Content is null)
+                {
+                    Program.helper.Log($"No response from smapi.io!");
+                }
+                else
+                {
+                    Program.helper.Log($"Error getting mod update data from smapi.io!");
+                }
+
+                Program.helper.Log($"Our request to smapi.io:\n{parsedRequest}");
             }
 
             client.Dispose();
