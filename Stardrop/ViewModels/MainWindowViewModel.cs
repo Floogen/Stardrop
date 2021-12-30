@@ -123,6 +123,31 @@ namespace Stardrop.ViewModels
             }
         }
 
+        public bool ParentFolderContainsPeriod(string oldestAncestorPath, DirectoryInfo? directoryInfo)
+        {
+            if (directoryInfo is null)
+            {
+                return false;
+            }
+            else if (directoryInfo.Name[0] == '.')
+            {
+                return true;
+            }
+
+            var ancestorFolder = directoryInfo.Parent;
+            while (ancestorFolder is not null && !ancestorFolder.FullName.Equals(oldestAncestorPath, StringComparison.OrdinalIgnoreCase))
+            {
+                if (ancestorFolder.Name[0] == '.')
+                {
+                    return true;
+                }
+
+                ancestorFolder = ancestorFolder.Parent;
+            }
+
+            return false;
+        }
+
         public void DiscoverMods(string modsFilePath)
         {
             if (Mods is null)
@@ -146,7 +171,7 @@ namespace Stardrop.ViewModels
             DirectoryInfo modDirectory = new DirectoryInfo(modsFilePath);
             foreach (var fileInfo in modDirectory.GetFiles("manifest.json", SearchOption.AllDirectories))
             {
-                if (fileInfo.DirectoryName is null)
+                if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(modsFilePath, fileInfo.Directory)))
                 {
                     continue;
                 }
