@@ -1021,6 +1021,7 @@ namespace Stardrop.Views
             var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
             Program.helper.Log($"Creating links for all enabled mods from profile {profile.Name}");
 
+            List<string> arguments = new List<string>();
             foreach (string modId in profile.EnabledModIds)
             {
                 var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId == modId);
@@ -1029,27 +1030,45 @@ namespace Stardrop.Views
                     continue;
                 }
 
-                var processInfo = new ProcessStartInfo
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash",
-                    Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C mklink /J \"{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}\" \"{mod.ModFileInfo.DirectoryName}\"" : $" - c \"ln -s '{mod.ModFileInfo.DirectoryName}' '{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}'\"",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                };
-                //Program.helper.Log($"Linking mod folders via the following command: {processInfo.FileName} {processInfo.Arguments}");
-
-                try
-                {
-                    Process.Start(processInfo);
+                    arguments.Add($"mklink /J \"{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}\" \"{mod.ModFileInfo.DirectoryName}\"");
                 }
-                catch (Exception ex)
+                else
                 {
-                    Program.helper.Log($"Failed to link mod folder via the following command: {processInfo.FileName} {processInfo.Arguments}{Environment.NewLine}{ex}");
+                    arguments.Add($"\"ln -s '{mod.ModFileInfo.DirectoryName}' '{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}'\"");
                 }
+            }
 
-                Program.helper.Log($"Folder link created for {mod.Name} [{mod.Version}]");
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash",
+                Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C {string.Join(" && ", arguments)}" : $" -c {string.Join(" && ", arguments)}",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                UseShellExecute = false
+            };
+            //Program.helper.Log($"Linking mod folders via the following command: {processInfo.FileName} {processInfo.Arguments}");
+
+            try
+            {
+                Process.Start(processInfo);
+
+                foreach (string modId in profile.EnabledModIds)
+                {
+                    var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId == modId);
+                    if (mod is null)
+                    {
+                        continue;
+                    }
+
+                    Program.helper.Log($"Folder link created for {mod.Name} [{mod.Version}]");
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to link mod folder via the following command: {processInfo.FileName} {processInfo.Arguments}{Environment.NewLine}{ex}");
             }
         }
 
