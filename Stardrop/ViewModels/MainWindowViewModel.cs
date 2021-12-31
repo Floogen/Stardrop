@@ -204,12 +204,12 @@ namespace Stardrop.ViewModels
                     }
 
                     var mod = new Mod(manifest, fileInfo, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
-                    if (manifest.ContentPackFor is not null)
+                    if (manifest.ContentPackFor is not null && modKeysCache is not null)
                     {
                         var dependencyKey = modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(manifest.ContentPackFor.UniqueID, StringComparison.OrdinalIgnoreCase));
                         mod.Requirements.Add(new ManifestDependency(manifest.ContentPackFor.UniqueID, manifest.ContentPackFor.MinimumVersion, true) { Name = dependencyKey is null ? manifest.ContentPackFor.UniqueID : dependencyKey.Name });
                     }
-                    if (manifest.Dependencies is not null)
+                    if (manifest.Dependencies is not null && modKeysCache is not null)
                     {
                         foreach (var dependency in manifest.Dependencies)
                         {
@@ -255,22 +255,29 @@ namespace Stardrop.ViewModels
             // Flag any missing requirements
             foreach (var mod in Mods)
             {
-                foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
+                try
                 {
-                    if (!Mods.Any(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase)) || Mods.First(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod matchedMod && matchedMod.IsModOutdated(requirement.MinimumVersion))
+                    foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
                     {
-                        requirement.IsMissing = true;
-
-                        if (modKeysCache is not null)
+                        if (!Mods.Any(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase)) || Mods.First(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod matchedMod && matchedMod.IsModOutdated(requirement.MinimumVersion))
                         {
-                            var dependencyKey = modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase));
-                            requirement.Name = dependencyKey is null ? requirement.UniqueID : dependencyKey.Name;
+                            requirement.IsMissing = true;
+
+                            if (modKeysCache is not null)
+                            {
+                                var dependencyKey = modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase));
+                                requirement.Name = dependencyKey is null ? requirement.UniqueID : dependencyKey.Name;
+                            }
                         }
                     }
-                }
 
-                mod.NotifyPropertyChanged("Requirements");
-                mod.NotifyPropertyChanged("MissingRequirements");
+                    mod.NotifyPropertyChanged("Requirements");
+                    mod.NotifyPropertyChanged("MissingRequirements");
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Failed to check requirements for {mod.Name} due to the following error: {ex}");
+                }
             }
         }
 

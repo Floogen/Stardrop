@@ -1027,11 +1027,20 @@ namespace Stardrop.Views
                 CreateNoWindow = true,
                 UseShellExecute = false
             };
-            Program.helper.Log($"Starting process to link folders via terminal with the command {processInfo.FileName}");
 
-            _ = Process.Start(processInfo);
+            try
+            {
+                Program.helper.Log($"Starting process to link folders via terminal using {processInfo.FileName}");
 
-            Program.helper.Log($"Link process completed");
+                _ = Process.Start(processInfo);
+
+                Program.helper.Log($"Link process completed");
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Process failed for creating mod folder links using {processInfo.FileName} with arguments: {processInfo.Arguments}");
+                Program.helper.Log($"Exception for failed mod folder link creation: {ex}");
+            }
         }
 
         private void UpdateEnabledModsFolder(string enabledModsPath)
@@ -1043,7 +1052,7 @@ namespace Stardrop.Views
             }
 
             var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
-            Program.helper.Log($"Creating links for all enabled mods from profile {profile.Name}");
+            Program.helper.Log($"Creating links for the following enabled mods from profile {profile.Name}: ");
 
             // Link the enabled mods via a chained command
             List<string> arguments = new List<string>();
@@ -1054,6 +1063,7 @@ namespace Stardrop.Views
                 {
                     continue;
                 }
+                Program.helper.Log($"    {mod.Name}");
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
@@ -1116,7 +1126,7 @@ namespace Stardrop.Views
                 Program.helper.Log($"Failed to link all mod folders: {Environment.NewLine}{ex}");
             }
 
-            Program.helper.Log($"Finished creating linked mod folders");
+            Program.helper.Log($"Finished creating all linked mod folders");
         }
 
         private void OpenNativeExplorer(string folderPath)
