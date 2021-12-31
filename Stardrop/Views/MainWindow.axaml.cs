@@ -886,7 +886,7 @@ namespace Stardrop.Views
 
         private void DisableRequirements(Mod mod)
         {
-            foreach (var childMod in _viewModel.Mods.Where(m => m.Requirements.Any(r => r.UniqueID.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase))))
+            foreach (var childMod in _viewModel.Mods.Where(m => m.Requirements.Any(r => r.IsRequired && r.UniqueID.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase))))
             {
                 if (childMod is not null)
                 {
