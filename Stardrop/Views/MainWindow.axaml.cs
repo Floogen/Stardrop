@@ -1009,6 +1009,25 @@ namespace Stardrop.Views
             return addedMods;
         }
 
+        private void CreateDirectoryJunctions(List<string> arguments)
+        {
+            // Prepare the process
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash",
+                Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C {string.Join(" && ", arguments)}" : $" -c {string.Join(" && ", arguments)}",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                UseShellExecute = false
+            };
+            Program.helper.Log($"Starting process to link folders via terminal with the command {processInfo.FileName}");
+
+            _ = Process.Start(processInfo);
+
+            Program.helper.Log($"Link process completed");
+        }
+
         private void UpdateEnabledModsFolder(string enabledModsPath)
         {
             // Clear any previous linked mods
@@ -1017,10 +1036,10 @@ namespace Stardrop.Views
                 linkedModFolder.Delete(true);
             }
 
-            // Link the currently enabled mods
             var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
             Program.helper.Log($"Creating links for all enabled mods from profile {profile.Name}");
 
+            // Link the enabled mods via a chained command
             List<string> arguments = new List<string>();
             foreach (string modId in profile.EnabledModIds)
             {
@@ -1040,36 +1059,44 @@ namespace Stardrop.Views
                 }
             }
 
-            var processInfo = new ProcessStartInfo
-            {
-                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash",
-                Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C {string.Join(" && ", arguments)}" : $" -c {string.Join(" && ", arguments)}",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                UseShellExecute = false
-            };
-            //Program.helper.Log($"Linking mod folders via the following command: {processInfo.FileName} {processInfo.Arguments}");
-
+            // Attempt to create the directory junction
             try
             {
-                Process.Start(processInfo);
-
-                foreach (string modId in profile.EnabledModIds)
+                // Validate the argument is under the pre-defined limit: https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.arguments?view=net-5.0#remarks
+                int maxArgumentLength = 32699;
+                if (arguments.Sum(a => a.Length) + 64 >= maxArgumentLength)
                 {
-                    var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId == modId);
-                    if (mod is null)
+                    int argumentIndex = 0;
+                    var segmentedArguments = new List<string>();
+                    while (arguments.ElementAtOrDefault(argumentIndex) is not null)
                     {
-                        continue;
-                    }
+                        if (arguments[argumentIndex].Length + segmentedArguments.Sum(a => a.Length) + 64 >= maxArgumentLength)
+                        {
+                            // Create the process and clear segmentedArguments
+                            CreateDirectoryJunctions(segmentedArguments);
+                            segmentedArguments.Clear();
+                        }
+                        segmentedArguments.Add(arguments[argumentIndex]);
+                        argumentIndex++;
 
-                    Program.helper.Log($"Folder link created for {mod.Name} [{mod.Version}]");
+                        // Check if the next index is null, if so then push the changes
+                        if (arguments.ElementAtOrDefault(argumentIndex) is null && segmentedArguments.Count > 0)
+                        {
+                            CreateDirectoryJunctions(segmentedArguments);
+                        }
+                    }
+                }
+                else
+                {
+                    CreateDirectoryJunctions(arguments);
                 }
             }
             catch (Exception ex)
             {
-                Program.helper.Log($"Failed to link mod folder via the following command: {processInfo.FileName} {processInfo.Arguments}{Environment.NewLine}{ex}");
+                Program.helper.Log($"Failed to link all mod folders: {Environment.NewLine}{ex}");
             }
+
+            Program.helper.Log($"Finished creating linked mod folders");
         }
 
         private void OpenNativeExplorer(string folderPath)
