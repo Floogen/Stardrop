@@ -148,6 +148,25 @@ namespace Stardrop.ViewModels
             return false;
         }
 
+        public List<FileInfo> GetManifestFiles(DirectoryInfo modDirectory)
+        {
+            List<FileInfo> manifests = new List<FileInfo>();
+            foreach (var directory in modDirectory.EnumerateDirectories())
+            {
+                var localManifest = directory.EnumerateFiles("manifest.json");                
+                if (localManifest.Count() == 0)
+                {
+                    manifests.AddRange(GetManifestFiles(directory));
+                }
+                else
+                {
+                    manifests.Add(localManifest.First());
+                }
+            }
+
+            return manifests;
+        }
+
         public void DiscoverMods(string modsFilePath)
         {
             if (Mods is null)
@@ -168,8 +187,7 @@ namespace Stardrop.ViewModels
                 modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
             }
 
-            DirectoryInfo modDirectory = new DirectoryInfo(modsFilePath);
-            foreach (var fileInfo in modDirectory.GetFiles("manifest.json", SearchOption.AllDirectories))
+            foreach (var fileInfo in GetManifestFiles(new DirectoryInfo(modsFilePath)))
             {
                 if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(modsFilePath, fileInfo.Directory)))
                 {
