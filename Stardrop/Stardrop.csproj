@@ -35,6 +35,7 @@
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.11" />
     <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.11" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.11" />
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Projektanker.Icons.Avalonia" Version="3.7.1" />
     <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="3.7.1" />
     <PackageReference Include="semver" Version="2.0.6" />
@@ -70,7 +71,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='linux-x64'">
-    <WSL Include="C:\Windows\Sysnative\wsl.exe" />
+    <WSL Include="wsl" />
     <BashScript Include="$(ProjectDir)\Assets\Stardrop.sh" />
     <RenameExecutableLinux Include="$(PublishDir)\Stardrop" />
     <RenameDatabaseLinux Include="$(PublishDir)\Stardrop.pdb" />
@@ -102,7 +103,7 @@
   </Target>
 
   <ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='osx-x64'">
-    <WSL Include="C:\Windows\Sysnative\wsl.exe" />
+    <WSL Include="wsl" />
     <TempFolderPath Include="Stardrop_Temp" />
     <AppFolderPath Include="$(ProjectDir)Assets\Stardrop.app" />
     <MacOSFolderPath Include="Stardrop.app\Contents\MacOS" />
@@ -127,7 +128,7 @@
 
 
   <ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='win-x64'">
-    <WSL Include="C:\Windows\Sysnative\wsl.exe" />
+    <WSL Include="wsl" />
     <TempFolderPath Include="Stardrop_Temp" />
     <ZipName Include="Stardrop-win-x64.zip" />
   </ItemGroup>
