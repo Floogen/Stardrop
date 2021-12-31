@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
+using CommandLine;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.MaterialDesign;
 using Stardrop.Models;
@@ -19,8 +20,16 @@ namespace Stardrop
     {
         internal static Helper helper;
         internal static Settings settings = new Settings();
+
+        internal static bool onBootStartSMAPI = false;
         internal static readonly string defaultProfileName = "Default";
         internal static readonly Regex gameDetailsPattern = new Regex(@"SMAPI (?<smapiVersion>.+) with Stardew Valley (?<gameVersion>.+) on (?<system>.+)");
+
+        public class Options
+        {
+            [Option("start-smapi", Required = false, HelpText = "Automatically starts SMAPI based on the last selected mod profile.")]
+            public bool StartSmapi { get; set; }
+        }
 
         // Initialization code. Don't use any Avalonia, third-party APIs or any
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
@@ -40,6 +49,13 @@ namespace Stardrop
             try
             {
                 helper.Log($"{Environment.NewLine}-- Startup Data --{Environment.NewLine}Time: {DateTime.Now}{Environment.NewLine}OS: {RuntimeInformation.OSDescription}{Environment.NewLine}Settings Directory: {Pathing.defaultHomePath}{Environment.NewLine}Active Directory: {Directory.GetCurrentDirectory()}{Environment.NewLine}Version: {typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}{Environment.NewLine}----------------------{Environment.NewLine}");
+                helper.Log($"Started with the following arguments: {String.Join('|', args)}");
+
+                // Set the argument values
+                Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(o =>
+                {
+                    onBootStartSMAPI = o.StartSmapi;
+                });
 
                 // Verify the folder paths are created
                 Directory.CreateDirectory(Pathing.GetCacheFolderPath());

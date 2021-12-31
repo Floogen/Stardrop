@@ -112,6 +112,12 @@ namespace Stardrop.Views
             // Have to register this even here, as MacOS doesn't detect it via axaml during build
             this.PropertyChanged += MainWindow_PropertyChanged;
 
+            // Check if SMAPI should be started immediately via --start-smapi
+            if (Program.onBootStartSMAPI)
+            {
+                StartSMAPI();
+            }
+
 #if DEBUG
             this.AttachDevTools();
 #endif
