@@ -1021,7 +1021,7 @@ namespace Stardrop.Views
             var processInfo = new ProcessStartInfo
             {
                 FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash",
-                Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C {string.Join(" && ", arguments)}" : $" -c {string.Join(" && ", arguments)}",
+                Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C {string.Join(" && ", arguments)}" : $"-c \"{string.Join(" && ", arguments)}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true,
@@ -1085,7 +1085,7 @@ namespace Stardrop.Views
                 }
                 else
                 {
-                    arguments.Add($"\"ln -s '{mod.ModFileInfo.DirectoryName}' '{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}'\"");
+                    arguments.Add($"ln -s '{mod.ModFileInfo.DirectoryName}' '{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}'");
                 }
             }
 
