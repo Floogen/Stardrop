@@ -1057,7 +1057,21 @@ namespace Stardrop.Views
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    arguments.Add($"mklink /J \"{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}\" \"{mod.ModFileInfo.DirectoryName}\"");
+                    var longPathPrefix = @"\\?\";
+
+                    var linkPath = Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name);
+                    if (linkPath.Length >= 260)
+                    {
+                        linkPath = longPathPrefix + linkPath;
+                    }
+
+                    var modDirectoryName = mod.ModFileInfo.DirectoryName;
+                    if (Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name).Length >= 260)
+                    {
+                        modDirectoryName = longPathPrefix + modDirectoryName;
+                    }
+
+                    arguments.Add($"mklink /J \"{linkPath}\" \"{modDirectoryName}\"");
                 }
                 else
                 {
