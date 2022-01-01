@@ -1030,9 +1030,19 @@ namespace Stardrop.Views
 
             try
             {
-                Program.helper.Log($"Starting process to link folders via terminal using {processInfo.FileName}");
+                Program.helper.Log($"Starting process to link folders via terminal using {processInfo.FileName} and an argument length of {processInfo.Arguments.Length}");
 
-                _ = Process.Start(processInfo);
+                using (var process = Process.Start(processInfo))
+                {
+                    // Synchronously read the standard output / error of the spawned process.
+                    var standardOutput = process.StandardOutput.ReadToEnd();
+                    var errorOutput = process.StandardError.ReadToEnd();
+
+                    Program.helper.Log($"Standard Output: {(String.IsNullOrWhiteSpace(standardOutput) ? "Empty" : String.Concat(Environment.NewLine, standardOutput))}");
+                    Program.helper.Log($"Error Output: {(String.IsNullOrWhiteSpace(errorOutput) ? "Empty" : String.Concat(Environment.NewLine, errorOutput))}");
+
+                    process.WaitForExit();
+                }
 
                 Program.helper.Log($"Link process completed");
             }
@@ -1051,8 +1061,9 @@ namespace Stardrop.Views
                 linkedModFolder.Delete(true);
             }
 
+            string spacing = String.Concat(Environment.NewLine, "\t");
             var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
-            Program.helper.Log($"Creating links for the following enabled mods from profile {profile.Name}: ");
+            Program.helper.Log($"Creating links for the following enabled mods from profile {profile.Name}:{spacing}{String.Join(spacing, profile.EnabledModIds)}");
 
             // Link the enabled mods via a chained command
             List<string> arguments = new List<string>();
@@ -1063,7 +1074,6 @@ namespace Stardrop.Views
                 {
                     continue;
                 }
-                Program.helper.Log($"    {mod.Name}");
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
