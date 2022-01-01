@@ -1102,9 +1102,8 @@ namespace Stardrop.Views
             // Attempt to create the directory junction
             try
             {
-                // Validate the argument is under the pre-defined limit: https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.arguments?view=net-5.0#remarks
-                int maxArgumentLength = 32699;
-                if (arguments.Sum(a => a.Length) + 64 >= maxArgumentLength)
+                int maxArgumentLength = 8000;
+                if (arguments.Sum(a => a.Length) >= maxArgumentLength)
                 {
                     int argumentIndex = 0;
                     var segmentedArguments = new List<string>();
