@@ -1101,7 +1101,7 @@ namespace Stardrop.Views
                 else
                 {
                     var edq = "\\\""; // Escaped double quotes, to prevent issues with paths that contain single quotes
-                    arguments.Add($"ln -s {edq}{mod.ModFileInfo.DirectoryName}{edq} {edq}{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}{edq}");
+                    arguments.Add($"ln -sf {edq}{mod.ModFileInfo.DirectoryName}{edq} {edq}{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}{edq}");
                 }
             }
 
