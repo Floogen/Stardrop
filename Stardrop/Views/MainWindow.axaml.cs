@@ -1152,11 +1152,7 @@ namespace Stardrop.Views
                 {
                     Process.Start("explorer", folderPath.Replace("&", "^&"));
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    Process.Start("xdg-open", folderPath);
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                else
                 {
                     var processInfo = new ProcessStartInfo
                     {
