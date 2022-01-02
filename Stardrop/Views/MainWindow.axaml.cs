@@ -1041,6 +1041,11 @@ namespace Stardrop.Views
                     Program.helper.Log($"Standard Output: {(String.IsNullOrWhiteSpace(standardOutput) ? "Empty" : String.Concat(Environment.NewLine, standardOutput))}");
                     Program.helper.Log($"Error Output: {(String.IsNullOrWhiteSpace(errorOutput) ? "Empty" : String.Concat(Environment.NewLine, errorOutput))}");
 
+                    if (!String.IsNullOrWhiteSpace(errorOutput))
+                    {
+                        Program.helper.Log($"Printing full argument chain due to error output being detected: {Environment.NewLine}{processInfo.Arguments}");
+                    }
+
                     process.WaitForExit();
                 }
 
