@@ -1103,13 +1103,13 @@ namespace Stardrop.Views
             try
             {
                 int maxArgumentLength = 8000;
-                if (arguments.Sum(a => a.Length) >= maxArgumentLength)
+                if (arguments.Sum(a => a.Length) + (arguments.Count * 3) >= maxArgumentLength)
                 {
                     int argumentIndex = 0;
                     var segmentedArguments = new List<string>();
                     while (arguments.ElementAtOrDefault(argumentIndex) is not null)
                     {
-                        if (arguments[argumentIndex].Length + segmentedArguments.Sum(a => a.Length) + 64 >= maxArgumentLength)
+                        if (arguments[argumentIndex].Length + segmentedArguments.Sum(a => a.Length) + (segmentedArguments.Count * 3) >= maxArgumentLength)
                         {
                             // Create the process and clear segmentedArguments
                             CreateDirectoryJunctions(segmentedArguments);
