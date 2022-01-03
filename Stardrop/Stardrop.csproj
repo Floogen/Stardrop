@@ -1,148 +1,148 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <Version>1.0.0-beta.15</Version>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath></OutputPath>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
-    <Content Include="Themes\*" CopyToOutputDirectory="PreserveNewest" />
-    <None Remove=".gitignore" />
-    <None Remove="Assets\icon.ico" />
-    <None Remove="Assets\smapi.png" />
-    <None Remove="Assets\Stardrop.icns" />
-    <None Remove="Assets\Stardrop.sh" />
-    <None Remove="Themes\Dark.xaml" />
-    <None Remove="Themes\Light.xaml" />
-    <None Remove="Themes\Solarized-Lite.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.11" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.11" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.11" />
-    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.11" />
-    <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.11" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.11" />
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="Projektanker.Icons.Avalonia" Version="3.7.1" />
-    <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="3.7.1" />
-    <PackageReference Include="semver" Version="2.0.6" />
-    <PackageReference Include="SharpCompress" Version="0.30.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Views\ProfileNaming.axaml.cs">
-      <DependentUpon>ProfileNaming.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\ProfileEditor.axaml.cs">
-      <DependentUpon>ProfileEditor.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\WarningWindow.axaml.cs">
-      <DependentUpon>WarningWindow.axaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="Themes\Light.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Content>
-    <Content Update="Themes\Solarized-Lite.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Content>
-    <Content Update="Themes\Dark.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Content>
-    <Content Update="Themes\Stardrop.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Content>
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net5.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<Version>1.0.0-beta.15</Version>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<OutputPath></OutputPath>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\**" />
+		<Content Include="Themes\*" CopyToOutputDirectory="PreserveNewest" />
+		<None Remove=".gitignore" />
+		<None Remove="Assets\icon.ico" />
+		<None Remove="Assets\smapi.png" />
+		<None Remove="Assets\Stardrop.icns" />
+		<None Remove="Assets\Stardrop.sh" />
+		<None Remove="Themes\Dark.xaml" />
+		<None Remove="Themes\Light.xaml" />
+		<None Remove="Themes\Solarized-Lite.xaml" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="0.10.11" />
+		<PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.11" />
+		<PackageReference Include="Avalonia.Desktop" Version="0.10.11" />
+		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.11" />
+		<PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.11" />
+		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.11" />
+		<PackageReference Include="CommandLineParser" Version="2.8.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia" Version="3.7.1" />
+		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="3.7.1" />
+		<PackageReference Include="semver" Version="2.0.6" />
+		<PackageReference Include="SharpCompress" Version="0.30.1" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="Views\ProfileNaming.axaml.cs">
+			<DependentUpon>ProfileNaming.axaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\ProfileEditor.axaml.cs">
+			<DependentUpon>ProfileEditor.axaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\WarningWindow.axaml.cs">
+			<DependentUpon>WarningWindow.axaml</DependentUpon>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<Content Update="Themes\Light.xaml">
+			<SubType>Designer</SubType>
+			<Generator>MSBuild:Compile</Generator>
+		</Content>
+		<Content Update="Themes\Solarized-Lite.xaml">
+			<SubType>Designer</SubType>
+			<Generator>MSBuild:Compile</Generator>
+		</Content>
+		<Content Update="Themes\Dark.xaml">
+			<SubType>Designer</SubType>
+			<Generator>MSBuild:Compile</Generator>
+		</Content>
+		<Content Update="Themes\Stardrop.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Content>
+	</ItemGroup>
 
-  <ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='linux-x64'">
-    <WSL Include="wsl" />
-    <BashScript Include="$(ProjectDir)\Assets\Stardrop.sh" />
-    <RenameExecutableLinux Include="$(PublishDir)\Stardrop" />
-    <RenameDatabaseLinux Include="$(PublishDir)\Stardrop.pdb" />
-    <ZipName Include="Stardrop-linux-x64.zip" />
-  </ItemGroup>
+	<ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='linux-x64'">
+		<WSL Include="wsl" />
+		<BashScript Include="$(ProjectDir)\Assets\Stardrop.sh" />
+		<RenameExecutableLinux Include="$(PublishDir)\Stardrop" />
+		<RenameDatabaseLinux Include="$(PublishDir)\Stardrop.pdb" />
+		<ZipName Include="Stardrop-linux-x64.zip" />
+	</ItemGroup>
 
-  <Target Name="FolderProfile - Linux" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='linux-x64'">
-    <Exec Command="del @(ZipName) 2&gt;nul" WorkingDirectory="$(PublishDir)" />
+	<Target Name="FolderProfile - Linux" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='linux-x64'">
+		<Exec Command="del @(ZipName) 2&gt;nul" WorkingDirectory="$(PublishDir)" />
 
-    <Copy SourceFiles="@(RenameExecutableLinux)" DestinationFiles="@(RenameExecutableLinux-&gt;Replace('Stardrop','Internal'))" />
-    <Copy SourceFiles="@(RenameDatabaseLinux)" DestinationFiles="@(RenameDatabaseLinux-&gt;Replace('Stardrop','Internal'))" />
-    <Delete Files="@(RenameExecutableLinux);@(RenameDatabaseLinux)" />
+		<Copy SourceFiles="@(RenameExecutableLinux)" DestinationFiles="@(RenameExecutableLinux-&gt;Replace('Stardrop','Internal'))" />
+		<Copy SourceFiles="@(RenameDatabaseLinux)" DestinationFiles="@(RenameDatabaseLinux-&gt;Replace('Stardrop','Internal'))" />
+		<Delete Files="@(RenameExecutableLinux);@(RenameDatabaseLinux)" />
 
-    <Copy SourceFiles="@(BashScript)" DestinationFolder="$(PublishDir)" />
-    <Exec Command="@(WSL) dos2unix Stardrop.sh" WorkingDirectory="$(PublishDir)" />
+		<Copy SourceFiles="@(BashScript)" DestinationFolder="$(PublishDir)" />
+		<Exec Command="@(WSL) dos2unix Stardrop.sh" WorkingDirectory="$(PublishDir)" />
 
-    <Exec Command="@(WSL) mkdir Stardrop" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="@(WSL) mkdir Stardrop" WorkingDirectory="$(PublishDir)" />
 
-    <Move SourceFiles="$(PublishDir)/Internal;$(PublishDir)/Internal.pdb;$(PublishDir)/Stardrop.sh" DestinationFolder="$(PublishDir)/Stardrop" />
-    <Exec Command="@(WSL) mv Themes Stardrop" WorkingDirectory="$(PublishDir)" />
+		<Move SourceFiles="$(PublishDir)/Internal;$(PublishDir)/Internal.pdb;$(PublishDir)/Stardrop.sh" DestinationFolder="$(PublishDir)/Stardrop" />
+		<Exec Command="@(WSL) mv Themes Stardrop" WorkingDirectory="$(PublishDir)" />
 
-    <Exec Command="@(WSL) chmod 755 Stardrop" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="@(WSL) chmod +x Stardrop.sh" WorkingDirectory="$(PublishDir)/Stardrop" />
-    <Exec Command="@(WSL) chmod 644 Internal" WorkingDirectory="$(PublishDir)/Stardrop" />
-    <Exec Command="@(WSL) chmod 644 Internal.pdb" WorkingDirectory="$(PublishDir)/Stardrop" />
-    <Exec Command="@(WSL) zip -r @(ZipName) Stardrop" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="@(WSL) chmod 755 Stardrop" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="@(WSL) chmod +x Stardrop.sh" WorkingDirectory="$(PublishDir)/Stardrop" />
+		<Exec Command="@(WSL) chmod 644 Internal" WorkingDirectory="$(PublishDir)/Stardrop" />
+		<Exec Command="@(WSL) chmod 644 Internal.pdb" WorkingDirectory="$(PublishDir)/Stardrop" />
+		<Exec Command="@(WSL) zip -r @(ZipName) Stardrop" WorkingDirectory="$(PublishDir)" />
 
-    <Exec Command="rmdir Stardrop /S /Q" WorkingDirectory="$(PublishDir)" />
-  </Target>
+		<Exec Command="rmdir Stardrop /S /Q" WorkingDirectory="$(PublishDir)" />
+	</Target>
 
-  <ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='osx-x64'">
-    <WSL Include="wsl" />
-    <TempFolderPath Include="Stardrop_Temp" />
-    <AppFolderPath Include="$(ProjectDir)Assets\Stardrop.app" />
-    <MacOSFolderPath Include="Stardrop.app\Contents\MacOS" />
-    <ZipName Include="Stardrop-osx-x64.zip" />
-  </ItemGroup>
+	<ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='osx-x64'">
+		<WSL Include="wsl" />
+		<TempFolderPath Include="Stardrop_Temp" />
+		<AppFolderPath Include="$(ProjectDir)Assets\Stardrop.app" />
+		<MacOSFolderPath Include="Stardrop.app\Contents\MacOS" />
+		<ZipName Include="Stardrop-osx-x64.zip" />
+	</ItemGroup>
 
-  <Target Name="FolderProfile - MacOS" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='osx-x64'">
-    <Exec Command="del @(ZipName) 2&gt;nul" WorkingDirectory="$(PublishDir)" />
+	<Target Name="FolderProfile - MacOS" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='osx-x64'">
+		<Exec Command="del @(ZipName) 2&gt;nul" WorkingDirectory="$(PublishDir)" />
 
-    <Exec Command="xcopy /E /I /Y &quot;@(AppFolderPath)&quot; Stardrop.app" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="xcopy /E /I /Y &quot;@(AppFolderPath)&quot; Stardrop.app" WorkingDirectory="$(PublishDir)" />
 
-    <Exec Command="move Themes @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="move *.dylib @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="move Stardrop @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="move Stardrop.pdb @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="move Themes @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="move *.dylib @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="move Stardrop @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="move Stardrop.pdb @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
 
-    <Exec Command="@(WSL) chmod +x Stardrop" WorkingDirectory="$(PublishDir)@(MacOSFolderPath)" />
+		<Exec Command="@(WSL) chmod +x Stardrop" WorkingDirectory="$(PublishDir)@(MacOSFolderPath)" />
 
-    <Exec Command="@(WSL) zip -r @(ZipName) Stardrop.app" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="rmdir Stardrop.app /S /Q" WorkingDirectory="$(PublishDir)" />
-  </Target>
+		<Exec Command="@(WSL) zip -r @(ZipName) Stardrop.app" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="rmdir Stardrop.app /S /Q" WorkingDirectory="$(PublishDir)" />
+	</Target>
 
 
-  <ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='win-x64'">
-    <WSL Include="wsl" />
-    <TempFolderPath Include="Stardrop_Temp" />
-    <ZipName Include="Stardrop-win-x64.zip" />
-  </ItemGroup>
+	<ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='win-x64'">
+		<WSL Include="wsl" />
+		<TempFolderPath Include="Stardrop_Temp" />
+		<ZipName Include="Stardrop-win-x64.zip" />
+	</ItemGroup>
 
-  <Target Name="FolderProfile - Windows" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='win-x64'">
-    <Exec Command="del @(ZipName) 2&gt;nul" WorkingDirectory="$(PublishDir)" />
+	<Target Name="FolderProfile - Windows" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='win-x64'">
+		<Exec Command="del @(ZipName) 2&gt;nul" WorkingDirectory="$(PublishDir)" />
 
-    <Exec Command="@(WSL) mkdir @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="@(WSL) mkdir @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
 
-    <Exec Command="@(WSL) mv Themes @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="@(WSL) mv Stardrop.exe Stardrop.pdb @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="@(WSL) mv Themes @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="@(WSL) mv Stardrop.exe Stardrop.pdb @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
 
-    <Exec Command="ren @(TempFolderPath) Stardrop" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="@(WSL) zip -r @(ZipName) Stardrop" WorkingDirectory="$(PublishDir)" />
-    <Exec Command="rmdir Stardrop /S /Q" WorkingDirectory="$(PublishDir)" />
-  </Target>
+		<Exec Command="ren @(TempFolderPath) Stardrop" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="@(WSL) zip -r @(ZipName) Stardrop" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="rmdir Stardrop /S /Q" WorkingDirectory="$(PublishDir)" />
+	</Target>
 </Project>
