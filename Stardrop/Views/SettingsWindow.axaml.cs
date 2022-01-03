@@ -98,7 +98,11 @@ namespace Stardrop.Views
             }
             dialog.AllowMultiple = false;
 
-            this.SetSMAPIPath(await dialog.ShowAsync(this));
+            var filePaths = await dialog.ShowAsync(this);
+            if (filePaths is not null && filePaths.Count() > 0)
+            {
+                this.SetSMAPIPath(filePaths.First());
+            }
         }
 
         private async void ModFolderButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -122,31 +126,41 @@ namespace Stardrop.Views
 
         private void ApplyButton_Click(object? sender, RoutedEventArgs e)
         {
+            var smapiFolderPathBox = this.FindControl<TextBox>("smapiFolderPathBox");
+            var smapiPath = smapiFolderPathBox.Text.Contains(GetTargetSmapiName(), StringComparison.OrdinalIgnoreCase) ? smapiFolderPathBox.Text : Path.Combine(smapiFolderPathBox.Text, GetTargetSmapiName());
+            if (!SetSMAPIPath(smapiPath))
+            {
+                SetTextboxTextFocusToEnd(smapiFolderPathBox, _oldSettings.SMAPIFolderPath);
+                return;
+            }
+
+            var modFolderPathBox = this.FindControl<TextBox>("modFolderPathBox");
+            if (String.IsNullOrEmpty(modFolderPathBox.Text) || !Directory.Exists(modFolderPathBox.Text))
+            {
+                new WarningWindow($"The given mod folder path doesn't exist.\n\nReverting to previous path.", "OK").ShowDialog(this);
+                SetTextboxTextFocusToEnd(modFolderPathBox, _oldSettings.ModFolderPath);
+                return;
+            }
+
             // Write the settings cache
             File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, new JsonSerializerOptions() { WriteIndented = true }));
 
             this.Close(true);
         }
 
-        private void SetSMAPIPath(string[]? filePaths)
+        private bool SetSMAPIPath(string filePath)
         {
-            if (filePaths is null || filePaths.Count() == 0)
+            if (String.IsNullOrEmpty(filePath))
             {
-                return;
+                new WarningWindow($"The given file isn't {GetTargetSmapiName()}\n\nReverting to previous path.", "OK").ShowDialog(this);
+                return false;
             }
 
-
-            var targetSmapiName = "StardewModdingAPI.exe";
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            var smapiFileInfo = new FileInfo(filePath);
+            if (!smapiFileInfo.Exists || !smapiFileInfo.Name.Equals(GetTargetSmapiName(), StringComparison.OrdinalIgnoreCase))
             {
-                targetSmapiName = "StardewModdingAPI";
-            }
-
-            var smapiFileInfo = new FileInfo(filePaths[0]);
-            if (!smapiFileInfo.Name.Equals(targetSmapiName, StringComparison.OrdinalIgnoreCase))
-            {
-                new WarningWindow($"The given file isn't {targetSmapiName}\n\nReverting to previous path.", "OK").ShowDialog(this);
-                return;
+                new WarningWindow($"The given file isn't {GetTargetSmapiName()}\n\nReverting to previous path.", "OK").ShowDialog(this);
+                return false;
             }
 
             SetTextboxTextFocusToEnd(this.FindControl<TextBox>("smapiFolderPathBox"), smapiFileInfo.DirectoryName);
@@ -154,6 +168,19 @@ namespace Stardrop.Views
             {
                 SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modFolderPathBox"), Pathing.defaultModPath);
             }
+
+            return true;
+        }
+
+        private string GetTargetSmapiName()
+        {
+            var targetSmapiName = "StardewModdingAPI.exe";
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                targetSmapiName = "StardewModdingAPI";
+            }
+
+            return targetSmapiName;
         }
 
         private void SetTextboxTextFocusToEnd(TextBox textBox, string text)
