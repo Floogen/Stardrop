@@ -692,7 +692,7 @@ namespace Stardrop.Views
             }
             else
             {
-                CreateWarningWindow($"Updates can only be requested once an hour.\n\nPlease try again in {GetMinutesBeforeAllowedUpdate()} minute(s).", "OK");
+                CreateWarningWindow($"Updates can only be requested once every 5 minutes.\n\nPlease try again in {GetMinutesBeforeAllowedUpdate()} minute(s).", "OK");
             }
         }
 
@@ -737,7 +737,7 @@ namespace Stardrop.Views
                 return false;
             }
 
-            return updateCache.LastRuntime > DateTime.Now.AddHours(-1);
+            return updateCache.LastRuntime > DateTime.Now.AddMinutes(-5);
         }
 
         private int GetMinutesBeforeAllowedUpdate()
@@ -753,7 +753,7 @@ namespace Stardrop.Views
                 return 0;
             }
 
-            return (int)(updateCache.LastRuntime - DateTime.Now.AddHours(-1)).TotalMinutes;
+            return (int)(updateCache.LastRuntime - DateTime.Now.AddMinutes(-5)).TotalMinutes;
         }
 
         private async Task<UpdateCache?> GetCachedModUpdates(List<Mod> mods, bool skipCacheCheck = false)
@@ -764,7 +764,7 @@ namespace Stardrop.Views
             if (File.Exists(Pathing.GetVersionCachePath()))
             {
                 oldUpdateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
-                if (oldUpdateCache is not null && (skipCacheCheck || oldUpdateCache.LastRuntime > DateTime.Now.AddHours(-1)))
+                if (oldUpdateCache is not null && (skipCacheCheck || oldUpdateCache.LastRuntime > DateTime.Now.AddMinutes(-5)))
                 {
                     foreach (var modItem in mods)
                     {
@@ -803,7 +803,7 @@ namespace Stardrop.Views
         {
             try
             {
-                // Only check once the previous check is over an hour old
+                // Only check once the previous check is over 5 minutes old
                 UpdateCache? oldUpdateCache = await GetCachedModUpdates(mods, skipCacheCheck);
 
                 // Check if this was just a probe
