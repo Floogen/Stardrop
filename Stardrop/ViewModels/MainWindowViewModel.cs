@@ -39,6 +39,9 @@ namespace Stardrop.ViewModels
 
         private bool _hideDisabledMods;
         public bool HideDisabledMods { get { return _hideDisabledMods; } set { _hideDisabledMods = value; UpdateFilter(); } }
+
+        private bool _showUpdatableMods;
+        public bool ShowUpdatableMods { get { return _showUpdatableMods; } set { _showUpdatableMods = value; UpdateFilter(); } }
         private string _filterText;
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }
         private string _columnFilter;
@@ -307,6 +310,10 @@ namespace Stardrop.ViewModels
             var mod = item as Mod;
 
             if (_hideDisabledMods && !mod.IsEnabled)
+            {
+                return false;
+            }
+            if (_showUpdatableMods && String.IsNullOrEmpty(mod.ParsedStatus))
             {
                 return false;
             }

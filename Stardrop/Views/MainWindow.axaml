@@ -221,13 +221,13 @@
     <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
       <Setter Property="Fill" Value="{DynamicResource ThemeForegroundBrush}"/>
     </Style>
-    <Style Selector="CheckBox#hideDisabledMods:unchecked /template/ Border#NormalRectangle">
+    <Style Selector="CheckBox.OptionClickbox:unchecked /template/ Border#NormalRectangle">
       <Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
     </Style>
-    <Style Selector="CheckBox#hideDisabledMods:checked /template/ Border#NormalRectangle">
+    <Style Selector="CheckBox.OptionClickbox:checked /template/ Border#NormalRectangle">
       <Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
     </Style>
-    <Style Selector="CheckBox#hideDisabledMods:pointerover /template/ ContentPresenter#ContentPresenter">
+    <Style Selector="CheckBox.OptionClickbox:pointerover /template/ ContentPresenter#ContentPresenter">
       <Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
     </Style>
     <Style Selector="DataGridCell.centered">
@@ -472,7 +472,8 @@
         <ComboBoxItem Content="Author" />
         <ComboBoxItem Content="Requirements" />
       </ComboBox>
-      <CheckBox Name="hideDisabledMods" Content="Hide Disabled Mods" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0"/>
+		<CheckBox Name="hideDisabledMods" Content="Hide Disabled Mods" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
+		<CheckBox Name="showUpdatableMods" Content="Show Updatable Mods" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
     </DockPanel>
     <Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 2 0 0">
       <Button Content="{Binding Version}" Classes="hyperlink" Command="{Binding OpenBrowser}" CommandParameter="https://www.nexusmods.com/stardewvalley/mods/10455" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0"/>

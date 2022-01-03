@@ -104,6 +104,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("editProfilesButton").Click += EditProfilesButton_Click;
             this.FindControl<Button>("smapiButton").Click += Smapi_Click;
             this.FindControl<CheckBox>("hideDisabledMods").Click += HideDisabledModsButton_Click;
+            this.FindControl<CheckBox>("showUpdatableMods").Click += ShowUpdatableModsButton_Click;
 
             // Handle filtering via textbox
             this.FindControl<TextBox>("searchBox").AddHandler(KeyUpEvent, SearchBox_KeyUp);
@@ -381,6 +382,12 @@ namespace Stardrop.Views
         {
             var hideDisabledModsCheckBox = e.Source as CheckBox;
             _viewModel.HideDisabledMods = (bool)hideDisabledModsCheckBox.IsChecked;
+        }
+
+        private void ShowUpdatableModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var showUpdatableModsCheckBox = e.Source as CheckBox;
+            _viewModel.ShowUpdatableMods = (bool)showUpdatableModsCheckBox.IsChecked;
         }
 
         private void ProfileComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
