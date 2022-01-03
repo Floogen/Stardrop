@@ -203,7 +203,7 @@ namespace Stardrop.Views
                 return;
             }
 
-            var addedMods = await this.AddMods(e.Data.GetFileNames()?.ToArray());
+            var addedMods = await AddMods(e.Data.GetFileNames()?.ToArray());
 
             // TODO: Add optional setting to disable checking for updates when a new mod is installed?
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
@@ -274,7 +274,7 @@ namespace Stardrop.Views
                 }
             }
 
-            this.UpdateProfile(GetCurrentProfile());
+            UpdateProfile(GetCurrentProfile());
         }
 
         private void ModGridMenuRow_OpenFolderPath(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -330,7 +330,7 @@ namespace Stardrop.Views
                 if (hasDeletedAMod)
                 {
                     // Update the current profile
-                    this.UpdateProfile(GetCurrentProfile());
+                    UpdateProfile(GetCurrentProfile());
 
                     // Refresh mod list
                     _viewModel.DiscoverMods(Pathing.defaultModPath);
@@ -445,7 +445,7 @@ namespace Stardrop.Views
                 }
             }
 
-            this.UpdateProfile(GetCurrentProfile());
+            UpdateProfile(GetCurrentProfile());
         }
 
         private async void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -619,7 +619,10 @@ namespace Stardrop.Views
             var enabledModsPath = Pathing.GetSelectedModsFolderPath();
             Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
 
-            this.UpdateEnabledModsFolder(enabledModsPath);
+            UpdateEnabledModsFolder(enabledModsPath);
+
+            // Preserve the configs for the enabled mods
+
 
             using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
             {
@@ -647,7 +650,7 @@ namespace Stardrop.Views
             dialog.Filters.Add(new FileDialogFilter() { Name = "Mod Archive (*.zip, *.7z, *.rar)", Extensions = { "zip", "7z", "rar" } });
             dialog.AllowMultiple = false;
 
-            var addedMods = await this.AddMods(await dialog.ShowAsync(this));
+            var addedMods = await AddMods(await dialog.ShowAsync(this));
 
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
@@ -727,7 +730,7 @@ namespace Stardrop.Views
                     mod.IsEnabled = enableState;
                 }
 
-                this.UpdateProfile(GetCurrentProfile());
+                UpdateProfile(GetCurrentProfile());
             }
         }
 
@@ -1142,7 +1145,7 @@ namespace Stardrop.Views
             }
 
             // Update the current profile
-            this.UpdateProfile(GetCurrentProfile());
+            UpdateProfile(GetCurrentProfile());
 
             // Refresh mod list
             _viewModel.DiscoverMods(Pathing.defaultModPath);
