@@ -34,6 +34,10 @@ namespace Stardrop.Views
         private DispatcherTimer _searchBoxTimer;
         private DispatcherTimer _smapiProcessTimer;
 
+        // Tracking related
+        private bool shiftPressed;
+        private bool ctrlPressed;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -112,6 +116,10 @@ namespace Stardrop.Views
             // Have to register this even here, as MacOS doesn't detect it via axaml during build
             this.PropertyChanged += MainWindow_PropertyChanged;
 
+            // Hook into key related events
+            this.KeyDown += MainWindow_KeyDown;
+            this.KeyUp += MainWindow_KeyUp;
+
             // Check if SMAPI should be started immediately via --start-smapi
             if (Program.onBootStartSMAPI)
             {
@@ -121,6 +129,30 @@ namespace Stardrop.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+            {
+                shiftPressed = true;
+            }
+            else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+            {
+                ctrlPressed = true;
+            }
+        }
+
+        private void MainWindow_KeyUp(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+            {
+                shiftPressed = false;
+            }
+            else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+            {
+                ctrlPressed = false;
+            }
         }
 
         private async void MainWindow_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -313,24 +345,41 @@ namespace Stardrop.Views
         private void EnabledBox_Clicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var checkBox = e.Source as CheckBox;
-            if (checkBox is null)
+            var modGrid = this.FindControl<DataGrid>("modGrid");
+            if (checkBox is null || modGrid is null)
             {
                 return;
             }
 
             // Get the mod based on the checkbox's content (which contains the UniqueId)
-            var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(checkBox.Content));
-            if (mod is not null)
+            var clickedMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(checkBox.Content));
+            if (clickedMod is not null)
             {
-                if (mod.IsEnabled)
+                // Add the selected mod into the selection list if shift or ctrl is held, otherwise clear the current selection
+                if (!modGrid.SelectedItems.Contains(clickedMod))
                 {
-                    // Enable any existing requirements
-                    EnableRequirements(mod);
+                    if (!(ctrlPressed || shiftPressed))
+                    {
+                        modGrid.SelectedItems.Clear();
+                    }
+                    modGrid.SelectedItems.Add(clickedMod);
                 }
-                else
+
+                // Enable / disable all selected mods based on the clicked mod
+                foreach (Mod mod in modGrid.SelectedItems)
                 {
-                    // Disable any mods that require it requirements
-                    DisableRequirements(mod);
+                    mod.IsEnabled = clickedMod.IsEnabled;
+
+                    if (clickedMod.IsEnabled)
+                    {
+                        // Enable any existing requirements
+                        EnableRequirements(mod);
+                    }
+                    else
+                    {
+                        // Disable any mods that require it requirements
+                        DisableRequirements(mod);
+                    }
                 }
             }
 
