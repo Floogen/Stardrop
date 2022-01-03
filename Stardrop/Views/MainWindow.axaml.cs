@@ -235,13 +235,44 @@ namespace Stardrop.Views
 
         private void ModGridMenuRow_ChangeState(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var selectedMod = (sender as MenuItem).DataContext as Mod;
-            if (selectedMod is null)
+            var modGrid = this.FindControl<DataGrid>("modGrid");
+            if (modGrid is null)
             {
                 return;
             }
 
-            selectedMod.IsEnabled = !selectedMod.IsEnabled;
+            var selectedMod = (sender as MenuItem).DataContext as Mod;
+            if (selectedMod is not null)
+            {
+                // Add the selected mod into the selection list if shift or ctrl is held, otherwise clear the current selection
+                if (!modGrid.SelectedItems.Contains(selectedMod))
+                {
+                    if (!(ctrlPressed || shiftPressed))
+                    {
+                        modGrid.SelectedItems.Clear();
+                    }
+                    modGrid.SelectedItems.Add(selectedMod);
+                }
+
+                // Enable / disable all selected mods based on the clicked mod
+                selectedMod.IsEnabled = !selectedMod.IsEnabled;
+                foreach (Mod mod in modGrid.SelectedItems)
+                {
+                    mod.IsEnabled = selectedMod.IsEnabled;
+
+                    if (selectedMod.IsEnabled)
+                    {
+                        // Enable any existing requirements
+                        EnableRequirements(mod);
+                    }
+                    else
+                    {
+                        // Disable any mods that require it requirements
+                        DisableRequirements(mod);
+                    }
+                }
+            }
+
             this.UpdateProfile(GetCurrentProfile());
         }
 
