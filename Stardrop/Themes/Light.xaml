@@ -3,61 +3,61 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:system="clr-namespace:System;assembly=System.Runtime">
 
-  <Style>
-    <Style.Resources>
+    <Style>
+        <Style.Resources>
 
-      <!-- Colors -->
-      <Color x:Key="LightGray">#a69b97</Color>
-      <Color x:Key="NeonOrange">#ff9f2a</Color>
-      <Color x:Key="DarkSeaBlue">#031332</Color>
-      <Color x:Key="NeonMint">#389538</Color>
-      <Color x:Key="NeonRed">#ff0000</Color>
-      <Color x:Key="NeonYellow">#ffc107</Color>
-      <Color x:Key="DarkPurple">#2a0a84</Color>
-      <Color x:Key="DarkGray">#bdb9b7</Color>
-      <Color x:Key="GrayBlue">#3abcbc</Color>
-      <Color x:Key="PerfectGray">#e0e0e0</Color>
-      <Color x:Key="OffGray">#c2c2c2</Color>
-      <Color x:Key="MiddleGray">#8c8c8c</Color>
-      <Color x:Key="DarkestGray">#2a2824</Color>
-      <Color x:Key="White">#efebe9</Color>
+            <!-- Colors -->
+            <Color x:Key="LightGray">#a69b97</Color>
+            <Color x:Key="NeonOrange">#ff9f2a</Color>
+            <Color x:Key="DarkSeaBlue">#031332</Color>
+            <Color x:Key="NeonMint">#389538</Color>
+            <Color x:Key="NeonRed">#ff0000</Color>
+            <Color x:Key="NeonYellow">#ffc107</Color>
+            <Color x:Key="DarkPurple">#2a0a84</Color>
+            <Color x:Key="DarkGray">#bdb9b7</Color>
+            <Color x:Key="GrayBlue">#3abcbc</Color>
+            <Color x:Key="PerfectGray">#e0e0e0</Color>
+            <Color x:Key="OffGray">#c2c2c2</Color>
+            <Color x:Key="MiddleGray">#8c8c8c</Color>
+            <Color x:Key="DarkestGray">#2a2824</Color>
+            <Color x:Key="White">#efebe9</Color>
 
 
-      <!-- Avalonia brushes -->
-      <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource PerfectGray}" />
-      <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource DarkestGray}"/>
-      <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource LightGray}" />
-      <SolidColorBrush x:Key="HighlightForegroundBrush" Color="{DynamicResource NeonOrange}"/>
-      <SolidColorBrush x:Key="ThemeAccentBrush4" Color="{DynamicResource OrangeColor}" />
-      <SolidColorBrush x:Key="ThemeAccentBrush3" Color="{DynamicResource BrightOrangeColor}" />
-      <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource DarkGray}" />
-      <SolidColorBrush x:Key="ThemeControlMidHighBrush" Color="{DynamicResource White}"
+            <!-- Avalonia brushes -->
+            <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource PerfectGray}" />
+            <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource DarkestGray}"/>
+            <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource LightGray}" />
+            <SolidColorBrush x:Key="HighlightForegroundBrush" Color="{DynamicResource NeonOrange}"/>
+            <SolidColorBrush x:Key="ThemeAccentBrush4" Color="{DynamicResource OrangeColor}" />
+            <SolidColorBrush x:Key="ThemeAccentBrush3" Color="{DynamicResource BrightOrangeColor}" />
+            <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource DarkGray}" />
+            <SolidColorBrush x:Key="ThemeControlMidHighBrush" Color="{DynamicResource White}"
                    Opacity="0.3" />
-      <SolidColorBrush x:Key="ThemeForegroundHighBrush" Color="{DynamicResource White}" />
-      <SolidColorBrush x:Key="ThemeControlHighBrush" Color="{DynamicResource White}"
+            <SolidColorBrush x:Key="ThemeForegroundHighBrush" Color="{DynamicResource White}" />
+            <SolidColorBrush x:Key="ThemeControlHighBrush" Color="{DynamicResource White}"
                    Opacity="0.7" />
-      <SolidColorBrush x:Key="ThemeControlVeryHighBrush" Color="{DynamicResource White}"
+            <SolidColorBrush x:Key="ThemeControlVeryHighBrush" Color="{DynamicResource White}"
                    Opacity="0.7" />
-      <SolidColorBrush x:Key="ThemeBorderMidBrush" Color="{DynamicResource BlackColor}"
+            <SolidColorBrush x:Key="ThemeBorderMidBrush" Color="{DynamicResource BlackColor}"
                    Opacity="0.4" />
-      <SolidColorBrush x:Key="ThemeAccentBrush" Color="{DynamicResource White}"
+            <SolidColorBrush x:Key="ThemeAccentBrush" Color="{DynamicResource White}"
                    Opacity="0.3" />
-      <SolidColorBrush x:Key="ThemeForegroundLowBrush" Color="{DynamicResource White}"
+            <SolidColorBrush x:Key="ThemeForegroundLowBrush" Color="{DynamicResource White}"
                    Opacity="0.3" />
-      <SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource ErrorColor}" />
+            <SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource ErrorColor}" />
 
-      <!-- Custom brushes -->
-      <SolidColorBrush x:Key="DataGridHeaderBrush" Color="{DynamicResource DarkGray}" />
-      <SolidColorBrush x:Key="DataGridRowBackground" Color="{DynamicResource PerfectGray}" />
-      <SolidColorBrush x:Key="DataGridRowForeground" Color="{DynamicResource DarkestGray}" />
-      <SolidColorBrush x:Key="AlternativeDataGridRowBackground" Color="{DynamicResource White}" />
-      <SolidColorBrush x:Key="ComboBoxItemBackgroundBrush" Color="{DynamicResource DarkGray}" />
-      <SolidColorBrush x:Key="ComboBoxItemSelectedBackgroundBrush" Color="{DynamicResource White}" />
-      <SolidColorBrush x:Key="UpdateAvailableBrush" Color="{DynamicResource NeonMint}" />
-      <SolidColorBrush x:Key="UpdateBrokenBrush" Color="{DynamicResource NeonRed}" />
-      <SolidColorBrush x:Key="UpdateUnofficialBrush" Color="{DynamicResource NeonYellow}" />
+            <!-- Custom brushes -->
+            <SolidColorBrush x:Key="DataGridHeaderBrush" Color="{DynamicResource DarkGray}" />
+            <SolidColorBrush x:Key="DataGridRowBackground" Color="{DynamicResource PerfectGray}" />
+            <SolidColorBrush x:Key="DataGridRowForeground" Color="{DynamicResource DarkestGray}" />
+            <SolidColorBrush x:Key="AlternativeDataGridRowBackground" Color="{DynamicResource White}" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundBrush" Color="{DynamicResource DarkGray}" />
+            <SolidColorBrush x:Key="ComboBoxItemSelectedBackgroundBrush" Color="{DynamicResource White}" />
+            <SolidColorBrush x:Key="UpdateAvailableBrush" Color="{DynamicResource NeonMint}" />
+            <SolidColorBrush x:Key="UpdateBrokenBrush" Color="{DynamicResource NeonRed}" />
+            <SolidColorBrush x:Key="UpdateUnofficialBrush" Color="{DynamicResource NeonYellow}" />
 
-    </Style.Resources>
-  </Style>
+        </Style.Resources>
+    </Style>
 
 </Styles>

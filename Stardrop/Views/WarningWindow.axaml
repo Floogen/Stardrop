@@ -15,31 +15,31 @@
         HasSystemDecorations="false"
         Icon="/Assets/icon.ico">
 
-  <Window.Styles>
-    <Style Selector="Button:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource ThemeForegroundBrush}"/>
-    </Style>
-    <Style Selector="Button:pressed /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource HighlightBrush}"/>
-    </Style>
-  </Window.Styles>
+	<Window.Styles>
+		<Style Selector="Button:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource ThemeForegroundBrush}"/>
+		</Style>
+		<Style Selector="Button:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource HighlightBrush}"/>
+		</Style>
+	</Window.Styles>
 
-  <Border BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="1">
-    <Grid>
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="25" />
-      </Grid.RowDefinitions>
+	<Border BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="1">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="25" />
+			</Grid.RowDefinitions>
 
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" />
-      </Grid.ColumnDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
 
-      <StackPanel>
-        <TextBlock Grid.Row="0" Text="{Binding WarningText}" TextWrapping="Wrap" Foreground="{DynamicResource ThemeForegroundBrush}" HorizontalAlignment="Center" TextAlignment="Center"  Margin="0 35 0 20"/>
-        <Button Grid.Row="2" Name="unlockButton" IsCancel="True" Content="{Binding ButtonText}" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
-      </StackPanel>
-    </Grid>
-  </Border>
+			<StackPanel>
+				<TextBlock Grid.Row="0" Text="{Binding WarningText}" TextWrapping="Wrap" Foreground="{DynamicResource ThemeForegroundBrush}" HorizontalAlignment="Center" TextAlignment="Center"  Margin="0 35 0 20"/>
+				<Button Grid.Row="2" Name="unlockButton" IsCancel="True" Content="{Binding ButtonText}" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+			</StackPanel>
+		</Grid>
+	</Border>
 </Window>

@@ -19,75 +19,75 @@
         CanResize="True"
         Icon="/Assets/icon.ico">
 
-  <Window.Styles>
-    <Style Selector="Button:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="LightGray"/>
-    </Style>
-    <Style Selector="Button:pressed /template/ ContentPresenter">
-      <Setter Property="Background" Value="White"/>
-    </Style>
-    <Style Selector="Button[IsEnabled=False] /template/ ContentPresenter">
-      <Setter Property="Background" Value="Gray"/>
-    </Style>
-    <Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="Red"/>
-    </Style>
-    <Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
-      <Setter Property="Background" Value="Pink"/>
-    </Style>
-    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}"/>
-      <Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
-    </Style>
-    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
-      <Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
-    </Style>
-  </Window.Styles>
+	<Window.Styles>
+		<Style Selector="Button:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="LightGray"/>
+		</Style>
+		<Style Selector="Button:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="White"/>
+		</Style>
+		<Style Selector="Button[IsEnabled=False] /template/ ContentPresenter">
+			<Setter Property="Background" Value="Gray"/>
+		</Style>
+		<Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="Red"/>
+		</Style>
+		<Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="Pink"/>
+		</Style>
+		<Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}"/>
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+		</Style>
+		<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
+		</Style>
+	</Window.Styles>
 
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="*" />
-      <RowDefinition Height="50" />
-    </Grid.RowDefinitions>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="50" />
+		</Grid.RowDefinitions>
 
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*" />
-      <ColumnDefinition Width="50" />
-    </Grid.ColumnDefinitions>
-    <Border Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
-      <Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
-        <Image Source="/Assets/icon.ico" Stretch="None"/>
-        <TextBlock Text="Profiles" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left"  Foreground="{DynamicResource ThemeForegroundBrush}" />
-      </Menu>
-    </Border>
-    <Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
-      <Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
-    </Menu>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="50" />
+		</Grid.ColumnDefinitions>
+		<Border Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
+			<Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
+				<Image Source="/Assets/icon.ico" Stretch="None"/>
+				<TextBlock Text="Profiles" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left"  Foreground="{DynamicResource ThemeForegroundBrush}" />
+			</Menu>
+		</Border>
+		<Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
+			<Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+		</Menu>
 
-    <Border Grid.Row="1" Margin="20" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
-      <ListBox Name="profileList" Background="{DynamicResource DataGridRowBackground}" Foreground="{DynamicResource ThemeForegroundBrush}">
-        <ListBox.ItemTemplate>
-          <DataTemplate>
-            <StackPanel>
-              <TextBlock Text="{Binding Path=Name}"/>
-            </StackPanel>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-    </Border>
+		<Border Grid.Row="1" Margin="20" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
+			<ListBox Name="profileList" Background="{DynamicResource DataGridRowBackground}" Foreground="{DynamicResource ThemeForegroundBrush}">
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<StackPanel>
+							<TextBlock Text="{Binding Path=Name}"/>
+						</StackPanel>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+		</Border>
 
-    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0 45 0 0" Width="50">
-      <Button Name="addButton" Margin="0 15 0 15" i:Attached.Icon="mdi-plus" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
-      <Button Name="deleteButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-minus" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
-      <Button Name="renameButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-pencil" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
-      <Button Name="copyButton" Margin="0 15 0 15" i:Attached.Icon="mdi-content-copy" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
-    </StackPanel>
+		<StackPanel Grid.Row="1" Grid.Column="1" Margin="0 45 0 0" Width="50">
+			<Button Name="addButton" Margin="0 15 0 15" i:Attached.Icon="mdi-plus" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+			<Button Name="deleteButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-minus" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+			<Button Name="renameButton" IsEnabled="False" Margin="0 15 0 15" i:Attached.Icon="mdi-pencil" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+			<Button Name="copyButton" Margin="0 15 0 15" i:Attached.Icon="mdi-content-copy" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+		</StackPanel>
 
-    <DockPanel Grid.Row="2" Grid.Column="1" Margin="0 0 0 10">
-      <Button Name="applyButton" ToolTip.Tip="{Binding ToolTip_Save}" i:Attached.Icon="mdi-check" Margin="-40 0 15 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent"/>
-      <Button Name="cancelButton" IsCancel="True" ToolTip.Tip="{Binding ToolTip_Cancel}" i:Attached.Icon="mdi-cancel" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
-    </DockPanel>
-  </Grid>
+		<DockPanel Grid.Row="2" Grid.Column="1" Margin="0 0 0 10">
+			<Button Name="applyButton" ToolTip.Tip="{Binding ToolTip_Save}" i:Attached.Icon="mdi-check" Margin="-40 0 15 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent"/>
+			<Button Name="cancelButton" IsCancel="True" ToolTip.Tip="{Binding ToolTip_Cancel}" i:Attached.Icon="mdi-cancel" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
+		</DockPanel>
+	</Grid>
 </Window>

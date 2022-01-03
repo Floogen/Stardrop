@@ -3,12 +3,12 @@
              xmlns:local="using:Stardrop"
              x:Class="Stardrop.App"
              Name="Stardrop">
-  <Application.DataTemplates>
-    <local:ViewLocator/>
-  </Application.DataTemplates>
+	<Application.DataTemplates>
+		<local:ViewLocator/>
+	</Application.DataTemplates>
 
-  <Application.Styles>
-    <FluentTheme Mode="Light" />
-    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
-  </Application.Styles>
+	<Application.Styles>
+		<FluentTheme Mode="Light" />
+		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+	</Application.Styles>
 </Application>
