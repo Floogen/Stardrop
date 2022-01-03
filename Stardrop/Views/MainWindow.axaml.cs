@@ -289,33 +289,57 @@ namespace Stardrop.Views
 
         private async void ModGridMenuRow_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var selectedMod = (sender as MenuItem).DataContext as Mod;
-            if (selectedMod is null)
+            var modGrid = this.FindControl<DataGrid>("modGrid");
+            if (modGrid is null)
             {
                 return;
             }
 
-            var requestWindow = new MessageWindow($"Are you sure you'd like to delete {selectedMod.Name}? This cannot be undone.");
-            if (await requestWindow.ShowDialog<bool>(this))
+            var selectedMod = (sender as MenuItem).DataContext as Mod;
+            if (selectedMod is not null)
             {
-                // Delete old vesrion
-                var targetDirectory = new DirectoryInfo(selectedMod.ModFileInfo.DirectoryName);
-                if (targetDirectory is not null)
+                // Add the selected mod into the selection list if shift or ctrl is held, otherwise clear the current selection
+                if (!modGrid.SelectedItems.Contains(selectedMod))
                 {
-                    targetDirectory.Delete(true);
+                    if (!(ctrlPressed || shiftPressed))
+                    {
+                        modGrid.SelectedItems.Clear();
+                    }
+                    modGrid.SelectedItems.Add(selectedMod);
                 }
 
-                // Update the current profile
-                this.UpdateProfile(GetCurrentProfile());
+                // Delete all selected mods, though ask before each instance
+                bool hasDeletedAMod = false;
+                foreach (Mod mod in modGrid.SelectedItems)
+                {
+                    var requestWindow = new MessageWindow($"Are you sure you'd like to delete {mod.Name}? This cannot be undone.");
+                    if (await requestWindow.ShowDialog<bool>(this))
+                    {
+                        // Delete old vesrion
+                        var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
+                        if (targetDirectory is not null)
+                        {
+                            targetDirectory.Delete(true);
+                        }
 
-                // Refresh mod list
-                _viewModel.DiscoverMods(Pathing.defaultModPath);
+                        hasDeletedAMod = true;
+                    }
+                }
 
-                // Refresh enabled mods
-                _viewModel.EnableModsByProfile(GetCurrentProfile());
+                if (hasDeletedAMod)
+                {
+                    // Update the current profile
+                    this.UpdateProfile(GetCurrentProfile());
 
-                // Refresh the update data
-                await CheckForModUpdates(_viewModel.Mods.ToList(), probe: true);
+                    // Refresh mod list
+                    _viewModel.DiscoverMods(Pathing.defaultModPath);
+
+                    // Refresh enabled mods
+                    _viewModel.EnableModsByProfile(GetCurrentProfile());
+
+                    // Refresh the update data
+                    await CheckForModUpdates(_viewModel.Mods.ToList(), probe: true);
+                }
             }
         }
 
