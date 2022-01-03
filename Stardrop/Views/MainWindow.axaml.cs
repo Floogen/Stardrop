@@ -509,6 +509,16 @@ namespace Stardrop.Views
             OpenNativeExplorer(Pathing.GetLogFolderPath());
         }
 
+        private void SmapiLogFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            OpenNativeExplorer(Pathing.GetSmapiLogFolderPath());
+        }
+
+        private void SmapiLogFile_Click(object? sender, EventArgs e)
+        {
+            OpenNativeExplorer(Pathing.GetSmapiLogFolderPath());
+        }
+
         private async void ModUpdateCheck_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             await HandleModUpdateCheck();

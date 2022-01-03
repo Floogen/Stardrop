@@ -282,7 +282,9 @@
       <NativeMenuItem Header="View">
         <NativeMenu>
           <NativeMenuItem Header="Settings" Click="Settings_Click" />
-          <NativeMenuItem Header="Log File" Click="LogFile_Click" />
+		  <NativeMenuItemSeparator/>
+          <NativeMenuItem Header="Stardrop Log File" Click="LogFile_Click" />
+		  <NativeMenuItem Header="SMAPI Log File" Click="SmapiLogFile_Click" />
         </NativeMenu>
       </NativeMenuItem>
       <NativeMenuItem Header="Tools">
@@ -327,7 +329,9 @@
         </MenuItem>
         <MenuItem Header="View" Margin="-10 0 0 0" Classes="Bar">
           <MenuItem Header="Settings" Click="Settings_Click" Classes="Bar"/>
-          <MenuItem Header="Log File" Click="LogFile_Click" Classes="Bar"/>
+		  <Separator/>
+          <MenuItem Header="Stardrop Log File" Click="LogFile_Click" Classes="Bar"/>
+          <MenuItem Header="SMAPI Log File" Click="SmapiLogFile_Click" Classes="Bar"/>
         </MenuItem>
         <MenuItem Header="Tools" Margin="-10 0 0 0" Classes="Bar">
           <MenuItem Header="Refresh Mod List" Click="ModListRefresh_Click" Classes="Bar"/>
