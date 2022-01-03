@@ -951,10 +951,17 @@ namespace Stardrop.Views
                             }
                         }
 
+                        // Verify the archive has a top level single folder
+                        bool hasTopLevelFolder = false;
+                        if (archive.Entries.Count(e => e.Key.Count(k => k == '/') == 1 && e.IsDirectory) == 1)
+                        {
+                            hasTopLevelFolder = true;
+                        }
+
                         // If the archive doesn't have a manifest, warn the user
                         if (manifest is not null)
                         {
-                            string defaultInstallPath = Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods");
+                            string installPath = Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods");
                             if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null)
                             {
                                 if (!manifest.DeleteOldVersion)
@@ -970,9 +977,15 @@ namespace Stardrop.Views
                                         }
                                     }
                                 }
-
-                                defaultInstallPath = mod.ModFileInfo.Directory.Parent.FullName;
+                                installPath = mod.ModFileInfo.Directory.Parent.FullName;
                             }
+
+                            // Correct the installPath if the archive doesn't come with a top level folder
+                            if (!hasTopLevelFolder)
+                            {
+                                installPath = Path.Combine(installPath, manifest.UniqueID);
+                            }
+
                             foreach (var entry in archive.Entries)
                             {
                                 if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase))
@@ -981,11 +994,11 @@ namespace Stardrop.Views
                                 }
 
                                 // Create the default location if it doesn't exist
-                                if (!Directory.Exists(defaultInstallPath))
+                                if (!Directory.Exists(installPath))
                                 {
-                                    Directory.CreateDirectory(defaultInstallPath);
+                                    Directory.CreateDirectory(installPath);
                                 }
-                                entry.WriteToDirectory(defaultInstallPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
+                                entry.WriteToDirectory(installPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
                             }
 
                             addedMods.Add(new Mod(manifest, null, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
