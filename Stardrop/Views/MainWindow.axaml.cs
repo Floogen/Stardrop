@@ -707,9 +707,13 @@ namespace Stardrop.Views
             {
                 await CheckForModUpdates(_viewModel.Mods.ToList());
             }
+            else if ((int)GetTimeSpanBeforeAllowedUpdate().TotalMinutes > 0)
+            {
+                CreateWarningWindow($"Updates can only be requested once every 5 minutes.\n\nPlease try again in {(int)GetTimeSpanBeforeAllowedUpdate().TotalMinutes} minute(s).", "OK");
+            }
             else
             {
-                CreateWarningWindow($"Updates can only be requested once every 5 minutes.\n\nPlease try again in {GetMinutesBeforeAllowedUpdate()} minute(s).", "OK");
+                CreateWarningWindow($"Updates can only be requested once every 5 minutes.\n\nPlease try again in {(int)GetTimeSpanBeforeAllowedUpdate().TotalSeconds} second(s).", "OK");
             }
         }
 
@@ -757,20 +761,20 @@ namespace Stardrop.Views
             return updateCache.LastRuntime > DateTime.Now.AddMinutes(-5);
         }
 
-        private int GetMinutesBeforeAllowedUpdate()
+        private TimeSpan GetTimeSpanBeforeAllowedUpdate()
         {
             if (!File.Exists(Pathing.GetVersionCachePath()))
             {
-                return 0;
+                return new TimeSpan(0);
             }
 
             var updateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
             if (updateCache is null)
             {
-                return 0;
+                return new TimeSpan(0);
             }
 
-            return (int)(updateCache.LastRuntime - DateTime.Now.AddMinutes(-5)).TotalMinutes;
+            return updateCache.LastRuntime - DateTime.Now.AddMinutes(-5);
         }
 
         private async Task<UpdateCache?> GetCachedModUpdates(List<Mod> mods, bool skipCacheCheck = false)
