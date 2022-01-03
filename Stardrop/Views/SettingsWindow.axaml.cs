@@ -90,11 +90,11 @@ namespace Stardrop.Views
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                dialog.Filters.Add(new FileDialogFilter() { Name = "StardewModdingAPI" });
+                dialog.Filters.Add(new FileDialogFilter() { Name = "Stardew Valley" });
             }
             else
             {
-                dialog.Filters.Add(new FileDialogFilter() { Name = "StardewModdingAPI", Extensions = { "*" } });
+                dialog.Filters.Add(new FileDialogFilter() { Name = "Stardew Valley", Extensions = { "*" } });
             }
             dialog.AllowMultiple = false;
 
@@ -135,11 +135,10 @@ namespace Stardrop.Views
                 return;
             }
 
-
             var targetSmapiName = "StardewModdingAPI.exe";
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                targetSmapiName = "StardewModdingAPI";
+                targetSmapiName = "Stardew Valley";
             }
 
             var smapiFileInfo = new FileInfo(filePaths[0]);
