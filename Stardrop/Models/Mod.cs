@@ -1,5 +1,6 @@
 ﻿using Avalonia.Media;
 using Semver;
+using Stardrop.Models.Data;
 using Stardrop.Models.SMAPI;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,8 @@ namespace Stardrop.Models
             }
         }
         public string Author { get; set; }
+        public Config? Config { get; set; }
+        public bool HasConfig { get { return Config is not null; } }
         private List<ManifestDependency> _requirements { get; set; }
         public List<ManifestDependency> Requirements { get { return _requirements; } set { _requirements = value; NotifyPropertyChanged("Requirements"); NotifyPropertyChanged("MissingRequirements"); } }
         public List<ManifestDependency> MissingRequirements { get { return _requirements.Where(r => r.IsMissing && r.IsRequired).ToList(); } }

@@ -33,7 +33,6 @@ namespace Stardrop.ViewModels
         private bool _isLocked;
         public bool IsLocked { get { return _isLocked; } set { this.RaiseAndSetIfChanged(ref _isLocked, value); } }
         public ObservableCollection<Mod> Mods { get; set; }
-        public ObservableCollection<Config> Configs { get; set; }
         private int _enabledModCount;
         public int EnabledModCount { get { return _enabledModCount; } set { this.RaiseAndSetIfChanged(ref _enabledModCount, value); } }
         public DataGridCollectionView DataView { get; set; }
@@ -227,6 +226,14 @@ namespace Stardrop.ViewModels
                         }
                     }
 
+                    // Check if any config file exists
+                    var configPath = Path.Combine(fileInfo.DirectoryName, "config.json");
+                    if (File.Exists(configPath) && new FileInfo(configPath) is FileInfo configInfo && configInfo is not null)
+                    {
+                        mod.Config = new Config() { UniqueId = mod.UniqueId, FilePath = configInfo.FullName, LastWriteTimeUtc = configInfo.LastWriteTimeUtc, Data = File.ReadAllText(configInfo.FullName) };
+                    }
+
+                    // Add or update the mod
                     if (!Mods.Any(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)))
                     {
                         Mods.Add(mod);
@@ -310,11 +317,6 @@ namespace Stardrop.ViewModels
 
         public void DiscoverConfigs(string modsFilePath, bool useArchive = false)
         {
-            if (Configs is null || !useArchive)
-            {
-                Configs = new ObservableCollection<Config>();
-            }
-
             if (modsFilePath is null || !Directory.Exists(modsFilePath))
             {
                 return;
@@ -332,19 +334,19 @@ namespace Stardrop.ViewModels
                 {
                     continue;
                 }
-                else if (useArchive && Configs.FirstOrDefault(c => c.UniqueId == mod.UniqueId) is Config archivedConfig && archivedConfig is not null)
+                else if (useArchive && mod.Config is not null)
                 {
-                    if (fileInfo.LastWriteTimeUtc <= archivedConfig.LastWriteTimeUtc)
+                    if (fileInfo.LastWriteTimeUtc <= mod.Config.LastWriteTimeUtc)
                     {
                         continue;
                     }
 
-                    archivedConfig.Data = File.ReadAllText(fileInfo.FullName);
-                    archivedConfig.LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;
+                    mod.Config.Data = File.ReadAllText(fileInfo.FullName);
+                    mod.Config.LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;
                 }
                 else
                 {
-                    Configs.Add(new Config() { UniqueId = mod.UniqueId, FilePath = fileInfo.FullName, LastWriteTimeUtc = fileInfo.LastWriteTimeUtc, Data = File.ReadAllText(fileInfo.FullName) });
+                    mod.Config = new Config() { UniqueId = mod.UniqueId, FilePath = fileInfo.FullName, LastWriteTimeUtc = fileInfo.LastWriteTimeUtc, Data = File.ReadAllText(fileInfo.FullName) };
                 }
             }
         }
@@ -356,8 +358,7 @@ namespace Stardrop.ViewModels
             foreach (var modId in profile.EnabledModIds.Select(id => id.ToLower()))
             {
                 var mod = Mods.FirstOrDefault(m => m.UniqueId.Equals(modId, StringComparison.OrdinalIgnoreCase));
-                var configInfo = Configs.FirstOrDefault(c => c.UniqueId.Equals(modId, StringComparison.OrdinalIgnoreCase));
-                if (mod is null || mod.ModFileInfo is null || configInfo is null)
+                if (mod is null || mod.ModFileInfo is null || mod.Config is null)
                 {
                     continue;
                 }
@@ -365,22 +366,22 @@ namespace Stardrop.ViewModels
                 if (profile.PreservedModConfigs.ContainsKey(modId))
                 {
                     // Merge the config
-                    var originalJson = configInfo.Data;
+                    var originalJson = mod.Config.Data;
                     var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]);
 
                     if (originalJson != archivedJson)
                     {
                         // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
                         string mergedJson = inverseMerge ? JsonTools.Merge(archivedJson, originalJson) : JsonTools.Merge(originalJson, archivedJson);
-                        configInfo.Data = mergedJson;
+                        mod.Config.Data = mergedJson;
 
                         // Apply the changes to the config file
-                        pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = configInfo.FilePath, Data = mergedJson });
+                        pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mergedJson });
                     }
                 }
                 else
                 {
-                    pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = configInfo.FilePath, Data = configInfo.Data });
+                    pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mod.Config.Data });
                 }
             }
 
