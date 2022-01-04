@@ -74,6 +74,7 @@ namespace Stardrop.Views
 
             var copiedProfile = selectedProfile.ShallowCopy();
             copiedProfile.Name = fileNameCopied;
+            copiedProfile.IsProtected = false;
 
             _viewModel.Profiles.Add(copiedProfile);
         }
