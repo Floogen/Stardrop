@@ -414,7 +414,7 @@ namespace Stardrop.ViewModels
             }
 
             // Merge any existing preserved configs
-            foreach (var configInfo in pendingConfigUpdates.Where(c => File.Exists(c.FilePath)))
+            foreach (var configInfo in pendingConfigUpdates.Where(c => profile.PreservedModConfigs.ContainsKey(c.UniqueId.ToLower()) && File.Exists(c.FilePath)))
             {
                 // Apply the changes to the config file
                 File.WriteAllText(configInfo.FilePath, configInfo.Data);
