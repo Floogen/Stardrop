@@ -457,6 +457,16 @@
 							<TextBlock Text="Version" TextAlignment="Center" />
 						</DataGridTextColumn.Header>
 					</DataGridTextColumn>
+					<DataGridTemplateColumn SortMemberPath="HasConfig" CellStyleClasses="centered" >
+						<DataGridTemplateColumn.Header>
+							<TextBlock Text="Configuration" TextAlignment="Center" />
+						</DataGridTemplateColumn.Header>
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<Button Content="Click to open" Classes="hyperlink" IsVisible="{Binding HasConfig}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Config.FilePath}" Foreground="{DynamicResource HighlightForegroundBrush}"/>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
 					<DataGridTemplateColumn SortMemberPath="ParsedStatus" CellStyleClasses="centered" >
 						<DataGridTemplateColumn.Header>
 							<TextBlock Text="Status" TextAlignment="Center" />
