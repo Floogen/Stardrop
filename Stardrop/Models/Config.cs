@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Stardrop.Models.Data
+namespace Stardrop.Models
 {
     public class Config
     {
