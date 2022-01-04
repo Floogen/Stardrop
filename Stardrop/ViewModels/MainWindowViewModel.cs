@@ -33,6 +33,7 @@ namespace Stardrop.ViewModels
         private bool _isLocked;
         public bool IsLocked { get { return _isLocked; } set { this.RaiseAndSetIfChanged(ref _isLocked, value); } }
         public ObservableCollection<Mod> Mods { get; set; }
+        public ObservableCollection<Config> Configs { get; set; }
         private int _enabledModCount;
         public int EnabledModCount { get { return _enabledModCount; } set { this.RaiseAndSetIfChanged(ref _enabledModCount, value); } }
         public DataGridCollectionView DataView { get; set; }
@@ -170,28 +171,6 @@ namespace Stardrop.ViewModels
             return manifests;
         }
 
-        public List<FileInfo> GetConfigFiles(DirectoryInfo modDirectory)
-        {
-            List<FileInfo> configs = new List<FileInfo>();
-            foreach (var directory in modDirectory.EnumerateDirectories())
-            {
-                var localConfigs = directory.EnumerateFiles("config.json");
-                if (localConfigs.Count() == 0)
-                {
-                    configs.AddRange(GetConfigFiles(directory));
-                    continue;
-                }
-
-                var localConfig = localConfigs.First();
-                if (localConfig.Directory is not null && localConfig.Directory.EnumerateFiles("manifest.json", SearchOption.TopDirectoryOnly).Count() == 1)
-                {
-                    configs.Add(localConfig);
-                }
-            }
-
-            return configs;
-        }
-
         public void DiscoverMods(string modsFilePath)
         {
             if (Mods is null)
@@ -266,6 +245,7 @@ namespace Stardrop.ViewModels
             }
 
             EvaluateRequirements();
+            DiscoverConfigs(modsFilePath, useArchive: true);
         }
 
         public void EvaluateRequirements()
@@ -306,6 +286,142 @@ namespace Stardrop.ViewModels
             }
         }
 
+        public List<FileInfo> GetConfigFiles(DirectoryInfo modDirectory)
+        {
+            List<FileInfo> configs = new List<FileInfo>();
+            foreach (var directory in modDirectory.EnumerateDirectories())
+            {
+                var localConfigs = directory.EnumerateFiles("config.json");
+                if (localConfigs.Count() == 0)
+                {
+                    configs.AddRange(GetConfigFiles(directory));
+                    continue;
+                }
+
+                var localConfig = localConfigs.First();
+                if (localConfig.Directory is not null && localConfig.Directory.EnumerateFiles("manifest.json", SearchOption.TopDirectoryOnly).Count() == 1)
+                {
+                    configs.Add(localConfig);
+                }
+            }
+
+            return configs;
+        }
+
+        public void DiscoverConfigs(string modsFilePath, bool useArchive = false)
+        {
+            if (Configs is null || !useArchive)
+            {
+                Configs = new ObservableCollection<Config>();
+            }
+
+            if (modsFilePath is null || !Directory.Exists(modsFilePath))
+            {
+                return;
+            }
+
+            foreach (var fileInfo in GetConfigFiles(new DirectoryInfo(modsFilePath)))
+            {
+                if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(modsFilePath, fileInfo.Directory)))
+                {
+                    continue;
+                }
+
+                var mod = Mods.FirstOrDefault(m => m.ModFileInfo is not null && m.ModFileInfo.DirectoryName == fileInfo.DirectoryName);
+                if (mod is null)
+                {
+                    continue;
+                }
+                else if (useArchive && Configs.FirstOrDefault(c => c.UniqueId == mod.UniqueId) is Config archivedConfig && archivedConfig is not null)
+                {
+                    if (fileInfo.LastWriteTimeUtc <= archivedConfig.LastWriteTimeUtc)
+                    {
+                        continue;
+                    }
+
+                    archivedConfig.Data = File.ReadAllText(fileInfo.FullName);
+                    archivedConfig.LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;
+                }
+                else
+                {
+                    Configs.Add(new Config() { UniqueId = mod.UniqueId, FilePath = fileInfo.FullName, LastWriteTimeUtc = fileInfo.LastWriteTimeUtc, Data = File.ReadAllText(fileInfo.FullName) });
+                }
+            }
+        }
+
+        internal List<Config> GetPendingConfigUpdates(Profile profile, bool inverseMerge = false)
+        {
+            // Merge any existing preserved configs
+            List<Config> pendingConfigUpdates = new List<Config>();
+            foreach (var modId in profile.EnabledModIds.Select(id => id.ToLower()))
+            {
+                var mod = Mods.FirstOrDefault(m => m.UniqueId.Equals(modId, StringComparison.OrdinalIgnoreCase));
+                var configInfo = Configs.FirstOrDefault(c => c.UniqueId.Equals(modId, StringComparison.OrdinalIgnoreCase));
+                if (mod is null || mod.ModFileInfo is null || configInfo is null)
+                {
+                    continue;
+                }
+
+                if (profile.PreservedModConfigs.ContainsKey(modId))
+                {
+                    // Merge the config
+                    var originalJson = configInfo.Data;
+                    var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]);
+
+                    if (originalJson != archivedJson)
+                    {
+                        // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
+                        string mergedJson = inverseMerge ? JsonTools.Merge(archivedJson, originalJson) : JsonTools.Merge(originalJson, archivedJson);
+                        configInfo.Data = mergedJson;
+
+                        // Apply the changes to the config file
+                        pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = configInfo.FilePath, Data = mergedJson });
+                    }
+                }
+                else
+                {
+                    pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = configInfo.FilePath, Data = configInfo.Data });
+                }
+            }
+
+            return pendingConfigUpdates;
+        }
+
+        internal void ReadModConfigs(Profile profile)
+        {
+            ReadModConfigs(profile, GetPendingConfigUpdates(profile, inverseMerge: true));
+        }
+
+        internal void ReadModConfigs(Profile profile, List<Config> pendingConfigUpdates)
+        {
+            foreach (var configInfo in pendingConfigUpdates)
+            {
+                profile.PreservedModConfigs[configInfo.UniqueId] = JsonDocument.Parse(configInfo.Data);
+            }
+        }
+
+        internal bool WriteModConfigs(Profile profile)
+        {
+            return WriteModConfigs(profile, GetPendingConfigUpdates(profile));
+        }
+
+        internal bool WriteModConfigs(Profile profile, List<Config> pendingConfigUpdates)
+        {
+            if (pendingConfigUpdates.Count == 0)
+            {
+                return false;
+            }
+
+            // Merge any existing preserved configs
+            foreach (var configInfo in pendingConfigUpdates.Where(c => File.Exists(c.FilePath)))
+            {
+                // Apply the changes to the config file
+                File.WriteAllText(configInfo.FilePath, configInfo.Data);
+            }
+
+            return true;
+        }
+
         public void EnableModsByProfile(Profile profile)
         {
             foreach (var mod in Mods)
@@ -319,97 +435,6 @@ namespace Stardrop.ViewModels
 
             // Update the EnabledModCount
             EnabledModCount = Mods.Where(m => m.IsEnabled).Count();
-        }
-
-        internal List<ConfigInfo> GetPendingConfigUpdates(Profile profile, bool inverseMerge = false)
-        {
-            // Get the current config files
-            var configFiles = GetConfigFiles(new DirectoryInfo(Pathing.defaultModPath));
-
-            // Load the current configs for the enabled mods
-            var idToConfigFiles = new Dictionary<string, FileInfo>();
-            var enabledModConfigs = new Dictionary<string, JsonDocument>();
-            foreach (var modId in profile.EnabledModIds.Select(id => id.ToLower()))
-            {
-                var mod = Mods.FirstOrDefault(m => m.UniqueId.Equals(modId, StringComparison.OrdinalIgnoreCase));
-                if (mod is null || mod.ModFileInfo is null)
-                {
-                    continue;
-                }
-
-                var configInfo = configFiles.FirstOrDefault(c => c.DirectoryName == mod.ModFileInfo.DirectoryName);
-                if (configInfo is not null)
-                {
-                    idToConfigFiles[modId] = configInfo;
-                    enabledModConfigs[modId] = JsonDocument.Parse(File.ReadAllText(configInfo.FullName));
-                }
-            }
-
-            // Merge any existing preserved configs
-            List<ConfigInfo> pendingConfigUpdates = new List<ConfigInfo>();
-            foreach (var modConfigId in enabledModConfigs.Keys)
-            {
-                if (profile.PreservedModConfigs.ContainsKey(modConfigId))
-                {
-                    // Merge the config
-                    var originalJson = JsonTools.ParseDocumentToString(enabledModConfigs[modConfigId]);
-                    var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modConfigId]);
-
-                    if (originalJson != archivedJson)
-                    {
-                        // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
-                        string mergedJson = inverseMerge ? JsonTools.Merge(archivedJson, originalJson) : JsonTools.Merge(originalJson, archivedJson);
-                        enabledModConfigs[modConfigId] = JsonDocument.Parse(mergedJson);
-
-                        // Apply the changes to the config file
-                        if (idToConfigFiles.ContainsKey(modConfigId))
-                        {
-                            pendingConfigUpdates.Add(new ConfigInfo() { UniqueId = modConfigId, FilePath = idToConfigFiles[modConfigId].FullName, Data = mergedJson });
-                        }
-                    }
-                }
-                else
-                {
-                    pendingConfigUpdates.Add(new ConfigInfo() { UniqueId = modConfigId, FilePath = idToConfigFiles[modConfigId].FullName, Data = JsonTools.ParseDocumentToString(enabledModConfigs[modConfigId]) });
-                }
-            }
-
-            return pendingConfigUpdates;
-        }
-
-        internal void ReadModConfigs(Profile profile)
-        {
-            ReadModConfigs(profile, GetPendingConfigUpdates(profile, inverseMerge: true));
-        }
-
-        internal void ReadModConfigs(Profile profile, List<ConfigInfo> pendingConfigUpdates)
-        {
-            foreach (var configInfo in pendingConfigUpdates)
-            {
-                profile.PreservedModConfigs[configInfo.UniqueId] = JsonDocument.Parse(configInfo.Data);
-            }
-        }
-
-        internal bool WriteModConfigs(Profile profile)
-        {
-            return WriteModConfigs(profile, GetPendingConfigUpdates(profile));
-        }
-
-        internal bool WriteModConfigs(Profile profile, List<ConfigInfo> pendingConfigUpdates)
-        {
-            if (pendingConfigUpdates.Count == 0)
-            {
-                return false;
-            }
-
-            // Merge any existing preserved configs
-            foreach (var configInfo in pendingConfigUpdates)
-            {
-                // Apply the changes to the config file
-                File.WriteAllText(configInfo.FilePath, configInfo.Data);
-            }
-
-            return true;
         }
 
         internal void UpdateFilter()

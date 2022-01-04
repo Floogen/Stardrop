@@ -399,9 +399,10 @@ namespace Stardrop.Views
                 return;
             }
 
-            // Preserve the configs for the enabled mods
+            // Verify if any unsaved config changes need to be saved
             if (e.RemovedItems.Count > 0 && e.RemovedItems[0] is Profile oldProfile && oldProfile is not null)
             {
+                _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
                 var pendingConfigUpdates = _viewModel.GetPendingConfigUpdates(oldProfile, inverseMerge: true);
                 if (pendingConfigUpdates.Count > 0 && await new MessageWindow($"Unsaved config changes detected for profile {oldProfile.Name}.\n\nWould you like to save them?").ShowDialog<bool>(this))
                 {
@@ -494,7 +495,8 @@ namespace Stardrop.Views
 
             if (profile is not null)
             {
-                _viewModel.ReadModConfigs(profile);
+                _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
+                _viewModel.ReadModConfigs(profile, _viewModel.GetPendingConfigUpdates(profile, inverseMerge: true));
                 UpdateProfile(profile);
             }
         }
@@ -661,8 +663,6 @@ namespace Stardrop.Views
 
             // Update the enabled mod folder linkage
             UpdateEnabledModsFolder(profile, enabledModsPath);
-
-            // Save the configs to the current profile
 
             using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
             {
