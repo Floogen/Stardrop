@@ -72,7 +72,10 @@ namespace Stardrop.Views
                 fileNameCopied = selectedProfile.Name + $" - Copy ({copyIndex})";
             }
 
-            _viewModel.Profiles.Add(new Profile(fileNameCopied, false, selectedProfile.EnabledModIds));
+            var copiedProfile = selectedProfile.ShallowCopy();
+            copiedProfile.Name = fileNameCopied;
+
+            _viewModel.Profiles.Add(copiedProfile);
         }
 
         private void RenameButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

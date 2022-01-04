@@ -30,5 +30,10 @@ namespace Stardrop.Models
             EnabledModIds = enabledMods is null ? new List<string>() : enabledMods;
             PreservedModConfigs = preservedModConfigs is null ? new Dictionary<string, JsonDocument>() : preservedModConfigs;
         }
+
+        public Profile ShallowCopy()
+        {
+            return (Profile)this.MemberwiseClone();
+        }
     }
 }
