@@ -404,7 +404,7 @@ namespace Stardrop.Views
             {
                 _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
                 var pendingConfigUpdates = _viewModel.GetPendingConfigUpdates(oldProfile, inverseMerge: true);
-                if (pendingConfigUpdates.Count > 0 && await new MessageWindow($"Unsaved config changes detected for profile {oldProfile.Name}.\n\nWould you like to save them?").ShowDialog<bool>(this))
+                if (pendingConfigUpdates.Count > 0 && await new MessageWindow($"Unsaved mod config changes detected for the profile {oldProfile.Name}.\n\nWould you like to save the changes?").ShowDialog<bool>(this))
                 {
                     _viewModel.ReadModConfigs(oldProfile, pendingConfigUpdates);
                     UpdateProfile(oldProfile);
@@ -663,6 +663,11 @@ namespace Stardrop.Views
 
             // Update the enabled mod folder linkage
             UpdateEnabledModsFolder(profile, enabledModsPath);
+
+            // Update the profile's configurations
+            _viewModel.DiscoverConfigs(enabledModsPath, useArchive: true);
+            _viewModel.ReadModConfigs(profile, _viewModel.GetPendingConfigUpdates(profile, inverseMerge: true));
+            UpdateProfile(profile);
 
             using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
             {
