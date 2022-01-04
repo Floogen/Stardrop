@@ -102,6 +102,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("maximizeButton").Click += delegate { AdjustWindowState(); };
             this.FindControl<Button>("exitButton").Click += Exit_Click;
             this.FindControl<Button>("editProfilesButton").Click += EditProfilesButton_Click;
+            this.FindControl<Button>("saveConfigsToProfile").Click += SaveConfigButton_Click;
             this.FindControl<Button>("smapiButton").Click += Smapi_Click;
             this.FindControl<CheckBox>("hideDisabledMods").Click += HideDisabledModsButton_Click;
             this.FindControl<CheckBox>("showUpdatableMods").Click += ShowUpdatableModsButton_Click;
@@ -390,7 +391,7 @@ namespace Stardrop.Views
             _viewModel.ShowUpdatableMods = (bool)showUpdatableModsCheckBox.IsChecked;
         }
 
-        private void ProfileComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        private async void ProfileComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             var profile = (e.Source as ComboBox).SelectedItem as Profile;
             if (profile is null)
@@ -398,7 +399,25 @@ namespace Stardrop.Views
                 return;
             }
 
+            // Preserve the configs for the enabled mods
+            if (e.RemovedItems.Count > 0 && e.RemovedItems[0] is Profile oldProfile && oldProfile is not null)
+            {
+                var pendingConfigUpdates = _viewModel.GetPendingConfigUpdates(oldProfile, inverseMerge: true);
+                if (pendingConfigUpdates.Count > 0 && await new MessageWindow($"Unsaved config changes detected for profile {oldProfile.Name}.\n\nWould you like to save them?").ShowDialog<bool>(this))
+                {
+                    _viewModel.ReadModConfigs(oldProfile, pendingConfigUpdates);
+                    UpdateProfile(oldProfile);
+                }
+            }
+
+            // Enable the mods for the selected profile
             _viewModel.EnableModsByProfile(profile);
+
+            // Set the configs
+            if (_viewModel.WriteModConfigs(profile))
+            {
+                UpdateProfile(profile);
+            }
 
             // Update the EnabledModCount
             _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled).Count();
@@ -465,6 +484,18 @@ namespace Stardrop.Views
             else
             {
                 profileComboBox.SelectedIndex = 0;
+            }
+        }
+
+        private async void SaveConfigButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
+            var profile = profileComboBox.SelectedItem as Profile;
+
+            if (profile is not null)
+            {
+                _viewModel.ReadModConfigs(profile);
+                UpdateProfile(profile);
             }
         }
 
@@ -619,10 +650,19 @@ namespace Stardrop.Views
             var enabledModsPath = Pathing.GetSelectedModsFolderPath();
             Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
 
-            UpdateEnabledModsFolder(enabledModsPath);
+            // Get the currently selected profile
+            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
+            if (profile is null)
+            {
+                CreateWarningWindow($"Unable to determine selected profile.\n\nSMAPI will not be started.", "OK");
+                Program.helper.Log($"Unable to determine selected profile, SMAPI will not be started!", Helper.Status.Alert);
+                return;
+            }
 
-            // Preserve the configs for the enabled mods
+            // Update the enabled mod folder linkage
+            UpdateEnabledModsFolder(profile, enabledModsPath);
 
+            // Save the configs to the current profile
 
             using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
             {
@@ -1199,7 +1239,7 @@ namespace Stardrop.Views
             }
         }
 
-        private void UpdateEnabledModsFolder(string enabledModsPath)
+        private void UpdateEnabledModsFolder(Profile profile, string enabledModsPath)
         {
             // Clear any previous linked mods
             foreach (var linkedModFolder in new DirectoryInfo(enabledModsPath).GetDirectories())
@@ -1208,7 +1248,6 @@ namespace Stardrop.Views
             }
 
             string spacing = String.Concat(Environment.NewLine, "\t");
-            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
             Program.helper.Log($"Creating links for the following enabled mods from profile {profile.Name}:{spacing}{String.Join(spacing, profile.EnabledModIds)}");
 
             // Link the enabled mods via a chained command

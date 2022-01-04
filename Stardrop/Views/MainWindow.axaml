@@ -365,7 +365,8 @@
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>
-			<Button Name="editProfilesButton" i:Attached.Icon="mdi-playlist-edit" VerticalAlignment="Center"  Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
+			<Button Name="editProfilesButton" i:Attached.Icon="mdi-playlist-edit" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
+			<Button Name="saveConfigsToProfile" Content="Save Configs" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
 			<TextBlock Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center" Margin="10 0 0 2">
 				<TextBlock.Text>
 					<MultiBinding StringFormat="Enabled Mods: {0} | Total Mods: {1}">

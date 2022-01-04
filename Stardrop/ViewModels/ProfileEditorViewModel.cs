@@ -42,7 +42,7 @@ namespace Stardrop.ViewModels
                         continue;
                     }
 
-                    Profiles.Add(new Profile(profile.Name, profile.IsProtected, profile.EnabledModIds));
+                    Profiles.Add(profile);
                 }
                 catch (Exception ex)
                 {
