@@ -127,7 +127,7 @@ namespace Stardrop.Views
         private void ApplyButton_Click(object? sender, RoutedEventArgs e)
         {
             var smapiFolderPathBox = this.FindControl<TextBox>("smapiFolderPathBox");
-            var smapiPath = smapiFolderPathBox.Text.Contains(GetTargetSmapiName(), StringComparison.OrdinalIgnoreCase) ? smapiFolderPathBox.Text : Path.Combine(smapiFolderPathBox.Text, GetTargetSmapiName());
+            var smapiPath = String.IsNullOrEmpty(smapiFolderPathBox.Text) || smapiFolderPathBox.Text.Contains(GetTargetSmapiName(), StringComparison.OrdinalIgnoreCase) ? smapiFolderPathBox.Text : Path.Combine(smapiFolderPathBox.Text, GetTargetSmapiName());
             if (!SetSMAPIPath(smapiPath))
             {
                 SetTextboxTextFocusToEnd(smapiFolderPathBox, _oldSettings.SMAPIFolderPath);
