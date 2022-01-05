@@ -363,25 +363,32 @@ namespace Stardrop.ViewModels
                     continue;
                 }
 
-                if (profile.PreservedModConfigs.ContainsKey(modId))
+                try
                 {
-                    // Merge the config
-                    var originalJson = mod.Config.Data;
-                    var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]);
-
-                    if (originalJson != archivedJson)
+                    if (profile.PreservedModConfigs.ContainsKey(modId))
                     {
-                        // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
-                        string mergedJson = inverseMerge ? JsonTools.Merge(archivedJson, originalJson) : JsonTools.Merge(originalJson, archivedJson);
-                        mod.Config.Data = mergedJson;
+                        // Merge the config
+                        var originalJson = mod.Config.Data;
+                        var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]);
 
-                        // Apply the changes to the config file
-                        pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mergedJson });
+                        if (originalJson != archivedJson)
+                        {
+                            // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
+                            string mergedJson = inverseMerge ? JsonTools.Merge(archivedJson, originalJson) : JsonTools.Merge(originalJson, archivedJson);
+                            mod.Config.Data = mergedJson;
+
+                            // Apply the changes to the config file
+                            pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mergedJson });
+                        }
+                    }
+                    else
+                    {
+                        pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mod.Config.Data });
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mod.Config.Data });
+                    Program.helper.Log($"Failed to process config.json for mod {modId}", Helper.Status.Warning);
                 }
             }
 
