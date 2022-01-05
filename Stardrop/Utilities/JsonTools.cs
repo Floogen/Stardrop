@@ -123,11 +123,7 @@ namespace Stardrop.Utilities
 
             jsonWriter.WriteStartArray();
 
-            // Write all the elements from both JSON arrays
-            foreach (JsonElement element in root1.EnumerateArray())
-            {
-                element.WriteTo(jsonWriter);
-            }
+            // Write all the elements from the original JSON arrays
             foreach (JsonElement element in root2.EnumerateArray())
             {
                 element.WriteTo(jsonWriter);
