@@ -23,6 +23,7 @@ namespace Stardrop.Views
         public SettingsWindow()
         {
             InitializeComponent();
+            this.SizeToContent = SizeToContent.Height;
 
             // Set the datacontext
             DataContext = new SettingsWindowViewModel();
