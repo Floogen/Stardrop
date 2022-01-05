@@ -194,6 +194,7 @@
 		<StackPanel Grid.Row="3" Margin="10 25 0 0">
 			<TextBlock Text="Miscellaneous" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 			<CheckBox Name="ignoreHiddenFoldersCheckbox" IsChecked="{Binding IgnoreHiddenFolders}" Content="Ignore Hidden Folders" ToolTip.Tip="{Binding ToolTip_IgnoreHiddenFolders}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<CheckBox Name="enableProfileSpecificModConfigsCheckbox" IsChecked="{Binding EnableProfileSpecificModConfigs}" Content="Enable Profile Specific Mod Configs" ToolTip.Tip="{Binding ToolTip_EnableProfileSpecificModConfigs}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 		</StackPanel>
 
 		<DockPanel Grid.Row="4" Grid.Column="1" Margin="0 0 0 0">

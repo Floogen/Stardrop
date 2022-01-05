@@ -400,7 +400,7 @@ namespace Stardrop.Views
             }
 
             // Verify if any unsaved config changes need to be saved
-            if (e.RemovedItems.Count > 0 && e.RemovedItems[0] is Profile oldProfile && oldProfile is not null)
+            if (Program.settings.EnableProfileSpecificModConfigs && e.RemovedItems.Count > 0 && e.RemovedItems[0] is Profile oldProfile && oldProfile is not null)
             {
                 _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
                 var pendingConfigUpdates = _viewModel.GetPendingConfigUpdates(oldProfile, inverseMerge: true);
@@ -415,7 +415,7 @@ namespace Stardrop.Views
             _viewModel.EnableModsByProfile(profile);
 
             // Set the configs
-            if (_viewModel.WriteModConfigs(profile))
+            if (Program.settings.EnableProfileSpecificModConfigs && _viewModel.WriteModConfigs(profile))
             {
                 UpdateProfile(profile);
             }
@@ -488,7 +488,7 @@ namespace Stardrop.Views
             }
         }
 
-        private async void SaveConfigButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void SaveConfigButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
             var profile = profileComboBox.SelectedItem as Profile;
@@ -498,6 +498,11 @@ namespace Stardrop.Views
                 _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
                 _viewModel.ReadModConfigs(profile, _viewModel.GetPendingConfigUpdates(profile, inverseMerge: true));
                 UpdateProfile(profile);
+
+                if (!Program.settings.EnableProfileSpecificModConfigs)
+                {
+                    CreateWarningWindow($"Saved mod config settings to profile {profile.Name}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.", "OK");
+                }
             }
         }
 
@@ -665,9 +670,12 @@ namespace Stardrop.Views
             UpdateEnabledModsFolder(profile, enabledModsPath);
 
             // Update the profile's configurations
-            _viewModel.DiscoverConfigs(enabledModsPath, useArchive: true);
-            _viewModel.ReadModConfigs(profile, _viewModel.GetPendingConfigUpdates(profile, inverseMerge: true));
-            UpdateProfile(profile);
+            if (Program.settings.EnableProfileSpecificModConfigs)
+            {
+                _viewModel.DiscoverConfigs(enabledModsPath, useArchive: true);
+                _viewModel.ReadModConfigs(profile, _viewModel.GetPendingConfigUpdates(profile, inverseMerge: true));
+                UpdateProfile(profile);
+            }
 
             using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
             {
