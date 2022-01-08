@@ -20,6 +20,7 @@ namespace Stardrop
     {
         internal static Helper helper;
         internal static Settings settings = new Settings();
+        internal static Translation translation = new Translation();
 
         internal static bool onBootStartSMAPI = false;
         internal static readonly string defaultProfileName = "Default";
@@ -80,6 +81,9 @@ namespace Stardrop
                     Pathing.SetSmapiPath(settings.SMAPIFolderPath, true);
                     settings.ModFolderPath = Pathing.defaultModPath;
                 }
+
+                // Load the translations
+                translation.LoadTranslations();
 
                 // Register icon provider(s)
                 IconProvider.Register<MaterialDesignIconProvider>();

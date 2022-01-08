@@ -133,6 +133,13 @@
 		<ZipName Include="Stardrop-win-x64.zip" />
 	</ItemGroup>
 
+
+	<ItemGroup>
+		<None Update="i18n\default.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
 	<Target Name="FolderProfile - Windows" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='win-x64'">
 		<Exec Command="del @(ZipName) 2&gt;nul" WorkingDirectory="$(PublishDir)" />
 
