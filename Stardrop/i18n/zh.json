@@ -30,18 +30,18 @@
   "ui.main_window.labels.total_mods": "全部模组: ",
 
   "ui.main_window.hyperlinks.click_to_open": "点击此处打开",
-  "ui.main_window.hyperlinks.update_available": "可用升级({0})",
-  "ui.main_window.hyperlinks.unofficial_update_available": "非官方可用升级 ({0})",
+  "ui.main_window.hyperlinks.update_available": "可用更新({0})",
+  "ui.main_window.hyperlinks.unofficial_update_available": "非官方可用更新 ({0})",
   "ui.main_window.hyperlinks.broken_compatibility_issue": "[Broken] 兼容性问题",
 
   "ui.main_window.buttons.save_configs": "保存设置",
   "ui.main_window.buttons.hide_disabled_mods": "隐藏被禁用模组",
-  "ui.main_window.buttons.show_updatable_mods": "显示可升级模组",
+  "ui.main_window.buttons.show_updatable_mods": "显示可更新模组",
 
-  "ui.main_window.button.update_status.generic": "可升级模组: 点击刷新",
-  "ui.main_window.button.update_status.updating": "升级中...",
-  "ui.main_window.button.update_status.list_available_updates": "可升级模组: {0}",
-  "ui.main_window.button.update_status.failed": "模组升级检测失败",
+  "ui.main_window.button.update_status.generic": "可更新模组: 点击刷新",
+  "ui.main_window.button.update_status.updating": "更新中...",
+  "ui.main_window.button.update_status.list_available_updates": "可更新模组: {0}",
+  "ui.main_window.button.update_status.failed": "模组更新检测失败",
 
 
   "ui.main_window.combobox.mod_name": "模组名称",
