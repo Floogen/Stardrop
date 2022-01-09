@@ -19,6 +19,10 @@
   "ui.main_window.menu_items.context.delete": "ลบ",
 
   // Main Window - Menu Headers
+  "ui.main_window.menu_headers.file": "File",
+  "ui.main_window.menu_headers.view": "View",
+  "ui.main_window.menu_headers.tools": "Tools",
+
   "ui.main_window.menu_headers.enabled": "เปิดใช้งาน",
   "ui.main_window.menu_headers.mod_name": "ชื่อ Mod",
   "ui.main_window.menu_headers.unique_id": "Unique ID",
@@ -32,6 +36,7 @@
   "ui.main_window.labels.profile": "โปรไฟล์",
   "ui.main_window.labels.enabled_mods": "Mods ที่เปิดใช้งาน: ",
   "ui.main_window.labels.total_mods": "Mods ทั้งหมด: ",
+  "ui.main_window.labels.filter": "Filter",
 
   // Main Window - Hyperlinks
   "ui.main_window.hyperlinks.click_to_open": "คลิกเพื่อเปิด",
@@ -57,6 +62,7 @@
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "เส้นทางของ SMAPI",
+  "ui.settings_window.labels.mod_path": "Mod Folder Path",
   "ui.settings_window.labels.themes": "ธีม",
   "ui.settings_window.labels.languages": "ภาษา",
   "ui.settings_window.labels.miscellaneous": "เบ็ดเตล็ด",
@@ -81,11 +87,23 @@
   "ui.warning.given_invalid_smapi_executable": "ไฟล์ที่ระบุไม่ใช่ {0}\n\nกำลังย้อนกลับไปยังเส้นทางก่อนหน้า",
   "ui.warning.stardrop_locked": "Stardrop ถูกล็อคในขณะที่ SMAPI กำลังทำงาน การเปลี่ยนแปลงใดๆ ที่ทำขึ้นจะไม่มีผลจนกว่า SMAPI จะปิดลง",
 
+  "ui.warning.unable_to_locate_smapi": "Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings",
+  "ui.warning.mod_config_saved_but_not_enabled": "Saved mod config settings to profile {0}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.",
+  "ui.warning.unable_to_determine_profile": "Unable to determine selected profile.\n\nSMAPI will not be started.",
+  "ui.warning.stardrop_up_to_date": "Stardrop is up-to-date.\n\n{0} is the latest version.",
+  "ui.warning.update_cooldown_minutes": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} minute(s).",
+  "ui.warning.update_cooldown_seconds": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} second(s).",
+  "ui.warning.unable_to_locate_log": "Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.",
+  "ui.warning.unable_to_read_log": "Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.",
+  "ui.warning.no_manifest": "No manifest.json found in \"{0}\"",
+  "ui.warning.unable_to_load_mod": "Unable to load the file located at \"{0}\".\n\nSee log file for more information.",
+
   // Messages
   "ui.message.confirm_mod_deletion": "คุณแน่ใจหรือว่าต้องการลบ {0}? การดำเนินการนี้ไม่สามารถยกเลิกได้",
   "ui.message.unsaved_config_changes": "ตรวจพบการเปลี่ยนแปลงการกำหนดค่า mod ที่ไม่ได้บันทึกสำหรับโปรไฟล์ {0}.\n\nคุณต้องการบันทึกการเปลี่ยนแปลงหรือไม่?",
   "ui.message.stardrop_update_available": "มีการอัปเดต (v{0}) สำหรับ Stardrop\n\nคุณต้องการดาวน์โหลดตอนนี้?",
-  "ui.message.confirm_bulk_change_mod_states": "{0} mods ทั้งหมด?\n\nหมายเหตุ: การดำเนินการนี้ไม่สามารถยกเลิกได้",
+  "ui.message.confirm_bulk_change_mod_states_enable": "เปิดใช้งาน mods ทั้งหมด?\n\nหมายเหตุ: การดำเนินการนี้ไม่สามารถยกเลิกได้",
+  "ui.message.confirm_bulk_change_mod_states_disable": "ปิดการใช้งาน mods ทั้งหมด?\n\nหมายเหตุ: การดำเนินการนี้ไม่สามารถยกเลิกได้",
   "ui.message.confirm_mod_update_method": "ตรวจพบ {0} เวอร์ชันก่อนหน้าแล้ว คุณต้องการล้างการติดตั้งก่อนหน้านี้หรือไม่?\n\nหมายเหตุ: โดยปกติแล้ว แนะนำให้ล้างเวอร์ชันก่อนหน้า อย่างไรก็ตาม ไฟล์ปรับแต่งใดๆ จะสูญหายไป",
 
   // Window Names
