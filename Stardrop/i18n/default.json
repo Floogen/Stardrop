@@ -11,7 +11,7 @@
   "ui.main_window.menu_items.enable_all_mods": "Включить Все Модификации",
   "ui.main_window.menu_items.disable_all_mods": "Отключить Все Модификации",
   "ui.main_window.menu_items.check_for_stardrop_update": "Проверить Наличие Обновлений для Stardrop",
-  "ui.main_window.menu_items.stardrop_repository": "Репрозиторий Stardrop",
+  "ui.main_window.menu_items.stardrop_repository": "Репозиторий Stardrop",
 
   // Main Window - Menu Items - Context
   "ui.main_window.menu_items.context.cancel": "Отмена",
@@ -74,7 +74,7 @@
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "Путь к папке с StardewModdingAPI",
   "ui.settings_window.tooltips.mod_folder_path": "Путь к папке с модификацией",
-  "ui.settings_window.tooltips.theme": "Текущяя тема Stardrop",
+  "ui.settings_window.tooltips.theme": "Текущая тема Stardrop",
   "ui.settings_window.tooltips.language": "Текущий язык, выбранный для Stardrop",
   "ui.settings_window.tooltips.ignore_hidden_folders": "Если этот флажок установлен, Stardrop будет игнорировать любые моды, родительская папка которых начинается с \".\"",
   "ui.settings_window.tooltips.enable_profile_specific_configs": "Если флажок установлен, Stardrop будет сохранять и восстанавливать файлы config.json из модов при замене профилей",
@@ -99,7 +99,7 @@
   "ui.warning.unable_to_load_mod": "Unable to load the file located at \"{0}\".\n\nSee log file for more information.",
 
   // Messages
-  "ui.message.confirm_mod_deletion": "Вы уверенны, что хотите удалить {0}? Это действие не может быть отменено.",
+  "ui.message.confirm_mod_deletion": "Вы уверены, что хотите удалить {0}? Это действие не может быть отменено.",
   "ui.message.unsaved_config_changes": "Обнаружены несхораненные изменения файлов конфигурации для профиля {0}.\n\nСохранить изменения?",
   "ui.message.stardrop_update_available": "Доступно обновление (v{0}) для Stardrop.\n\nВы хотите загрузить его сейчас?",
   "ui.message.confirm_bulk_change_mod_states_enable": "Включить все модификации?\n\nNote: Это действие не может быть отменено.",
