@@ -62,7 +62,7 @@
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "Патч SMAPI",
-  "ui.settings_window.labels.mod_path": "Mod Folder Path",
+  "ui.settings_window.labels.mod_path": "Путь к папке с модификацией",
   "ui.settings_window.labels.themes": "Темы",
   "ui.settings_window.labels.languages": "Язык",
   "ui.settings_window.labels.miscellaneous": "Остальные Настройки",
