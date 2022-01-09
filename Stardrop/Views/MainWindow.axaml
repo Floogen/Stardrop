@@ -271,7 +271,7 @@
 
 	<NativeMenu.Menu>
 		<NativeMenu>
-			<NativeMenuItem Header="File">
+			<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_headers.file}">
 				<NativeMenu>
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mod}" Click="AddMod_Click" />
 					<NativeMenuItemSeparator/>
@@ -280,7 +280,7 @@
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.exit}" Click="Exit_Click" />
 				</NativeMenu>
 			</NativeMenuItem>
-			<NativeMenuItem Header="View">
+			<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_headers.view}">
 				<NativeMenu>
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.settings}" Click="Settings_Click" />
 					<NativeMenuItemSeparator/>
@@ -288,7 +288,7 @@
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.smapi_log_file}" Click="SmapiLogFile_Click" />
 				</NativeMenu>
 			</NativeMenuItem>
-			<NativeMenuItem Header="Tools">
+			<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_headers.tools}">
 				<NativeMenu>
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.refresh_mod_list}" Click="ModListRefresh_Click" />
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.check_for_mod_updates}" Click="ModUpdateCheck_Click" />
@@ -321,20 +321,20 @@
 		<Border Name="menuBorder" Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
 			<Menu Name="mainMenu" IsVisible="{Binding ShowMainMenu}" Width="190" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
 				<Image Name="menuIcon" Source="/Assets/icon.ico" Stretch="None"/>
-				<MenuItem Header="File" Margin="-10 0 0 0" Classes="Bar">
+				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.file}" Margin="-10 0 0 0" Classes="Bar">
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mod}" Click="AddMod_Click" Classes="Bar"/>
 					<Separator/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.start_smapi}" Click="Smapi_Click" Classes="Bar"/>
 					<Separator/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.exit}" Click="Exit_Click" Classes="Bar"/>
 				</MenuItem>
-				<MenuItem Header="View" Margin="-10 0 0 0" Classes="Bar">
+				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.view}" Margin="-10 0 0 0" Classes="Bar">
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.settings}" Click="Settings_Click" Classes="Bar"/>
 					<Separator/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.stardrop_log_file}" Click="LogFile_Click" Classes="Bar"/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.smapi_log_file}" Click="SmapiLogFile_Click" Classes="Bar"/>
 				</MenuItem>
-				<MenuItem Header="Tools" Margin="-10 0 0 0" Classes="Bar">
+				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.tools}" Margin="-10 0 0 0" Classes="Bar">
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.refresh_mod_list}" Click="ModListRefresh_Click" Classes="Bar"/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.check_for_mod_updates}" Click="ModUpdateCheck_Click" Classes="Bar"/>
 					<Separator/>
@@ -481,7 +481,7 @@
 			</DataGrid>
 		</Border>
 		<DockPanel Name="filterBar" Grid.Row="4" Grid.Column="0" Margin="7 0 0 5">
-			<TextBox Name="searchBox" Watermark="Filter" Height="10" Width="250" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
+			<TextBox Name="searchBox" Watermark="{i18n:Translate ui.main_window.labels.filter}" Height="10" Width="250" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
 			<ComboBox x:Name="filterColumnBox" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="150">
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.mod_name}" />
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.author}" />

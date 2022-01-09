@@ -181,7 +181,7 @@ namespace Stardrop.Views
 
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
-                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
+                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
             }
         }
 
@@ -195,7 +195,7 @@ namespace Stardrop.Views
         {
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
-                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
+                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
                 return;
             }
 
@@ -501,7 +501,7 @@ namespace Stardrop.Views
 
                 if (!Program.settings.EnableProfileSpecificModConfigs)
                 {
-                    CreateWarningWindow($"Saved mod config settings to profile {profile.Name}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.", "OK");
+                    CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.mod_config_saved_but_not_enabled"), profile.Name), Program.translation.Get("internal.ok"));
                 }
             }
         }
@@ -641,7 +641,7 @@ namespace Stardrop.Views
             Program.helper.Log($"Starting SMAPI at path: {Program.settings.SMAPIFolderPath}", Helper.Status.Debug);
             if (Program.settings.SMAPIFolderPath is null || !File.Exists(Pathing.GetSmapiPath()))
             {
-                CreateWarningWindow($"Unable to locate StardewModdingAPI\n\nPlease set the correct file path under\nView > Settings", "OK");
+                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
                 if (Program.settings.SMAPIFolderPath is null)
                 {
                     Program.helper.Log("No path given for StardewModdingAPI.", Helper.Status.Warning);
@@ -661,7 +661,7 @@ namespace Stardrop.Views
             var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
             if (profile is null)
             {
-                CreateWarningWindow($"Unable to determine selected profile.\n\nSMAPI will not be started.", "OK");
+                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_determine_profile"), Program.translation.Get("internal.ok"));
                 Program.helper.Log($"Unable to determine selected profile, SMAPI will not be started!", Helper.Status.Alert);
                 return;
             }
@@ -695,7 +695,7 @@ namespace Stardrop.Views
         {
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
-                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
+                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
                 return;
             }
 
@@ -747,7 +747,7 @@ namespace Stardrop.Views
             }
             else if (manualCheck)
             {
-                CreateWarningWindow($"Stardrop is up-to-date.\n\n{_viewModel.Version} is the latest version.", "OK");
+                CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_up_to_date"), _viewModel.Version), Program.translation.Get("internal.ok"));
             }
         }
 
@@ -755,7 +755,7 @@ namespace Stardrop.Views
         {
             if (Pathing.defaultModPath is null)
             {
-                CreateWarningWindow($"Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings", "OK");
+                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
                 return;
             }
 
@@ -765,11 +765,11 @@ namespace Stardrop.Views
             }
             else if ((int)GetTimeSpanBeforeAllowedUpdate().TotalMinutes > 0)
             {
-                CreateWarningWindow($"Updates can only be requested once every 5 minutes.\n\nPlease try again in {(int)GetTimeSpanBeforeAllowedUpdate().TotalMinutes} minute(s).", "OK");
+                CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.update_cooldown_minutes"), (int)GetTimeSpanBeforeAllowedUpdate().TotalMinutes), Program.translation.Get("internal.ok"));
             }
             else
             {
-                CreateWarningWindow($"Updates can only be requested once every 5 minutes.\n\nPlease try again in {(int)GetTimeSpanBeforeAllowedUpdate().TotalSeconds} second(s).", "OK");
+                CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.update_cooldown_seconds"), (int)GetTimeSpanBeforeAllowedUpdate().TotalSeconds), Program.translation.Get("internal.ok"));
             }
         }
 
@@ -928,7 +928,7 @@ namespace Stardrop.Views
                     }
                     else
                     {
-                        CreateWarningWindow("Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.", "OK");
+                        CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_locate_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
                         Program.helper.Log($"Unable to locate SMAPI-latest.txt", Helper.Status.Alert);
                         return;
                     }
@@ -936,7 +936,7 @@ namespace Stardrop.Views
 
                 if (Program.settings.GameDetails is null)
                 {
-                    CreateWarningWindow($"Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.", "OK");
+                    CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_read_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
                     Program.helper.Log($"SMAPI started but Stardrop was unable to read SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
                     return;
                 }
@@ -1186,13 +1186,13 @@ namespace Stardrop.Views
                         }
                         else
                         {
-                            CreateWarningWindow($"No manifest.json found in \"{fileFullName}\"", "OK");
+                            CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName), Program.translation.Get("internal.ok"));
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    CreateWarningWindow($"Unable to load the file located at \"{fileFullName}\".\n\nSee log file for more information.", "OK");
+                    CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_load_mod"), fileFullName), Program.translation.Get("internal.ok"));
                     Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
                 }
             }

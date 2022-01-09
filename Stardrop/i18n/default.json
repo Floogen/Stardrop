@@ -19,6 +19,10 @@
   "ui.main_window.menu_items.context.delete": "Delete",
 
   // Main Window - Menu Headers
+  "ui.main_window.menu_headers.file": "File",
+  "ui.main_window.menu_headers.view": "View",
+  "ui.main_window.menu_headers.tools": "Tools",
+
   "ui.main_window.menu_headers.enabled": "Enabled",
   "ui.main_window.menu_headers.mod_name": "Mod Name",
   "ui.main_window.menu_headers.unique_id": "Unique ID",
@@ -32,6 +36,7 @@
   "ui.main_window.labels.profile": "Profile",
   "ui.main_window.labels.enabled_mods": "Enabled Mods: ",
   "ui.main_window.labels.total_mods": "Total Mods: ",
+  "ui.main_window.labels.filter": "Filter",
 
   // Main Window - Hyperlinks
   "ui.main_window.hyperlinks.click_to_open": "Click to open",
@@ -57,6 +62,7 @@
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Path",
+  "ui.settings_window.labels.mod_path": "Mod Folder Path",
   "ui.settings_window.labels.themes": "Themes",
   "ui.settings_window.labels.languages": "Languages",
   "ui.settings_window.labels.miscellaneous": "Miscellaneous",
@@ -80,6 +86,17 @@
   "ui.warning.given_mod_folder_does_not_exist": "The given mod folder path doesn't exist.\n\nReverting to previous path.",
   "ui.warning.given_invalid_smapi_executable": "The given file isn't {0}\n\nReverting to previous path.",
   "ui.warning.stardrop_locked": "Stardrop is locked while the SMAPI is running. Any changes made will not reflect until SMAPI is closed.",
+
+  "ui.warning.unable_to_locate_smapi": "Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings",
+  "ui.warning.mod_config_saved_but_not_enabled": "Saved mod config settings to profile {0}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.",
+  "ui.warning.unable_to_determine_profile": "Unable to determine selected profile.\n\nSMAPI will not be started.",
+  "ui.warning.stardrop_up_to_date": "Stardrop is up-to-date.\n\n{0} is the latest version.",
+  "ui.warning.update_cooldown_minutes": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} minute(s).",
+  "ui.warning.update_cooldown_seconds": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} second(s).",
+  "ui.warning.unable_to_locate_log": "Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.",
+  "ui.warning.unable_to_read_log": "Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.",
+  "ui.warning.no_manifest": "No manifest.json found in \"{0}\"",
+  "ui.warning.unable_to_load_mod": "Unable to load the file located at \"{0}\".\n\nSee log file for more information.",
 
   // Messages
   "ui.message.confirm_mod_deletion": "Are you sure you'd like to delete {0}? This cannot be undone.",
