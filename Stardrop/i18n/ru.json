@@ -11,7 +11,7 @@
   "ui.main_window.menu_items.enable_all_mods": "Включить Все Модификации",
   "ui.main_window.menu_items.disable_all_mods": "Отключить Все Модификации",
   "ui.main_window.menu_items.check_for_stardrop_update": "Проверить Наличие Обновлений для Stardrop",
-  "ui.main_window.menu_items.stardrop_repository": "Репрозиторий Stardrop",
+  "ui.main_window.menu_items.stardrop_repository": "Репозиторий Stardrop",
 
   // Main Window - Menu Items - Context
   "ui.main_window.menu_items.context.cancel": "Отмена",
@@ -19,15 +19,15 @@
   "ui.main_window.menu_items.context.delete": "Удалить",
 
   // Main Window - Menu Headers
-  "ui.main_window.menu_headers.file": "File",
-  "ui.main_window.menu_headers.view": "View",
-  "ui.main_window.menu_headers.tools": "Tools",
+  "ui.main_window.menu_headers.file": "Файл",
+  "ui.main_window.menu_headers.view": "Вид",
+  "ui.main_window.menu_headers.tools": "Инструменты",
 
   "ui.main_window.menu_headers.enabled": "Включено",
   "ui.main_window.menu_headers.mod_name": "Название Модификации",
   "ui.main_window.menu_headers.unique_id": "Уникальный ID",
   "ui.main_window.menu_headers.author": "Автор",
-  "ui.main_window.menu_headers.missing_requirements": "Отсутствует Требуемая Модификация",
+  "ui.main_window.menu_headers.missing_requirements": "Отсутствует Требуемые Модификации",
   "ui.main_window.menu_headers.version": "Версия",
   "ui.main_window.menu_headers.configuration": "Конфигурация",
   "ui.main_window.menu_headers.status": "Статус",
@@ -36,7 +36,7 @@
   "ui.main_window.labels.profile": "Профиль",
   "ui.main_window.labels.enabled_mods": "Включенные Модификации: ",
   "ui.main_window.labels.total_mods": "Всего Модификаций: ",
-  "ui.main_window.labels.filter": "Filter",
+  "ui.main_window.labels.filter": "Фильтр",
 
   // Main Window - Hyperlinks
   "ui.main_window.hyperlinks.click_to_open": "Нажмите, чтобы открыть",
@@ -74,7 +74,7 @@
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "Путь к папке с StardewModdingAPI",
   "ui.settings_window.tooltips.mod_folder_path": "Путь к папке с модификацией",
-  "ui.settings_window.tooltips.theme": "Текущяя тема Stardrop",
+  "ui.settings_window.tooltips.theme": "Текущая тема Stardrop",
   "ui.settings_window.tooltips.language": "Текущий язык, выбранный для Stardrop",
   "ui.settings_window.tooltips.ignore_hidden_folders": "Если этот флажок установлен, Stardrop будет игнорировать любые моды, родительская папка которых начинается с \".\"",
   "ui.settings_window.tooltips.enable_profile_specific_configs": "Если флажок установлен, Stardrop будет сохранять и восстанавливать файлы config.json из модов при замене профилей",
@@ -99,11 +99,11 @@
   "ui.warning.unable_to_load_mod": "Unable to load the file located at \"{0}\".\n\nSee log file for more information.",
 
   // Messages
-  "ui.message.confirm_mod_deletion": "Вы уверенны, что хотите удалить {0}? Это действие не может быть отменено.",
+  "ui.message.confirm_mod_deletion": "Вы уверены, что хотите удалить {0}? Это действие не может быть отменено.",
   "ui.message.unsaved_config_changes": "Обнаружены несхораненные изменения файлов конфигурации для профиля {0}.\n\nСохранить изменения?",
   "ui.message.stardrop_update_available": "Доступно обновление (v{0}) для Stardrop.\n\nВы хотите загрузить его сейчас?",
   "ui.message.confirm_bulk_change_mod_states_enable": "Включить все модификации?\n\nNote: Это действие не может быть отменено.",
-  "ui.message.confirm_bulk_change_mod_states_disable": "Отключить все модификации?\n\nNote: Это действие не может быть отменено.",
+  "ui.message.confirm_bulk_change_mod_states_disable": "Отключить все модификации?\n\nNote: This cannot be undone.",
   "ui.message.confirm_mod_update_method": "Обнаружена более старая версия модификации {0}. Удалить старую версию?\n\nNote: Как правило рекомендуется удалить старую версию модификации, однако все файлы конфигурации будут потеряны.",
 
   // Window Names
