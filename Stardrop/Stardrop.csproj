@@ -18,6 +18,7 @@
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
 		<Content Include="Themes\*" CopyToOutputDirectory="PreserveNewest" />
+		<Content Include="i18n\*" CopyToOutputDirectory="PreserveNewest" />
 		<None Remove=".gitignore" />
 		<None Remove="Assets\icon.ico" />
 		<None Remove="Assets\smapi.png" />
@@ -92,6 +93,7 @@
 
 		<Move SourceFiles="$(PublishDir)/Internal;$(PublishDir)/Internal.pdb;$(PublishDir)/Stardrop.sh" DestinationFolder="$(PublishDir)/Stardrop" />
 		<Exec Command="@(WSL) mv Themes Stardrop" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="@(WSL) mv i18n Stardrop" WorkingDirectory="$(PublishDir)" />
 
 		<Exec Command="@(WSL) chmod 755 Stardrop" WorkingDirectory="$(PublishDir)" />
 		<Exec Command="@(WSL) chmod +x Stardrop.sh" WorkingDirectory="$(PublishDir)/Stardrop" />
@@ -116,6 +118,7 @@
 		<Exec Command="xcopy /E /I /Y &quot;@(AppFolderPath)&quot; Stardrop.app" WorkingDirectory="$(PublishDir)" />
 
 		<Exec Command="move Themes @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="move i18n @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
 		<Exec Command="move *.dylib @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
 		<Exec Command="move Stardrop @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
 		<Exec Command="move Stardrop.pdb @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
@@ -133,19 +136,13 @@
 		<ZipName Include="Stardrop-win-x64.zip" />
 	</ItemGroup>
 
-
-	<ItemGroup>
-		<None Update="i18n\default.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-
 	<Target Name="FolderProfile - Windows" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='win-x64'">
 		<Exec Command="del @(ZipName) 2&gt;nul" WorkingDirectory="$(PublishDir)" />
 
 		<Exec Command="@(WSL) mkdir @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
 
 		<Exec Command="@(WSL) mv Themes @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
+		<Exec Command="@(WSL) mv i18n @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
 		<Exec Command="@(WSL) mv Stardrop.exe Stardrop.pdb @(TempFolderPath)" WorkingDirectory="$(PublishDir)" />
 
 		<Exec Command="ren @(TempFolderPath) Stardrop" WorkingDirectory="$(PublishDir)" />
