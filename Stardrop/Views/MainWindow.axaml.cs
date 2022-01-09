@@ -775,7 +775,7 @@ namespace Stardrop.Views
 
         private async Task HandleBulkModStateChange(bool enableState)
         {
-            var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_bulk_change_mod_states"), enableState ? Program.translation.Get("internal.enable") : Program.translation.Get("internal.disable")));
+            var requestWindow = new MessageWindow(enableState ? Program.translation.Get("ui.message.confirm_bulk_change_mod_states_enable") : Program.translation.Get("ui.message.confirm_bulk_change_mod_states_disable"));
             if (await requestWindow.ShowDialog<bool>(this))
             {
                 foreach (var mod in _viewModel.Mods.Where(m => m.IsEnabled != enableState))

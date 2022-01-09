@@ -102,7 +102,8 @@
   "ui.message.confirm_mod_deletion": "Are you sure you'd like to delete {0}? This cannot be undone.",
   "ui.message.unsaved_config_changes": "Unsaved mod config changes detected for the profile {0}.\n\nWould you like to save the changes?",
   "ui.message.stardrop_update_available": "An update (v{0}) is available for Stardrop.\n\nWould you like to download it now?",
-  "ui.message.confirm_bulk_change_mod_states": "{0} all mods?\n\nNote: This cannot be undone.",
+  "ui.message.confirm_bulk_change_mod_states_enable": "Enable all mods?\n\nNote: This cannot be undone.",
+  "ui.message.confirm_bulk_change_mod_states_disable": "Disable all mods?\n\nNote: This cannot be undone.",
   "ui.message.confirm_mod_update_method": "An previous version of {0} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended, however any config files will be lost.",
 
   // Window Names
