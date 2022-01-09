@@ -19,9 +19,9 @@
   "ui.main_window.menu_items.context.delete": "Löschen",
 
   // Main Window - Menu Headers
-  "ui.main_window.menu_headers.file": "File",
-  "ui.main_window.menu_headers.view": "View",
-  "ui.main_window.menu_headers.tools": "Tools",
+  "ui.main_window.menu_headers.file": "Datei",
+  "ui.main_window.menu_headers.view": "Ansicht",
+  "ui.main_window.menu_headers.tools": "Extras",
 
   "ui.main_window.menu_headers.enabled": "Aktiviert",
   "ui.main_window.menu_headers.mod_name": "Mod Name",
@@ -62,7 +62,7 @@
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Pfad",
-  "ui.settings_window.labels.mod_path": "Mod Folder Path",
+  "ui.settings_window.labels.mod_path": "Mod Ordner Pfad",
   "ui.settings_window.labels.themes": "Themes",
   "ui.settings_window.labels.languages": "Sprache",
   "ui.settings_window.labels.miscellaneous": "Sonstiges",
@@ -87,23 +87,23 @@
   "ui.warning.given_invalid_smapi_executable": "Die angegebene Datei ist nicht {0}\n\nZum vorherigen Pfad zurückkehren.",
   "ui.warning.stardrop_locked": "Stardrop ist gesperrt, solange die SMAPI läuft. Alle vorgenommenen Änderungen werden erst nach dem Schließen von SMAPI übernommen.",
 
-  "ui.warning.unable_to_locate_smapi": "Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings",
-  "ui.warning.mod_config_saved_but_not_enabled": "Saved mod config settings to profile {0}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.",
-  "ui.warning.unable_to_determine_profile": "Unable to determine selected profile.\n\nSMAPI will not be started.",
-  "ui.warning.stardrop_up_to_date": "Stardrop is up-to-date.\n\n{0} is the latest version.",
-  "ui.warning.update_cooldown_minutes": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} minute(s).",
-  "ui.warning.update_cooldown_seconds": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} second(s).",
-  "ui.warning.unable_to_locate_log": "Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.",
-  "ui.warning.unable_to_read_log": "Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.",
-  "ui.warning.no_manifest": "No manifest.json found in \"{0}\"",
-  "ui.warning.unable_to_load_mod": "Unable to load the file located at \"{0}\".\n\nSee log file for more information.",
+  "ui.warning.unable_to_locate_smapi": "StardewModdingAPI.exe kann nicht gefunden werden.\n\nBitte geben Sie den richtigen Dateipfad unter\nAnsicht > Einstellungen an.",
+  "ui.warning.mod_config_saved_but_not_enabled": "Die Einstellungen der Mod Konfig wurden in Profil {0} gespeichert, aber die profilbezogene Mod Konfig sind nicht aktiviert.\n\n Geh zu Ansicht > Einstellungen und aktiviere \"Profilbezogene Mod Konfig aktivieren\" für Stardrop, um Änderungen an der Mod-Konfig automatisch zu speichern und anzuwenden.",
+  "ui.warning.unable_to_determine_profile": "Ausgewähltes Profil kann nicht ermittelt werden.\n\nSMAPI wird nicht gestartet.",
+  "ui.warning.stardrop_up_to_date": "Stardrop ist auf dem neuesten Stand.\n\n{0} ist die letzte Version.",
+  "ui.warning.update_cooldown_minutes": "Updates können nur einmal alle 5 Minuten angefordert werden.\n\nBitte versuche es in {0} Minute(n) erneut.",
+  "ui.warning.update_cooldown_seconds": "Updates können nur einmal alle 5 Minuten angefordert werden.\n\nBitte versuche es in {0} Sekunde(n) erneut.",
+  "ui.warning.unable_to_locate_log": "Es kann keine SMAPI-latest.txt gefunden werden! SMAPI muss mindestens einmal erfolgreich ausgeführt werden, damit Stardrop die Spieldetails erkennen kann.",
+  "ui.warning.unable_to_read_log": "Die SMAPI-Logdatei konnte nicht gelesen werden, um die Spielversion zu ermitteln.\n\nMods werden nicht auf Updates geprüft.",
+  "ui.warning.no_manifest": "Keine manifest.json in \"{0}\" gefunden.",
+  "ui.warning.unable_to_load_mod": "Die Datei unter \"{0}\" konnte nicht geladen werden.\n\n Weitere Informationen findest du in der Logdatei.",
 
   // Messages
   "ui.message.confirm_mod_deletion": "Bist du sicher, dass du {0} löschen möchtest? Dies kann nicht rückgängig gemacht werden.",
   "ui.message.unsaved_config_changes": "Nicht gespeicherte Änderungen der Mod Konfig für das Profil {0}.\n\nWollen Sie die Änderungen speichern?",
   "ui.message.stardrop_update_available": "Für Stardrop ist ein Update (v{0}) verfügbar. Möchtest du es jetzt herunterladen?",
-  "ui.message.confirm_bulk_change_mod_states_enable": "Aktivieren alle Mods?\n\nAnmerkung: Dies kann nicht rückgängig gemacht werden.",
-  "ui.message.confirm_bulk_change_mod_states_disable": "Deaktivieren alle Mods?\n\nAnmerkung: Dies kann nicht rückgängig gemacht werden.",
+  "ui.message.confirm_bulk_change_mod_states_enable": "Alle Mods aktivieren?\n\nHinweis: Deine aktuelle Auswahl wird nicht gespeichert.",
+  "ui.message.confirm_bulk_change_mod_states_disable": "Alle Mods deaktivieren?\n\nHinweis: Deine aktuelle Auswahl wird nicht gespeichert.",
   "ui.message.confirm_mod_update_method": "Es wurde eine frühere Version von {0} erkannt. Möchtest du die vorherige Installation löschen?\n\nHinweis: Das Löschen früherer Versionen wird normalerweise empfohlen, allerdings gehen dabei alle Konfig Dateien verloren.",
 
   // Window Names
