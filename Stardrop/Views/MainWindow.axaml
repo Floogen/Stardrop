@@ -6,6 +6,7 @@
         xmlns:sys="clr-namespace:System;assembly=netstandard"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         xmlns:conv="clr-namespace:Stardrop.Converters;assembly=Stardrop"
+		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Stardrop.Views.MainWindow"
         Title="Stardrop"
@@ -272,31 +273,31 @@
 		<NativeMenu>
 			<NativeMenuItem Header="File">
 				<NativeMenu>
-					<NativeMenuItem Header="Add Mod" Click="AddMod_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mod}" Click="AddMod_Click" />
 					<NativeMenuItemSeparator/>
-					<NativeMenuItem Header="Start SMAPI" Click="Smapi_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.start_smapi}" Click="Smapi_Click" />
 					<NativeMenuItemSeparator/>
-					<NativeMenuItem Header="Exit" Click="Exit_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.exit}" Click="Exit_Click" />
 				</NativeMenu>
 			</NativeMenuItem>
 			<NativeMenuItem Header="View">
 				<NativeMenu>
-					<NativeMenuItem Header="Settings" Click="Settings_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.settings}" Click="Settings_Click" />
 					<NativeMenuItemSeparator/>
-					<NativeMenuItem Header="Stardrop Log File" Click="LogFile_Click" />
-					<NativeMenuItem Header="SMAPI Log File" Click="SmapiLogFile_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.stardrop_log_file}" Click="LogFile_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.smapi_log_file}" Click="SmapiLogFile_Click" />
 				</NativeMenu>
 			</NativeMenuItem>
 			<NativeMenuItem Header="Tools">
 				<NativeMenu>
-					<NativeMenuItem Header="Refresh Mod List" Click="ModListRefresh_Click" />
-					<NativeMenuItem Header="Check for Mod Updates" Click="ModUpdateCheck_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.refresh_mod_list}" Click="ModListRefresh_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.check_for_mod_updates}" Click="ModUpdateCheck_Click" />
 					<NativeMenuItemSeparator/>
-					<NativeMenuItem Header="Enable All Mods" Click="EnableAllMods_Click" />
-					<NativeMenuItem Header="Disable All Mods" Click="DisableAllMods_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.enable_all_mods}" Click="EnableAllMods_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.disable_all_mods}" Click="DisableAllMods_Click" />
 					<NativeMenuItemSeparator/>
-					<NativeMenuItem Header="Check for Stardrop Update" Click="StardropUpdate_Click" />
-					<NativeMenuItem Header="Stardrop Repository" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop"/>
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.check_for_stardrop_update}" Click="StardropUpdate_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.stardrop_repository}" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop"/>
 				</NativeMenu>
 			</NativeMenuItem>
 		</NativeMenu>
@@ -321,27 +322,27 @@
 			<Menu Name="mainMenu" IsVisible="{Binding ShowMainMenu}" Width="190" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
 				<Image Name="menuIcon" Source="/Assets/icon.ico" Stretch="None"/>
 				<MenuItem Header="File" Margin="-10 0 0 0" Classes="Bar">
-					<MenuItem Header="Add Mod" Click="AddMod_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mod}" Click="AddMod_Click" Classes="Bar"/>
 					<Separator/>
-					<MenuItem Header="Start SMAPI" Click="Smapi_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.start_smapi}" Click="Smapi_Click" Classes="Bar"/>
 					<Separator/>
-					<MenuItem Header="Exit" Click="Exit_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.exit}" Click="Exit_Click" Classes="Bar"/>
 				</MenuItem>
 				<MenuItem Header="View" Margin="-10 0 0 0" Classes="Bar">
-					<MenuItem Header="Settings" Click="Settings_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.settings}" Click="Settings_Click" Classes="Bar"/>
 					<Separator/>
-					<MenuItem Header="Stardrop Log File" Click="LogFile_Click" Classes="Bar"/>
-					<MenuItem Header="SMAPI Log File" Click="SmapiLogFile_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.stardrop_log_file}" Click="LogFile_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.smapi_log_file}" Click="SmapiLogFile_Click" Classes="Bar"/>
 				</MenuItem>
 				<MenuItem Header="Tools" Margin="-10 0 0 0" Classes="Bar">
-					<MenuItem Header="Refresh Mod List" Click="ModListRefresh_Click" Classes="Bar"/>
-					<MenuItem Header="Check for Mod Updates" Click="ModUpdateCheck_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.refresh_mod_list}" Click="ModListRefresh_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.check_for_mod_updates}" Click="ModUpdateCheck_Click" Classes="Bar"/>
 					<Separator/>
-					<MenuItem Header="Enable All Mods" Click="EnableAllMods_Click" Classes="Bar"/>
-					<MenuItem Header="Disable All Mods" Click="DisableAllMods_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.enable_all_mods}" Click="EnableAllMods_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.disable_all_mods}" Click="DisableAllMods_Click" Classes="Bar"/>
 					<Separator/>
-					<MenuItem Header="Check for Stardrop Update" Click="StardropUpdate_Click" Classes="Bar"/>
-					<MenuItem Header="Stardrop Repository" Classes="Bar" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.check_for_stardrop_update}" Click="StardropUpdate_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.stardrop_repository}" Classes="Bar" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop"/>
 				</MenuItem>
 			</Menu>
 		</Border>
@@ -355,7 +356,7 @@
 		<Separator />
 
 		<DockPanel Name="profileBar" Grid.Row="2" Grid.Column="0">
-			<TextBlock Text="Profile" Foreground="{DynamicResource ThemeForegroundBrush}" Padding="7" Focusable="False" VerticalAlignment="Center" />
+			<TextBlock Text="{i18n:Translate ui.main_window.labels.profile}" Foreground="{DynamicResource ThemeForegroundBrush}" Padding="7" Focusable="False" VerticalAlignment="Center" />
 			<ComboBox x:Name="profileComboBox" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center"  FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="300">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
@@ -366,15 +367,14 @@
 				</ComboBox.ItemTemplate>
 			</ComboBox>
 			<Button Name="editProfilesButton" i:Attached.Icon="mdi-playlist-edit" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
-			<Button Name="saveConfigsToProfile" Content="Save Configs" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
-			<TextBlock Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center" Margin="10 0 0 2">
-				<TextBlock.Text>
-					<MultiBinding StringFormat="Enabled Mods: {0} | Total Mods: {1}">
-						<Binding Path="EnabledModCount" />
-						<Binding Path="Mods.Count" />
-					</MultiBinding>
-				</TextBlock.Text>
-			</TextBlock>
+			<Button Name="saveConfigsToProfile" Content="{i18n:Translate ui.main_window.buttons.save_configs}" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
+			<StackPanel VerticalAlignment="Center" Orientation="Horizontal" Margin="10 0 0 2">
+				<TextBlock Text="{i18n:Translate ui.main_window.labels.enabled_mods}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+				<TextBlock Text="{Binding EnabledModCount}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+				<TextBlock Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}"/>
+				<TextBlock Text="{i18n:Translate ui.main_window.labels.total_mods}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+				<TextBlock Text="{Binding Mods.Count}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+			</StackPanel>
 		</DockPanel>
 		<DockPanel Name="toolBar" Grid.Row="2"  Grid.Column="1">
 			<Button Name="smapiButton" IsEnabled="{Binding !IsLocked}" Content="/Assets/icon.ico" Background="Transparent" HorizontalAlignment="Right" Width="60" Height="40" VerticalAlignment="Center"  Margin="0 0 10 0">
@@ -390,13 +390,13 @@
 					<ContextMenu x:Key="GridColumnContextMenu" DataContext="{Binding $parent[DataGrid].DataContext}">
 						<!-- <MenuItem Header="{Binding SortText}" Click="ModGridMenuColumn_ChangeSort" />-->
 						<!-- <MenuItem Header="Hide" Click="ModGridColumnMenu_ChangeVisibility" />-->
-						<MenuItem Header="Cancel" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
 					</ContextMenu>
 					<ContextMenu x:Key="GridRowContextMenu">
-						<MenuItem Header="Open Containing Folder" Click="ModGridMenuRow_OpenFolderPath" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.open_containing_folder}" Click="ModGridMenuRow_OpenFolderPath" />
 						<MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" />
-						<MenuItem Header="Delete" Click="ModGridMenuRow_Delete" />
-						<MenuItem Header="Cancel" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.delete}" Click="ModGridMenuRow_Delete" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
 					</ContextMenu>
 				</DataGrid.Resources>
 				<DataGrid.Styles>
@@ -409,7 +409,7 @@
 					</Style>
 				</DataGrid.Styles>
 				<DataGrid.Columns>
-					<DataGridTemplateColumn Header="Enabled" Width="25" CanUserResize="False" CanUserSort="True" SortMemberPath="IsEnabled">
+					<DataGridTemplateColumn Header="{i18n:Translate ui.main_window.menu_headers.enabled}" Width="25" CanUserResize="False" CanUserSort="True" SortMemberPath="IsEnabled">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<CheckBox Content="{Binding UniqueId}" IsChecked="{Binding IsEnabled}" Click="EnabledBox_Clicked" Margin="5 0 0 0"/>
@@ -418,7 +418,7 @@
 					</DataGridTemplateColumn>
 					<DataGridTemplateColumn SortMemberPath="Name">
 						<DataGridTemplateColumn.Header>
-							<TextBlock Text="Mod Name" TextAlignment="Center" />
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.mod_name}" TextAlignment="Center" />
 						</DataGridTemplateColumn.Header>
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
@@ -428,17 +428,17 @@
 					</DataGridTemplateColumn>
 					<DataGridTextColumn Binding="{Binding UniqueId}" IsVisible="False">
 						<DataGridTextColumn.Header>
-							<TextBlock Text="Unique ID" TextAlignment="Center" />
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.unique_id}" TextAlignment="Center" />
 						</DataGridTextColumn.Header>
 					</DataGridTextColumn>
 					<DataGridTextColumn Binding="{Binding Author}" CellStyleClasses="centered">
 						<DataGridTextColumn.Header>
-							<TextBlock Text="Author" TextAlignment="Center" />
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.author}" TextAlignment="Center" />
 						</DataGridTextColumn.Header>
 					</DataGridTextColumn>
 					<DataGridTemplateColumn SortMemberPath="MissingRequirements.Count" CellStyleClasses="centered">
 						<DataGridTemplateColumn.Header>
-							<TextBlock Text="Missing Requirements" TextAlignment="Center" />
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.missing_requirements}" TextAlignment="Center" />
 						</DataGridTemplateColumn.Header>
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
@@ -454,22 +454,22 @@
 					</DataGridTemplateColumn>
 					<DataGridTextColumn Binding="{Binding ParsedVersion}" CellStyleClasses="centered">
 						<DataGridTextColumn.Header>
-							<TextBlock Text="Version" TextAlignment="Center" />
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.version}" TextAlignment="Center" />
 						</DataGridTextColumn.Header>
 					</DataGridTextColumn>
 					<DataGridTemplateColumn SortMemberPath="HasConfig" CellStyleClasses="centered" >
 						<DataGridTemplateColumn.Header>
-							<TextBlock Text="Configuration" TextAlignment="Center" />
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.configuration}" TextAlignment="Center" />
 						</DataGridTemplateColumn.Header>
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
-								<Button Content="Click to open" Classes="hyperlink" IsVisible="{Binding HasConfig}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Config.FilePath}" Foreground="{DynamicResource HighlightForegroundBrush}"/>
+								<Button Content="{i18n:Translate ui.main_window.hyperlinks.click_to_open}" Classes="hyperlink" IsVisible="{Binding HasConfig}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Config.FilePath}" Foreground="{DynamicResource HighlightForegroundBrush}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
 					<DataGridTemplateColumn SortMemberPath="ParsedStatus" CellStyleClasses="centered" >
 						<DataGridTemplateColumn.Header>
-							<TextBlock Text="Status" TextAlignment="Center" />
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.status}" TextAlignment="Center" />
 						</DataGridTemplateColumn.Header>
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
@@ -483,12 +483,12 @@
 		<DockPanel Name="filterBar" Grid.Row="4" Grid.Column="0" Margin="7 0 0 5">
 			<TextBox Name="searchBox" Watermark="Filter" Height="10" Width="250" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
 			<ComboBox x:Name="filterColumnBox" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="150">
-				<ComboBoxItem Content="Mod Name" />
-				<ComboBoxItem Content="Author" />
-				<ComboBoxItem Content="Requirements" />
+				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.mod_name}" />
+				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.author}" />
+				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.requirements}" />
 			</ComboBox>
-			<CheckBox Name="hideDisabledMods" Content="Hide Disabled Mods" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
-			<CheckBox Name="showUpdatableMods" Content="Show Updatable Mods" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
+			<CheckBox Name="hideDisabledMods" Content="{i18n:Translate ui.main_window.buttons.hide_disabled_mods}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
+			<CheckBox Name="showUpdatableMods" Content="{i18n:Translate ui.main_window.buttons.show_updatable_mods}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
 		</DockPanel>
 		<Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 2 0 0">
 			<Button Content="{Binding Version}" Classes="hyperlink" Command="{Binding OpenBrowser}" CommandParameter="https://www.nexusmods.com/stardewvalley/mods/10455" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0"/>

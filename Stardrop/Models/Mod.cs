@@ -50,7 +50,7 @@ namespace Stardrop.Models
         public string Uri { get { return _uri; } set { _uri = value; NotifyPropertyChanged("Uri"); } }
         private bool _isEnabled { get; set; }
         public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); NotifyPropertyChanged("ChangeStateText"); } }
-        public string ChangeStateText { get { return IsEnabled ? "Disable" : "Enable"; } }
+        public string ChangeStateText { get { return IsEnabled ? Program.translation.Get("internal.disable") : Program.translation.Get("internal.enable"); } }
         private WikiCompatibilityStatus _status { get; set; }
         public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); } }
         public string ParsedStatus
@@ -61,13 +61,13 @@ namespace Stardrop.Models
                 {
                     if (_status == WikiCompatibilityStatus.Unofficial)
                     {
-                        return $"Unofficial Update Available ({SuggestedVersion})";
+                        return String.Format(Program.translation.Get("ui.main_window.hyperlinks.unofficial_update_available"), SuggestedVersion);
                     }
-                    return $"Update Available ({SuggestedVersion})";
+                    return String.Format(Program.translation.Get("ui.main_window.hyperlinks.update_available"), SuggestedVersion);
                 }
                 else if (_status == WikiCompatibilityStatus.Broken)
                 {
-                    return $"[Broken] Compatibility Issue";
+                    return Program.translation.Get("ui.main_window.hyperlinks.broken_compatibility_issue");
                 }
 
                 return String.Empty;
@@ -84,7 +84,7 @@ namespace Stardrop.Models
             Version = SemVersion.TryParse(version, out var parsedVersion) ? parsedVersion : new SemVersion(0, 0, 0, "bad-version");
             Name = String.IsNullOrEmpty(name) ? uniqueId : name;
             Description = String.IsNullOrEmpty(description) ? String.Empty : description;
-            Author = String.IsNullOrEmpty(author) ? "Unknown" : author;
+            Author = String.IsNullOrEmpty(author) ? Program.translation.Get("internal.unknown") : author;
 
             Requirements = new List<ManifestDependency>();
         }

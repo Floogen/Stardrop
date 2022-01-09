@@ -25,11 +25,11 @@ namespace Stardrop.Views
 #endif
         }
 
-        public MessageWindow(string messageText, string positiveButtonText = "Yes", string negativeButtonText = "No") : this()
+        public MessageWindow(string messageText, string? positiveButtonText = null, string? negativeButtonText = null) : this()
         {
             _viewModel.MessageText = messageText;
-            _viewModel.PositiveButtonText = positiveButtonText;
-            _viewModel.NegativeButtonText = negativeButtonText;
+            _viewModel.PositiveButtonText = String.IsNullOrEmpty(positiveButtonText) ? Program.translation.Get("internal.yes") : positiveButtonText;
+            _viewModel.NegativeButtonText = String.IsNullOrEmpty(negativeButtonText) ? Program.translation.Get("internal.no") : negativeButtonText;
 
             this.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             this.SizeToContent = SizeToContent.Height;

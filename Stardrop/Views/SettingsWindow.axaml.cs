@@ -66,6 +66,19 @@ namespace Stardrop.Views
                 Program.settings.Theme = themeName;
             };
 
+            // Handle adding the languages
+            var languageComboBox = this.FindControl<ComboBox>("languageComboBox");
+            languageComboBox.Items = Program.translation.GetAvailableTranslations();
+            languageComboBox.SelectedItem = String.IsNullOrEmpty(Program.settings.Language) ? Program.translation.GetAvailableTranslations().First() : Program.translation.GetLanguage(Program.settings.Language);
+            languageComboBox.SelectionChanged += (sender, e) =>
+            {
+                var language = languageComboBox.SelectedItem.ToString();
+                Program.translation.SetLanguage(language);
+                Program.settings.Language = language;
+            };
+
+            this.FontFamily = new Avalonia.Media.FontFamily("Segoe UI Symbol");
+
             // Cache the old settings
             _oldSettings = Program.settings.ShallowCopy();
 
@@ -78,6 +91,7 @@ namespace Stardrop.Views
         {
             Application.Current.Styles[0] = _themes[_oldSettings.Theme];
             Program.settings = _oldSettings;
+            Program.translation.SetLanguage(String.IsNullOrEmpty(Program.settings.Language) ? Program.translation.GetAvailableTranslations().First() : Program.translation.GetLanguage(Program.settings.Language));
 
             this.Close(false);
         }
@@ -138,7 +152,7 @@ namespace Stardrop.Views
             var modFolderPathBox = this.FindControl<TextBox>("modFolderPathBox");
             if (String.IsNullOrEmpty(modFolderPathBox.Text) || !Directory.Exists(modFolderPathBox.Text))
             {
-                new WarningWindow($"The given mod folder path doesn't exist.\n\nReverting to previous path.", "OK").ShowDialog(this);
+                new WarningWindow(Program.translation.Get("ui.warning.given_mod_folder_does_not_exist"), Program.translation.Get("internal.ok")).ShowDialog(this);
                 SetTextboxTextFocusToEnd(modFolderPathBox, _oldSettings.ModFolderPath);
                 return;
             }
@@ -153,14 +167,14 @@ namespace Stardrop.Views
         {
             if (String.IsNullOrEmpty(filePath))
             {
-                new WarningWindow($"The given file isn't {GetTargetSmapiName()}\n\nReverting to previous path.", "OK").ShowDialog(this);
+                new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_invalid_smapi_executable"), GetTargetSmapiName()), Program.translation.Get("internal.ok")).ShowDialog(this);
                 return false;
             }
 
             var smapiFileInfo = new FileInfo(filePath);
             if (!smapiFileInfo.Exists || !smapiFileInfo.Name.Equals(GetTargetSmapiName(), StringComparison.OrdinalIgnoreCase))
             {
-                new WarningWindow($"The given file isn't {GetTargetSmapiName()}\n\nReverting to previous path.", "OK").ShowDialog(this);
+                new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_invalid_smapi_executable"), GetTargetSmapiName()), Program.translation.Get("internal.ok")).ShowDialog(this);
                 return false;
             }
 

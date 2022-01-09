@@ -66,8 +66,8 @@ namespace Stardrop.ViewModels
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                ToolTip_Save = "Save Changes";
-                ToolTip_Cancel = "Cancel";
+                ToolTip_Save = Program.translation.Get("ui.settings_window.tooltips.save_changes");
+                ToolTip_Cancel = Program.translation.Get("ui.settings_window.tooltips.cancel_changes");
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {

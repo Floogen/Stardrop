@@ -87,7 +87,7 @@ namespace Stardrop.Views
             // Check if we have any cached updates for mods
             if (!IsUpdateCacheValid())
             {
-                _viewModel.UpdateStatusText = "Updating"; // "Mods Ready to Update: Click to Refresh";
+                _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.updating");
                 CheckForModUpdates(_viewModel.Mods.ToList(), useCache: true);
             }
             else
@@ -161,7 +161,7 @@ namespace Stardrop.Views
         {
             if (e.Property == WindowStateProperty && (WindowState)e.OldValue == WindowState.Minimized && SMAPI.IsRunning)
             {
-                var warningWindow = new WarningWindow("Stardrop is locked while the SMAPI is running. Any changes made will not reflect until SMAPI is closed.", "Unlock", true);
+                var warningWindow = new WarningWindow(Program.translation.Get("ui.warning.stardrop_locked"), Program.translation.Get("internal.unlock"), true);
                 warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 await warningWindow.ShowDialog(this);
             }
@@ -314,7 +314,7 @@ namespace Stardrop.Views
                 bool hasDeletedAMod = false;
                 foreach (Mod mod in modGrid.SelectedItems)
                 {
-                    var requestWindow = new MessageWindow($"Are you sure you'd like to delete {mod.Name}? This cannot be undone.");
+                    var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_mod_deletion"), mod.Name));
                     if (await requestWindow.ShowDialog<bool>(this))
                     {
                         // Delete old vesrion
@@ -404,7 +404,7 @@ namespace Stardrop.Views
             {
                 _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
                 var pendingConfigUpdates = _viewModel.GetPendingConfigUpdates(oldProfile, inverseMerge: true);
-                if (pendingConfigUpdates.Count > 0 && await new MessageWindow($"Unsaved mod config changes detected for the profile {oldProfile.Name}.\n\nWould you like to save the changes?").ShowDialog<bool>(this))
+                if (pendingConfigUpdates.Count > 0 && await new MessageWindow(String.Format(Program.translation.Get("ui.message.unsaved_config_changes"), oldProfile.Name)).ShowDialog<bool>(this))
                 {
                     _viewModel.ReadModConfigs(oldProfile, pendingConfigUpdates);
                     UpdateProfile(oldProfile);
@@ -736,7 +736,7 @@ namespace Stardrop.Views
             // If an update is available, notify the user otherwise let them know Stardrop is up-to-date
             if (updateAvailable)
             {
-                var requestWindow = new MessageWindow($"An update (v{latestVersion}) is available for Stardrop.\n\nWould you like to download it now?");
+                var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.stardrop_update_available"), latestVersion));
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
                     _viewModel.OpenBrowser("https://www.nexusmods.com/stardewvalley/mods/10455?tab=files");
@@ -775,7 +775,7 @@ namespace Stardrop.Views
 
         private async Task HandleBulkModStateChange(bool enableState)
         {
-            var requestWindow = new MessageWindow($"{(enableState ? "Enable" : "Disable")} all mods?\n\nNote: This cannot be undone.");
+            var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_bulk_change_mod_states"), enableState ? Program.translation.Get("internal.enable") : Program.translation.Get("internal.disable")));
             if (await requestWindow.ShowDialog<bool>(this))
             {
                 foreach (var mod in _viewModel.Mods.Where(m => m.IsEnabled != enableState))
@@ -871,7 +871,7 @@ namespace Stardrop.Views
 
             // Update the status to let the user know the update is finished
             _viewModel.ModsWithCachedUpdates = modsToUpdate;
-            _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
+            _viewModel.UpdateStatusText = String.Format(Program.translation.Get("ui.main_window.button.update_status.list_available_updates"), modsToUpdate);
 
             return oldUpdateCache;
         }
@@ -898,7 +898,7 @@ namespace Stardrop.Views
                 }
 
                 // Update the status to let the user know the update is polling
-                _viewModel.UpdateStatusText = "Updating...";
+                _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.updating");
 
                 // Set the environment variable for the mod path
                 var enabledModsPath = Path.Combine(Pathing.GetSelectedModsFolderPath());
@@ -1040,14 +1040,14 @@ namespace Stardrop.Views
 
                 // Update the status to let the user know the update is finished
                 _viewModel.ModsWithCachedUpdates = modsToUpdate;
-                _viewModel.UpdateStatusText = $"Mods Ready to Update: {modsToUpdate}";
+                _viewModel.UpdateStatusText = String.Format(Program.translation.Get("ui.main_window.button.update_status.list_available_updates"), modsToUpdate);
 
                 Program.helper.Log($"Mod update check {(useCache ? "via cache" : "via smapi.io")} completed without error");
             }
             catch (Exception ex)
             {
                 Program.helper.Log($"Failed to get mod updates via smapi.io: {ex}", Helper.Status.Alert);
-                _viewModel.UpdateStatusText = $"Mod Update Check Failed";
+                _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.failed");
             }
         }
 
@@ -1147,7 +1147,7 @@ namespace Stardrop.Views
                             {
                                 if (!manifest.DeleteOldVersion)
                                 {
-                                    var requestWindow = new MessageWindow($"An previous version of {manifest.Name} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended, however any config files will be lost.");
+                                    var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_mod_update_method"), manifest.Name));
                                     if (await requestWindow.ShowDialog<bool>(this))
                                     {
                                         // Delete old vesrion

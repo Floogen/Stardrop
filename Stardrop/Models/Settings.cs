@@ -11,6 +11,7 @@ namespace Stardrop.Models
     public class Settings
     {
         public string Theme { get; set; } = "Stardrop";
+        public string Language { get; set; }
         public string LastSelectedProfileName { get; set; }
         public string SMAPIFolderPath { get; set; }
         public string ModFolderPath { get; set; }

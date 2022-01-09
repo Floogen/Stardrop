@@ -101,7 +101,7 @@ namespace Stardrop.Views
             var profile = await namingWindow.ShowDialog<Profile>(this);
             if (profile is not null && _viewModel.OldProfiles.Any(p => p.Name == profile.Name))
             {
-                await new WarningWindow($"Unable to add {profile.Name}, a profile already exists under that name!", "OK").ShowDialog(this);
+                await new WarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_add_profile"), profile.Name), Program.translation.Get("internal.ok")).ShowDialog(this);
             }
         }
 

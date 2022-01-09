@@ -24,6 +24,7 @@ namespace Stardrop.ViewModels
         public string ToolTip_SMAPI { get; set; }
         public string ToolTip_ModFolder { get; set; }
         public string ToolTip_Theme { get; set; }
+        public string ToolTip_Language { get; set; }
         public string ToolTip_IgnoreHiddenFolders { get; set; }
         public string ToolTip_EnableProfileSpecificModConfigs { get; set; }
         public string ToolTip_Save { get; set; }
@@ -36,13 +37,14 @@ namespace Stardrop.ViewModels
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                ToolTip_SMAPI = "The file path of StardewModdingAPI";
-                ToolTip_ModFolder = "The folder path of the mod folder";
-                ToolTip_Theme = "The current theme of Stardrop";
-                ToolTip_IgnoreHiddenFolders = "If checked, Stardrop will ignore any mods which have a parent folder that start with \".\"";
-                ToolTip_EnableProfileSpecificModConfigs = "If checked, Stardrop will save and restore config.json files from mods when swapping profiles";
-                ToolTip_Save = "Save Changes";
-                ToolTip_Cancel = "Cancel";
+                ToolTip_SMAPI = Program.translation.Get("ui.settings_window.tooltips.smapi");
+                ToolTip_ModFolder = Program.translation.Get("ui.settings_window.tooltips.mod_folder_path");
+                ToolTip_Theme = Program.translation.Get("ui.settings_window.tooltips.theme");
+                ToolTip_Language = Program.translation.Get("ui.settings_window.tooltips.language");
+                ToolTip_IgnoreHiddenFolders = Program.translation.Get("ui.settings_window.tooltips.ignore_hidden_folders");
+                ToolTip_EnableProfileSpecificModConfigs = Program.translation.Get("ui.settings_window.tooltips.enable_profile_specific_configs");
+                ToolTip_Save = Program.translation.Get("ui.settings_window.tooltips.save_changes");
+                ToolTip_Cancel = Program.translation.Get("ui.settings_window.tooltips.cancel_changes");
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {

@@ -46,7 +46,7 @@ namespace Stardrop.ViewModels
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }
         private string _columnFilter;
         public string ColumnFilter { get { return _columnFilter; } set { _columnFilter = value; UpdateFilter(); } }
-        private string _updateStatusText = "Mods Ready to Update: Click to Refresh";
+        private string _updateStatusText = Program.translation.Get("ui.main_window.button.update_status.generic");
         public string UpdateStatusText { get { return _updateStatusText; } set { this.RaiseAndSetIfChanged(ref _updateStatusText, value); } }
         public int ModsWithCachedUpdates { get; set; }
         public string Version { get; set; }

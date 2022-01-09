@@ -4,9 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
         mc:Ignorable="d" d:DesignWidth="430" d:DesignHeight="350"
         x:Class="Stardrop.Views.SettingsWindow"
-        Title="Settings"
+        Title="{i18n:Translate ui.window.settings.name}"
         MinWidth="430"
         MinHeight="350"
         Width="430"
@@ -169,7 +170,7 @@
 		<Border Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
 			<Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
 				<Image Source="/Assets/icon.ico" Stretch="None"/>
-				<TextBlock Text="Settings" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+				<TextBlock Text="{i18n:Translate ui.window.setting.name}" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 			</Menu>
 		</Border>
 		<Menu Name="windowMenu" IsVisible="{Binding ShowMainMenu}" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
@@ -177,7 +178,7 @@
 		</Menu>
 
 		<StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="10 10 0 0">
-			<TextBlock Text="SMAPI Path" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<TextBlock Text="{i18n:Translate ui.settings_window.labels.smapi_path}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 			<TextBox Name="smapiFolderPathBox" Text="{Binding SMAPIPath}" ToolTip.Tip="{Binding ToolTip_SMAPI}" Margin="10 10 0 0" Height="10" Width="350" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
 			<Button Name="smapiFolderButton" Margin="360 -32 0 0" i:Attached.Icon="mdi-folder" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" HorizontalAlignment="Left" />
 
@@ -187,14 +188,16 @@
 		</StackPanel>
 
 		<StackPanel Grid.Row="2" Margin="10 10 0 0">
-			<TextBlock Text="Themes" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
-			<ComboBox Name="themeComboBox" ToolTip.Tip="{Binding ToolTip_Theme}" Margin="10 10 0 0" Width="150" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
+			<TextBlock Text="{i18n:Translate ui.settings_window.labels.themes}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<ComboBox Name="themeComboBox" ToolTip.Tip="{Binding ToolTip_Theme}" Margin="10 10 0 10" Width="150" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
+			<TextBlock Text="{i18n:Translate ui.settings_window.labels.languages}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<ComboBox Name="languageComboBox" ToolTip.Tip="{Binding ToolTip_Language}" Margin="10 10 0 0" Width="150" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
 		</StackPanel>
 
 		<StackPanel Grid.Row="3" Margin="10 25 0 0">
-			<TextBlock Text="Miscellaneous" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
-			<CheckBox Name="ignoreHiddenFoldersCheckbox" IsChecked="{Binding IgnoreHiddenFolders}" Content="Ignore Hidden Folders" ToolTip.Tip="{Binding ToolTip_IgnoreHiddenFolders}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
-			<CheckBox Name="enableProfileSpecificModConfigsCheckbox" IsChecked="{Binding EnableProfileSpecificModConfigs}" Content="Enable Profile Specific Mod Configs" ToolTip.Tip="{Binding ToolTip_EnableProfileSpecificModConfigs}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<TextBlock Text="{i18n:Translate ui.settings_window.labels.miscellaneous}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<CheckBox Name="ignoreHiddenFoldersCheckbox" IsChecked="{Binding IgnoreHiddenFolders}" Content="{i18n:Translate ui.settings_window.buttons.ignore_hidden_folders}" ToolTip.Tip="{Binding ToolTip_IgnoreHiddenFolders}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<CheckBox Name="enableProfileSpecificModConfigsCheckbox" IsChecked="{Binding EnableProfileSpecificModConfigs}" Content="{i18n:Translate ui.settings_window.buttons.enable_profile_specific_mod_configs}" ToolTip.Tip="{Binding ToolTip_EnableProfileSpecificModConfigs}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 		</StackPanel>
 
 		<DockPanel Grid.Row="4" Grid.Column="1" Margin="0 0 0 0">

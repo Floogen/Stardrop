@@ -8,6 +8,7 @@ using Stardrop.Models;
 using Stardrop.Utilities;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -83,7 +84,11 @@ namespace Stardrop
                 }
 
                 // Load the translations
-                translation.LoadTranslations();
+                if (String.IsNullOrEmpty(settings.Language))
+                {
+                    settings.Language = translation.GetLanguageFromAbbreviation(CultureInfo.CurrentCulture.TwoLetterISOLanguageName);
+                }
+                translation.LoadTranslations(translation.GetLanguage(settings.Language));
 
                 // Register icon provider(s)
                 IconProvider.Register<MaterialDesignIconProvider>();
