@@ -18,6 +18,7 @@ See the [release page](https://github.com/Floogen/Stardrop/releases/latest) for 
 ## Translations
 Stardrop has been translated into the following languages due to generous contributions by the following people
 
+* **Russian** - Rongarah
 * **Thai** - ellipszist
 
 # Gallery
