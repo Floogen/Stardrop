@@ -20,7 +20,7 @@
 
   // Main Window - Menu Headers
   "ui.main_window.menu_headers.file": "Файл",
-  "ui.main_window.menu_headers.view": "Вид",
+  "ui.main_window.menu_headers.view": "Просмотр",
   "ui.main_window.menu_headers.tools": "Инструменты",
 
   "ui.main_window.menu_headers.enabled": "Включено",
@@ -87,20 +87,20 @@
   "ui.warning.given_invalid_smapi_executable": "Данный файл не {0}\n\nВозврат к предыдущему пути к папке.",
   "ui.warning.stardrop_locked": "Stardrop заблокирован во время работы SMAPI. Любые внесенные изменения не отразятся, пока SMAPI не будет закрыт.",
 
-  "ui.warning.unable_to_locate_smapi": "Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings",
-  "ui.warning.mod_config_saved_but_not_enabled": "Saved mod config settings to profile {0}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.",
-  "ui.warning.unable_to_determine_profile": "Unable to determine selected profile.\n\nSMAPI will not be started.",
-  "ui.warning.stardrop_up_to_date": "Stardrop is up-to-date.\n\n{0} is the latest version.",
-  "ui.warning.update_cooldown_minutes": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} minute(s).",
-  "ui.warning.update_cooldown_seconds": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} second(s).",
-  "ui.warning.unable_to_locate_log": "Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.",
-  "ui.warning.unable_to_read_log": "Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.",
-  "ui.warning.no_manifest": "No manifest.json found in \"{0}\"",
-  "ui.warning.unable_to_load_mod": "Unable to load the file located at \"{0}\".\n\nSee log file for more information.",
+  "ui.warning.unable_to_locate_smapi": "Не удалось найти StardewModdingAPI.exe\n\nУкажите правильный путь к файлу в разделе\nПросмотр > Настройки",
+  "ui.warning.mod_config_saved_but_not_enabled": "Настройки конфигурации модификации сохранены в профиле {0}, однако конфигурации модификаций для конкретных профилей не включены\\.\\n\\nПерейдите в раздел Просмотр> Настройки и установите флажок перед \\\"Включить Конфигурации Модификаций для Конкретных Профилей\\\" чтобы Stardrop автоматически сохраняла и применяла изменения конфигурации модификаций.",
+  "ui.warning.unable_to_determine_profile": "Невозможно определить выбранный профиль.\n\nSMAPI не будет запущен.",
+  "ui.warning.stardrop_up_to_date": "Версия Stardrop актуальна.\n\n{0} - это последняя версия.",
+  "ui.warning.update_cooldown_minutes": "Обновления можно запрашивать только раз в 5 минут.\n\nПожалуйста, повторите попытку через {0} мин.",
+  "ui.warning.update_cooldown_seconds": "Обновления можно запрашивать только раз в 5 минут.\n\nПожалуйста, повторите попытку через {0} сек.",
+  "ui.warning.unable_to_locate_log": "Не удалось найти SMAPI-latest.txt! SMAPI должен успешно запуститься хотя бы один раз, чтобы Stardrop могла обнаружить детали игры.",
+  "ui.warning.unable_to_read_log": "Не удалось прочитать журнальный файл SMAPI, чтобы получить версию игры.\n\nМодификации не будут проверяться на наличие обновлений.",
+  "ui.warning.no_manifest": "manifest.json не найден в \"{0}\"",
+  "ui.warning.unable_to_load_mod": "Не удалось загрузить файл, расположенный в папке \"{0}\".\n\nДополнительную информацию см. в журнальном файле.",
 
   // Messages
   "ui.message.confirm_mod_deletion": "Вы уверены, что хотите удалить {0}? Это действие не может быть отменено.",
-  "ui.message.unsaved_config_changes": "Обнаружены несхораненные изменения файлов конфигурации для профиля {0}.\n\nСохранить изменения?",
+  "ui.message.unsaved_config_changes": "Обнаружены несохраненные изменения файлов конфигурации для профиля {0}.\n\nСохранить изменения?",
   "ui.message.stardrop_update_available": "Доступно обновление (v{0}) для Stardrop.\n\nВы хотите загрузить его сейчас?",
   "ui.message.confirm_bulk_change_mod_states_enable": "Включить все модификации?\n\nNote: Это действие не может быть отменено.",
   "ui.message.confirm_bulk_change_mod_states_disable": "Отключить все модификации?\n\nNote: This cannot be undone.",
