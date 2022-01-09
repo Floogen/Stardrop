@@ -1,0 +1,91 @@
+{
+  "ui.main_window.menu_items.add_mod": "添加模组",
+  "ui.main_window.menu_items.start_smapi": "启动SMAPI",
+  "ui.main_window.menu_items.exit": "退出",
+  "ui.main_window.menu_items.settings": "设置",
+  "ui.main_window.menu_items.stardrop_log_file": "Stardrop日志文件",
+  "ui.main_window.menu_items.smapi_log_file": "SMAPI日志文件",
+  "ui.main_window.menu_items.refresh_mod_list": "刷新模组列表",
+  "ui.main_window.menu_items.check_for_mod_updates": "检测模组更新",
+  "ui.main_window.menu_items.enable_all_mods": "启用所有模组",
+  "ui.main_window.menu_items.disable_all_mods": "禁用所有模组",
+  "ui.main_window.menu_items.check_for_stardrop_update": "检查Stardrop更新",
+  "ui.main_window.menu_items.stardrop_repository": "Stardrop储存库",
+
+  "ui.main_window.menu_items.context.cancel": "取消",
+  "ui.main_window.menu_items.context.open_containing_folder": "打开所在文件夹",
+  "ui.main_window.menu_items.context.delete": "删除",
+
+  "ui.main_window.menu_headers.enabled": "启用",
+  "ui.main_window.menu_headers.mod_name": "模组名称",
+  "ui.main_window.menu_headers.unique_id": "专属序列号",
+  "ui.main_window.menu_headers.author": "作者",
+  "ui.main_window.menu_headers.missing_requirements": "缺失的依赖",
+  "ui.main_window.menu_headers.version": "版本",
+  "ui.main_window.menu_headers.configuration": "设置",
+  "ui.main_window.menu_headers.status": "状态",
+
+  "ui.main_window.labels.profile": "配置文件",
+  "ui.main_window.labels.enabled_mods": "已启用模组: ",
+  "ui.main_window.labels.total_mods": "全部模组: ",
+
+  "ui.main_window.hyperlinks.click_to_open": "点击此处打开",
+  "ui.main_window.hyperlinks.update_available": "可用升级({0})",
+  "ui.main_window.hyperlinks.unofficial_update_available": "非官方可用升级 ({0})",
+  "ui.main_window.hyperlinks.broken_compatibility_issue": "[Broken] 兼容性问题",
+
+  "ui.main_window.buttons.save_configs": "保存设置",
+  "ui.main_window.buttons.hide_disabled_mods": "隐藏被禁用模组",
+  "ui.main_window.buttons.show_updatable_mods": "显示可升级模组",
+
+  "ui.main_window.button.update_status.generic": "可升级模组: 点击刷新",
+  "ui.main_window.button.update_status.updating": "升级中...",
+  "ui.main_window.button.update_status.list_available_updates": "可升级模组: {0}",
+  "ui.main_window.button.update_status.failed": "模组升级检测失败",
+
+
+  "ui.main_window.combobox.mod_name": "模组名称",
+  "ui.main_window.combobox.author": "作者",
+  "ui.main_window.combobox.requirements": "依赖",
+
+
+  "ui.settings_window.labels.smapi_path": "SMAPI路径",
+  "ui.settings_window.labels.themes": "主题",
+  "ui.settings_window.labels.languages": "语言",
+  "ui.settings_window.labels.miscellaneous": "杂项",
+
+  "ui.settings_window.buttons.ignore_hidden_folders": "忽视隐藏文件夹",
+  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "对不同配置文件启用不同的模组设置",
+
+  "ui.settings_window.tooltips.smapi": "StardewModdingAPI路径",
+  "ui.settings_window.tooltips.mod_folder_path": "模组文件夹路径",
+  "ui.settings_window.tooltips.theme": "Stardrop当前使用的主题",
+  "ui.settings_window.tooltips.language": "Stardrop当前启用的语言",
+  "ui.settings_window.tooltips.ignore_hidden_folders": "启用则Stardrop将会忽视所有以\".\" 开头的文件夹",
+  "ui.settings_window.tooltips.enable_profile_specific_configs": "启用则Stardrop会在你切换配置文件时保存并切换模组设置",
+  "ui.settings_window.tooltips.save_changes": "保存更改",
+  "ui.settings_window.tooltips.cancel_changes": "取消",
+
+  "ui.warning.unable_to_add_profile": "无法添加 {0},已经存在同名配置！",
+  "ui.warning.given_mod_folder_does_not_exist": "给定模组文件夹不存在。\n\n尝试恢复到上次的路径。",
+  "ui.warning.given_invalid_smapi_executable": "给定文件不存在 {0}\n\n尝试恢复到上次的路径",
+  "ui.warning.stardrop_locked": "当SMAPI正在运行时Stardrop会处于锁定状态，直到SMAPI停止运行时所有的更改都无法生效。",
+
+  "ui.message.confirm_mod_deletion": "你是否确定删除{0}？ 此操作无法撤销！",
+  "ui.message.unsaved_config_changes": "检测到配置文件{0}的模组配置更改未保存。\n\n你想保存更改吗？",
+  "ui.message.stardrop_update_available": "检测到Stardrop的可用更新 (v{0})\n\n你想下载吗？",
+  "ui.message.confirm_bulk_change_mod_states": "{0} 所有模组？\n\n注意：此操作无法撤销。",
+  "ui.message.confirm_mod_update_method": "检测到了{0}的上一个版本。你想清除以前的安装吗？注意：通常建议清除以前的版本，但任何配置文件都会丢失。",
+
+  "ui.window.setting.name": "设置",
+  "ui.window.profiles.name": "配置文件",
+  "ui.window.profile_naming.name": "配置名称",
+
+  "internal.unknown": "未知",
+  "internal.enable": "启用",
+  "internal.disable": "禁用",
+  "internal.yes": "是",
+  "internal.no": "否",
+  "internal.ok": "确定",
+  "internal.unlock": "解除锁定"
+}
