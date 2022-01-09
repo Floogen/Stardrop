@@ -19,11 +19,15 @@
   "ui.main_window.menu_items.context.delete": "Удалить",
 
   // Main Window - Menu Headers
+  "ui.main_window.menu_headers.file": "Файл",
+  "ui.main_window.menu_headers.view": "Вид",
+  "ui.main_window.menu_headers.tools": "Инструменты",
+
   "ui.main_window.menu_headers.enabled": "Включено",
   "ui.main_window.menu_headers.mod_name": "Название Модификации",
   "ui.main_window.menu_headers.unique_id": "Уникальный ID",
   "ui.main_window.menu_headers.author": "Автор",
-  "ui.main_window.menu_headers.missing_requirements": "Отсутствует Требуемая Модификация",
+  "ui.main_window.menu_headers.missing_requirements": "Отсутствует Требуемые Модификации",
   "ui.main_window.menu_headers.version": "Версия",
   "ui.main_window.menu_headers.configuration": "Конфигурация",
   "ui.main_window.menu_headers.status": "Статус",
@@ -32,6 +36,7 @@
   "ui.main_window.labels.profile": "Профиль",
   "ui.main_window.labels.enabled_mods": "Включенные Модификации: ",
   "ui.main_window.labels.total_mods": "Всего Модификаций: ",
+  "ui.main_window.labels.filter": "Фильтр",
 
   // Main Window - Hyperlinks
   "ui.main_window.hyperlinks.click_to_open": "Нажмите, чтобы открыть",
@@ -57,6 +62,7 @@
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "Патч SMAPI",
+  "ui.settings_window.labels.mod_path": "Mod Folder Path",
   "ui.settings_window.labels.themes": "Темы",
   "ui.settings_window.labels.languages": "Язык",
   "ui.settings_window.labels.miscellaneous": "Остальные Настройки",
@@ -81,12 +87,25 @@
   "ui.warning.given_invalid_smapi_executable": "Данный файл не {0}\n\nВозврат к предыдущему пути к папке.",
   "ui.warning.stardrop_locked": "Stardrop заблокирован во время работы SMAPI. Любые внесенные изменения не отразятся, пока SMAPI не будет закрыт.",
 
+  "ui.warning.unable_to_locate_smapi": "Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings",
+  "ui.warning.mod_config_saved_but_not_enabled": "Saved mod config settings to profile {0}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.",
+  "ui.warning.unable_to_determine_profile": "Unable to determine selected profile.\n\nSMAPI will not be started.",
+  "ui.warning.stardrop_up_to_date": "Stardrop is up-to-date.\n\n{0} is the latest version.",
+  "ui.warning.update_cooldown_minutes": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} minute(s).",
+  "ui.warning.update_cooldown_seconds": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} second(s).",
+  "ui.warning.unable_to_locate_log": "Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.",
+  "ui.warning.unable_to_read_log": "Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.",
+  "ui.warning.no_manifest": "No manifest.json found in \"{0}\"",
+  "ui.warning.unable_to_load_mod": "Unable to load the file located at \"{0}\".\n\nSee log file for more information.",
+
   // Messages
   "ui.message.confirm_mod_deletion": "Вы уверенны, что хотите удалить {0}? Это действие не может быть отменено.",
   "ui.message.unsaved_config_changes": "Обнаружены несхораненные изменения файлов конфигурации для профиля {0}.\n\nСохранить изменения?",
   "ui.message.stardrop_update_available": "Доступно обновление (v{0}) для Stardrop.\n\nВы хотите загрузить его сейчас?",
-  "ui.message.confirm_bulk_change_mod_states": "{0} все модификации?\n\nNote: Это действие не может быть отменено.",
+  "ui.message.confirm_bulk_change_mod_states_enable": "Включить все модификации?\n\nNote: Это действие не может быть отменено.",
+  "ui.message.confirm_bulk_change_mod_states_disable": "Отключить все модификации?\n\nNote: This cannot be undone.",
   "ui.message.confirm_mod_update_method": "Обнаружена более старая версия модификации {0}. Удалить старую версию?\n\nNote: Как правило рекомендуется удалить старую версию модификации, однако все файлы конфигурации будут потеряны.",
+
 
   // Window Names
   "ui.window.setting.name": "Настройки",
