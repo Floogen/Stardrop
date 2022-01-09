@@ -16,6 +16,10 @@
   "ui.main_window.menu_items.context.open_containing_folder": "打开所在文件夹",
   "ui.main_window.menu_items.context.delete": "删除",
 
+  "ui.main_window.menu_headers.file": "File",
+  "ui.main_window.menu_headers.view": "View",
+  "ui.main_window.menu_headers.tools": "Tools",
+
   "ui.main_window.menu_headers.enabled": "启用",
   "ui.main_window.menu_headers.mod_name": "模组名称",
   "ui.main_window.menu_headers.unique_id": "专属序列号",
@@ -28,6 +32,7 @@
   "ui.main_window.labels.profile": "配置文件",
   "ui.main_window.labels.enabled_mods": "已启用模组: ",
   "ui.main_window.labels.total_mods": "全部模组: ",
+  "ui.main_window.labels.filter": "Filter",
 
   "ui.main_window.hyperlinks.click_to_open": "点击此处打开",
   "ui.main_window.hyperlinks.update_available": "可用更新({0})",
@@ -50,6 +55,7 @@
 
 
   "ui.settings_window.labels.smapi_path": "SMAPI路径",
+  "ui.settings_window.labels.mod_path": "Mod Folder Path",
   "ui.settings_window.labels.themes": "主题",
   "ui.settings_window.labels.languages": "语言",
   "ui.settings_window.labels.miscellaneous": "杂项",
@@ -71,10 +77,22 @@
   "ui.warning.given_invalid_smapi_executable": "给定文件不存在 {0}\n\n尝试恢复到上次的路径",
   "ui.warning.stardrop_locked": "当SMAPI正在运行时Stardrop会处于锁定状态，直到SMAPI停止运行时所有的更改都无法生效。",
 
+  "ui.warning.unable_to_locate_smapi": "Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings",
+  "ui.warning.mod_config_saved_but_not_enabled": "Saved mod config settings to profile {0}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.",
+  "ui.warning.unable_to_determine_profile": "Unable to determine selected profile.\n\nSMAPI will not be started.",
+  "ui.warning.stardrop_up_to_date": "Stardrop is up-to-date.\n\n{0} is the latest version.",
+  "ui.warning.update_cooldown_minutes": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} minute(s).",
+  "ui.warning.update_cooldown_seconds": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} second(s).",
+  "ui.warning.unable_to_locate_log": "Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.",
+  "ui.warning.unable_to_read_log": "Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.",
+  "ui.warning.no_manifest": "No manifest.json found in \"{0}\"",
+  "ui.warning.unable_to_load_mod": "Unable to load the file located at \"{0}\".\n\nSee log file for more information.",
+
   "ui.message.confirm_mod_deletion": "你是否确定删除{0}？ 此操作无法撤销！",
   "ui.message.unsaved_config_changes": "检测到配置文件{0}的模组配置更改未保存。\n\n你想保存更改吗？",
   "ui.message.stardrop_update_available": "检测到Stardrop的可用更新 (v{0})\n\n你想下载吗？",
-  "ui.message.confirm_bulk_change_mod_states": "{0} 所有模组？\n\n注意：此操作无法撤销。",
+  "ui.message.confirm_bulk_change_mod_states_enable": "启用 所有模组？\n\n注意：此操作无法撤销。",
+  "ui.message.confirm_bulk_change_mod_states_disable": "禁用 所有模组？\n\n注意：此操作无法撤销。",
   "ui.message.confirm_mod_update_method": "检测到了{0}的上一个版本。你想清除以前的安装吗？注意：通常建议清除以前的版本，但任何配置文件都会丢失。",
 
   "ui.window.setting.name": "设置",
