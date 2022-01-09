@@ -103,7 +103,7 @@
   "ui.message.unsaved_config_changes": "Обнаружены несохраненные изменения файлов конфигурации для профиля {0}.\n\nСохранить изменения?",
   "ui.message.stardrop_update_available": "Доступно обновление (v{0}) для Stardrop.\n\nВы хотите загрузить его сейчас?",
   "ui.message.confirm_bulk_change_mod_states_enable": "Включить все модификации?\n\nNote: Это действие не может быть отменено.",
-  "ui.message.confirm_bulk_change_mod_states_disable": "Отключить все модификации?\n\nNote: This cannot be undone.",
+  "ui.message.confirm_bulk_change_mod_states_disable": "Отключить все модификации?\n\nNote: Это действие не может быть отменено.",
   "ui.message.confirm_mod_update_method": "Обнаружена более старая версия модификации {0}. Удалить старую версию?\n\nNote: Как правило рекомендуется удалить старую версию модификации, однако все файлы конфигурации будут потеряны.",
 
   // Window Names
