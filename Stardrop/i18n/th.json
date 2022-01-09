@@ -1,0 +1,104 @@
+{
+  // Main Window - Menu Items
+  "ui.main_window.menu_items.add_mod": "เพิ่ม Mod",
+  "ui.main_window.menu_items.start_smapi": "เริ่ม SMAPI",
+  "ui.main_window.menu_items.exit": "ปิด",
+  "ui.main_window.menu_items.settings": "ตั้งค่า",
+  "ui.main_window.menu_items.stardrop_log_file": "ไฟล์บันทึก Stardrop",
+  "ui.main_window.menu_items.smapi_log_file": "ไฟล์บันทึก SMAPI",
+  "ui.main_window.menu_items.refresh_mod_list": "รีเฟรชรายการม็อด",
+  "ui.main_window.menu_items.check_for_mod_updates": "ตรวจสอบการอัปเดต Mod",
+  "ui.main_window.menu_items.enable_all_mods": "เปิดใช้งาน Mods ทั้งหมด",
+  "ui.main_window.menu_items.disable_all_mods": "ปิดการใช้งาน Mods ทั้งหมด",
+  "ui.main_window.menu_items.check_for_stardrop_update": "ตรวจสอบการอัปเดต Stardrop",
+  "ui.main_window.menu_items.stardrop_repository": "Stardrop Repository",
+
+  // Main Window - Menu Items - Context
+  "ui.main_window.menu_items.context.cancel": "ยกเลิก",
+  "ui.main_window.menu_items.context.open_containing_folder": "เปิดโฟลเดอร์",
+  "ui.main_window.menu_items.context.delete": "ลบ",
+
+  // Main Window - Menu Headers
+  "ui.main_window.menu_headers.enabled": "เปิดใช้งาน",
+  "ui.main_window.menu_headers.mod_name": "ชื่อ Mod",
+  "ui.main_window.menu_headers.unique_id": "Unique ID",
+  "ui.main_window.menu_headers.author": "ผู้เขียน",
+  "ui.main_window.menu_headers.missing_requirements": "Mod ที่ไม่ได้ติดตั้ง",
+  "ui.main_window.menu_headers.version": "เวอร์ชั่น",
+  "ui.main_window.menu_headers.configuration": "การกำหนดค่า",
+  "ui.main_window.menu_headers.status": "สถานะ",
+
+  // Main Window - Labels
+  "ui.main_window.labels.profile": "โปรไฟล์",
+  "ui.main_window.labels.enabled_mods": "Mods ที่เปิดใช้งาน: ",
+  "ui.main_window.labels.total_mods": "Mods ทั้งหมด: ",
+
+  // Main Window - Hyperlinks
+  "ui.main_window.hyperlinks.click_to_open": "คลิกเพื่อเปิด",
+  "ui.main_window.hyperlinks.update_available": "มีการอัปเดต ({0})",
+  "ui.main_window.hyperlinks.unofficial_update_available": "มีการอัปเดตอย่างไม่เป็นทางการ ({0})",
+  "ui.main_window.hyperlinks.broken_compatibility_issue": "[ใช้งานไม่ได้] ปัญหาความเข้ากันได้",
+
+  // Main Window - Buttons
+  "ui.main_window.buttons.save_configs": "บันทึกการกำหนดค่า",
+  "ui.main_window.buttons.hide_disabled_mods": "ซ่อน Mods ที่ปิดใช้งาน",
+  "ui.main_window.buttons.show_updatable_mods": "แสดง Mods ที่อัพเดตได้",
+
+  // Main Window - Buttons - Update Status
+  "ui.main_window.button.update_status.generic": "Mods พร้อมที่จะอัปเดต: คลิกเพื่อรีเฟรช",
+  "ui.main_window.button.update_status.updating": "กำลังอัปเดต...",
+  "ui.main_window.button.update_status.list_available_updates": "Mods พร้อมที่จะอัปเดต: {0}",
+  "ui.main_window.button.update_status.failed": "ตรวจสอบการอัปเดต Mod ล้มเหลว",
+
+  // Main Window - ComboBox
+  "ui.main_window.combobox.mod_name": "ชื่อ Mod",
+  "ui.main_window.combobox.author": "ผู้เขียน",
+  "ui.main_window.combobox.requirements": "ความต้องการ",
+
+  // Settings Window - Labels
+  "ui.settings_window.labels.smapi_path": "เส้นทางของ SMAPI",
+  "ui.settings_window.labels.themes": "ธีม",
+  "ui.settings_window.labels.languages": "ภาษา",
+  "ui.settings_window.labels.miscellaneous": "เบ็ดเตล็ด",
+
+  // Settings Window - Buttons
+  "ui.settings_window.buttons.ignore_hidden_folders": "ละเว้นโฟลเดอร์ที่ซ่อนอยู่",
+  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "เปิดใช้งานการกำหนดค่า Mod เฉพาะโปรไฟล์",
+
+  // Settings Window - Tooltips
+  "ui.settings_window.tooltips.smapi": "เส้นทางของไฟล์ StardewModdingAPI",
+  "ui.settings_window.tooltips.mod_folder_path": "เส้นทางของโฟลเดอร์ mod",
+  "ui.settings_window.tooltips.theme": "ธีมปัจจุบันของ Stardrop",
+  "ui.settings_window.tooltips.language": "ภาษาปัจจุบันของ Stardrop",
+  "ui.settings_window.tooltips.ignore_hidden_folders": "หากเลือกไว้ Stardrop จะไม่สนใจม็อดใดๆ ที่มีโฟลเดอร์หลักที่ขึ้นต้นด้วย \".\"",
+  "ui.settings_window.tooltips.enable_profile_specific_configs": "หากเลือกไว้ Stardrop จะบันทึกและกู้คืนไฟล์ config.json จาก mods เมื่อสลับโปรไฟล์",
+  "ui.settings_window.tooltips.save_changes": "บันทึกการเปลี่ยนแปลง",
+  "ui.settings_window.tooltips.cancel_changes": "ยกเลิก",
+
+  // Warnings
+  "ui.warning.unable_to_add_profile": "ไม่สามารถเพิ่ม {0} โปรไฟล์มีอยู่แล้วภายใต้ชื่อนั้น!",
+  "ui.warning.given_mod_folder_does_not_exist": "ไม่มีเส้นทางของโฟลเดอร์ mod ที่ระบุ\n\nกำลังย้อนกลับไปยังเส้นทางก่อนหน้า",
+  "ui.warning.given_invalid_smapi_executable": "ไฟล์ที่ระบุไม่ใช่ {0}\n\nกำลังย้อนกลับไปยังเส้นทางก่อนหน้า",
+  "ui.warning.stardrop_locked": "Stardrop ถูกล็อคในขณะที่ SMAPI กำลังทำงาน การเปลี่ยนแปลงใดๆ ที่ทำขึ้นจะไม่มีผลจนกว่า SMAPI จะปิดลง",
+
+  // Messages
+  "ui.message.confirm_mod_deletion": "คุณแน่ใจหรือว่าต้องการลบ {0}? การดำเนินการนี้ไม่สามารถยกเลิกได้",
+  "ui.message.unsaved_config_changes": "ตรวจพบการเปลี่ยนแปลงการกำหนดค่า mod ที่ไม่ได้บันทึกสำหรับโปรไฟล์ {0}.\n\nคุณต้องการบันทึกการเปลี่ยนแปลงหรือไม่?",
+  "ui.message.stardrop_update_available": "มีการอัปเดต (v{0}) สำหรับ Stardrop\n\nคุณต้องการดาวน์โหลดตอนนี้?",
+  "ui.message.confirm_bulk_change_mod_states": "{0} mods ทั้งหมด?\n\nหมายเหตุ: การดำเนินการนี้ไม่สามารถยกเลิกได้",
+  "ui.message.confirm_mod_update_method": "ตรวจพบ {0} เวอร์ชันก่อนหน้าแล้ว คุณต้องการล้างการติดตั้งก่อนหน้านี้หรือไม่?\n\nหมายเหตุ: โดยปกติแล้ว แนะนำให้ล้างเวอร์ชันก่อนหน้า อย่างไรก็ตาม ไฟล์ปรับแต่งใดๆ จะสูญหายไป",
+
+  // Window Names
+  "ui.window.setting.name": "การตั้งค่า",
+  "ui.window.profiles.name": "โปรไฟล์",
+  "ui.window.profile_naming.name": "ชื่อโปรไฟล์",
+
+  // Internals
+  "internal.unknown": "ไม่ทราบ",
+  "internal.enable": "เปิดใช้งาน",
+  "internal.disable": "ปิดการใช้งาน",
+  "internal.yes": "ใช่",
+  "internal.no": "ไม่",
+  "internal.ok": "ตกลง",
+  "internal.unlock": "ปลดล็อค"
+}
