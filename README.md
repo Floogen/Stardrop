@@ -14,6 +14,12 @@ See the [GitBook pages](https://floogen.gitbook.io/stardrop/) for detailed docum
 
 See the [release page](https://github.com/Floogen/Stardrop/releases/latest) for the latest builds.
 
+# Credits
+## Translations
+Stardrop has been translated into the following languages due to generous contributions by the following people
+
+* **Thai** - ellipszist
+
 # Gallery
 
 ![](https://imgur.com/WdjwfnG.gif)
