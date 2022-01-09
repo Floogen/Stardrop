@@ -1,0 +1,104 @@
+{
+  // Main Window - Menu Items
+  "ui.main_window.menu_items.add_mod": "Mod hinzufügen",
+  "ui.main_window.menu_items.start_smapi": "SMAPI starten",
+  "ui.main_window.menu_items.exit": "Beenden",
+  "ui.main_window.menu_items.settings": "Einstellungen",
+  "ui.main_window.menu_items.stardrop_log_file": "Stardrop Logdatei",
+  "ui.main_window.menu_items.smapi_log_file": "SMAPI Logdatei",
+  "ui.main_window.menu_items.refresh_mod_list": "Mod Liste Aktualisieren",
+  "ui.main_window.menu_items.check_for_mod_updates": "Nach Mod Updates suchen",
+  "ui.main_window.menu_items.enable_all_mods": "Alle Mods einschalten",
+  "ui.main_window.menu_items.disable_all_mods": "Alle Mods ausschalten",
+  "ui.main_window.menu_items.check_for_stardrop_update": "Nach Stardrop Update suchen",
+  "ui.main_window.menu_items.stardrop_repository": "Stardrop Quelle",
+
+  // Main Window - Menu Items - Context
+  "ui.main_window.menu_items.context.cancel": "Abbrechen",
+  "ui.main_window.menu_items.context.open_containing_folder": "Modordner öffnen",
+  "ui.main_window.menu_items.context.delete": "Löschen",
+
+  // Main Window - Menu Headers
+  "ui.main_window.menu_headers.enabled": "Aktiviert",
+  "ui.main_window.menu_headers.mod_name": "Mod Name",
+  "ui.main_window.menu_headers.unique_id": "Einmalige ID",
+  "ui.main_window.menu_headers.author": "Author",
+  "ui.main_window.menu_headers.missing_requirements": "Fehlende Voraussetzungen",
+  "ui.main_window.menu_headers.version": "Version",
+  "ui.main_window.menu_headers.configuration": "Konfiguration",
+  "ui.main_window.menu_headers.status": "Status",
+
+  // Main Window - Labels
+  "ui.main_window.labels.profile": "Profil",
+  "ui.main_window.labels.enabled_mods": "Aktivierte Mods: ",
+  "ui.main_window.labels.total_mods": "Mods insgesamt: ",
+
+  // Main Window - Hyperlinks
+  "ui.main_window.hyperlinks.click_to_open": "Konfig öffnen",
+  "ui.main_window.hyperlinks.update_available": "Update verfügbar ({0})",
+  "ui.main_window.hyperlinks.unofficial_update_available": "Inoffizielles Update verfügbar ({0})",
+  "ui.main_window.hyperlinks.broken_compatibility_issue": "[Fehlerhaft] Kompatibilitätsproblem",
+
+  // Main Window - Buttons
+  "ui.main_window.buttons.save_configs": "Konfig speichern",
+  "ui.main_window.buttons.hide_disabled_mods": "Deaktivierte Mods ausblenden",
+  "ui.main_window.buttons.show_updatable_mods": "Aktualisierbare Mods anzeigen",
+
+  // Main Window - Buttons - Update Status
+  "ui.main_window.button.update_status.generic": "Mods bereit zum Update: Zum Updaten klicken",
+  "ui.main_window.button.update_status.updating": "Suche Update...",
+  "ui.main_window.button.update_status.list_available_updates": "Verfügbare Updates: {0}",
+  "ui.main_window.button.update_status.failed": "Mod Update Check fehlgeschlagen",
+
+  // Main Window - ComboBox
+  "ui.main_window.combobox.mod_name": "Mod Name",
+  "ui.main_window.combobox.author": "Author",
+  "ui.main_window.combobox.requirements": "Voraussetzungen",
+
+  // Settings Window - Labels
+  "ui.settings_window.labels.smapi_path": "SMAPI Pfad",
+  "ui.settings_window.labels.themes": "Themes",
+  "ui.settings_window.labels.languages": "Sprache",
+  "ui.settings_window.labels.miscellaneous": "Sonstiges",
+
+  // Settings Window - Buttons
+  "ui.settings_window.buttons.ignore_hidden_folders": "Versteckte Ordner ignorieren",
+  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Profilbezogene Mod Konfig aktivieren",
+
+  // Settings Window - Tooltips
+  "ui.settings_window.tooltips.smapi": "Der Dateipfad von StardewModdingAPI",
+  "ui.settings_window.tooltips.mod_folder_path": "Der Ordnerpfad des Mod Ordners",
+  "ui.settings_window.tooltips.theme": "Das aktuelle Thema von Stardrop",
+  "ui.settings_window.tooltips.language": "Die aktuelle Sprache von Stardrop",
+  "ui.settings_window.tooltips.ignore_hidden_folders": "Wenn diese Option aktiviert ist, ignoriert Stardrop alle Mods, deren übergeordneter Ordner mit \".\" beginnt.",
+  "ui.settings_window.tooltips.enable_profile_specific_configs": "Wenn diese Option aktiviert ist, speichert Stardrop die config.json von Mods und stellt sie wieder her, wenn Profile gewechselt werden.",
+  "ui.settings_window.tooltips.save_changes": "Änderungen Speichern",
+  "ui.settings_window.tooltips.cancel_changes": "Abbrechen",
+
+  // Warnings
+  "ui.warning.unable_to_add_profile": "{0} kann nicht hinzugefügt werden, es existiert bereits ein Profil unter diesem Namen!",
+  "ui.warning.given_mod_folder_does_not_exist": "Der angegebene Ordnerpfad existiert nicht.\n\nZum vorherigen Pfad zurückkehren.",
+  "ui.warning.given_invalid_smapi_executable": "Die angegebene Datei ist nicht {0}\n\nZum vorherigen Pfad zurückkehren.",
+  "ui.warning.stardrop_locked": "Stardrop ist gesperrt, solange die SMAPI läuft. Alle vorgenommenen Änderungen werden erst nach dem Schließen von SMAPI übernommen.",
+
+  // Messages
+  "ui.message.confirm_mod_deletion": "Bist du sicher, dass du {0} löschen möchtest? Dies kann nicht rückgängig gemacht werden.",
+  "ui.message.unsaved_config_changes": "Nicht gespeicherte Änderungen der Mod Konfig für das Profil {0}.\n\nWollen Sie die Änderungen speichern?",
+  "ui.message.stardrop_update_available": "Für Stardrop ist ein Update (v{0}) verfügbar. Möchtest du es jetzt herunterladen?",
+  "ui.message.confirm_bulk_change_mod_states": "{0} alle Mods?\n\nAnmerkung: Dies kann nicht rückgängig gemacht werden.",
+  "ui.message.confirm_mod_update_method": "Es wurde eine frühere Version von {0} erkannt. Möchtest du die vorherige Installation löschen?\n\nHinweis: Das Löschen früherer Versionen wird normalerweise empfohlen, allerdings gehen dabei alle Konfig Dateien verloren.",
+
+  // Window Names
+  "ui.window.setting.name": "Einstellungen",
+  "ui.window.profiles.name": "Profile",
+  "ui.window.profile_naming.name": "Profil Name",
+
+  // Internals
+  "internal.unknown": "Unbekannt",
+  "internal.enable": "Aktivieren",
+  "internal.disable": "Deaktivieren",
+  "internal.yes": "Ja",
+  "internal.no": "Nein",
+  "internal.ok": "OK",
+  "internal.unlock": "Entsperren"
+}
