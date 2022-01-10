@@ -24,6 +24,7 @@ namespace Stardrop.Utilities
             Portuguese,
             Russian,
             Spanish,
+            Thai,
             Turkish
         }
 
@@ -40,6 +41,7 @@ namespace Stardrop.Utilities
             pt,
             ru,
             es,
+            th,
             tr
         }
         public Dictionary<Language, LanguageAbbreviation> LanguageNameToAbbreviations = new();
