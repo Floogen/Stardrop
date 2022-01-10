@@ -1,0 +1,122 @@
+{
+  // Main Window - Menu Items
+  "ui.main_window.menu_items.add_mod": "Adicionar mod",
+  "ui.main_window.menu_items.start_smapi": "Iniciar SMAPI",
+  "ui.main_window.menu_items.exit": "Sair",
+  "ui.main_window.menu_items.settings": "Configurações",
+  "ui.main_window.menu_items.stardrop_log_file": "Arquivo de registros do Stardrop",
+  "ui.main_window.menu_items.smapi_log_file": "Arquivo de registros do SMAPI",
+  "ui.main_window.menu_items.refresh_mod_list": "Atualizar a lista de mods",
+  "ui.main_window.menu_items.check_for_mod_updates": "Verificar atualizações dos mods",
+  "ui.main_window.menu_items.enable_all_mods": "Habilitar todos os mods",
+  "ui.main_window.menu_items.disable_all_mods": "Desabilitar todos os mods",
+  "ui.main_window.menu_items.check_for_stardrop_update": "Verificar atualizações do Stardrop",
+  "ui.main_window.menu_items.stardrop_repository": "Repositório do Stardrop",
+
+  // Main Window - Menu Items - Context
+  "ui.main_window.menu_items.context.cancel": "Cancelar",
+  "ui.main_window.menu_items.context.open_containing_folder": "Abrir pasta do mod",
+  "ui.main_window.menu_items.context.delete": "Excluir",
+
+  // Main Window - Menu Headers
+  "ui.main_window.menu_headers.file": "Arquivo",
+  "ui.main_window.menu_headers.view": "Ver",
+  "ui.main_window.menu_headers.tools": "Ferramentas",
+
+  "ui.main_window.menu_headers.enabled": "Habilitado",
+  "ui.main_window.menu_headers.mod_name": "Nome do mod",
+  "ui.main_window.menu_headers.unique_id": "ID único",
+  "ui.main_window.menu_headers.author": "Autor",
+  "ui.main_window.menu_headers.missing_requirements": "Requisitos faltantes",
+  "ui.main_window.menu_headers.version": "Versão",
+  "ui.main_window.menu_headers.configuration": "Configuração",
+  "ui.main_window.menu_headers.status": "Status",
+
+  // Main Window - Labels
+  "ui.main_window.labels.profile": "Perfil",
+  "ui.main_window.labels.enabled_mods": "Mods habilitados: ",
+  "ui.main_window.labels.total_mods": "Total de mods: ",
+  "ui.main_window.labels.filter": "Filtrar",
+
+  // Main Window - Hyperlinks
+  "ui.main_window.hyperlinks.click_to_open": "Clique para abrir",
+  "ui.main_window.hyperlinks.update_available": "Atualização disponível ({0})",
+  "ui.main_window.hyperlinks.unofficial_update_available": "Atualização não oficial disponível ({0})",
+  "ui.main_window.hyperlinks.broken_compatibility_issue": "[Defeituoso] Problema de compatibilidade",
+
+  // Main Window - Buttons
+  "ui.main_window.buttons.save_configs": "Salvar configurações",
+  "ui.main_window.buttons.hide_disabled_mods": "Ocultar mods desabilitados",
+  "ui.main_window.buttons.show_updatable_mods": "Exibir mods atualizáveis",
+
+  // Main Window - Buttons - Update Status
+  "ui.main_window.button.update_status.generic": "Mods prontos para atualização: Clique para verificar novamente",
+  "ui.main_window.button.update_status.updating": "Atualizando...",
+  "ui.main_window.button.update_status.list_available_updates": "Mods prontos para atualizar: {0}",
+  "ui.main_window.button.update_status.failed": "Falha na verificação de atualizações",
+
+  // Main Window - ComboBox
+  "ui.main_window.combobox.mod_name": "Nome do mod",
+  "ui.main_window.combobox.author": "Autor",
+  "ui.main_window.combobox.requirements": "Requisitos",
+
+  // Settings Window - Labels
+  "ui.settings_window.labels.smapi_path": "Caminho do SMAPI",
+  "ui.settings_window.labels.mod_path": "Caminho da pasta dos mods",
+  "ui.settings_window.labels.themes": "Temas",
+  "ui.settings_window.labels.languages": "Idiomas",
+  "ui.settings_window.labels.miscellaneous": "Diversos",
+
+  // Settings Window - Buttons
+  "ui.settings_window.buttons.ignore_hidden_folders": "Ignorar pastas ocultas",
+  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Habilitar configurações de mods específicas por perfil",
+
+  // Settings Window - Tooltips
+  "ui.settings_window.tooltips.smapi": "O caminho para o arquivo do StardewModdingAPI",
+  "ui.settings_window.tooltips.mod_folder_path": "O caminho para a pasta de mods",
+  "ui.settings_window.tooltips.theme": "O tema atual do Stardrop",
+  "ui.settings_window.tooltips.language": "O idioma atual do Stardrop",
+  "ui.settings_window.tooltips.ignore_hidden_folders": "Se estiver marcado, o Stardrop irá ignorar qualquer mod cuja pasta raiz comece com \".\"",
+  "ui.settings_window.tooltips.enable_profile_specific_configs": "Se estiver marcado, o Stardrop irá salvar e restaurar arquivos config.json dos mods, ao alterar o perfil",
+  "ui.settings_window.tooltips.save_changes": "Salvar alterações",
+  "ui.settings_window.tooltips.cancel_changes": "Cancelar",
+
+  // Warnings
+  "ui.warning.unable_to_add_profile": "Não foi possível adicionar {0}, já existe um perfil com esse nome.",
+  "ui.warning.given_mod_folder_does_not_exist": "O caminho da pasta do mod não existe.\n\nRevertendo para o caminho anterior.",
+  "ui.warning.given_invalid_smapi_executable": "O arquivo fornecido não é {0}\n\nRevertendo para o caminho anterior.",
+  "ui.warning.stardrop_locked": "O Stardrop fica travado enquanto o SMAPI estiver em execução. Qualquer alteração só será ativada quando o SMAPI for fechado.",
+
+  "ui.warning.unable_to_locate_smapi": "Não foi possível localizar o StardewModdingAPI.exe\n\nPor favor, defina o caminho correto do arquivo em\nVer > Configurações",
+  "ui.warning.mod_config_saved_but_not_enabled": "As configurações do mod foram salvas no perfil {0}, entretanto, a opção de configurações específicas de mods por perfil não está habilitada.\n\nVá até Ver > Configurações e marque a opção \"Habilitar configurações de mods específicas por perfil\" para que o Stardrop salve e aplique as alterações nas configurações dos mods automaticamente.",
+  "ui.warning.unable_to_determine_profile": "Não foi possível determinar o perfil selecionado.\n\nO SMAPI não será iniciado.",
+  "ui.warning.stardrop_up_to_date": "O Stardrop está atualizado.\n\n{0} é a última versão.",
+  "ui.warning.update_cooldown_minutes": "Atualizações só podem ser solicitadas a cada 5 minutos.\n\nPor favor, tente novamente em {0} minuto(s).",
+  "ui.warning.update_cooldown_seconds": "Atualizações só podem ser solicitadas a cada 5 minutos.\n\nPor favor, tente novamente em {0} segundo(s).",
+  "ui.warning.unable_to_locate_log": "Não foi possível localizar o SMAPI-latest.txt! É necessário que o SMAPI seja executado corretamente ao menos uma vez para que o Stardrop detecte os detalhes do jogo.",
+  "ui.warning.unable_to_read_log": "Não foi possível ler o arquivo de registros do SMAPI, para obter a versão do jogo.\n\nNão será possível fazer a verificação de atualizações dos mods.",
+  "ui.warning.no_manifest": "O manifest.json não foi encontrado em \"{0}\"",
+  "ui.warning.unable_to_load_mod": "Não foi possível abrir o arquivo localizado em \"{0}\".\n\nVeja o arquivo de registros para mais informações.",
+
+  // Messages
+  "ui.message.confirm_mod_deletion": "Tem certeza que você deseja excluir {0}? Isso não poderá ser desfeito.",
+  "ui.message.unsaved_config_changes": "Foram detectadas alterações não salvas nas configurações de mods do perfil {0}.\n\nDeseja salvar essas alterações?",
+  "ui.message.stardrop_update_available": "Existe uma atualização (v{0}) disponível para o Stardrop.\n\nDeseja baixá-la agora?",
+  "ui.message.confirm_bulk_change_mod_states_enable": "Habilitar todos os mods?\n\nNota: Isso não pode ser desfeito.",
+  "ui.message.confirm_bulk_change_mod_states_disable": "Desabilitar todos os mods?\n\nNota: Isso não pode ser desfeito.",
+  "ui.message.confirm_mod_update_method": "Foi detectada uma versão anterior de {0}. Deseja limpar a instalação anterior?\n\nNota: Apesar de ser geralmente recomendável limpar a versão anterior, ao fazer isso, os arquivos de configuração desse mod serão perdidos.",
+
+  // Window Names
+  "ui.window.setting.name": "Configurações",
+  "ui.window.profiles.name": "Perfis",
+  "ui.window.profile_naming.name": "Nome do perfil",
+
+  // Internals
+  "internal.unknown": "Desconhecido",
+  "internal.enable": "Habilitado",
+  "internal.disable": "Desabilitado",
+  "internal.yes": "Sim",
+  "internal.no": "Não",
+  "internal.ok": "OK",
+  "internal.unlock": "Destravar"
+}
