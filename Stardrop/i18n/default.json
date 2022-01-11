@@ -56,6 +56,8 @@
   "ui.main_window.button.update_status.failed": "Mod Update Check Failed",
 
   // Main Window - ComboBox
+  "ui.main_window.combobox.show_all_mods": "Show All Mods",
+  "ui.main_window.combobox.hide_enabled_mods": "Hide Enabled Mods",
   "ui.main_window.combobox.mod_name": "Mod Name",
   "ui.main_window.combobox.author": "Author",
   "ui.main_window.combobox.requirements": "Requirements",
