@@ -479,15 +479,15 @@ namespace Stardrop.ViewModels
             }
             if (!String.IsNullOrEmpty(_filterText) && !String.IsNullOrEmpty(_columnFilter))
             {
-                if (_columnFilter == "Mod Name" && !mod.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                if (_columnFilter == Program.translation.Get("ui.main_window.combobox.mod_name") && !mod.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
-                else if (_columnFilter == "Author" && !mod.Author.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.author") && !mod.Author.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
-                else if (_columnFilter == "Requirements" && !mod.Requirements.Any(r => r.UniqueID.Equals(_filterText, StringComparison.OrdinalIgnoreCase)))
+                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.requirements") && !mod.Requirements.Any(r => r.UniqueID.Equals(_filterText, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
