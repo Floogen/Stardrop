@@ -404,7 +404,14 @@ namespace Stardrop.ViewModels
         {
             foreach (var configInfo in pendingConfigUpdates)
             {
-                profile.PreservedModConfigs[configInfo.UniqueId] = JsonDocument.Parse(configInfo.Data);
+                try
+                {
+                    profile.PreservedModConfigs[configInfo.UniqueId] = JsonDocument.Parse(configInfo.Data);
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Failed to read config for the mod {configInfo.UniqueId} due to the following error:\n{ex}");
+                }
             }
         }
 
@@ -423,8 +430,15 @@ namespace Stardrop.ViewModels
             // Merge any existing preserved configs
             foreach (var configInfo in pendingConfigUpdates.Where(c => profile.PreservedModConfigs.ContainsKey(c.UniqueId.ToLower()) && File.Exists(c.FilePath)))
             {
-                // Apply the changes to the config file
-                File.WriteAllText(configInfo.FilePath, configInfo.Data);
+                try
+                {
+                    // Apply the changes to the config file
+                    File.WriteAllText(configInfo.FilePath, configInfo.Data);
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Failed to write config for the mod {configInfo.UniqueId} due to the following error:\n{ex}");
+                }
             }
 
             return true;
