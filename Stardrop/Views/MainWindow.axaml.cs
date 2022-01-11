@@ -110,10 +110,10 @@ namespace Stardrop.Views
             // Handle filtering via textbox
             this.FindControl<TextBox>("searchBox").AddHandler(KeyUpEvent, SearchBox_KeyUp);
 
-            // Handle filtering by filterColumnBox
-            var filterColumnBox = this.FindControl<ComboBox>("filterColumnBox");
-            filterColumnBox.SelectedIndex = 0;
-            filterColumnBox.SelectionChanged += FilterComboBox_SelectionChanged;
+            // Handle filtering by searchFilterColumnBox
+            var searchFilterColumnBox = this.FindControl<ComboBox>("searchFilterColumnBox");
+            searchFilterColumnBox.SelectedIndex = 0;
+            searchFilterColumnBox.SelectionChanged += FilterComboBox_SelectionChanged;
 
             // Have to register this even here, as MacOS doesn't detect it via axaml during build
             this.PropertyChanged += MainWindow_PropertyChanged;
@@ -368,15 +368,15 @@ namespace Stardrop.Views
             // Ensure the ColumnFilter is set
             if (String.IsNullOrEmpty(_viewModel.ColumnFilter))
             {
-                var filterColumnBox = this.FindControl<ComboBox>("filterColumnBox");
-                _viewModel.ColumnFilter = (filterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
+                var searchFilterColumnBox = this.FindControl<ComboBox>("searchFilterColumnBox");
+                _viewModel.ColumnFilter = (searchFilterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
             }
         }
 
         private void FilterComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var filterColumnBox = (e.Source as ComboBox);
-            _viewModel.ColumnFilter = (filterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
+            var searchFilterColumnBox = (e.Source as ComboBox);
+            _viewModel.ColumnFilter = (searchFilterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
         }
 
         private void HideDisabledModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
