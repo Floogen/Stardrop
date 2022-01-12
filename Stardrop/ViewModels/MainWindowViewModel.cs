@@ -493,7 +493,7 @@ namespace Stardrop.ViewModels
                 {
                     return false;
                 }
-                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.requirements") && !mod.Requirements.Any(r => r.UniqueID.Equals(_filterText, StringComparison.OrdinalIgnoreCase)))
+                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.requirements") && !mod.HardRequirements.Any(r => r.Name is null || r.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)) && !mod.MissingRequirements.Any(r => r.Name is null || r.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }

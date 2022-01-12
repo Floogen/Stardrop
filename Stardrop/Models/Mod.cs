@@ -44,8 +44,9 @@ namespace Stardrop.Models
         public Config? Config { get; set; }
         public bool HasConfig { get { return Config is not null; } }
         private List<ManifestDependency> _requirements { get; set; }
-        public List<ManifestDependency> Requirements { get { return _requirements; } set { _requirements = value; NotifyPropertyChanged("Requirements"); NotifyPropertyChanged("MissingRequirements"); } }
-        public List<ManifestDependency> MissingRequirements { get { return _requirements.Where(r => r.IsMissing && r.IsRequired).ToList(); } }
+        public List<ManifestDependency> Requirements { get { return _requirements; } set { _requirements = value; NotifyPropertyChanged("Requirements"); NotifyPropertyChanged("MissingRequirements"); NotifyPropertyChanged("HardRequirements"); } }
+        public List<ManifestDependency> MissingRequirements { get { return _requirements is null ? null : _requirements.Where(r => !String.IsNullOrEmpty(r.Name) && r.IsMissing && r.IsRequired).ToList(); } }
+        public List<ManifestDependency> HardRequirements { get { return _requirements is null ? null : _requirements.Where(r => !String.IsNullOrEmpty(r.Name) && !r.IsMissing && r.IsRequired).ToList(); } }
         private string _uri { get; set; }
         public string Uri { get { return _uri; } set { _uri = value; NotifyPropertyChanged("Uri"); } }
         private bool _isEnabled { get; set; }
