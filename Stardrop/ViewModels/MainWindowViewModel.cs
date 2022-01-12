@@ -379,7 +379,8 @@ namespace Stardrop.ViewModels
                                 continue;
                             }
 
-                            pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = Path.Combine(mod.ModFileInfo.DirectoryName, "config.json"), Data = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]) });
+                            mod.Config = new Config() { UniqueId = modId, FilePath = Path.Combine(mod.ModFileInfo.DirectoryName, "config.json"), Data = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]) };
+                            pendingConfigUpdates.Add(mod.Config);
                         }
                         else
                         {

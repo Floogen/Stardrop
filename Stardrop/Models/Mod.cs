@@ -41,7 +41,8 @@ namespace Stardrop.Models
             }
         }
         public string Author { get; set; }
-        public Config? Config { get; set; }
+        public Config? _config { get; set; }
+        public Config? Config { get { return _config; } set { _config = value; NotifyPropertyChanged("Config"); NotifyPropertyChanged("HasConfig"); } }
         public bool HasConfig { get { return Config is not null; } }
         private List<ManifestDependency> _requirements { get; set; }
         public List<ManifestDependency> Requirements { get { return _requirements; } set { _requirements = value; NotifyPropertyChanged("Requirements"); NotifyPropertyChanged("MissingRequirements"); NotifyPropertyChanged("HardRequirements"); } }
