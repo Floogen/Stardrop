@@ -355,7 +355,7 @@ namespace Stardrop.ViewModels
             }
         }
 
-        internal List<Config> GetPendingConfigUpdates(Profile profile, bool inverseMerge = false)
+        internal List<Config> GetPendingConfigUpdates(Profile profile, bool inverseMerge = false, bool excludeMissingConfigs = false)
         {
             // Merge any existing preserved configs
             List<Config> pendingConfigUpdates = new List<Config>();
@@ -374,7 +374,7 @@ namespace Stardrop.ViewModels
                         // Write the archived config, if the current one doesn't exist
                         if (mod.Config is null)
                         {
-                            if (String.IsNullOrEmpty(mod.ModFileInfo.DirectoryName))
+                            if (excludeMissingConfigs || String.IsNullOrEmpty(mod.ModFileInfo.DirectoryName))
                             {
                                 continue;
                             }
