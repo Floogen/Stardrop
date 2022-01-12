@@ -2,6 +2,7 @@ using Avalonia.Collections;
 using ReactiveUI;
 using Stardrop.Models;
 using Stardrop.Models.Data;
+using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
 using Stardrop.Utilities;
 using System;
@@ -37,8 +38,8 @@ namespace Stardrop.ViewModels
         public int EnabledModCount { get { return _enabledModCount; } set { this.RaiseAndSetIfChanged(ref _enabledModCount, value); } }
         public DataGridCollectionView DataView { get; set; }
 
-        private bool _hideDisabledMods;
-        public bool HideDisabledMods { get { return _hideDisabledMods; } set { _hideDisabledMods = value; UpdateFilter(); } }
+        private DisplayFilter _disabledModFilter;
+        public DisplayFilter DisabledModFilter { get { return _disabledModFilter; } set { _disabledModFilter = value; UpdateFilter(); } }
 
         private bool _showUpdatableMods;
         public bool ShowUpdatableMods { get { return _showUpdatableMods; } set { _showUpdatableMods = value; UpdateFilter(); } }
@@ -469,10 +470,15 @@ namespace Stardrop.ViewModels
         {
             var mod = item as Mod;
 
-            if (_hideDisabledMods && !mod.IsEnabled)
+            if (_disabledModFilter == DisplayFilter.Show && mod.IsEnabled)
             {
                 return false;
             }
+            else if (_disabledModFilter == DisplayFilter.Hide && !mod.IsEnabled)
+            {
+                return false;
+            }
+
             if (_showUpdatableMods && String.IsNullOrEmpty(mod.ParsedStatus))
             {
                 return false;
