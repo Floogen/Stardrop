@@ -1,0 +1,126 @@
+{
+	// Main Window - Menu Items
+	"ui.main_window.menu_items.add_mod": "Mod Ekle",
+	"ui.main_window.menu_items.start_smapi": "SMAPI'yi aç",
+	"ui.main_window.menu_items.exit": "Çıkış",
+	"ui.main_window.menu_items.settings": "Ayarlar",
+	"ui.main_window.menu_items.stardrop_log_file": "Stardrop Log Dosyası",
+	"ui.main_window.menu_items.smapi_log_file": "SMAPI Log Dosyası",
+	"ui.main_window.menu_items.refresh_mod_list": "Mod Listesini Tazele",
+	"ui.main_window.menu_items.check_for_mod_updates": "Mod Güncellemelerini Kontrol Et",
+	"ui.main_window.menu_items.enable_all_mods": "Tüm Modları Etkinleştir",
+	"ui.main_window.menu_items.disable_all_mods": "Tüm Modları Devre Dışı Bırak",
+	"ui.main_window.menu_items.check_for_stardrop_update": "Stardrop Güncellemesini Kontrol Et",
+	"ui.main_window.menu_items.stardrop_repository": "Stardrop GitHub Deposu",
+
+	// Main Window - Menu Items - Context
+	"ui.main_window.menu_items.context.show_requirements": "Gereksinimleri Gizle",
+	"ui.main_window.menu_items.context.hide_requirements": "Gereksinimleri Göster",
+	"ui.main_window.menu_items.context.cancel": "Vazgeç",
+	"ui.main_window.menu_items.context.open_containing_folder": "İçeren Klasörü Aç",
+	"ui.main_window.menu_items.context.delete": "Sil",
+
+	// Main Window - Menu Headers
+	"ui.main_window.menu_headers.file": "Dosya",
+	"ui.main_window.menu_headers.view": "Görünüm",
+	"ui.main_window.menu_headers.tools": "Araçlar",
+
+	"ui.main_window.menu_headers.enabled": "Etkin",
+	"ui.main_window.menu_headers.mod_name": "Mod İsmi",
+	"ui.main_window.menu_headers.unique_id": "Özel ID",
+	"ui.main_window.menu_headers.author": "Yapımcı",
+	"ui.main_window.menu_headers.requirements": "Gereksinimler",
+	"ui.main_window.menu_headers.missing_requirements": "Eksik Gereksinimler",
+	"ui.main_window.menu_headers.version": "Sürüm",
+	"ui.main_window.menu_headers.configuration": "Yapılandırma",
+	"ui.main_window.menu_headers.status": "Durum",
+
+	// Main Window - Labels
+	"ui.main_window.labels.profile": "Profil",
+	"ui.main_window.labels.enabled_mods": "Etkin Modlar: ",
+	"ui.main_window.labels.total_mods": "Toplam Mod: ",
+	"ui.main_window.labels.filter": "Filtre",
+
+	// Main Window - Hyperlinks
+	"ui.main_window.hyperlinks.click_to_open": "Açmak için tıkla",
+	"ui.main_window.hyperlinks.update_available": "Güncelleme Mevcut ({0})",
+	"ui.main_window.hyperlinks.unofficial_update_available": "Resmi Olmayan Güncelleme Mevcut ({0})",
+	"ui.main_window.hyperlinks.broken_compatibility_issue": "[Bozuk] Uyumluluk Sorunu",
+
+	// Main Window - Buttons
+	"ui.main_window.buttons.save_configs": "Yapılandırmaları Kaydet",
+	"ui.main_window.buttons.hide_disabled_mods": "Devre Dışı Modları Gizle",
+	"ui.main_window.buttons.show_updatable_mods": "Güncellenebilir Modları Göster",
+
+	// Main Window - Buttons - Update Status
+	"ui.main_window.button.update_status.generic": "Güncellenmeye Hazır Modlar: Tazelemek için Tıkla",
+	"ui.main_window.button.update_status.updating": "Güncelleniyor...",
+	"ui.main_window.button.update_status.list_available_updates": "Güncellenmeye Hazır Modlar: {0}",
+	"ui.main_window.button.update_status.failed": "Mod Güncelleme Kontrolü Başarısız",
+
+	// Main Window - ComboBox
+	"ui.main_window.combobox.show_all_mods": "Tüm Modları Göster",
+	"ui.main_window.combobox.hide_enabled_mods": "Etkin Modları Gizle",
+	"ui.main_window.combobox.mod_name": "Mod İsmi",
+	"ui.main_window.combobox.author": "Yapımcı",
+	"ui.main_window.combobox.requirements": "Gereksinimler",
+
+	// Settings Window - Labels
+	"ui.settings_window.labels.smapi_path": "SMAPI Dosya Yolu",
+	"ui.settings_window.labels.mod_path": "Mod Klasör Yolu",
+	"ui.settings_window.labels.themes": "Temalar",
+	"ui.settings_window.labels.languages": "Diller",
+	"ui.settings_window.labels.miscellaneous": "Diğer",
+
+	// Settings Window - Buttons
+	"ui.settings_window.buttons.ignore_hidden_folders": "Gizli Dosyaları Görmezden Gel",
+	"ui.settings_window.buttons.enable_profile_specific_mod_configs": "Profile Özel Mod Yapılandırmalarını Etkinleştir",
+
+	// Settings Window - Tooltips
+	"ui.settings_window.tooltips.smapi": "StardewModdingAPI'nin dosya yolu",
+	"ui.settings_window.tooltips.mod_folder_path": "Mod klasörüne giden dosya yolu",
+	"ui.settings_window.tooltips.theme": "Stardrop'un mevcut teması",
+	"ui.settings_window.tooltips.language": "Stardrop'un mevcut dili",
+	"ui.settings_window.tooltips.ignore_hidden_folders": "Eğer işaretlenirse, Stardrop \".\" ile başlayan üst klasörleri olan modları görmezden gelecek.",
+	"ui.settings_window.tooltips.enable_profile_specific_configs": "Eğer işaretlenirse, Stardrop profiller değiştirildiğinde modların config.json dosyalarını kaydedecek ve yenileyecek.",
+	"ui.settings_window.tooltips.save_changes": "Değşiklikleri Kaydet",
+	"ui.settings_window.tooltips.cancel_changes": "Vazgeç",
+
+	// Warnings
+	"ui.warning.unable_to_add_profile": "{0} eklenemiyor, bu isim altında bir profil zaten var!",
+	"ui.warning.given_mod_folder_does_not_exist": "Verilen mod klasör yolu mevcut değil.\n\nEski dosya yoluna dönülüyor.",
+	"ui.warning.given_invalid_smapi_executable": "Verilen dosya {0} değil.\n\nEski dosya yoluna dönülüyor.",
+	"ui.warning.stardrop_locked": "Stardrop, SMAPI çalışırken kilitlidir. SMAPI kapatılana kadar yapılan hiçbir değişiklik etkisini göstermeyecek.",
+
+	"ui.warning.unable_to_locate_smapi": "StardewModdingAPI.exe konumu bulunamıyor\n\nLütfen şuranın altında doğru dosya yolunu ayarlayın\nGörünüm > Ayarlar",
+	"ui.warning.mod_config_saved_but_not_enabled": "Profil {0} için mod yapılandırma ayarları kaydedildi, yine de profile özel mod yapılandırma ayarları devre dışı.\n\nGörüntü > Ayarlar kısmına gidin ve Stardrop'un mod yapılandırma seçeneklerini otomatik olarak kaydetmesi ve uygulaması için \"Profile Özel Mod Yapılandırmalarını Etkinleştir\" seçeneğini işaretleyin.",
+	"ui.warning.unable_to_determine_profile": "Seçilen profil ayarlanamıyor.\n\nSMAPI başlatılmayacak.",
+	"ui.warning.stardrop_up_to_date": "Stardrop güncel.\n\nSon sürüm {0}.",
+	"ui.warning.update_cooldown_minutes": "Güncellemeler sadece 5 dakikada bir kez istenebilir.\n\nLütfen {0} dakika içerisinde tekrar deneyin.",
+	"ui.warning.update_cooldown_seconds": "Güncellemeler sadece 5 dakikada bir kez istenebilir.\n\nLütfen {0} saniye içerisinde tekrar deneyin.",
+	"ui.warning.unable_to_locate_log": "SMAPI-latest.txt dosyası bulunamıyor! Stardrop'un oyunla ilgili detayları tespit edebilmesi için SMAPI en az bir kez başarılı bir şekilde çalıştırılmak zorunda.",
+	"ui.warning.unable_to_read_log": "Oyun versiyonunu görmek için SMAPI'nin log dosyası okunamıyor.\n\nMod güncellemeleri kontrol edilmeyecek.",
+	"ui.warning.no_manifest": "\"{0}\" konumunda manifest.json bulunamadı.",
+	"ui.warning.unable_to_load_mod": "\"{0}\" konumunda bulunan dosya yüklenemedi.\n\nDaha fazla bilgi için log dosyasına bakın.",
+
+	// Messages
+	"ui.message.confirm_mod_deletion": "{0} modunu silmek istediğinden emin misin? Bu işlem geri alınamaz.",
+	"ui.message.unsaved_config_changes": "{0} profili için kaydedilmemiş mod yapılandırma değişiklikleri tespit edildi.\n\nDeğişiklikleri kaydetmek ister misin?",
+	"ui.message.stardrop_update_available": "Stardrop için (v{0}) güncelleme mevcut.\n\nŞimdi indirmek ister misin?",
+	"ui.message.confirm_bulk_change_mod_states": "Tüm modlar {0}?\n\nNot: Bu işlem geri alınamaz.",
+	"ui.message.confirm_mod_update_method": "{0} modunun eski bir sürümü tespit edildi. Eski sürümü temizlemek ister misin?\n\nNot: Eski sürümleri temizlemek genellikle önerilir, ancak her türlü yapılandırma dosyası kaybolacaktır.",
+
+	// Window Names
+	"ui.window.setting.name": "Ayarlar",
+	"ui.window.profiles.name": "Profiller",
+	"ui.window.profile_naming.name": "Profil İsmi",
+
+	// Internals
+	"internal.unknown": "Bilinmiyor",
+	"internal.enable": "Etkinleştir",
+	"internal.disable": "Devre Dışı Bırak",
+	"internal.yes": "Evet",
+	"internal.no": "Hayır",
+	"internal.ok": "Tamam",
+	"internal.unlock": "Kilidi Aç"
+}
