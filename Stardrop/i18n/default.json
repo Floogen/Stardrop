@@ -68,6 +68,7 @@
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Path",
   "ui.settings_window.labels.mod_path": "Mod Folder Path",
+  "ui.settings_window.labels.mod_install": "Stardrop Installed Mods Path",
   "ui.settings_window.labels.themes": "Themes",
   "ui.settings_window.labels.languages": "Languages",
   "ui.settings_window.labels.miscellaneous": "Miscellaneous",
@@ -79,6 +80,7 @@
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "The file path of StardewModdingAPI",
   "ui.settings_window.tooltips.mod_folder_path": "The folder path of the mod folder",
+  "ui.settings_window.tooltips.mod_install_path": "The folder path which Stardrop will place newly installed mods. Must be under the folder given in \"Mod Folder Path\".",
   "ui.settings_window.tooltips.theme": "The current theme of Stardrop",
   "ui.settings_window.tooltips.language": "The current language of Stardrop",
   "ui.settings_window.tooltips.ignore_hidden_folders": "If checked, Stardrop will ignore any mods which have a parent folder that start with \".\"",
@@ -89,6 +91,8 @@
   // Warnings
   "ui.warning.unable_to_add_profile": "Unable to add {0}, a profile already exists under that name!",
   "ui.warning.given_mod_folder_does_not_exist": "The given mod folder path doesn't exist.\n\nReverting to previous path.",
+  "ui.warning.given_install_folder_not_exist": "The given Stardrop installed mods folder path doesn't exist.\n\nReverting to previous path.",
+  "ui.warning.given_install_folder_not_under_mod_folder": "The given Stardrop installed mods folder path doesn't exist under {0}\n\nReverting to previous path.",
   "ui.warning.given_invalid_smapi_executable": "The given file isn't {0}\n\nReverting to previous path.",
   "ui.warning.stardrop_locked": "Stardrop is locked while the SMAPI is running. Any changes made will not reflect until SMAPI is closed.",
 
