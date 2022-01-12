@@ -1169,7 +1169,7 @@ namespace Stardrop.Views
                         // If the archive doesn't have a manifest, warn the user
                         if (manifest is not null)
                         {
-                            string installPath = Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods");
+                            string installPath = Program.settings.ModInstallPath;
                             if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null)
                             {
                                 if (!manifest.DeleteOldVersion)
