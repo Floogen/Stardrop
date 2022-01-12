@@ -322,7 +322,7 @@
 		</Grid.ColumnDefinitions>
 
 		<Border Name="menuBorder" Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
-			<Menu Name="mainMenu" IsVisible="{Binding ShowMainMenu}" Width="190" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
+			<Menu Name="mainMenu" IsVisible="{Binding ShowMainMenu}" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
 				<Image Name="menuIcon" Source="/Assets/icon.ico" Stretch="None"/>
 				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.file}" Margin="-10 0 0 0" Classes="Bar">
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mod}" Click="AddMod_Click" Classes="Bar"/>
