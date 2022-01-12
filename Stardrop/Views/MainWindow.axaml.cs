@@ -238,6 +238,11 @@ namespace Stardrop.Views
             }
         }
 
+        private void ModGridMenuColumn_ChangeRequirementVisibility(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            _viewModel.ShowRequirements = !_viewModel.ShowRequirements;
+        }
+
         private void ModGridMenuRow_ChangeState(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var modGrid = this.FindControl<DataGrid>("modGrid");
