@@ -14,6 +14,8 @@
   "ui.main_window.menu_items.stardrop_repository": "Stardrop Repository",
 
   // Main Window - Menu Items - Context
+  "ui.main_window.menu_items.context.show_requirements": "Show Requirements",
+  "ui.main_window.menu_items.context.hide_requirements": "Hide Requirements",
   "ui.main_window.menu_items.context.cancel": "Cancel",
   "ui.main_window.menu_items.context.open_containing_folder": "Open Containing Folder",
   "ui.main_window.menu_items.context.delete": "Delete",
@@ -27,6 +29,7 @@
   "ui.main_window.menu_headers.mod_name": "Mod Name",
   "ui.main_window.menu_headers.unique_id": "Unique ID",
   "ui.main_window.menu_headers.author": "Author",
+  "ui.main_window.menu_headers.requirements": "Requirements",
   "ui.main_window.menu_headers.missing_requirements": "Missing Requirements",
   "ui.main_window.menu_headers.version": "Version",
   "ui.main_window.menu_headers.configuration": "Configuration",
