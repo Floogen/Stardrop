@@ -405,7 +405,7 @@ namespace Stardrop.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Program.helper.Log($"Failed to process config.json for mod {modId}", Helper.Status.Warning);
+                    Program.helper.Log($"Failed to process config.json for mod {modId}: {ex}", Helper.Status.Warning);
                 }
             }
 
