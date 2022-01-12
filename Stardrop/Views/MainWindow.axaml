@@ -256,6 +256,9 @@
 			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="HorizontalContentAlignment" Value="Center" />
 		</Style>
+		<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
 		<Style Selector="TextBox:focus">
 			<Setter Property="Foreground" Value="White"/>
 		</Style>
@@ -390,6 +393,7 @@
 					<ContextMenu x:Key="GridColumnContextMenu" DataContext="{Binding $parent[DataGrid].DataContext}">
 						<!-- <MenuItem Header="{Binding SortText}" Click="ModGridMenuColumn_ChangeSort" />-->
 						<!-- <MenuItem Header="Hide" Click="ModGridColumnMenu_ChangeVisibility" />-->
+						<MenuItem Header="{Binding RequirementColumnState}" Click="ModGridMenuColumn_ChangeRequirementVisibility"/>
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
 					</ContextMenu>
 					<ContextMenu x:Key="GridRowContextMenu">
@@ -436,6 +440,22 @@
 							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.author}" TextAlignment="Center" />
 						</DataGridTextColumn.Header>
 					</DataGridTextColumn>
+					<DataGridTemplateColumn IsVisible="{Binding ShowRequirements}" SortMemberPath="HardRequirements.Count" CellStyleClasses="centered">
+						<DataGridTemplateColumn.Header>
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.requirements}" TextAlignment="Center" />
+						</DataGridTemplateColumn.Header>
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<ListBox Items="{Binding HardRequirements}" Background="Transparent">
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<TextBlock Text="{Binding Path=Name}" Foreground="{DynamicResource DataGridRowForeground}" />
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
 					<DataGridTemplateColumn SortMemberPath="MissingRequirements.Count" CellStyleClasses="centered">
 						<DataGridTemplateColumn.Header>
 							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.missing_requirements}" TextAlignment="Center" />
@@ -482,12 +502,19 @@
 		</Border>
 		<DockPanel Name="filterBar" Grid.Row="4" Grid.Column="0" Margin="7 0 0 5">
 			<TextBox Name="searchBox" Watermark="{i18n:Translate ui.main_window.labels.filter}" Height="10" Width="250" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
-			<ComboBox x:Name="filterColumnBox" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="150">
+			<ComboBox x:Name="searchFilterColumnBox" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="150">
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.mod_name}" />
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.author}" />
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.requirements}" />
 			</ComboBox>
-			<CheckBox Name="hideDisabledMods" Content="{i18n:Translate ui.main_window.buttons.hide_disabled_mods}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
+			<StackPanel Orientation="Horizontal" Margin="10 0 10 0">
+				<Separator Width="1" Height="15" Background="{DynamicResource HighlightBrush}" />
+			</StackPanel>
+			<ComboBox x:Name="disabledModFilterColumnBox" Margin="0 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="200">
+				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.show_all_mods}" />
+				<ComboBoxItem Content="{i18n:Translate ui.main_window.buttons.hide_disabled_mods}" />
+				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.hide_enabled_mods}" />
+			</ComboBox>
 			<CheckBox Name="showUpdatableMods" Content="{i18n:Translate ui.main_window.buttons.show_updatable_mods}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
 		</DockPanel>
 		<Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 2 0 0">

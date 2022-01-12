@@ -2,6 +2,7 @@ using Avalonia.Collections;
 using ReactiveUI;
 using Stardrop.Models;
 using Stardrop.Models.Data;
+using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
 using Stardrop.Utilities;
 using System;
@@ -37,11 +38,14 @@ namespace Stardrop.ViewModels
         public int EnabledModCount { get { return _enabledModCount; } set { this.RaiseAndSetIfChanged(ref _enabledModCount, value); } }
         public DataGridCollectionView DataView { get; set; }
 
-        private bool _hideDisabledMods;
-        public bool HideDisabledMods { get { return _hideDisabledMods; } set { _hideDisabledMods = value; UpdateFilter(); } }
+        private DisplayFilter _disabledModFilter;
+        public DisplayFilter DisabledModFilter { get { return _disabledModFilter; } set { _disabledModFilter = value; UpdateFilter(); } }
 
         private bool _showUpdatableMods;
         public bool ShowUpdatableMods { get { return _showUpdatableMods; } set { _showUpdatableMods = value; UpdateFilter(); } }
+        private bool _showRequirements;
+        public bool ShowRequirements { get { return _showRequirements; } set { this.RaiseAndSetIfChanged(ref _showRequirements, value); } }
+        public string RequirementColumnState { get { return ShowRequirements ? Program.translation.Get("ui.main_window.menu_items.context.hide_requirements") : Program.translation.Get("ui.main_window.menu_items.context.show_requirements"); } }
         private string _filterText;
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }
         private string _columnFilter;
@@ -469,25 +473,30 @@ namespace Stardrop.ViewModels
         {
             var mod = item as Mod;
 
-            if (_hideDisabledMods && !mod.IsEnabled)
+            if (_disabledModFilter == DisplayFilter.Show && mod.IsEnabled)
             {
                 return false;
             }
+            else if (_disabledModFilter == DisplayFilter.Hide && !mod.IsEnabled)
+            {
+                return false;
+            }
+
             if (_showUpdatableMods && String.IsNullOrEmpty(mod.ParsedStatus))
             {
                 return false;
             }
             if (!String.IsNullOrEmpty(_filterText) && !String.IsNullOrEmpty(_columnFilter))
             {
-                if (_columnFilter == "Mod Name" && !mod.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                if (_columnFilter == Program.translation.Get("ui.main_window.combobox.mod_name") && !mod.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
-                else if (_columnFilter == "Author" && !mod.Author.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.author") && !mod.Author.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
-                else if (_columnFilter == "Requirements" && !mod.Requirements.Any(r => r.UniqueID.Equals(_filterText, StringComparison.OrdinalIgnoreCase)))
+                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.requirements") && !mod.HardRequirements.Any(r => r.Name is null || r.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)) && !mod.MissingRequirements.Any(r => r.Name is null || r.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }

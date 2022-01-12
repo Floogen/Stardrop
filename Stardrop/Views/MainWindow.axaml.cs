@@ -104,16 +104,19 @@ namespace Stardrop.Views
             this.FindControl<Button>("editProfilesButton").Click += EditProfilesButton_Click;
             this.FindControl<Button>("saveConfigsToProfile").Click += SaveConfigButton_Click;
             this.FindControl<Button>("smapiButton").Click += Smapi_Click;
-            this.FindControl<CheckBox>("hideDisabledMods").Click += HideDisabledModsButton_Click;
             this.FindControl<CheckBox>("showUpdatableMods").Click += ShowUpdatableModsButton_Click;
 
             // Handle filtering via textbox
             this.FindControl<TextBox>("searchBox").AddHandler(KeyUpEvent, SearchBox_KeyUp);
 
-            // Handle filtering by filterColumnBox
-            var filterColumnBox = this.FindControl<ComboBox>("filterColumnBox");
-            filterColumnBox.SelectedIndex = 0;
-            filterColumnBox.SelectionChanged += FilterComboBox_SelectionChanged;
+            // Handle filtering by searchFilterColumnBox
+            var searchFilterColumnBox = this.FindControl<ComboBox>("searchFilterColumnBox");
+            searchFilterColumnBox.SelectedIndex = 0;
+            searchFilterColumnBox.SelectionChanged += FilterComboBox_SelectionChanged;
+
+            var disabledModFilterColumnBox = this.FindControl<ComboBox>("disabledModFilterColumnBox");
+            disabledModFilterColumnBox.SelectedIndex = 0;
+            disabledModFilterColumnBox.SelectionChanged += DisabledModComboBox_SelectionChanged;
 
             // Have to register this even here, as MacOS doesn't detect it via axaml during build
             this.PropertyChanged += MainWindow_PropertyChanged;
@@ -233,6 +236,11 @@ namespace Stardrop.Views
 
                 this.WindowState = WindowState.Normal;
             }
+        }
+
+        private void ModGridMenuColumn_ChangeRequirementVisibility(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            _viewModel.ShowRequirements = !_viewModel.ShowRequirements;
         }
 
         private void ModGridMenuRow_ChangeState(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -368,21 +376,34 @@ namespace Stardrop.Views
             // Ensure the ColumnFilter is set
             if (String.IsNullOrEmpty(_viewModel.ColumnFilter))
             {
-                var filterColumnBox = this.FindControl<ComboBox>("filterColumnBox");
-                _viewModel.ColumnFilter = (filterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
+                var searchFilterColumnBox = this.FindControl<ComboBox>("searchFilterColumnBox");
+                _viewModel.ColumnFilter = (searchFilterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
             }
         }
 
         private void FilterComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var filterColumnBox = (e.Source as ComboBox);
-            _viewModel.ColumnFilter = (filterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
+            var searchFilterColumnBox = (e.Source as ComboBox);
+            _viewModel.ColumnFilter = (searchFilterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
         }
 
-        private void HideDisabledModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void DisabledModComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var hideDisabledModsCheckBox = e.Source as CheckBox;
-            _viewModel.HideDisabledMods = (bool)hideDisabledModsCheckBox.IsChecked;
+            var disabledModFilterColumnBox = (e.Source as ComboBox);
+            var filterText = (disabledModFilterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
+
+            if (filterText == Program.translation.Get("ui.main_window.combobox.show_all_mods"))
+            {
+                _viewModel.DisabledModFilter = Models.Data.Enums.DisplayFilter.None;
+            }
+            else if (filterText == Program.translation.Get("ui.main_window.combobox.hide_enabled_mods"))
+            {
+                _viewModel.DisabledModFilter = Models.Data.Enums.DisplayFilter.Show;
+            }
+            else if (filterText == Program.translation.Get("ui.main_window.buttons.hide_disabled_mods"))
+            {
+                _viewModel.DisabledModFilter = Models.Data.Enums.DisplayFilter.Hide;
+            }
         }
 
         private void ShowUpdatableModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
