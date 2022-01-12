@@ -362,7 +362,7 @@ namespace Stardrop.ViewModels
             foreach (var modId in profile.EnabledModIds.Select(id => id.ToLower()))
             {
                 var mod = Mods.FirstOrDefault(m => m.UniqueId.Equals(modId, StringComparison.OrdinalIgnoreCase));
-                if (mod is null || mod.ModFileInfo is null || mod.Config is null)
+                if (mod is null || mod.ModFileInfo is null)
                 {
                     continue;
                 }
@@ -371,21 +371,34 @@ namespace Stardrop.ViewModels
                 {
                     if (profile.PreservedModConfigs.ContainsKey(modId))
                     {
-                        // Merge the config
-                        var originalJson = mod.Config.Data;
-                        var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]);
-
-                        if (originalJson != archivedJson)
+                        // Write the archived config, if the current one doesn't exist
+                        if (mod.Config is null)
                         {
-                            // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
-                            string mergedJson = inverseMerge ? JsonTools.Merge(archivedJson, originalJson) : JsonTools.Merge(originalJson, archivedJson);
-                            mod.Config.Data = mergedJson;
+                            if (String.IsNullOrEmpty(mod.ModFileInfo.DirectoryName))
+                            {
+                                continue;
+                            }
 
-                            // Apply the changes to the config file
-                            pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mergedJson });
+                            pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = Path.Combine(mod.ModFileInfo.DirectoryName, "config.json"), Data = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]) });
+                        }
+                        else
+                        {
+                            // Merge the config
+                            var originalJson = mod.Config.Data;
+                            var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]);
+
+                            if (originalJson != archivedJson)
+                            {
+                                // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
+                                string mergedJson = inverseMerge ? JsonTools.Merge(archivedJson, originalJson) : JsonTools.Merge(originalJson, archivedJson);
+                                mod.Config.Data = mergedJson;
+
+                                // Apply the changes to the config file
+                                pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mergedJson });
+                            }
                         }
                     }
-                    else
+                    else if (mod.Config is not null)
                     {
                         pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mod.Config.Data });
                     }
@@ -432,10 +445,16 @@ namespace Stardrop.ViewModels
             }
 
             // Merge any existing preserved configs
-            foreach (var configInfo in pendingConfigUpdates.Where(c => profile.PreservedModConfigs.ContainsKey(c.UniqueId.ToLower()) && File.Exists(c.FilePath)))
+            foreach (var configInfo in pendingConfigUpdates.Where(c => profile.PreservedModConfigs.ContainsKey(c.UniqueId.ToLower())))
             {
                 try
                 {
+                    var fileInfo = new FileInfo(configInfo.FilePath);
+                    if (!Directory.Exists(fileInfo.DirectoryName))
+                    {
+                        continue;
+                    }
+
                     // Apply the changes to the config file
                     File.WriteAllText(configInfo.FilePath, configInfo.Data);
                 }

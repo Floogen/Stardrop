@@ -690,6 +690,12 @@ namespace Stardrop.Views
             // Update the enabled mod folder linkage
             UpdateEnabledModsFolder(profile, enabledModsPath);
 
+            // Set the config files
+            if (Program.settings.EnableProfileSpecificModConfigs)
+            {
+                _viewModel.WriteModConfigs(profile);
+            }
+
             // Update the profile's configurations
             if (Program.settings.EnableProfileSpecificModConfigs)
             {
