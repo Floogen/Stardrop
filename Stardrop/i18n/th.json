@@ -14,6 +14,8 @@
   "ui.main_window.menu_items.stardrop_repository": "Stardrop Repository",
 
   // Main Window - Menu Items - Context
+  "ui.main_window.menu_items.context.show_requirements": "แสดงความต้องการของ Mod",
+  "ui.main_window.menu_items.context.hide_requirements": "ซ่อนความต้องการของ Mod",
   "ui.main_window.menu_items.context.cancel": "ยกเลิก",
   "ui.main_window.menu_items.context.open_containing_folder": "เปิดโฟลเดอร์",
   "ui.main_window.menu_items.context.delete": "ลบ",
@@ -27,6 +29,7 @@
   "ui.main_window.menu_headers.mod_name": "ชื่อ Mod",
   "ui.main_window.menu_headers.unique_id": "Unique ID",
   "ui.main_window.menu_headers.author": "ผู้เขียน",
+  "ui.main_window.menu_headers.requirements": "ความต้องการ",
   "ui.main_window.menu_headers.missing_requirements": "Mod ที่ไม่ได้ติดตั้ง",
   "ui.main_window.menu_headers.version": "เวอร์ชั่น",
   "ui.main_window.menu_headers.configuration": "การกำหนดค่า",
@@ -56,6 +59,8 @@
   "ui.main_window.button.update_status.failed": "ตรวจสอบการอัปเดต Mod ล้มเหลว",
 
   // Main Window - ComboBox
+  "ui.main_window.combobox.show_all_mods": "แสดง Mods ทั้งหมด",
+  "ui.main_window.combobox.hide_enabled_mods": "ซ่อน Mods ที่เปิดใช้งาน",
   "ui.main_window.combobox.mod_name": "ชื่อ Mod",
   "ui.main_window.combobox.author": "ผู้เขียน",
   "ui.main_window.combobox.requirements": "ความต้องการ",
