@@ -23,6 +23,7 @@ Stardrop has been generously translated into several languages by the following 
 * **Portuguese** - aracnus
 * **Russian** - Rongarah
 * **Thai** - ellipszist
+* **Turkish** - KediDili
 
 # Gallery
 
