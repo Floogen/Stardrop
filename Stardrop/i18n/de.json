@@ -68,6 +68,7 @@
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Pfad",
   "ui.settings_window.labels.mod_path": "Mod Ordner Pfad",
+  "ui.settings_window.labels.mod_install": "Pfad zu Stardrop Installierte Mods",
   "ui.settings_window.labels.themes": "Themes",
   "ui.settings_window.labels.languages": "Sprache",
   "ui.settings_window.labels.miscellaneous": "Sonstiges",
@@ -79,6 +80,7 @@
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "Der Dateipfad von StardewModdingAPI",
   "ui.settings_window.tooltips.mod_folder_path": "Der Ordnerpfad des Mod Ordners",
+  "ui.settings_window.tooltips.mod_install_path": "Der Ordnerpfad, in dem Stardrop neu installierte Mods platziert. Dieser muss sich in dem Ordner, der in \"Mod Folder Path\" angegeben ist befinden.",
   "ui.settings_window.tooltips.theme": "Das aktuelle Thema von Stardrop",
   "ui.settings_window.tooltips.language": "Die aktuelle Sprache von Stardrop",
   "ui.settings_window.tooltips.ignore_hidden_folders": "Wenn diese Option aktiviert ist, ignoriert Stardrop alle Mods, deren übergeordneter Ordner mit \".\" beginnt.",
@@ -89,6 +91,8 @@
   // Warnings
   "ui.warning.unable_to_add_profile": "{0} kann nicht hinzugefügt werden, es existiert bereits ein Profil unter diesem Namen!",
   "ui.warning.given_mod_folder_does_not_exist": "Der angegebene Ordnerpfad existiert nicht.\n\nZum vorherigen Pfad zurückkehren.",
+  "ui.warning.given_install_folder_not_exist": "Der angegebene Ordnerpfad in den Stardrop Mods installieren soll existiert nicht.\n\nZum vorherigen Pfad zurückkehren.",
+  "ui.warning.given_install_folder_not_under_mod_folder": "Der angegebene Ordnerpfad in den Stardrop Mods installieren soll existiert nicht unter {0}\n\nZum vorherigen Pfad zurückkehren.",
   "ui.warning.given_invalid_smapi_executable": "Die angegebene Datei ist nicht {0}\n\nZum vorherigen Pfad zurückkehren.",
   "ui.warning.stardrop_locked": "Stardrop ist gesperrt, solange die SMAPI läuft. Alle vorgenommenen Änderungen werden erst nach dem Schließen von SMAPI übernommen.",
 
