@@ -66,7 +66,7 @@ namespace Stardrop.Utilities.External
             }
             foreach (var requirementKey in mods.SelectMany(m => m.Requirements))
             {
-                if (!searchEntries.Any(e => e.Id == requirementKey.UniqueID))
+                if (!searchEntries.Any(e => e.Id.Equals(requirementKey.UniqueID, StringComparison.OrdinalIgnoreCase)))
                 {
                     searchEntries.Add(new ModSearchEntry() { Id = requirementKey.UniqueID });
                 }
