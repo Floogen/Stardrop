@@ -66,7 +66,10 @@ namespace Stardrop.Utilities.External
             }
             foreach (var requirementKey in mods.SelectMany(m => m.Requirements))
             {
-                searchEntries.Add(new ModSearchEntry() { Id = requirementKey.UniqueID });
+                if (!searchEntries.Any(e => e.Id == requirementKey.UniqueID))
+                {
+                    searchEntries.Add(new ModSearchEntry() { Id = requirementKey.UniqueID });
+                }
             }
 
             // Create the body to be sent via the POST request
