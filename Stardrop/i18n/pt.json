@@ -14,6 +14,8 @@
   "ui.main_window.menu_items.stardrop_repository": "Repositório do Stardrop",
 
   // Main Window - Menu Items - Context
+  "ui.main_window.menu_items.context.show_requirements": "Exibir requisitos",
+  "ui.main_window.menu_items.context.hide_requirements": "Ocultar requisitos",
   "ui.main_window.menu_items.context.cancel": "Cancelar",
   "ui.main_window.menu_items.context.open_containing_folder": "Abrir pasta do mod",
   "ui.main_window.menu_items.context.delete": "Excluir",
@@ -27,6 +29,7 @@
   "ui.main_window.menu_headers.mod_name": "Nome do mod",
   "ui.main_window.menu_headers.unique_id": "ID único",
   "ui.main_window.menu_headers.author": "Autor",
+  "ui.main_window.menu_headers.requirements": "Requisitos",
   "ui.main_window.menu_headers.missing_requirements": "Requisitos faltantes",
   "ui.main_window.menu_headers.version": "Versão",
   "ui.main_window.menu_headers.configuration": "Configuração",
@@ -56,6 +59,8 @@
   "ui.main_window.button.update_status.failed": "Falha na verificação de atualizações",
 
   // Main Window - ComboBox
+  "ui.main_window.combobox.show_all_mods": "Exibir todos os mods",
+  "ui.main_window.combobox.hide_enabled_mods": "Ocultar todos os mods",
   "ui.main_window.combobox.mod_name": "Nome do mod",
   "ui.main_window.combobox.author": "Autor",
   "ui.main_window.combobox.requirements": "Requisitos",
@@ -63,6 +68,7 @@
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "Caminho do SMAPI",
   "ui.settings_window.labels.mod_path": "Caminho da pasta dos mods",
+  "ui.settings_window.labels.mod_install": "Caminho dos mods instalados pelo Stardrop",
   "ui.settings_window.labels.themes": "Temas",
   "ui.settings_window.labels.languages": "Idiomas",
   "ui.settings_window.labels.miscellaneous": "Diversos",
@@ -74,6 +80,7 @@
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "O caminho para o arquivo do StardewModdingAPI",
   "ui.settings_window.tooltips.mod_folder_path": "O caminho para a pasta de mods",
+  "ui.settings_window.tooltips.mod_install_path": "O caminho da pasta na qual o Stardrop colocará os novos mods instalados. Deve estar dentro da pasta definida em \"Caminho da pasta dos mods\".",
   "ui.settings_window.tooltips.theme": "O tema atual do Stardrop",
   "ui.settings_window.tooltips.language": "O idioma atual do Stardrop",
   "ui.settings_window.tooltips.ignore_hidden_folders": "Se estiver marcado, o Stardrop irá ignorar qualquer mod cuja pasta raiz comece com \".\"",
@@ -83,9 +90,11 @@
 
   // Warnings
   "ui.warning.unable_to_add_profile": "Não foi possível adicionar {0}, já existe um perfil com esse nome.",
-  "ui.warning.given_mod_folder_does_not_exist": "O caminho da pasta do mod não existe.\n\nRevertendo para o caminho anterior.",
+  "ui.warning.given_mod_folder_does_not_exist": "Não existe o caminho da pasta do mod.\n\nRevertendo para o caminho anterior.",
+  "ui.warning.given_install_folder_not_exist": "Não existe o caminho da pasta de mods instalados pelo Stardrop.\n\nRevertendo para o caminho anterior.",
+  "ui.warning.given_install_folder_not_under_mod_folder": "Não existe o caminho da pasta de mods instalados pelo Stardrop, dentro de {0}.\n\nRevertendo para o caminho anterior.",
   "ui.warning.given_invalid_smapi_executable": "O arquivo fornecido não é {0}\n\nRevertendo para o caminho anterior.",
-  "ui.warning.stardrop_locked": "O Stardrop fica travado enquanto o SMAPI estiver em execução. Qualquer alteração só será ativada quando o SMAPI for fechado.",
+  "ui.warning.stardrop_locked": "O Stardrop fica bloqueado enquanto o SMAPI estiver em execução. Qualquer alteração só será ativada quando o SMAPI for fechado.",
 
   "ui.warning.unable_to_locate_smapi": "Não foi possível localizar o StardewModdingAPI.exe\n\nPor favor, defina o caminho correto do arquivo em\nVer > Configurações",
   "ui.warning.mod_config_saved_but_not_enabled": "As configurações do mod foram salvas no perfil {0}, entretanto, a opção de configurações específicas de mods por perfil não está habilitada.\n\nVá até Ver > Configurações e marque a opção \"Habilitar configurações de mods específicas por perfil\" para que o Stardrop salve e aplique as alterações nas configurações dos mods automaticamente.",
@@ -118,5 +127,5 @@
   "internal.yes": "Sim",
   "internal.no": "Não",
   "internal.ok": "OK",
-  "internal.unlock": "Destravar"
+  "internal.unlock": "Desbloquear"
 }
