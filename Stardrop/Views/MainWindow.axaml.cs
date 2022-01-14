@@ -1000,7 +1000,7 @@ namespace Stardrop.Views
                     else if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
                     {
                         status = metaData.CompatibilityStatus;
-                        if (metaData.CompatibilityStatus == WikiCompatibilityStatus.Unofficial && metaData.Unofficial is not null)
+                        if (metaData.CompatibilityStatus == WikiCompatibilityStatus.Unofficial && metaData.Unofficial is not null && modItem.IsModOutdated(metaData.Unofficial.Version))
                         {
                             link = metaData.Unofficial.Url;
                             recommendedVersion = metaData.Unofficial.Version;
