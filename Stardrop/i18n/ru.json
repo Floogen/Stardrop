@@ -1,21 +1,21 @@
 {
   // Main Window - Menu Items
-  "ui.main_window.menu_items.add_mod": "Добавить Модификацию",
+  "ui.main_window.menu_items.add_mod": "Добавить Мод",
   "ui.main_window.menu_items.start_smapi": "Запустить SMAPI",
   "ui.main_window.menu_items.exit": "Закрыть Программу",
   "ui.main_window.menu_items.settings": "Настройки",
-  "ui.main_window.menu_items.stardrop_log_file": "Журнальный Файл Stardrop",
-  "ui.main_window.menu_items.smapi_log_file": "Журнальный Файл SMAPI",
-  "ui.main_window.menu_items.refresh_mod_list": "Обновить Список Модификаций",
-  "ui.main_window.menu_items.check_for_mod_updates": "Проверить Наличие Обновлений Модификаций",
-  "ui.main_window.menu_items.enable_all_mods": "Включить Все Модификации",
-  "ui.main_window.menu_items.disable_all_mods": "Отключить Все Модификации",
+  "ui.main_window.menu_items.stardrop_log_file": "Файл журнала Stardrop",
+  "ui.main_window.menu_items.smapi_log_file": "Файл журнала SMAPI",
+  "ui.main_window.menu_items.refresh_mod_list": "Обновить Список Модов",
+  "ui.main_window.menu_items.check_for_mod_updates": "Проверить Наличие Обновлений Модов",
+  "ui.main_window.menu_items.enable_all_mods": "Включить Все Моды",
+  "ui.main_window.menu_items.disable_all_mods": "Отключить Все Моды",
   "ui.main_window.menu_items.check_for_stardrop_update": "Проверить Наличие Обновлений для Stardrop",
   "ui.main_window.menu_items.stardrop_repository": "Репозиторий Stardrop",
 
   // Main Window - Menu Items - Context
   "ui.main_window.menu_items.context.cancel": "Отмена",
-  "ui.main_window.menu_items.context.open_containing_folder": "Открыть Папку с Модификацией",
+  "ui.main_window.menu_items.context.open_containing_folder": "Открыть Папку с Модами",
   "ui.main_window.menu_items.context.delete": "Удалить",
 
   // Main Window - Menu Headers
@@ -24,56 +24,59 @@
   "ui.main_window.menu_headers.tools": "Инструменты",
 
   "ui.main_window.menu_headers.enabled": "Включено",
-  "ui.main_window.menu_headers.mod_name": "Название Модификации",
+  "ui.main_window.menu_headers.mod_name": "Название Мода",
   "ui.main_window.menu_headers.unique_id": "Уникальный ID",
   "ui.main_window.menu_headers.author": "Автор",
-  "ui.main_window.menu_headers.missing_requirements": "Отсутствует Требуемые Модификации",
+  "ui.main_window.menu_headers.missing_requirements": "Требуемые Моды",
   "ui.main_window.menu_headers.version": "Версия",
   "ui.main_window.menu_headers.configuration": "Конфигурация",
   "ui.main_window.menu_headers.status": "Статус",
 
   // Main Window - Labels
   "ui.main_window.labels.profile": "Профиль",
-  "ui.main_window.labels.enabled_mods": "Включенные Модификации: ",
-  "ui.main_window.labels.total_mods": "Всего Модификаций: ",
+  "ui.main_window.labels.enabled_mods": "Включенные Моды: ",
+  "ui.main_window.labels.total_mods": "Всего Модов: ",
   "ui.main_window.labels.filter": "Фильтр",
 
   // Main Window - Hyperlinks
-  "ui.main_window.hyperlinks.click_to_open": "Нажмите, чтобы открыть",
+  "ui.main_window.hyperlinks.click_to_open": "Открыть конфигурацию",
   "ui.main_window.hyperlinks.update_available": "Доступно Обновление ({0})",
   "ui.main_window.hyperlinks.unofficial_update_available": "Доступно Неофицальное Обновление ({0})",
   "ui.main_window.hyperlinks.broken_compatibility_issue": "[Broken] Проблема Совместимости",
 
   // Main Window - Buttons
   "ui.main_window.buttons.save_configs": "Сохранить Конфигурации",
-  "ui.main_window.buttons.hide_disabled_mods": "Скрыть Отключенные Модификации",
-  "ui.main_window.buttons.show_updatable_mods": "Показать Модификации, для Которых Доступно Обновление",
+  "ui.main_window.buttons.hide_disabled_mods": "Скрыть Отключенные Моды",
+  "ui.main_window.buttons.show_updatable_mods": "Показать Моды, Которые Можно Обновить",
 
   // Main Window - Buttons - Update Status
-  "ui.main_window.button.update_status.generic": "Модификации, Готовые к Обновлению: Нажмите, Чтобы Обновить",
+  "ui.main_window.button.update_status.generic": "Моды, Готовые к Обновлению: Нажмите, Чтобы Обновить",
   "ui.main_window.button.update_status.updating": "Обновляется...",
-  "ui.main_window.button.update_status.list_available_updates": "Модификации, Готовые к Обновлению: {0}",
-  "ui.main_window.button.update_status.failed": "Ошибка Проверки Наличия Обновлений Модификации",
+  "ui.main_window.button.update_status.list_available_updates": "Моды, Готовые к Обновлению: {0}",
+  "ui.main_window.button.update_status.failed": "Ошибка Проверки Наличия Обновлений Модов",
 
   // Main Window - ComboBox
-  "ui.main_window.combobox.mod_name": "Название Модификации",
+   "ui.main_window.combobox.show_all_mods": "Показать Все Моды",
+  "ui.main_window.combobox.hide_enabled_mods": "Скрыть Все Включенные Моды",
+  "ui.main_window.combobox.mod_name": "Название Мода",
   "ui.main_window.combobox.author": "Автор",
   "ui.main_window.combobox.requirements": "Требования",
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "Патч SMAPI",
-  "ui.settings_window.labels.mod_path": "Путь к папке с модификацией",
+  "ui.settings_window.labels.mod_path": "Путь к папке с Модами",
+  "ui.settings_window.labels.mod_install": "Путь к папке с модами, которые установленны через Stardrop",
   "ui.settings_window.labels.themes": "Темы",
   "ui.settings_window.labels.languages": "Язык",
-  "ui.settings_window.labels.miscellaneous": "Остальные Настройки",
+  "ui.settings_window.labels.miscellaneous": "Остальные настройки",
 
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "Игнорировать Скрытые Папки",
-  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Включить Конфигурации Модификаций для Конкретных Профилей",
+  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Привязка Конфигураций к Профилям",
 
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "Путь к папке с StardewModdingAPI",
-  "ui.settings_window.tooltips.mod_folder_path": "Путь к папке с модификацией",
+  "ui.settings_window.tooltips.mod_folder_path": "Путь к папке с модом",
   "ui.settings_window.tooltips.theme": "Текущая тема Stardrop",
   "ui.settings_window.tooltips.language": "Текущий язык, выбранный для Stardrop",
   "ui.settings_window.tooltips.ignore_hidden_folders": "Если этот флажок установлен, Stardrop будет игнорировать любые моды, родительская папка которых начинается с \".\"",
@@ -83,18 +86,18 @@
 
   // Warnings
   "ui.warning.unable_to_add_profile": "Невозможно добавить {0}, профиль с таким именем уже существует!",
-  "ui.warning.given_mod_folder_does_not_exist": "Указанный путь к папке с модификацией не существует.\n\nВозврат к предыдущему пути к папке.",
+  "ui.warning.given_mod_folder_does_not_exist": "Указанный путь к папке с модом не существует.\n\nВозврат к предыдущему пути к папке.",
   "ui.warning.given_invalid_smapi_executable": "Данный файл не {0}\n\nВозврат к предыдущему пути к папке.",
   "ui.warning.stardrop_locked": "Stardrop заблокирован во время работы SMAPI. Любые внесенные изменения не отразятся, пока SMAPI не будет закрыт.",
 
   "ui.warning.unable_to_locate_smapi": "Не удалось найти StardewModdingAPI.exe\n\nУкажите правильный путь к файлу в разделе\nПросмотр > Настройки",
-  "ui.warning.mod_config_saved_but_not_enabled": "Настройки конфигурации модификации сохранены в профиле {0}, однако конфигурации модификаций для конкретных профилей не включены\\.\\n\\nПерейдите в раздел Просмотр> Настройки и установите флажок перед \\\"Включить Конфигурации Модификаций для Конкретных Профилей\\\" чтобы Stardrop автоматически сохраняла и применяла изменения конфигурации модификаций.",
+  "ui.warning.mod_config_saved_but_not_enabled": "Настройки конфигурации модов сохранены в профиле {0}, однако конфигурации модов для конкретных профилей не включены.\n\n Перейдите в раздел Просмотр> Настройки и установите флажок перед \"Включить Конфигурации Модов для Конкретных Профилей\" чтобы Stardrop автоматически сохраняла и применяла изменения конфигурации модов.",
   "ui.warning.unable_to_determine_profile": "Невозможно определить выбранный профиль.\n\nSMAPI не будет запущен.",
   "ui.warning.stardrop_up_to_date": "Версия Stardrop актуальна.\n\n{0} - это последняя версия.",
   "ui.warning.update_cooldown_minutes": "Обновления можно запрашивать только раз в 5 минут.\n\nПожалуйста, повторите попытку через {0} мин.",
   "ui.warning.update_cooldown_seconds": "Обновления можно запрашивать только раз в 5 минут.\n\nПожалуйста, повторите попытку через {0} сек.",
   "ui.warning.unable_to_locate_log": "Не удалось найти SMAPI-latest.txt! SMAPI должен успешно запуститься хотя бы один раз, чтобы Stardrop могла обнаружить детали игры.",
-  "ui.warning.unable_to_read_log": "Не удалось прочитать журнальный файл SMAPI, чтобы получить версию игры.\n\nМодификации не будут проверяться на наличие обновлений.",
+  "ui.warning.unable_to_read_log": "Не удалось прочитать журнальный файл SMAPI, чтобы получить версию игры.\n\nМоды не будут проверяться на наличие обновлений.",
   "ui.warning.no_manifest": "manifest.json не найден в \"{0}\"",
   "ui.warning.unable_to_load_mod": "Не удалось загрузить файл, расположенный в папке \"{0}\".\n\nДополнительную информацию см. в журнальном файле.",
 
@@ -102,9 +105,9 @@
   "ui.message.confirm_mod_deletion": "Вы уверены, что хотите удалить {0}? Это действие не может быть отменено.",
   "ui.message.unsaved_config_changes": "Обнаружены несохраненные изменения файлов конфигурации для профиля {0}.\n\nСохранить изменения?",
   "ui.message.stardrop_update_available": "Доступно обновление (v{0}) для Stardrop.\n\nВы хотите загрузить его сейчас?",
-  "ui.message.confirm_bulk_change_mod_states_enable": "Включить все модификации?\n\nПримечание: Это действие не может быть отменено.",
-  "ui.message.confirm_bulk_change_mod_states_disable": "Отключить все модификации?\n\nПримечание: Это действие не может быть отменено.",
-  "ui.message.confirm_mod_update_method": "Обнаружена более старая версия модификации {0}. Удалить старую версию?\n\nПримечание: Как правило рекомендуется удалить старую версию модификации, однако все файлы конфигурации будут потеряны.",
+  "ui.message.confirm_bulk_change_mod_states_enable": "Включить все моды?\n\nПримечание: Это действие не может быть отменено.",
+  "ui.message.confirm_bulk_change_mod_states_disable": "Отключить все моды?\n\nПримечание: Это действие не может быть отменено.",
+  "ui.message.confirm_mod_update_method": "Обнаружена старая версия мода {0}. Удалить старую версию?\n\nПримечание: Как правило рекомендуется удалить старую версию мода, однако все файлы конфигурации будут потеряны.",
 
   // Window Names
   "ui.window.setting.name": "Настройки",
