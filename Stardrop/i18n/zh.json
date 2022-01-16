@@ -1,21 +1,26 @@
 {
+  // Main Window - Menu Items
   "ui.main_window.menu_items.add_mod": "添加模组",
-  "ui.main_window.menu_items.start_smapi": "启动SMAPI",
+  "ui.main_window.menu_items.start_smapi": "启动 SMAPI",
   "ui.main_window.menu_items.exit": "退出",
   "ui.main_window.menu_items.settings": "设置",
-  "ui.main_window.menu_items.stardrop_log_file": "Stardrop日志文件",
-  "ui.main_window.menu_items.smapi_log_file": "SMAPI日志文件",
+  "ui.main_window.menu_items.stardrop_log_file": "Stardrop 日志文件",
+  "ui.main_window.menu_items.smapi_log_file": "SMAPI 日志文件",
   "ui.main_window.menu_items.refresh_mod_list": "刷新模组列表",
-  "ui.main_window.menu_items.check_for_mod_updates": "检测模组更新",
+  "ui.main_window.menu_items.check_for_mod_updates": "检查模组更新",
   "ui.main_window.menu_items.enable_all_mods": "启用所有模组",
   "ui.main_window.menu_items.disable_all_mods": "禁用所有模组",
-  "ui.main_window.menu_items.check_for_stardrop_update": "检查Stardrop更新",
-  "ui.main_window.menu_items.stardrop_repository": "Stardrop储存库",
+  "ui.main_window.menu_items.check_for_stardrop_update": "检查 Stardrop 更新",
+  "ui.main_window.menu_items.stardrop_repository": "Stardrop 仓库",
 
+  // Main Window - Menu Items - Context
+  "ui.main_window.menu_items.context.show_requirements": "显示依赖",
+  "ui.main_window.menu_items.context.hide_requirements": "隐藏依赖",
   "ui.main_window.menu_items.context.cancel": "取消",
   "ui.main_window.menu_items.context.open_containing_folder": "打开所在文件夹",
   "ui.main_window.menu_items.context.delete": "删除",
 
+  // Main Window - Menu Headers
   "ui.main_window.menu_headers.file": "文件",
   "ui.main_window.menu_headers.view": "视图",
   "ui.main_window.menu_headers.tools": "工具",
@@ -24,81 +29,98 @@
   "ui.main_window.menu_headers.mod_name": "模组名称",
   "ui.main_window.menu_headers.unique_id": "专属序列号",
   "ui.main_window.menu_headers.author": "作者",
-  "ui.main_window.menu_headers.missing_requirements": "缺失的依赖",
+  "ui.main_window.menu_headers.requirements": "依赖",
+  "ui.main_window.menu_headers.missing_requirements": "缺少的依赖",
   "ui.main_window.menu_headers.version": "版本",
-  "ui.main_window.menu_headers.configuration": "设置",
+  "ui.main_window.menu_headers.configuration": "配置",
   "ui.main_window.menu_headers.status": "状态",
 
+  // Main Window - Labels
   "ui.main_window.labels.profile": "配置文件",
-  "ui.main_window.labels.enabled_mods": "已启用模组: ",
-  "ui.main_window.labels.total_mods": "全部模组: ",
+  "ui.main_window.labels.enabled_mods": "已启用模组：",
+  "ui.main_window.labels.total_mods": "总模组数：",
   "ui.main_window.labels.filter": "过滤",
 
-  "ui.main_window.hyperlinks.click_to_open": "点击此处打开",
-  "ui.main_window.hyperlinks.update_available": "可用更新({0})",
-  "ui.main_window.hyperlinks.unofficial_update_available": "非官方可用更新 ({0})",
+  // Main Window - Hyperlinks
+  "ui.main_window.hyperlinks.click_to_open": "点击打开",
+  "ui.main_window.hyperlinks.update_available": "可用更新（{0}）",
+  "ui.main_window.hyperlinks.unofficial_update_available": "非官方可用更新（{0}）",
   "ui.main_window.hyperlinks.broken_compatibility_issue": "[Broken] 兼容性问题",
 
-  "ui.main_window.buttons.save_configs": "保存设置",
-  "ui.main_window.buttons.hide_disabled_mods": "隐藏被禁用模组",
+  // Main Window - Buttons
+  "ui.main_window.buttons.save_configs": "保存配置",
+  "ui.main_window.buttons.hide_disabled_mods": "隐藏已禁用模组",
   "ui.main_window.buttons.show_updatable_mods": "显示可更新模组",
 
-  "ui.main_window.button.update_status.generic": "可更新模组: 点击刷新",
-  "ui.main_window.button.update_status.updating": "更新中...",
-  "ui.main_window.button.update_status.list_available_updates": "可更新模组: {0}",
-  "ui.main_window.button.update_status.failed": "模组更新检测失败",
+  // Main Window - Buttons - Update Status
+  "ui.main_window.button.update_status.generic": "可更新模组：点击刷新",
+  "ui.main_window.button.update_status.updating": "正在更新……",
+  "ui.main_window.button.update_status.list_available_updates": "可更新模组：{0}",
+  "ui.main_window.button.update_status.failed": "模组更新检查失败",
 
-
+  // Main Window - ComboBox
+  "ui.main_window.combobox.show_all_mods": "显示所有模组",
+  "ui.main_window.combobox.hide_enabled_mods": "隐藏已启用模组",
   "ui.main_window.combobox.mod_name": "模组名称",
   "ui.main_window.combobox.author": "作者",
   "ui.main_window.combobox.requirements": "依赖",
 
-
-  "ui.settings_window.labels.smapi_path": "SMAPI路径",
-  "ui.settings_window.labels.mod_path": "模组路径",
+  // Settings Window - Labels
+  "ui.settings_window.labels.smapi_path": "SMAPI 路径",
+  "ui.settings_window.labels.mod_path": "模组文件夹路径",
+  "ui.settings_window.labels.mod_install": "Stardrop 已安装模组路径",
   "ui.settings_window.labels.themes": "主题",
   "ui.settings_window.labels.languages": "语言",
   "ui.settings_window.labels.miscellaneous": "杂项",
 
-  "ui.settings_window.buttons.ignore_hidden_folders": "忽视隐藏文件夹",
-  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "对不同配置文件启用不同的模组设置",
+  // Settings Window - Buttons
+  "ui.settings_window.buttons.ignore_hidden_folders": "忽略隐藏文件夹",
+  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "对不同配置文件启用不同的模组配置",
 
-  "ui.settings_window.tooltips.smapi": "StardewModdingAPI路径",
+  // Settings Window - Tooltips
+  "ui.settings_window.tooltips.smapi": "StardewModdingAPI 文件路径",
   "ui.settings_window.tooltips.mod_folder_path": "模组文件夹路径",
-  "ui.settings_window.tooltips.theme": "Stardrop当前使用的主题",
-  "ui.settings_window.tooltips.language": "Stardrop当前启用的语言",
-  "ui.settings_window.tooltips.ignore_hidden_folders": "启用则Stardrop将会忽视所有以\".\" 开头的文件夹",
-  "ui.settings_window.tooltips.enable_profile_specific_configs": "启用则Stardrop会在你切换配置文件时保存并切换模组设置",
+  "ui.settings_window.tooltips.mod_install_path": "Stardrop 存放新安装模组的文件夹路径。必须位于“模组文件夹路径”给定的文件夹。",
+  "ui.settings_window.tooltips.theme": "Stardrop 当前使用的主题",
+  "ui.settings_window.tooltips.language": "Stardrop 当前使用的语言",
+  "ui.settings_window.tooltips.ignore_hidden_folders": "如果勾选，Stardrop 会忽略所有以“.”开头的父文件夹",
+  "ui.settings_window.tooltips.enable_profile_specific_configs": "如果勾选，Stardrop 会在切换配置文件时保存并恢复 config.json 文件",
   "ui.settings_window.tooltips.save_changes": "保存更改",
   "ui.settings_window.tooltips.cancel_changes": "取消",
 
-  "ui.warning.unable_to_add_profile": "无法添加 {0},已经存在同名配置！",
-  "ui.warning.given_mod_folder_does_not_exist": "给定模组文件夹不存在。\n\n尝试恢复到上次的路径。",
-  "ui.warning.given_invalid_smapi_executable": "给定文件不存在 {0}\n\n尝试恢复到上次的路径",
-  "ui.warning.stardrop_locked": "当SMAPI正在运行时Stardrop会处于锁定状态，直到SMAPI停止运行时所有的更改都无法生效。",
+  // Warnings
+  "ui.warning.unable_to_add_profile": "无法添加 {0}，已经存在同名配置文件！",
+  "ui.warning.given_mod_folder_does_not_exist": "给定模组文件夹路径不存在。\n\n恢复到之前的路径。",
+  "ui.warning.given_install_folder_not_exist": "给定 Stardrop 已安装模组文件夹路径不存在。\n\n恢复到之前的路径。",
+  "ui.warning.given_install_folder_not_under_mod_folder": "给定 Stardrop 已安装模组文件夹路径不存在于 {0}\n\n恢复到之前的路径。",
+  "ui.warning.given_invalid_smapi_executable": "给定文件不是 {0}\n\n恢复到之前的路径",
+  "ui.warning.stardrop_locked": "当 SMAPI 运行时，Stardrop 会处于锁定状态。在 SMAPI 关闭之前，所有更改都无法生效。",
 
-  "ui.warning.unable_to_locate_smapi": "无法定位StardewModdingAPI.exe\n\n请在 视图 > 设置 \n设置正确的文件路径",
-  "ui.warning.mod_config_saved_but_not_enabled": "已将模组配置设置保存到配置文件{0}, 但未启用对不同配置文件启用不同的模组设置。\n\n请在 视图>设置 中启用\"对不同配置文件启用不同的模组设置\" 以便于Stardrop自动保存和应用模组配置更改。",
+  "ui.warning.unable_to_locate_smapi": "无法定位 StardewModdingAPI.exe\n\n请在 视图 > 设置 \n设置正确的文件路径",
+  "ui.warning.mod_config_saved_but_not_enabled": "已将模组配置设置保存到配置文件{0}，但未启用“对不同配置文件启用不同的模组配置”。\n\n可在 视图 > 设置 中勾选“对不同配置文件启用不同的模组配置”，以便 Stardrop 能自动保存和应用模组配置的更改。",
   "ui.warning.unable_to_determine_profile": "无法确定选定的配置文件。\n\nSMAPI 将不会启动。",
-  "ui.warning.stardrop_up_to_date": "Stardrop已是最新版本。\n\n最新版本号为{0}。",
-  "ui.warning.update_cooldown_minutes": "每5分钟只能请求一次更新。\n\n请在{0}分钟后再次尝试。",
-  "ui.warning.update_cooldown_seconds": "每5分钟只能请求一次更新。\n\n请在{0}秒钟后再次尝试。",
-  "ui.warning.unable_to_locate_log": "无法定位SMAPI-latest.txt！ Stardrop需要SMAPI至少成功运行一次才能够检测文件。",
-  "ui.warning.unable_to_read_log": "无法读取SMAPI的日志文件来获取游戏版本。\n\n，将不会检测模组更新.",
-  "ui.warning.no_manifest": "在\"{0}\"中无法找到manifes.json",
-  "ui.warning.unable_to_load_mod": "无法加载位于 \"{0}\" 的文件.\n\n请查看日志获取更多信息。",
+  "ui.warning.stardrop_up_to_date": "Stardrop 已是最新版本。\n\n最新版本号为 {0}。",
+  "ui.warning.update_cooldown_minutes": "每 5 分钟只能请求一次更新。\n\n请在 {0} 分钟后再次尝试。",
+  "ui.warning.update_cooldown_seconds": "每 5 分钟只能请求一次更新。\n\n请在 {0} 秒钟后再次尝试。",
+  "ui.warning.unable_to_locate_log": "无法定位 SMAPI-latest.txt！SMAPI 需要至少成功运行一次，以便 Stardrop 检测游戏详情。",
+  "ui.warning.unable_to_read_log": "无法通过读取 SMAPI 的日志文件来获取游戏版本。\n\n将不会检查模组更新。",
+  "ui.warning.no_manifest": "在“{0}”中无法找到 manifes.json",
+  "ui.warning.unable_to_load_mod": "无法加载位于“{0}”的文件。\n\n请查看日志文件获取更多信息。",
 
-  "ui.message.confirm_mod_deletion": "你是否确定删除{0}？ 此操作无法撤销！",
-  "ui.message.unsaved_config_changes": "检测到配置文件{0}的模组配置更改未保存。\n\n你想保存更改吗？",
-  "ui.message.stardrop_update_available": "检测到Stardrop的可用更新 (v{0})\n\n你想下载吗？",
-  "ui.message.confirm_bulk_change_mod_states_enable": "启用 所有模组？\n\n注意：此操作无法撤销。",
-  "ui.message.confirm_bulk_change_mod_states_disable": "禁用 所有模组？\n\n注意：此操作无法撤销。",
-  "ui.message.confirm_mod_update_method": "检测到了{0}的上一个版本。你想清除以前的安装吗？注意：通常建议清除以前的版本，但任何配置文件都会丢失。",
+  // Messages
+  "ui.message.confirm_mod_deletion": "你确定要删除 {0}？此操作无法撤销！",
+  "ui.message.unsaved_config_changes": "检测到配置文件 {0} 的模组配置更改未保存。\n\n是否要保存更改？",
+  "ui.message.stardrop_update_available": "Stardrop 有可用更新（v{0}）\n\n是否要现在下载？",
+  "ui.message.confirm_bulk_change_mod_states_enable": "启用所有模组？\n\n注意：此操作无法撤销。",
+  "ui.message.confirm_bulk_change_mod_states_disable": "禁用所有模组？\n\n注意：此操作无法撤销。",
+  "ui.message.confirm_mod_update_method": "检测到先前版本的 {0}。是否要清除先前的安装？\n\n注意：通常建议清除先前版本，但任何配置都会丢失。",
 
+  // Window Names
   "ui.window.setting.name": "设置",
   "ui.window.profiles.name": "配置文件",
-  "ui.window.profile_naming.name": "配置名称",
+  "ui.window.profile_naming.name": "配置文件名称",
 
+  // Internals
   "internal.unknown": "未知",
   "internal.enable": "启用",
   "internal.disable": "禁用",
