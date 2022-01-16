@@ -90,7 +90,7 @@
 
   // Warnings
   "ui.warning.unable_to_add_profile": "No se puede añadir {0}, ya existe un perfil con ese nombre!",
-  "ui.warning.given_mod_folder_does_not_exist": "La ruta de la carpeta del mod dada no existe.\n\Revirtiendo a la ruta anterior.",
+  "ui.warning.given_mod_folder_does_not_exist": "La ruta de la carpeta del mod dada no existe.\n\nRevirtiendo a la ruta anterior.",
   "ui.warning.given_install_folder_not_exist": "La ruta de la carpeta de mods instalados en Stardrop no existe.\n\nRevirtiendo a la ruta anterior.",
   "ui.warning.given_install_folder_not_under_mod_folder": "La ruta de la carpeta de mods instalada por Stardrop no existe en {0}\n\nRevirtiendo a la ruta anterior.",
   "ui.warning.given_invalid_smapi_executable": "El archivo dado no es {0}\n\nRevirtiendo a la ruta anterior.",
