@@ -229,6 +229,10 @@ namespace Stardrop.ViewModels
                             mod.Requirements.Add(new ManifestDependency(dependency.UniqueID, dependency.MinimumVersion, dependency.IsRequired) { Name = dependencyKey is null ? dependency.UniqueID : dependencyKey.Name });
                         }
                     }
+                    if (modKeysCache is not null && modKeysCache.Any(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        mod.ModPageUri = modKeysCache.First(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).PageUrl;
+                    }
 
                     // Check if any config file exists
                     var configPath = Path.Combine(fileInfo.DirectoryName, "config.json");
