@@ -1020,6 +1020,7 @@ namespace Stardrop.Views
 
                     if (!String.IsNullOrEmpty(modItem.ParsedStatus))
                     {
+                        Program.helper.Log($"Update available for {modItem.UniqueId} (v{modItem.SuggestedVersion}): {modItem.Uri}");
                         if (updateCache.Mods.FirstOrDefault(m => m.UniqueId.Equals(modItem.UniqueId)) is ModUpdateInfo modInfo && modInfo is not null)
                         {
                             modInfo.SuggestedVersion = recommendedVersion;
