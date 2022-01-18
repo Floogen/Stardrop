@@ -3,7 +3,7 @@
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net5.0</TargetFramework>
 		<Nullable>enable</Nullable>
-		<Version>1.0.0-beta.22</Version>
+		<Version>1.0.0-beta.23</Version>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 		<ApplicationIcon>Assets\icon.ico</ApplicationIcon>

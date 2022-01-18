@@ -18,6 +18,7 @@
   "ui.main_window.menu_items.context.hide_requirements": "Hide Requirements",
   "ui.main_window.menu_items.context.cancel": "Cancel",
   "ui.main_window.menu_items.context.open_containing_folder": "Open Containing Folder",
+  "ui.main_window.menu_items.context.open_mod_page": "Open Mod Page",
   "ui.main_window.menu_items.context.delete": "Delete",
 
   // Main Window - Menu Headers
