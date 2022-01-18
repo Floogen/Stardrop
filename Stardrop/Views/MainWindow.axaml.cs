@@ -1053,10 +1053,11 @@ namespace Stardrop.Views
                     if (modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(modEntry.Id)) is ModKeyInfo keyInfo && keyInfo is not null)
                     {
                         keyInfo.Name = modEntry.Metadata.Name;
+                        keyInfo.PageUrl = modEntry.Metadata.CustomUrl;
                     }
                     else
                     {
-                        modKeysCache.Add(new ModKeyInfo() { Name = modEntry.Metadata.Name, UniqueId = modEntry.Id });
+                        modKeysCache.Add(new ModKeyInfo() { Name = modEntry.Metadata.Name, UniqueId = modEntry.Id, PageUrl = modEntry.Metadata.CustomUrl });
                     }
                 }
 
