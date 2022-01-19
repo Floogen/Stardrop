@@ -18,6 +18,7 @@
   "ui.main_window.menu_items.context.hide_requirements": "Ocultar Requisitos",
   "ui.main_window.menu_items.context.cancel": "Cancelar",
   "ui.main_window.menu_items.context.open_containing_folder": "Abrir La Carpeta Que Contiene",
+  "ui.main_window.menu_items.context.open_mod_page": "Abrir La Página Del Mod",
   "ui.main_window.menu_items.context.delete": "Eliminar",
 
   // Main Window - Menu Headers
