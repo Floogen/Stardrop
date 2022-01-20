@@ -13,8 +13,6 @@
   "ui.main_window.menu_items.check_for_stardrop_update": "Перевірити наявність оновлень Stardrop",
   "ui.main_window.menu_items.stardrop_repository": "Репозиторій Stardrop",
 
-
-
   // Main Window - Menu Items - Context
   "ui.main_window.menu_items.context.show_requirements": "Показувати вимоги",
   "ui.main_window.menu_items.context.hide_requirements": "Приховувати вимоги",
@@ -23,14 +21,10 @@
   "ui.main_window.menu_items.context.open_mod_page": "Відкрити сторінку модифікації",
   "ui.main_window.menu_items.context.delete": "Вилучити",
 
-
-
   // Main Window - Menu Headers
   "ui.main_window.menu_headers.file": "Файл",
   "ui.main_window.menu_headers.view": "Перегляд",
   "ui.main_window.menu_headers.tools": "Інструменти",
-
-
 
   "ui.main_window.menu_headers.enabled": "Увімкнено",
   "ui.main_window.menu_headers.mod_name": "Назва модифікації",
@@ -42,15 +36,11 @@
   "ui.main_window.menu_headers.configuration": "Конфігурація",
   "ui.main_window.menu_headers.status": "Статус",
 
-
-
   // Main Window - Labels
   "ui.main_window.labels.profile": "Профіль",
   "ui.main_window.labels.enabled_mods": "Увімкнуто модифікацій: ",
   "ui.main_window.labels.total_mods": "Загалом модифікацій: ",
   "ui.main_window.labels.filter": "Фільтр",
-
-
 
   // Main Window - Hyperlinks
   "ui.main_window.hyperlinks.click_to_open": "Відкрити",
@@ -58,14 +48,10 @@
   "ui.main_window.hyperlinks.unofficial_update_available": "Неофіційних оновлень доступно ({0})",
   "ui.main_window.hyperlinks.broken_compatibility_issue": "[Broken] Проблема сумісності",
 
-
-
   // Main Window - Buttons
   "ui.main_window.buttons.save_configs": "Зберегти конфігурацію",
   "ui.main_window.buttons.hide_disabled_mods": "Приховати вимкнуті",
   "ui.main_window.buttons.show_updatable_mods": "Показати готові до оновлення модифікації",
-
-
 
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "Модифікації готові до оновлення: Натисніть, для оновлення",
@@ -73,16 +59,12 @@
   "ui.main_window.button.update_status.list_available_updates": "Модифікацій готових до оновлення: {0}",
   "ui.main_window.button.update_status.failed": "Не вдалося перевірити наявність оновлень",
 
-
-
   // Main Window - ComboBox
   "ui.main_window.combobox.show_all_mods": "Показати всі",
   "ui.main_window.combobox.hide_enabled_mods": "Приховати увімкнуті",
   "ui.main_window.combobox.mod_name": "Назва",
   "ui.main_window.combobox.author": "Автор",
   "ui.main_window.combobox.requirements": "Вимоги",
-
-
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "Шлях SMAPI",
@@ -92,13 +74,9 @@
   "ui.settings_window.labels.languages": "Мова",
   "ui.settings_window.labels.miscellaneous": "Інше",
 
-
-
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "Ігнорувати приховані теки",
   "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Увімкнути прив'язку конфігурації модифікацій до профілю",
-
-
 
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "Шлях до файлу StardewModdingAPI",
@@ -111,8 +89,6 @@
   "ui.settings_window.tooltips.save_changes": "Зберегти зміни",
   "ui.settings_window.tooltips.cancel_changes": "Скасувати",
 
-
-
   // Warnings
   "ui.warning.unable_to_add_profile": "Не вдалося додати \"{0}\", профіль з такою назвою вже існує!",
   "ui.warning.given_mod_folder_does_not_exist": "Обраної теки з модифікаціями не існує.\n\nПовертаємо попередній шлях.",
@@ -120,8 +96,6 @@
   "ui.warning.given_install_folder_not_under_mod_folder": "Вказаний шлях до встановлених Stardrop модифікацій не існує в {0}\n\nПовертаємо попередній шлях.",
   "ui.warning.given_invalid_smapi_executable": "Вказаний файл не є {0}\n\nПовертаємо попередній шлях.",
   "ui.warning.stardrop_locked": "Stardrop заблоковано, коли SMAPI запущено. Жодні зміни не набудуть чинності доки не закрити SMAPI.",
-
-
 
   "ui.warning.unable_to_locate_smapi": "Не вдалося виявити розташування StardewModdingAPI.exe\n\nБудь ласка, встановіть вірний шлях в меню:\nПерегляд > Налаштування",
   "ui.warning.mod_config_saved_but_not_enabled": "Налаштування конфігурації моду збережено в профілі \"{0}\", однак специфічні конфігурації модифікації в профілі не ввімкнено.\n\nПерейдіть до \"Перегляд\" > \"Налаштування\" та оберіть \"Увімкнути прив'язку конфігурації модифікацій до профілю\", щоб Stardrop автоматично зберігав і застосовував зміни конфігурації моду.",
@@ -134,8 +108,6 @@
   "ui.warning.no_manifest": "Файл manifest.json не знайдено в \"{0}\"",
   "ui.warning.unable_to_load_mod": "Не вдалося завантажити файл з \"{0}\".\n\nЗа деталями зверніться до файлу звіту.",
 
-
-
   // Messages
   "ui.message.confirm_mod_deletion": "Бажаєте видалити {0}? Ця дія безповоротна.",
   "ui.message.unsaved_config_changes": "Виявлено не збережені зміни конфігурації модифікацій для профілю {0}.\n\nБажаєте зберегти зміни?",
@@ -144,14 +116,10 @@
   "ui.message.confirm_bulk_change_mod_states_disable": "Вимкнути всі модифікації?\n\nПримітка: Ця дія безповоротна.",
   "ui.message.confirm_mod_update_method": "Виявлено попередню версію {0}. Бажаєте очистити попереднє встановлення?\n\nПримітка: Зазвичай рекомендується очищати попередню версію, але тоді файли конфігурацій буде втрачено.",
 
-
-
   // Window Names
   "ui.window.setting.name": "Налаштування",
   "ui.window.profiles.name": "Профілі",
   "ui.window.profile_naming.name": "Назва профілю",
-
-
 
   // Internals
   "internal.unknown": "Невідомо",
