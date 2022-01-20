@@ -81,7 +81,7 @@
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "Шлях до файлу StardewModdingAPI",
   "ui.settings_window.tooltips.mod_folder_path": "Шлях до теки з модифікаціями",
-
+  "ui.settings_window.tooltips.mod_install_path": "Шлях до теки, в яку Stardrop буде розміщувати щойно встановлені моди. Має бути в папці, зазначеній у \"Шлях до теки з модифікаціями\".",
   "ui.settings_window.tooltips.theme": "Поточна тема Stardrop",
   "ui.settings_window.tooltips.language": "Поточна мова Stardrop",
   "ui.settings_window.tooltips.ignore_hidden_folders": "Якщо активно, Stardrop ігноруватиме кореневі теки з модифікаціями, які починаються на \".\"",
@@ -98,6 +98,8 @@
   "ui.warning.stardrop_locked": "Stardrop заблоковано, коли SMAPI запущено. Жодні зміни не набудуть чинності доки не закрити SMAPI.",
 
   "ui.warning.unable_to_locate_smapi": "Не вдалося виявити розташування StardewModdingAPI.exe\n\nБудь ласка, встановіть вірний шлях в меню:\nПерегляд > Налаштування",
+  "ui.warning.mod_config_saved_but_not_enabled": "Saved mod config settings to profile {0}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.",
+
 
   "ui.warning.unable_to_determine_profile": "Не вдалося визначити обраний профіль.\n\nSMAPI не буде запущено.",
   "ui.warning.stardrop_up_to_date": "Stardrop не потребує оновлення.\n\n{0} в актуальному стані.",
