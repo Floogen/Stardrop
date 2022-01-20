@@ -14,8 +14,8 @@
   "ui.main_window.menu_items.stardrop_repository": "Репозиторій Stardrop",
 
   // Main Window - Menu Items - Context
-  "ui.main_window.menu_items.context.show_requirements": "Показувати залежності",
-  "ui.main_window.menu_items.context.hide_requirements": "Приховувати залежності",
+  "ui.main_window.menu_items.context.show_requirements": "Показувати вимоги",
+  "ui.main_window.menu_items.context.hide_requirements": "Приховувати вимоги",
   "ui.main_window.menu_items.context.cancel": "Скасувати",
   "ui.main_window.menu_items.context.open_containing_folder": "Відкрити теку з вмістом",
   "ui.main_window.menu_items.context.open_mod_page": "Відкрити сторінку модифікації",
@@ -30,7 +30,7 @@
   "ui.main_window.menu_headers.mod_name": "Назва модифікації",
   "ui.main_window.menu_headers.unique_id": "Унікальний ID",
   "ui.main_window.menu_headers.author": "Автор",
-  "ui.main_window.menu_headers.requirements": "Залежності",
+  "ui.main_window.menu_headers.requirements": "Вимоги",
   "ui.main_window.menu_headers.missing_requirements": "Відсутні залежності",
   "ui.main_window.menu_headers.version": "Версія",
   "ui.main_window.menu_headers.configuration": "Конфігурація",
@@ -102,7 +102,7 @@
   "ui.warning.unable_to_determine_profile": "Не вдалося визначити обраний профіль.\n\nSMAPI не буде запущено.",
   "ui.warning.stardrop_up_to_date": "Stardrop не потребує оновлення.\n\n{0} в актуальному стані.",
   "ui.warning.update_cooldown_minutes": "Запит на оновлення можна робити не частіше 5 хв.\n\nБудь ласка, спробуйте ще раз через {0} хв.",
-  "ui.warning.update_cooldown_seconds": "Запит на оновлення можна робити не частіше 5 хв.\n\nБудь ласка, спробуйте ще раз через {0} сек..",
+  "ui.warning.update_cooldown_seconds": "Запит на оновлення можна робити не частіше 5 хв.\n\nБудь ласка, спробуйте ще раз через {0} сек.",
   "ui.warning.unable_to_locate_log": "Не вдалося виявити SMAPI-latest.txt! SMAPI необхідний для визначення додаткової інформації про гру.",
   "ui.warning.unable_to_read_log": "Не вдалося прочитати файл звіту SMAPI, аби отримати версію гри.\n\nМодифікації не будуть перевірятись на наявність оновлень.",
   "ui.warning.no_manifest": "Файл manifest.json не знайдено в \"{0}\"",
@@ -111,7 +111,7 @@
   // Messages
   "ui.message.confirm_mod_deletion": "Бажаєте видалити {0}? Ця дія безповоротна.",
   "ui.message.unsaved_config_changes": "Виявлено не збережені зміни конфігурації модифікацій для профілю {0}.\n\nБажаєте зберегти зміни?",
-  "ui.message.stardrop_update_available": "Доступно оновлення Stardrop (v{0}).\n\nБажаєте завантажити зараз?",
+  "ui.message.stardrop_update_available": "Доступне оновлення Stardrop (v{0}).\n\nБажаєте завантажити зараз?",
   "ui.message.confirm_bulk_change_mod_states_enable": "Увімкнути всі модифікації?\n\nПримітка: Ця дія безповоротна.",
   "ui.message.confirm_bulk_change_mod_states_disable": "Вимкнути всі модифікації?\n\nПримітка: Ця дія безповоротна.",
   "ui.message.confirm_mod_update_method": "Виявлено попередню версію {0}. Бажаєте очистити попереднє встановлення?\n\nПримітка: Зазвичай рекомендується очищати попередню версію, але тоді файли конфігурацій буде втрачено.",
