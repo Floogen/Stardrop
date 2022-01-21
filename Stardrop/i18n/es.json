@@ -1,0 +1,132 @@
+{
+  // Main Window - Menu Items
+  "ui.main_window.menu_items.add_mod": "Agregar Mod.",
+  "ui.main_window.menu_items.start_smapi": "Iniciar SMAPI",
+  "ui.main_window.menu_items.exit": "Salir",
+  "ui.main_window.menu_items.settings": "Configuración",
+  "ui.main_window.menu_items.stardrop_log_file": "Archivo De Registro De Stardrop",
+  "ui.main_window.menu_items.smapi_log_file": "Archivo De Registro De SMAPI",
+  "ui.main_window.menu_items.refresh_mod_list": "Actualizar Lista De Mods",
+  "ui.main_window.menu_items.check_for_mod_updates": "Comprobar Actualizaciones De Mods",
+  "ui.main_window.menu_items.enable_all_mods": "Activar Todos Los Mods",
+  "ui.main_window.menu_items.disable_all_mods": "Desactivar Todos Los Mods",
+  "ui.main_window.menu_items.check_for_stardrop_update": "Comprobar Actualización De Stardrop",
+  "ui.main_window.menu_items.stardrop_repository": "Repositorio De Stardrop",
+
+  // Main Window - Menu Items - Context
+  "ui.main_window.menu_items.context.show_requirements": "Mostrar Requisitos",
+  "ui.main_window.menu_items.context.hide_requirements": "Ocultar Requisitos",
+  "ui.main_window.menu_items.context.cancel": "Cancelar",
+  "ui.main_window.menu_items.context.open_containing_folder": "Abrir La Carpeta Que Contiene",
+  "ui.main_window.menu_items.context.open_mod_page": "Abrir La Página Del Mod",
+  "ui.main_window.menu_items.context.delete": "Eliminar",
+
+  // Main Window - Menu Headers
+  "ui.main_window.menu_headers.file": "Archivo",
+  "ui.main_window.menu_headers.view": "Vista",
+  "ui.main_window.menu_headers.tools": "Herramientas",
+
+  "ui.main_window.menu_headers.enabled": "Activado",
+  "ui.main_window.menu_headers.mod_name": "Nombre Del Mod",
+  "ui.main_window.menu_headers.unique_id": "ID único",
+  "ui.main_window.menu_headers.author": "Autor",
+  "ui.main_window.menu_headers.requirements": "Requisitos",
+  "ui.main_window.menu_headers.missing_requirements": "Falta De Requisitos",
+  "ui.main_window.menu_headers.version": "Versión",
+  "ui.main_window.menu_headers.configuration": "Configuración",
+  "ui.main_window.menu_headers.status": "Estado",
+
+  // Main Window - Labels
+  "ui.main_window.labels.profile": "Perfil",
+  "ui.main_window.labels.enabled_mods": "Mods habilitados: ",
+  "ui.main_window.labels.total_mods": "Total de Mods: ",
+  "ui.main_window.labels.filter": "Filtro",
+
+  // Main Window - Hyperlinks
+  "ui.main_window.hyperlinks.click_to_open": "Click para abrir",
+  "ui.main_window.hyperlinks.update_available": "Actualización disponible ({0})",
+  "ui.main_window.hyperlinks.unofficial_update_available": "Actualización no oficial disponible ({0})",
+  "ui.main_window.hyperlinks.broken_compatibility_issue": "Problema de compatibilidad [roto]",
+
+  // Main Window - Buttons
+  "ui.main_window.buttons.save_configs": "Guardar Configuraciones",
+  "ui.main_window.buttons.hide_disabled_mods": "Ocultar Mods Desactivados",
+  "ui.main_window.buttons.show_updatable_mods": "Mostrar Mods Actualizables",
+
+  // Main Window - Buttons - Update Status
+  "ui.main_window.button.update_status.generic": "Mods Listos Para Actualizar: Haga Clic Para Actualizar",
+  "ui.main_window.button.update_status.updating": "Actualizando...",
+  "ui.main_window.button.update_status.list_available_updates": "Mods Listos Para Actualizar: {0}",
+  "ui.main_window.button.update_status.failed": "Fallo Comprobando Actualizaciones Del Mod.",
+
+  // Main Window - ComboBox
+  "ui.main_window.combobox.show_all_mods": "Mostrar Todos Los Mods",
+  "ui.main_window.combobox.hide_enabled_mods": "Ocultar Mods Activados",
+  "ui.main_window.combobox.mod_name": "Nombre Del mod",
+  "ui.main_window.combobox.author": "Autor",
+  "ui.main_window.combobox.requirements": "Requisitos",
+
+  // Settings Window - Labels
+  "ui.settings_window.labels.smapi_path": "Ruta De Acceso De SMAPI",
+  "ui.settings_window.labels.mod_path": "Ruta De Carpeta De Mods",
+  "ui.settings_window.labels.mod_install": "Ruta De Mods Instalados En Stardrop",
+  "ui.settings_window.labels.themes": "Temas",
+  "ui.settings_window.labels.languages": "Idiomas",
+  "ui.settings_window.labels.miscellaneous": "Miscelánea",
+
+  // Settings Window - Buttons
+  "ui.settings_window.buttons.ignore_hidden_folders": "Ignorar Carpetas Ocultas",
+  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Habilitar Configuraciones De Mods Específicas Para Cada Perfil",
+
+  // Settings Window - Tooltips
+  "ui.settings_window.tooltips.smapi": "La ruta del archivo de StardewModdingAPI",
+  "ui.settings_window.tooltips.mod_folder_path": "La ruta de la carpeta de mods",
+  "ui.settings_window.tooltips.mod_install_path": "La ruta de la carpeta en la que Stardrop colocará los mods recién instalados. Debe estar bajo la carpeta indicada en \"Mod Folder Path\".",
+  "ui.settings_window.tooltips.theme": "El tema actual de Stardrop",
+  "ui.settings_window.tooltips.language": "El idioma actual de Stardrop",
+  "ui.settings_window.tooltips.ignore_hidden_folders": "Si está marcada, Stardrop ignorará cualquier mods que tenga una carpeta padre que empiece por \".\"",
+  "ui.settings_window.tooltips.enable_profile_specific_configs": "Si está marcada, Stardrop guardará y restaurará los archivos config.json de los mods cuando se intercambien los perfiles",
+  "ui.settings_window.tooltips.save_changes": "Guardar Cambios",
+  "ui.settings_window.tooltips.cancel_changes": "Cancelar",
+
+  // Warnings
+  "ui.warning.unable_to_add_profile": "No se puede añadir {0}, ya existe un perfil con ese nombre!",
+  "ui.warning.given_mod_folder_does_not_exist": "La ruta de la carpeta del mod dada no existe.\n\nRevirtiendo a la ruta anterior.",
+  "ui.warning.given_install_folder_not_exist": "La ruta de la carpeta de mods instalados en Stardrop no existe.\n\nRevirtiendo a la ruta anterior.",
+  "ui.warning.given_install_folder_not_under_mod_folder": "La ruta de la carpeta de mods instalada por Stardrop no existe en {0}\n\nRevirtiendo a la ruta anterior.",
+  "ui.warning.given_invalid_smapi_executable": "El archivo dado no es {0}\n\nRevirtiendo a la ruta anterior.",
+  "ui.warning.stardrop_locked": "Stardrop está bloqueado mientras SMAPI está en funcionamiento. Cualquier cambio realizado no se reflejará hasta que se cierre SMAPI.",
+
+  "ui.warning.unable_to_locate_smapi": "No se puede localizar StardewModdingAPI.exe\n\nPor favor, establezca la ruta correcta del archivo en\nVista > Ajustes",
+  "ui.warning.mod_config_saved_but_not_enabled": "Guardado los ajustes de configuración del mod en el perfil {0}, sin embargo, las configuraciones de mods específicas del perfil no están habilitadas.\n\nVe a Vista > Ajustes y marca \"Enable Profile Specific Mod Configs\" para que Stardrop guarde y aplique automáticamente los cambios de configuración del mod.",
+  "ui.warning.unable_to_determine_profile": "No se ha podido determinar el perfil seleccionado.\n\nSMAPI no se iniciará.",
+  "ui.warning.stardrop_up_to_date": "Stardrop está actualizado.\n\n{0} es la última versión.",
+  "ui.warning.update_cooldown_minutes": "Las actualizaciones sólo pueden solicitarse una vez cada 5 minutos.\n\nPor favor, inténtelo de nuevo en {0} minuto(s).",
+  "ui.warning.update_cooldown_seconds": "Las actualizaciones sólo pueden solicitarse una vez cada 5 minutos.\n\nPor favor, inténtelo de nuevo en {0} segundo(s).",
+  "ui.warning.unable_to_locate_log": "No se ha podido localizar el archivo SMAPI-latest.txt! Es necesario que SMAPI se ejecute con éxito al menos una vez para que Stardrop detecte los detalles del juego.",
+  "ui.warning.unable_to_read_log": "No se puede leer el archivo de registro de SMAPI para obtener la versión del juego.\n\nNo se comprobarán actualizaciones para los mods",
+  "ui.warning.no_manifest": "No se ha encontrado manifest.json en \"{0}\"",
+  "ui.warning.unable_to_load_mod": "No se puede cargar el archivo ubicado en \"{0}\".\n\nConsulte el archivo de registro para obtener más información.",
+
+  // Messages
+  "ui.message.confirm_mod_deletion": "¿Está seguro de que desea eliminar {0}? Esto no se puede deshacer.",
+  "ui.message.unsaved_config_changes": "Se han detectado cambios de configuración de mods no guardados para el perfil {0}.\n\n¿Desea guardar los cambios?",
+  "ui.message.stardrop_update_available": "Hay una actualización (v{0}) disponible para Stardrop.\n\n¿Desea descargarlo ahora?",
+  "ui.message.confirm_bulk_change_mod_states_enable": "¿Activar todos los mods?\n\nNota: Esto no se puede deshacer.",
+  "ui.message.confirm_bulk_change_mod_states_disable": "¿Desactivar todos los mods?\n\nNota: Esto no se puede deshacer.",
+  "ui.message.confirm_mod_update_method": "Se ha detectado una versión anterior de {0}. ¿Desea borrar la instalación anterior?\n\nNota: Normalmente se recomienda borrar las versiones anteriores, aunque se perderán los archivos de configuración.",
+
+  // Window Names
+  "ui.window.setting.name": "Ajustes",
+  "ui.window.profiles.name": "Perfiles",
+  "ui.window.profile_naming.name": "Nombre De Perfil",
+
+  // Internals
+  "internal.unknown": "Desconocido",
+  "internal.enable": "Activar",
+  "internal.disable": "Desactivar",
+  "internal.yes": "Si",
+  "internal.no": "No",
+  "internal.ok": "OK",
+  "internal.unlock": "Desbloquear"
+}

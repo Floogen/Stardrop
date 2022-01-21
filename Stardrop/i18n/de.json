@@ -14,8 +14,11 @@
   "ui.main_window.menu_items.stardrop_repository": "Stardrop Quelle",
 
   // Main Window - Menu Items - Context
+  "ui.main_window.menu_items.context.show_requirements": "Voraussetzungen anzeigen",
+  "ui.main_window.menu_items.context.hide_requirements": "Voraussetzungen ausblenden",
   "ui.main_window.menu_items.context.cancel": "Abbrechen",
   "ui.main_window.menu_items.context.open_containing_folder": "Modordner öffnen",
+  "ui.main_window.menu_items.context.open_mod_page": "Modseite öffnen",
   "ui.main_window.menu_items.context.delete": "Löschen",
 
   // Main Window - Menu Headers
@@ -27,6 +30,7 @@
   "ui.main_window.menu_headers.mod_name": "Mod Name",
   "ui.main_window.menu_headers.unique_id": "Einmalige ID",
   "ui.main_window.menu_headers.author": "Author",
+  "ui.main_window.menu_headers.requirements": "Voraussetzungen",
   "ui.main_window.menu_headers.missing_requirements": "Fehlende Voraussetzungen",
   "ui.main_window.menu_headers.version": "Version",
   "ui.main_window.menu_headers.configuration": "Konfiguration",
@@ -56,13 +60,16 @@
   "ui.main_window.button.update_status.failed": "Mod Update Check fehlgeschlagen",
 
   // Main Window - ComboBox
+  "ui.main_window.combobox.show_all_mods": "Alle Mods anzeigen",
+  "ui.main_window.combobox.hide_enabled_mods": "Aktive Mods ausblenden",
   "ui.main_window.combobox.mod_name": "Mod Name",
   "ui.main_window.combobox.author": "Author",
   "ui.main_window.combobox.requirements": "Voraussetzungen",
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Pfad",
-  "ui.settings_window.labels.mod_path": "Mod Ordner Pfad",
+  "ui.settings_window.labels.mod_path": "Mod Ordnerpfad",
+  "ui.settings_window.labels.mod_install": "Ordnerpfad für neu installierte Mods",
   "ui.settings_window.labels.themes": "Themes",
   "ui.settings_window.labels.languages": "Sprache",
   "ui.settings_window.labels.miscellaneous": "Sonstiges",
@@ -73,7 +80,8 @@
 
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "Der Dateipfad von StardewModdingAPI",
-  "ui.settings_window.tooltips.mod_folder_path": "Der Ordnerpfad des Mod Ordners",
+  "ui.settings_window.tooltips.mod_folder_path": "Der Ordnerpfad in dem sich die Mods befinden",
+  "ui.settings_window.tooltips.mod_install_path": "Der Ordnerpfad, in dem Stardrop neu installierte Mods platziert. Dieser muss sich in dem Ordner, der in \"Mod Ordnerpfad\" angegeben ist befinden.",
   "ui.settings_window.tooltips.theme": "Das aktuelle Thema von Stardrop",
   "ui.settings_window.tooltips.language": "Die aktuelle Sprache von Stardrop",
   "ui.settings_window.tooltips.ignore_hidden_folders": "Wenn diese Option aktiviert ist, ignoriert Stardrop alle Mods, deren übergeordneter Ordner mit \".\" beginnt.",
@@ -84,6 +92,8 @@
   // Warnings
   "ui.warning.unable_to_add_profile": "{0} kann nicht hinzugefügt werden, es existiert bereits ein Profil unter diesem Namen!",
   "ui.warning.given_mod_folder_does_not_exist": "Der angegebene Ordnerpfad existiert nicht.\n\nZum vorherigen Pfad zurückkehren.",
+  "ui.warning.given_install_folder_not_exist": "Der angegebene Ordnerpfad in den Stardrop Mods installieren soll existiert nicht.\n\nZum vorherigen Pfad zurückkehren.",
+  "ui.warning.given_install_folder_not_under_mod_folder": "Der angegebene Ordnerpfad in den Stardrop Mods installieren soll existiert nicht unter {0}\n\nZum vorherigen Pfad zurückkehren.",
   "ui.warning.given_invalid_smapi_executable": "Die angegebene Datei ist nicht {0}\n\nZum vorherigen Pfad zurückkehren.",
   "ui.warning.stardrop_locked": "Stardrop ist gesperrt, solange die SMAPI läuft. Alle vorgenommenen Änderungen werden erst nach dem Schließen von SMAPI übernommen.",
 

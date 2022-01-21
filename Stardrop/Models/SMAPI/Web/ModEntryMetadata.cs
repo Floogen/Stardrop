@@ -47,6 +47,7 @@ namespace Stardrop.Models.SMAPI.Web
 
         /// <summary>The latest unofficial version, if newer than <see cref="Main"/> and <see cref="Optional"/>.</summary>
         public ModEntryVersion Unofficial { get; set; }
+        public string CustomUrl { get; set; }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public WikiCompatibilityStatus CompatibilityStatus { get; set; }

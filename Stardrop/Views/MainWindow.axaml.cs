@@ -297,6 +297,17 @@ namespace Stardrop.Views
             OpenNativeExplorer(selectedMod.ModFileInfo.DirectoryName);
         }
 
+        private void ModGridMenuRow_OpenModPage(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var selectedMod = (sender as MenuItem).DataContext as Mod;
+            if (selectedMod is null)
+            {
+                return;
+            }
+
+            _viewModel.OpenBrowser(selectedMod.ModPageUri);
+        }
+
         private async void ModGridMenuRow_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var modGrid = this.FindControl<DataGrid>("modGrid");
@@ -424,7 +435,7 @@ namespace Stardrop.Views
             if (Program.settings.EnableProfileSpecificModConfigs && e.RemovedItems.Count > 0 && e.RemovedItems[0] is Profile oldProfile && oldProfile is not null)
             {
                 _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
-                var pendingConfigUpdates = _viewModel.GetPendingConfigUpdates(oldProfile, inverseMerge: true);
+                var pendingConfigUpdates = _viewModel.GetPendingConfigUpdates(oldProfile, inverseMerge: true, excludeMissingConfigs: true);
                 if (pendingConfigUpdates.Count > 0 && await new MessageWindow(String.Format(Program.translation.Get("ui.message.unsaved_config_changes"), oldProfile.Name)).ShowDialog<bool>(this))
                 {
                     _viewModel.ReadModConfigs(oldProfile, pendingConfigUpdates);
@@ -690,6 +701,12 @@ namespace Stardrop.Views
             // Update the enabled mod folder linkage
             UpdateEnabledModsFolder(profile, enabledModsPath);
 
+            // Set the config files
+            if (Program.settings.EnableProfileSpecificModConfigs)
+            {
+                _viewModel.WriteModConfigs(profile);
+            }
+
             // Update the profile's configurations
             if (Program.settings.EnableProfileSpecificModConfigs)
             {
@@ -874,7 +891,7 @@ namespace Stardrop.Views
 
                         if (modItem.IsModOutdated(modUpdateInfo.SuggestedVersion))
                         {
-                            modItem.Uri = modUpdateInfo.Link;
+                            modItem.UpdateUri = modUpdateInfo.Link;
                             modItem.SuggestedVersion = modUpdateInfo.SuggestedVersion;
                             modItem.Status = modUpdateInfo.Status;
 
@@ -882,7 +899,7 @@ namespace Stardrop.Views
                         }
                         if (modUpdateInfo.Status != WikiCompatibilityStatus.Unknown && modUpdateInfo.Status != WikiCompatibilityStatus.Ok)
                         {
-                            modItem.Uri = modUpdateInfo.Link;
+                            modItem.UpdateUri = modUpdateInfo.Link;
                             modItem.SuggestedVersion = modUpdateInfo.SuggestedVersion;
                             modItem.Status = modUpdateInfo.Status;
                         }
@@ -973,7 +990,8 @@ namespace Stardrop.Views
                 var modUpdateData = await SMAPI.GetModUpdateData(Program.settings.GameDetails, mods);
                 foreach (var modItem in mods)
                 {
-                    var link = String.Empty;
+                    var updateLink = String.Empty;
+                    var modPageLink = String.Empty;
                     var recommendedVersion = String.Empty;
                     var status = WikiCompatibilityStatus.Unknown;
 
@@ -982,7 +1000,7 @@ namespace Stardrop.Views
                     var metaData = modUpdateData.Where(m => modItem.UniqueId.Equals(m.Id, StringComparison.OrdinalIgnoreCase) && m.Metadata is not null).Select(m => m.Metadata).FirstOrDefault();
                     if (suggestedUpdateData is not null)
                     {
-                        link = suggestedUpdateData.Url;
+                        updateLink = suggestedUpdateData.Url;
                         if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Ok)
                         {
                             status = metaData.CompatibilityStatus;
@@ -994,26 +1012,38 @@ namespace Stardrop.Views
                     else if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
                     {
                         status = metaData.CompatibilityStatus;
-                        if (metaData.CompatibilityStatus == WikiCompatibilityStatus.Unofficial && metaData.Unofficial is not null)
+                        if (metaData.CompatibilityStatus == WikiCompatibilityStatus.Unofficial && metaData.Unofficial is not null && modItem.IsModOutdated(metaData.Unofficial.Version))
                         {
-                            link = metaData.Unofficial.Url;
+                            updateLink = metaData.Unofficial.Url;
                             recommendedVersion = metaData.Unofficial.Version;
 
                             modsToUpdate++;
                         }
                         else if (metaData.Main is not null)
                         {
-                            link = metaData.Main.Url;
+                            updateLink = metaData.Main.Url;
                             recommendedVersion = metaData.Main.Version;
                         }
                     }
 
-                    modItem.Uri = link;
+                    // Check for smapi.io's suggested webpage
+                    if (metaData is not null)
+                    {
+                        modPageLink = metaData.CustomUrl;
+                        if (String.IsNullOrEmpty(modPageLink) && metaData.Main is not null)
+                        {
+                            modPageLink = metaData.Main.Url;
+                        }
+                    }
+
+                    modItem.UpdateUri = updateLink;
+                    modItem.ModPageUri = modPageLink;
                     modItem.SuggestedVersion = recommendedVersion;
                     modItem.Status = status;
 
                     if (!String.IsNullOrEmpty(modItem.ParsedStatus))
                     {
+                        Program.helper.Log($"Update available for {modItem.UniqueId} (v{modItem.SuggestedVersion}): {modItem.UpdateUri}");
                         if (updateCache.Mods.FirstOrDefault(m => m.UniqueId.Equals(modItem.UniqueId)) is ModUpdateInfo modInfo && modInfo is not null)
                         {
                             modInfo.SuggestedVersion = recommendedVersion;
@@ -1021,7 +1051,7 @@ namespace Stardrop.Views
                         }
                         else
                         {
-                            updateCache.Mods.Add(new ModUpdateInfo(modItem.UniqueId, recommendedVersion, status, modItem.Uri));
+                            updateCache.Mods.Add(new ModUpdateInfo(modItem.UniqueId, recommendedVersion, status, modItem.UpdateUri));
                         }
                     }
                 }
@@ -1046,10 +1076,11 @@ namespace Stardrop.Views
                     if (modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(modEntry.Id)) is ModKeyInfo keyInfo && keyInfo is not null)
                     {
                         keyInfo.Name = modEntry.Metadata.Name;
+                        keyInfo.PageUrl = modEntry.Metadata.CustomUrl;
                     }
                     else
                     {
-                        modKeysCache.Add(new ModKeyInfo() { Name = modEntry.Metadata.Name, UniqueId = modEntry.Id });
+                        modKeysCache.Add(new ModKeyInfo() { Name = modEntry.Metadata.Name, UniqueId = modEntry.Id, PageUrl = modEntry.Metadata.CustomUrl });
                     }
                 }
 
@@ -1163,7 +1194,7 @@ namespace Stardrop.Views
                         // If the archive doesn't have a manifest, warn the user
                         if (manifest is not null)
                         {
-                            string installPath = Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods");
+                            string installPath = Program.settings.ModInstallPath;
                             if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null)
                             {
                                 if (!manifest.DeleteOldVersion)

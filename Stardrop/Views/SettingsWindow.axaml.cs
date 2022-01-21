@@ -33,13 +33,16 @@ namespace Stardrop.Views
             this.FindControl<Button>("cancelButton").Click += Exit_Click;
             this.FindControl<Button>("smapiFolderButton").Click += SmapiFolderButton_Click;
             this.FindControl<Button>("modFolderButton").Click += ModFolderButton_Click;
+            this.FindControl<Button>("modInstallButton").Click += ModInstallButton_Click;
             this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
 
             // Push the focus for the textboxes to the end of their strings
             var smapiTextBox = this.FindControl<TextBox>("smapiFolderPathBox");
             var modFolderTextBox = this.FindControl<TextBox>("modFolderPathBox");
+            var modInstallTextBox = this.FindControl<TextBox>("modInstallPathBox");
             SetTextboxTextFocusToEnd(smapiTextBox, smapiTextBox.Text);
             SetTextboxTextFocusToEnd(modFolderTextBox, modFolderTextBox.Text);
+            SetTextboxTextFocusToEnd(modInstallTextBox, modInstallTextBox.Text);
 
             // Handle adding the themes
             foreach (string fileFullName in Directory.EnumerateFiles("Themes", "*.xaml"))
@@ -135,7 +138,35 @@ namespace Stardrop.Views
             var folderPath = await dialog.ShowAsync(this);
             if (!String.IsNullOrEmpty(folderPath))
             {
-                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modFolderPathBox"), folderPath);
+                var modFolderPathBox = this.FindControl<TextBox>("modFolderPathBox");
+                SetTextboxTextFocusToEnd(modFolderPathBox, folderPath);
+
+                var modInstallPathBox = this.FindControl<TextBox>("modInstallPathBox");
+                if (String.IsNullOrEmpty(modInstallPathBox.Text) || !Directory.Exists(modInstallPathBox.Text) || !modInstallPathBox.Text.Contains(modFolderPathBox.Text, StringComparison.OrdinalIgnoreCase))
+                {
+                    modInstallPathBox.Text = Path.Combine(modFolderPathBox.Text, "Stardrop Installed Mods");
+                    SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
+                    return;
+                }
+            }
+        }
+
+        private async void ModInstallButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            OpenFolderDialog dialog = new OpenFolderDialog()
+            {
+                Title = "Select the output folder for mods installed via Stardrop"
+            };
+
+            if (!String.IsNullOrEmpty(Program.settings.ModInstallPath))
+            {
+                dialog.Directory = Program.settings.ModInstallPath;
+            }
+
+            var folderPath = await dialog.ShowAsync(this);
+            if (!String.IsNullOrEmpty(folderPath))
+            {
+                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modInstallPathBox"), folderPath);
             }
         }
 
@@ -154,6 +185,20 @@ namespace Stardrop.Views
             {
                 new WarningWindow(Program.translation.Get("ui.warning.given_mod_folder_does_not_exist"), Program.translation.Get("internal.ok")).ShowDialog(this);
                 SetTextboxTextFocusToEnd(modFolderPathBox, _oldSettings.ModFolderPath);
+                return;
+            }
+
+            var modInstallPathBox = this.FindControl<TextBox>("modInstallPathBox");
+            if (String.IsNullOrEmpty(modInstallPathBox.Text) || !Directory.Exists(modInstallPathBox.Text))
+            {
+                new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
+                SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
+                return;
+            }
+            else if (!modInstallPathBox.Text.Contains(modFolderPathBox.Text, StringComparison.OrdinalIgnoreCase))
+            {
+                new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_under_mod_folder"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
+                SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
                 return;
             }
 
@@ -182,6 +227,11 @@ namespace Stardrop.Views
             if (String.IsNullOrEmpty(Program.settings.ModFolderPath))
             {
                 SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modFolderPathBox"), Pathing.defaultModPath);
+            }
+
+            if (String.IsNullOrEmpty(Program.settings.ModInstallPath))
+            {
+                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modInstallPathBox"), Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods"));
             }
 
             return true;

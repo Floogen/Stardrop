@@ -83,6 +83,12 @@ namespace Stardrop
                     settings.ModFolderPath = Pathing.defaultModPath;
                 }
 
+                // Set the default mod install path (for mods that are installed by Stardrop)
+                if (!String.IsNullOrEmpty(Pathing.defaultModPath) && String.IsNullOrEmpty(settings.ModInstallPath))
+                {
+                    settings.ModInstallPath = Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods");
+                }
+
                 // Load the translations
                 if (String.IsNullOrEmpty(settings.Language))
                 {

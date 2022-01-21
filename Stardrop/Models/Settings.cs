@@ -15,6 +15,7 @@ namespace Stardrop.Models
         public string LastSelectedProfileName { get; set; }
         public string SMAPIFolderPath { get; set; }
         public string ModFolderPath { get; set; }
+        public string ModInstallPath { get; set; }
         public bool IgnoreHiddenFolders { get; set; } = true;
         public bool EnableProfileSpecificModConfigs { get; set; }
         public GameDetails GameDetails { get; set; }

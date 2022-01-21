@@ -25,7 +25,8 @@ namespace Stardrop.Utilities
             Russian,
             Spanish,
             Thai,
-            Turkish
+            Turkish,
+            Ukrainian
         }
 
         public enum LanguageAbbreviation
@@ -42,7 +43,8 @@ namespace Stardrop.Utilities
             ru,
             es,
             th,
-            tr
+            tr,
+            uk
         }
         public Dictionary<Language, LanguageAbbreviation> LanguageNameToAbbreviations = new();
         public Dictionary<LanguageAbbreviation, Language> AbbreviationsToLanguageName = new();

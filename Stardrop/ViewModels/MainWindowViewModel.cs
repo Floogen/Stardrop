@@ -229,6 +229,10 @@ namespace Stardrop.ViewModels
                             mod.Requirements.Add(new ManifestDependency(dependency.UniqueID, dependency.MinimumVersion, dependency.IsRequired) { Name = dependencyKey is null ? dependency.UniqueID : dependencyKey.Name });
                         }
                     }
+                    if (modKeysCache is not null && modKeysCache.Any(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        mod.ModPageUri = modKeysCache.First(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).PageUrl;
+                    }
 
                     // Check if any config file exists
                     var configPath = Path.Combine(fileInfo.DirectoryName, "config.json");
@@ -355,14 +359,14 @@ namespace Stardrop.ViewModels
             }
         }
 
-        internal List<Config> GetPendingConfigUpdates(Profile profile, bool inverseMerge = false)
+        internal List<Config> GetPendingConfigUpdates(Profile profile, bool inverseMerge = false, bool excludeMissingConfigs = false)
         {
             // Merge any existing preserved configs
             List<Config> pendingConfigUpdates = new List<Config>();
             foreach (var modId in profile.EnabledModIds.Select(id => id.ToLower()))
             {
                 var mod = Mods.FirstOrDefault(m => m.UniqueId.Equals(modId, StringComparison.OrdinalIgnoreCase));
-                if (mod is null || mod.ModFileInfo is null || mod.Config is null)
+                if (mod is null || mod.ModFileInfo is null)
                 {
                     continue;
                 }
@@ -371,28 +375,42 @@ namespace Stardrop.ViewModels
                 {
                     if (profile.PreservedModConfigs.ContainsKey(modId))
                     {
-                        // Merge the config
-                        var originalJson = mod.Config.Data;
-                        var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]);
-
-                        if (originalJson != archivedJson)
+                        // Write the archived config, if the current one doesn't exist
+                        if (mod.Config is null)
                         {
-                            // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
-                            string mergedJson = inverseMerge ? JsonTools.Merge(archivedJson, originalJson) : JsonTools.Merge(originalJson, archivedJson);
-                            mod.Config.Data = mergedJson;
+                            if (excludeMissingConfigs || String.IsNullOrEmpty(mod.ModFileInfo.DirectoryName))
+                            {
+                                continue;
+                            }
 
-                            // Apply the changes to the config file
-                            pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mergedJson });
+                            mod.Config = new Config() { UniqueId = modId, FilePath = Path.Combine(mod.ModFileInfo.DirectoryName, "config.json"), Data = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]) };
+                            pendingConfigUpdates.Add(mod.Config);
+                        }
+                        else
+                        {
+                            // Merge the config
+                            var originalJson = mod.Config.Data;
+                            var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]);
+
+                            if (originalJson != archivedJson)
+                            {
+                                // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
+                                string mergedJson = inverseMerge ? JsonTools.Merge(archivedJson, originalJson) : JsonTools.Merge(originalJson, archivedJson);
+                                mod.Config.Data = mergedJson;
+
+                                // Apply the changes to the config file
+                                pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mergedJson });
+                            }
                         }
                     }
-                    else
+                    else if (mod.Config is not null)
                     {
                         pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mod.Config.Data });
                     }
                 }
                 catch (Exception ex)
                 {
-                    Program.helper.Log($"Failed to process config.json for mod {modId}", Helper.Status.Warning);
+                    Program.helper.Log($"Failed to process config.json for mod {modId}: {ex}", Helper.Status.Warning);
                 }
             }
 
@@ -432,10 +450,16 @@ namespace Stardrop.ViewModels
             }
 
             // Merge any existing preserved configs
-            foreach (var configInfo in pendingConfigUpdates.Where(c => profile.PreservedModConfigs.ContainsKey(c.UniqueId.ToLower()) && File.Exists(c.FilePath)))
+            foreach (var configInfo in pendingConfigUpdates.Where(c => profile.PreservedModConfigs.ContainsKey(c.UniqueId.ToLower())))
             {
                 try
                 {
+                    var fileInfo = new FileInfo(configInfo.FilePath);
+                    if (!Directory.Exists(fileInfo.DirectoryName))
+                    {
+                        continue;
+                    }
+
                     // Apply the changes to the config file
                     File.WriteAllText(configInfo.FilePath, configInfo.Data);
                 }
