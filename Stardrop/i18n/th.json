@@ -1,23 +1,24 @@
 {
   // Main Window - Menu Items
-  "ui.main_window.menu_items.add_mod": "เพิ่ม Mod",
+  "ui.main_window.menu_items.add_mod": "เพิ่มม็อด",
   "ui.main_window.menu_items.start_smapi": "เริ่ม SMAPI",
   "ui.main_window.menu_items.exit": "ปิด",
   "ui.main_window.menu_items.settings": "ตั้งค่า",
   "ui.main_window.menu_items.stardrop_log_file": "ไฟล์บันทึก Stardrop",
   "ui.main_window.menu_items.smapi_log_file": "ไฟล์บันทึก SMAPI",
   "ui.main_window.menu_items.refresh_mod_list": "รีเฟรชรายการม็อด",
-  "ui.main_window.menu_items.check_for_mod_updates": "ตรวจสอบการอัปเดต Mod",
-  "ui.main_window.menu_items.enable_all_mods": "เปิดใช้งาน Mods ทั้งหมด",
-  "ui.main_window.menu_items.disable_all_mods": "ปิดการใช้งาน Mods ทั้งหมด",
+  "ui.main_window.menu_items.check_for_mod_updates": "ตรวจสอบการอัปเดตม็อด",
+  "ui.main_window.menu_items.enable_all_mods": "เปิดใช้งานม็อดทั้งหมด",
+  "ui.main_window.menu_items.disable_all_mods": "ปิดการใช้งานม็อดทั้งหมด",
   "ui.main_window.menu_items.check_for_stardrop_update": "ตรวจสอบการอัปเดต Stardrop",
   "ui.main_window.menu_items.stardrop_repository": "Stardrop Repository",
 
   // Main Window - Menu Items - Context
-  "ui.main_window.menu_items.context.show_requirements": "แสดงความต้องการของ Mod",
-  "ui.main_window.menu_items.context.hide_requirements": "ซ่อนความต้องการของ Mod",
+  "ui.main_window.menu_items.context.show_requirements": "แสดงความต้องการของม็อด",
+  "ui.main_window.menu_items.context.hide_requirements": "ซ่อนความต้องการของม็อด",
   "ui.main_window.menu_items.context.cancel": "ยกเลิก",
   "ui.main_window.menu_items.context.open_containing_folder": "เปิดโฟลเดอร์",
+  "ui.main_window.menu_items.context.open_mod_page": "เปิดหน้าเพจม็อด",
   "ui.main_window.menu_items.context.delete": "ลบ",
 
   // Main Window - Menu Headers
@@ -26,19 +27,19 @@
   "ui.main_window.menu_headers.tools": "เครื่องมือ",
 
   "ui.main_window.menu_headers.enabled": "เปิดใช้งาน",
-  "ui.main_window.menu_headers.mod_name": "ชื่อ Mod",
+  "ui.main_window.menu_headers.mod_name": "ชื่อม็อด",
   "ui.main_window.menu_headers.unique_id": "Unique ID",
   "ui.main_window.menu_headers.author": "ผู้เขียน",
   "ui.main_window.menu_headers.requirements": "ความต้องการ",
-  "ui.main_window.menu_headers.missing_requirements": "Mod ที่ไม่ได้ติดตั้ง",
+  "ui.main_window.menu_headers.missing_requirements": "ม็อดที่ไม่ได้ติดตั้ง",
   "ui.main_window.menu_headers.version": "เวอร์ชั่น",
   "ui.main_window.menu_headers.configuration": "การกำหนดค่า",
   "ui.main_window.menu_headers.status": "สถานะ",
 
   // Main Window - Labels
   "ui.main_window.labels.profile": "โปรไฟล์",
-  "ui.main_window.labels.enabled_mods": "Mods ที่เปิดใช้งาน: ",
-  "ui.main_window.labels.total_mods": "Mods ทั้งหมด: ",
+  "ui.main_window.labels.enabled_mods": "ม็อดที่เปิดใช้งาน: ",
+  "ui.main_window.labels.total_mods": "ม็อดทั้งหมด: ",
   "ui.main_window.labels.filter": "กรอง",
 
   // Main Window - Hyperlinks
@@ -49,66 +50,70 @@
 
   // Main Window - Buttons
   "ui.main_window.buttons.save_configs": "บันทึกการกำหนดค่า",
-  "ui.main_window.buttons.hide_disabled_mods": "ซ่อน Mods ที่ปิดใช้งาน",
-  "ui.main_window.buttons.show_updatable_mods": "แสดง Mods ที่อัพเดตได้",
+  "ui.main_window.buttons.hide_disabled_mods": "ซ่อนม็อดที่ปิดใช้งาน",
+  "ui.main_window.buttons.show_updatable_mods": "แสดงม็อดที่อัปเดตได้",
 
   // Main Window - Buttons - Update Status
-  "ui.main_window.button.update_status.generic": "Mods พร้อมที่จะอัปเดต: คลิกเพื่อรีเฟรช",
+  "ui.main_window.button.update_status.generic": "ม็อดพร้อมที่จะอัปเดต: คลิกเพื่อรีเฟรช",
   "ui.main_window.button.update_status.updating": "กำลังอัปเดต...",
-  "ui.main_window.button.update_status.list_available_updates": "Mods พร้อมที่จะอัปเดต: {0}",
-  "ui.main_window.button.update_status.failed": "ตรวจสอบการอัปเดต Mod ล้มเหลว",
+  "ui.main_window.button.update_status.list_available_updates": "ม็อดพร้อมที่จะอัปเดต: {0}",
+  "ui.main_window.button.update_status.failed": "ตรวจสอบการอัปเดตม็อดล้มเหลว",
 
   // Main Window - ComboBox
-  "ui.main_window.combobox.show_all_mods": "แสดง Mods ทั้งหมด",
-  "ui.main_window.combobox.hide_enabled_mods": "ซ่อน Mods ที่เปิดใช้งาน",
-  "ui.main_window.combobox.mod_name": "ชื่อ Mod",
+  "ui.main_window.combobox.show_all_mods": "แสดงม็อดทั้งหมด",
+  "ui.main_window.combobox.hide_enabled_mods": "ซ่อนม็อดที่เปิดใช้งาน",
+  "ui.main_window.combobox.mod_name": "ชื่อม็อด",
   "ui.main_window.combobox.author": "ผู้เขียน",
   "ui.main_window.combobox.requirements": "ความต้องการ",
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "เส้นทางของ SMAPI",
-  "ui.settings_window.labels.mod_path": "เส้นทางของโฟลเดอร์ Mod",
+  "ui.settings_window.labels.mod_path": "เส้นทางของโฟลเดอร์ม็อด",
+  "ui.settings_window.labels.mod_install": "เส้นทางม็อดที่ถูกติดตั้งผ่าน Stardrop",
   "ui.settings_window.labels.themes": "ธีม",
   "ui.settings_window.labels.languages": "ภาษา",
   "ui.settings_window.labels.miscellaneous": "เบ็ดเตล็ด",
 
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "ละเว้นโฟลเดอร์ที่ซ่อนอยู่",
-  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "เปิดใช้งานการกำหนดค่า Mod เฉพาะโปรไฟล์",
+  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "เปิดใช้งานการกำหนดค่าม็อดเฉพาะโปรไฟล์",
 
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "เส้นทางของไฟล์ StardewModdingAPI",
-  "ui.settings_window.tooltips.mod_folder_path": "เส้นทางของโฟลเดอร์ mod",
+  "ui.settings_window.tooltips.mod_folder_path": "เส้นทางของโฟลเดอร์ม็อด",
+  "ui.settings_window.tooltips.mod_install_path": "เส้นทางโฟลเดอร์ที่ Stardrop จะวางม็อดที่เพิ่งติดตั้งใหม่ ต้องอยู่ภายใต้โฟลเดอร์ที่ระบุใน \"เส้นทางของโฟลเดอร์ม็อด\"",
   "ui.settings_window.tooltips.theme": "ธีมปัจจุบันของ Stardrop",
   "ui.settings_window.tooltips.language": "ภาษาปัจจุบันของ Stardrop",
   "ui.settings_window.tooltips.ignore_hidden_folders": "หากเลือกไว้ Stardrop จะไม่สนใจม็อดใดๆ ที่มีโฟลเดอร์หลักที่ขึ้นต้นด้วย \".\"",
-  "ui.settings_window.tooltips.enable_profile_specific_configs": "หากเลือกไว้ Stardrop จะบันทึกและกู้คืนไฟล์ config.json จาก mods เมื่อสลับโปรไฟล์",
+  "ui.settings_window.tooltips.enable_profile_specific_configs": "หากเลือกไว้ Stardrop จะบันทึกและกู้คืนไฟล์ config.json จากม็อดเมื่อสลับโปรไฟล์",
   "ui.settings_window.tooltips.save_changes": "บันทึกการเปลี่ยนแปลง",
   "ui.settings_window.tooltips.cancel_changes": "ยกเลิก",
 
   // Warnings
   "ui.warning.unable_to_add_profile": "ไม่สามารถเพิ่ม {0} โปรไฟล์มีอยู่แล้วภายใต้ชื่อนั้น!",
-  "ui.warning.given_mod_folder_does_not_exist": "ไม่มีเส้นทางของโฟลเดอร์ mod ที่ระบุ\n\nกำลังย้อนกลับไปยังเส้นทางก่อนหน้า",
+  "ui.warning.given_mod_folder_does_not_exist": "ไม่มีเส้นทางของโฟลเดอร์ม็อดที่ระบุ\n\nกำลังย้อนกลับไปยังเส้นทางก่อนหน้า",
+  "ui.warning.given_install_folder_not_exist": "ไม่มีเส้นทางโฟลเดอร์ม็อดที่ถูกติดตั้งผ่าน Stardrop ที่ระบุ\n\nกำลังเปลี่ยนกลับเป็นเส้นทางก่อนหน้า",
+  "ui.warning.given_install_folder_not_under_mod_folder": "เส้นทางโฟลเดอร์ม็อดที่ติดตั้งผ่าน Stardrop ที่ระบุ ไม่มีอยู่ใน {0}\n\nกำลังเปลี่ยนกลับเป็นเส้นทางก่อนหน้า",
   "ui.warning.given_invalid_smapi_executable": "ไฟล์ที่ระบุไม่ใช่ {0}\n\nกำลังย้อนกลับไปยังเส้นทางก่อนหน้า",
   "ui.warning.stardrop_locked": "Stardrop ถูกล็อคในขณะที่ SMAPI กำลังทำงาน การเปลี่ยนแปลงใดๆ ที่ทำขึ้นจะไม่มีผลจนกว่า SMAPI จะปิดลง",
 
   "ui.warning.unable_to_locate_smapi": "ไม่พบ StardewModdingAPI.exe\n\nโปรดตั้งค่าเส้นทางไฟล์ที่ถูกต้องใน\nมุมมอง > ตั้งค่า",
-  "ui.warning.mod_config_saved_but_not_enabled": "บันทึกการตั้งค่าการกำหนดค่าม็อดไปที่โปรไฟล์ {0} อย่างไรก็ตาม การกำหนดค่า mod เฉพาะโปรไฟล์ไม่ได้เปิดใช้งาน\n\nไปที่ มุมมอง > ตั้งค่า และตรวจสอบ \"เปิดใช้งานการกำหนดค่า Mod เฉพาะโปรไฟล์\" เพื่อให้ Stardrop บันทึกและใช้การเปลี่ยนแปลงการกำหนดค่า mod โดยอัตโนมัติ",
+  "ui.warning.mod_config_saved_but_not_enabled": "บันทึกการตั้งค่าการกำหนดค่าม็อดไปที่โปรไฟล์ {0} อย่างไรก็ตาม การกำหนดค่าม็อดเฉพาะโปรไฟล์ไม่ได้เปิดใช้งาน\n\nไปที่ มุมมอง > ตั้งค่า และตรวจสอบ \"เปิดใช้งานการกำหนดค่าม็อดเฉพาะโปรไฟล์\" เพื่อให้ Stardrop บันทึกและใช้การเปลี่ยนแปลงการกำหนดค่าม็อดโดยอัตโนมัติ",
   "ui.warning.unable_to_determine_profile": "ไม่สามารถระบุโปรไฟล์ที่เลือกได้\n\nSMAPI จะไม่เริ่มทำงาน",
   "ui.warning.stardrop_up_to_date": "Stardrop เป็นข้อมูลล่าสุด\n\n{0} เป็นเวอร์ชันล่าสุด",
   "ui.warning.update_cooldown_minutes": "สามารถขออัพเดทได้ทุกๆ 5 นาทีเท่านั้น\n\nโปรดลองอีกครั้งใน {0} นาที",
   "ui.warning.update_cooldown_seconds": "สามารถขออัพเดทได้ทุกๆ 5 นาทีเท่านั้น\n\nโปรดลองอีกครั้งใน {0} วินาที",
   "ui.warning.unable_to_locate_log": "ไม่พบ SMAPI-latest.txt! จะต้องเปิดใช้งาน SMAPI อย่างน้อย 1 ครั้ง เพื่อให้ Stardrop ตรวจพบรายละเอียดของเกม",
-  "ui.warning.unable_to_read_log": "ไม่สามารถอ่านไฟล์บันทึกของ SMAPI เพื่อหาเวอร์ชันเกม\n\nMods จะไม่ถูกตรวจสอบการอัปเดต",
+  "ui.warning.unable_to_read_log": "ไม่สามารถอ่านไฟล์บันทึกของ SMAPI เพื่อหาเวอร์ชันเกม\n\nม็อดจะไม่ถูกตรวจสอบการอัปเดต",
   "ui.warning.no_manifest": "ไม่พบ manifest.json ใน \"{0}\"",
   "ui.warning.unable_to_load_mod": "ไม่สามารถโหลดไฟล์ที่อยู่ใน \"{0}\"\n\nดูไฟล์บันทึกสำหรับข้อมูลเพิ่มเติม",
 
   // Messages
   "ui.message.confirm_mod_deletion": "คุณแน่ใจหรือว่าต้องการลบ {0}? การดำเนินการนี้ไม่สามารถยกเลิกได้",
-  "ui.message.unsaved_config_changes": "ตรวจพบการเปลี่ยนแปลงการกำหนดค่า mod ที่ไม่ได้บันทึกสำหรับโปรไฟล์ {0}.\n\nคุณต้องการบันทึกการเปลี่ยนแปลงหรือไม่?",
+  "ui.message.unsaved_config_changes": "ตรวจพบการเปลี่ยนแปลงการกำหนดค่าม็อด ที่ไม่ได้บันทึกสำหรับโปรไฟล์ {0}\n\nคุณต้องการบันทึกการเปลี่ยนแปลงหรือไม่?",
   "ui.message.stardrop_update_available": "มีการอัปเดต (v{0}) สำหรับ Stardrop\n\nคุณต้องการดาวน์โหลดตอนนี้?",
-  "ui.message.confirm_bulk_change_mod_states_enable": "เปิดใช้งาน mods ทั้งหมด?\n\nหมายเหตุ: การดำเนินการนี้ไม่สามารถยกเลิกได้",
-  "ui.message.confirm_bulk_change_mod_states_disable": "ปิดการใช้งาน mods ทั้งหมด?\n\nหมายเหตุ: การดำเนินการนี้ไม่สามารถยกเลิกได้",
+  "ui.message.confirm_bulk_change_mod_states_enable": "เปิดใช้งานม็อดทั้งหมด?\n\nหมายเหตุ: การดำเนินการนี้ไม่สามารถยกเลิกได้",
+  "ui.message.confirm_bulk_change_mod_states_disable": "ปิดการใช้งานม็อดทั้งหมด?\n\nหมายเหตุ: การดำเนินการนี้ไม่สามารถยกเลิกได้",
   "ui.message.confirm_mod_update_method": "ตรวจพบ {0} เวอร์ชันก่อนหน้าแล้ว คุณต้องการล้างการติดตั้งก่อนหน้านี้หรือไม่?\n\nหมายเหตุ: โดยปกติแล้ว แนะนำให้ล้างเวอร์ชันก่อนหน้า อย่างไรก็ตาม ไฟล์ปรับแต่งใดๆ จะสูญหายไป",
 
   // Window Names
