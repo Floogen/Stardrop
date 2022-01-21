@@ -60,7 +60,7 @@ namespace Stardrop.Utilities.External
         public async static Task<List<ModEntry>> GetModUpdateData(GameDetails gameDetails, List<Mod> mods)
         {
             List<ModSearchEntry> searchEntries = new List<ModSearchEntry>();
-            foreach (var mod in mods.Where(m => m.HasValidVersion()))
+            foreach (var mod in mods.Where(m => m.HasValidVersion() && m.HasUpdateKeys()))
             {
                 searchEntries.Add(new ModSearchEntry(mod.UniqueId, mod.Version, mod.Manifest.UpdateKeys));
             }

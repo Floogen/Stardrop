@@ -113,6 +113,16 @@ namespace Stardrop.Models
             return true;
         }
 
+        public bool HasUpdateKeys()
+        {
+            if (Manifest is not null && Manifest.UpdateKeys is not null && !Manifest.UpdateKeys.Any(k => String.IsNullOrEmpty(k)))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         internal void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
         {
             if (PropertyChanged != null)
