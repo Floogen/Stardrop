@@ -36,6 +36,8 @@ namespace Stardrop.ViewModels
         public ObservableCollection<Mod> Mods { get; set; }
         private int _enabledModCount;
         public int EnabledModCount { get { return _enabledModCount; } set { this.RaiseAndSetIfChanged(ref _enabledModCount, value); } }
+        private int _actualModCount;
+        public int ActualModCount { get { return _actualModCount; } set { this.RaiseAndSetIfChanged(ref _actualModCount, value); } }
         public DataGridCollectionView DataView { get; set; }
 
         private DisplayFilter _disabledModFilter;
@@ -65,6 +67,7 @@ namespace Stardrop.ViewModels
 
             DataView = new DataGridCollectionView(Mods);
             DataView.SortDescriptions.Add(dataGridSortDescription);
+            UpdateFilter();
 
             // Do OS specific setup
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -261,6 +264,22 @@ namespace Stardrop.ViewModels
 
             EvaluateRequirements();
             DiscoverConfigs(modsFilePath, useArchive: true);
+            HideRequiredMods();
+
+            ActualModCount = Mods.Count(m => !m.IsHidden);
+        }
+
+        public void HideRequiredMods()
+        {
+            var requiredModIds = new List<string> { "SMAPI.ConsoleCommands", "SMAPI.ErrorHandler", "SMAPI.SaveBackup" };
+            foreach (var mod in Mods.Where(m => requiredModIds.Any(id => id.Equals(m.UniqueId, StringComparison.OrdinalIgnoreCase))))
+            {
+                mod.IsHidden = true;
+                mod.IsEnabled = true;
+            }
+
+            // Update the EnabledModCount
+            EnabledModCount = Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
         }
 
         public void EvaluateRequirements()
@@ -482,9 +501,10 @@ namespace Stardrop.ViewModels
                     mod.IsEnabled = true;
                 }
             }
+            HideRequiredMods();
 
             // Update the EnabledModCount
-            EnabledModCount = Mods.Where(m => m.IsEnabled).Count();
+            EnabledModCount = Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
         }
 
         internal void UpdateFilter()
@@ -496,6 +516,11 @@ namespace Stardrop.ViewModels
         private bool ModFilter(object item)
         {
             var mod = item as Mod;
+
+            if (mod.IsHidden)
+            {
+                return false;
+            }
 
             if (_disabledModFilter == DisplayFilter.Show && mod.IsEnabled)
             {

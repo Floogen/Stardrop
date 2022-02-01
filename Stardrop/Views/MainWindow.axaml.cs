@@ -453,7 +453,7 @@ namespace Stardrop.Views
             }
 
             // Update the EnabledModCount
-            _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled).Count();
+            _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
         }
 
         private void EnabledBox_Clicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -1144,11 +1144,14 @@ namespace Stardrop.Views
 
         private void UpdateProfile(Profile profile)
         {
+            // Hide the required mods
+            _viewModel.HideRequiredMods();
+
             // Update the profile's enabled mods
             _editorView.UpdateProfile(profile, _viewModel.Mods.Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList());
 
             // Update the EnabledModCount
-            _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled).Count();
+            _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
         }
 
         private async Task<List<Mod>> AddMods(string[]? filePaths)
@@ -1317,7 +1320,7 @@ namespace Stardrop.Views
 
             // Link the enabled mods via a chained command
             List<string> arguments = new List<string>();
-            foreach (string modId in profile.EnabledModIds)
+            foreach (string modId in _viewModel.Mods.Where(m => m.IsEnabled).Select(m => m.UniqueId))
             {
                 var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId == modId);
                 if (mod is null)

@@ -376,7 +376,7 @@
 				<TextBlock Text="{Binding EnabledModCount}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
 				<TextBlock Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}"/>
 				<TextBlock Text="{i18n:Translate ui.main_window.labels.total_mods}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
-				<TextBlock Text="{Binding Mods.Count}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+				<TextBlock Text="{Binding ActualModCount}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
 			</StackPanel>
 		</DockPanel>
 		<DockPanel Name="toolBar" Grid.Row="2"  Grid.Column="1">
