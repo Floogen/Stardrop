@@ -19,6 +19,7 @@ See the [release page](https://github.com/Floogen/Stardrop/releases/latest) for 
 Stardrop has been generously translated into several languages by the following users:
 
 * **Chinese** - guanyintu
+* **French** - xynerorias
 * **German** - Schn1ek3
 * **Portuguese** - aracnus
 * **Russian** - Rongarah
