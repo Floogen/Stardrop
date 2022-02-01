@@ -34,6 +34,10 @@ namespace Stardrop.Models.SMAPI
         public GameDetails(string gameVersion, string smapiVersion, string system)
         {
             GameVersion = gameVersion;
+            if (GameVersion.Contains(' '))
+            {
+                GameVersion = GameVersion.Split(' ')[0];
+            }
             SmapiVersion = smapiVersion;
 
             if (system.Contains("macOS", StringComparison.OrdinalIgnoreCase))
