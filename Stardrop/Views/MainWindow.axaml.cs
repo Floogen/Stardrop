@@ -942,7 +942,7 @@ namespace Stardrop.Views
                 var enabledModsPath = Path.Combine(Pathing.GetSelectedModsFolderPath());
                 Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
 
-                if (Program.settings.GameDetails is null || Program.settings.GameDetails.HasSMAPIUpdated(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion))
+                if (Program.settings.GameDetails is null || Program.settings.GameDetails.HasBadGameVersion() || Program.settings.GameDetails.HasSMAPIUpdated(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion))
                 {
                     var smapiLogPath = Path.Combine(Pathing.GetSmapiLogFolderPath(), "SMAPI-latest.txt");
                     if (File.Exists(smapiLogPath))

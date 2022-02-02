@@ -63,5 +63,15 @@ namespace Stardrop.Models.SMAPI
 
             return SemVersion.Parse(version) != SemVersion.Parse(SmapiVersion);
         }
+
+        public bool HasBadGameVersion()
+        {
+            if (GameVersion.Contains(' '))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }
