@@ -11,7 +11,7 @@
   "ui.main_window.menu_items.enable_all_mods": "Alle Mods einschalten",
   "ui.main_window.menu_items.disable_all_mods": "Alle Mods ausschalten",
   "ui.main_window.menu_items.check_for_stardrop_update": "Nach Stardrop Update suchen",
-  "ui.main_window.menu_items.stardrop_repository": "Stardrop Quelle",
+  "ui.main_window.menu_items.stardrop_repository": "Stardrop Quelle - GitHub",
 
   // Main Window - Menu Items - Context
   "ui.main_window.menu_items.context.show_requirements": "Voraussetzungen anzeigen",
@@ -38,8 +38,8 @@
 
   // Main Window - Labels
   "ui.main_window.labels.profile": "Profil",
-  "ui.main_window.labels.enabled_mods": "Aktivierte Mods: ",
-  "ui.main_window.labels.total_mods": "Mods insgesamt: ",
+  "ui.main_window.labels.enabled_mods": "Aktive Mods: ",
+  "ui.main_window.labels.total_mods": "Mods gesamt: ",
   "ui.main_window.labels.filter": "Filter",
 
   // Main Window - Hyperlinks
