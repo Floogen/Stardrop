@@ -38,8 +38,8 @@
 
   // Main Window - Labels
   "ui.main_window.labels.profile": "Profil",
-  "ui.main_window.labels.enabled_mods": "Aktive Mods: ",
-  "ui.main_window.labels.total_mods": "Mods gesamt: ",
+  "ui.main_window.labels.enabled_mods": "Aktivierte Mods: ",
+  "ui.main_window.labels.total_mods": "Gesamte Mods: ",
   "ui.main_window.labels.filter": "Filter",
 
   // Main Window - Hyperlinks
@@ -50,7 +50,7 @@
 
   // Main Window - Buttons
   "ui.main_window.buttons.save_configs": "Konfig speichern",
-  "ui.main_window.buttons.hide_disabled_mods": "Deaktivierte Mods ausblenden",
+  "ui.main_window.buttons.hide_disabled_mods": "Aktivierte Mods anzeigen",
   "ui.main_window.buttons.show_updatable_mods": "Aktualisierbare Mods anzeigen",
 
   // Main Window - Buttons - Update Status
@@ -61,7 +61,7 @@
 
   // Main Window - ComboBox
   "ui.main_window.combobox.show_all_mods": "Alle Mods anzeigen",
-  "ui.main_window.combobox.hide_enabled_mods": "Aktive Mods ausblenden",
+  "ui.main_window.combobox.hide_enabled_mods": "Deaktivierte Mods anzeigen",
   "ui.main_window.combobox.mod_name": "Mod Name",
   "ui.main_window.combobox.author": "Author",
   "ui.main_window.combobox.requirements": "Voraussetzungen",
