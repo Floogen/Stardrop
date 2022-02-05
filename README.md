@@ -21,6 +21,7 @@ Stardrop has been generously translated into several languages by the following 
 * **Chinese** - guanyintu
 * **French** - xynerorias
 * **German** - Schn1ek3
+* **Italian** - S-zombie
 * **Portuguese** - aracnus
 * **Russian** - Rongarah
 * **Spanish** - Evexyron
