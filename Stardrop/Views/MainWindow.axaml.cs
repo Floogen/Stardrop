@@ -188,10 +188,10 @@ namespace Stardrop.Views
             }
         }
 
-        private void CreateWarningWindow(string warningText, string buttonText)
+        private async void CreateWarningWindow(string warningText, string buttonText)
         {
             var warningWindow = new WarningWindow(warningText, buttonText);
-            warningWindow.ShowDialog(this);
+            await warningWindow.ShowDialog(this);
         }
 
         private async void Drop(object sender, DragEventArgs e)
@@ -777,10 +777,40 @@ namespace Stardrop.Views
                 var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.stardrop_update_available"), latestVersion));
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
-                    _viewModel.OpenBrowser("https://www.nexusmods.com/stardewvalley/mods/10455?tab=files");
+                    //_viewModel.OpenBrowser("https://www.nexusmods.com/stardewvalley/mods/10455?tab=files");
+                    var extractedLatestReleasePath = await GitHub.DownloadLatestRelease(versionToUri?.Value);
+                    if (String.IsNullOrEmpty(extractedLatestReleasePath))
+                    {
+                        CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                        return;
+                    }
+                    CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_update_downloaded"), _viewModel.Version), Program.translation.Get("internal.ok"));
 
-                    // TODO: Make it a setting to determine if the link goes to the GitHub repository or Nexus
-                    //_viewModel.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
+                    // Prepare the process
+                    string[] arguments = new string[] { "timeout 1", $"move \"{Path.Combine(extractedLatestReleasePath, "*")}\" .", $"move \"{Path.Combine(extractedLatestReleasePath, "Themes", "*")}\" .\\Themes", $"move \"{Path.Combine(extractedLatestReleasePath, "i18n", "*")}\" .\\i18n", $"rmdir /s /q \"{extractedLatestReleasePath}\"", $"\"{Path.Combine(Directory.GetCurrentDirectory(), "Stardrop.exe")}\"" };
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        arguments = new string[] { "sleep 1", $"mv \"{Path.Combine(extractedLatestReleasePath, "*")}\" .", $"mv \"{Path.Combine(extractedLatestReleasePath, "Themes", "*")}\" .\\Themes", $"mv \"{Path.Combine(extractedLatestReleasePath, "i18n", "*")}\" .\\i18n", $"rmdir \"{extractedLatestReleasePath}\"", $"\"{Path.Combine(Directory.GetCurrentDirectory(), "Stardrop")}\"" };
+                    }
+                    var processInfo = new ProcessStartInfo
+                    {
+                        FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash",
+                        Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C {string.Join(" & ", arguments)}" : $"-c \"{string.Join(" ; ", arguments)}\"",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+
+                    try
+                    {
+                        Program.helper.Log($"Starting update process from {_viewModel.Version} to {versionToUri?.Key}");
+                        Process.Start(processInfo);
+                        this.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        Program.helper.Log($"Process failed to update Stardrop using {processInfo.FileName} with arguments: {processInfo.Arguments}");
+                        Program.helper.Log($"Exception for failed update process: {ex}");
+                    }
                 }
             }
             else if (manualCheck)

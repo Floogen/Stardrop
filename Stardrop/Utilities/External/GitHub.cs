@@ -1,4 +1,5 @@
-﻿using Stardrop.Models;
+﻿using SharpCompress.Archives;
+using Stardrop.Models;
 using Stardrop.Models.SMAPI;
 using Stardrop.Models.SMAPI.Web;
 using System;
@@ -7,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -30,7 +32,23 @@ namespace Stardrop.Utilities.External
                 if (response.Content is not null)
                 {
                     JsonDocument parsedContent = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-                    versionToUri = new KeyValuePair<string, string>(parsedContent.RootElement.GetProperty("tag_name").ToString(), parsedContent.RootElement.GetProperty("html_url").ToString());
+                    string tagName = parsedContent.RootElement.GetProperty("tag_name").ToString();
+                    string downloadUri = parsedContent.RootElement.GetProperty("html_url").ToString();
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    {
+                        downloadUri = String.Concat(downloadUri, "/", "Stardrop-osx-x64.zip");
+                    }
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        downloadUri = String.Concat(downloadUri, "/", "Stardrop-linux-x64.zip");
+                    }
+                    else
+                    {
+                        downloadUri = String.Concat(downloadUri, "/", "Stardrop-win-x64.zip");
+                    }
+                    downloadUri = downloadUri.Replace("releases/tag/", "releases/download/");
+
+                    versionToUri = new KeyValuePair<string, string>(tagName, downloadUri);
                 }
             }
             catch (Exception ex)
@@ -40,6 +58,43 @@ namespace Stardrop.Utilities.External
             client.Dispose();
 
             return versionToUri;
+        }
+
+        public async static Task<string> DownloadLatestRelease(string uri)
+        {
+            // Create a throwaway client
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "Stardrop - SDV Mod Manager");
+
+            string downloadedArchivePath = String.Empty;
+            try
+            {
+                var response = await client.GetAsync(uri);
+                using (var archive = ArchiveFactory.Open(await response.Content.ReadAsStreamAsync()))
+                {
+                    foreach (var entry in archive.Entries)
+                    {
+                        entry.WriteToDirectory(Directory.GetCurrentDirectory(), new SharpCompress.Common.ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
+                    }
+                }
+
+                if (Directory.Exists("Stardrop"))
+                {
+                    if (Directory.Exists("~Stardrop"))
+                    {
+                        Directory.Delete("~Stardrop", true);
+                    }
+                    Directory.Move("Stardrop", "~Stardrop");
+                }
+                downloadedArchivePath = Path.Combine(Directory.GetCurrentDirectory(), "~Stardrop");
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to download latest the version of Stardrop: {ex}", Helper.Status.Alert);
+            }
+            client.Dispose();
+
+            return downloadedArchivePath;
         }
     }
 }
