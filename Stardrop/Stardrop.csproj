@@ -21,6 +21,7 @@
 		<Content Include="i18n\*" CopyToOutputDirectory="PreserveNewest" />
 		<None Remove=".gitignore" />
 		<None Remove="Assets\icon.ico" />
+		<None Remove="Assets\Info.plist" />
 		<None Remove="Assets\smapi.png" />
 		<None Remove="Assets\Stardrop.icns" />
 		<None Remove="Assets\Stardrop.sh" />
@@ -109,6 +110,8 @@
 		<TempFolderPath Include="Stardrop_Temp" />
 		<AppFolderPath Include="$(ProjectDir)Assets\Stardrop.app" />
 		<MacOSFolderPath Include="Stardrop.app\Contents\MacOS" />
+		<InfoPath Include="$(ProjectDir)\Assets\Info.plist" />
+		<IconPath Include="$(ProjectDir)\Assets\Stardrop.icns" />
 		<ZipName Include="Stardrop-osx-x64.zip" />
 	</ItemGroup>
 
@@ -122,6 +125,9 @@
 		<Exec Command="move *.dylib @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
 		<Exec Command="move Stardrop @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
 		<Exec Command="move Stardrop.pdb @(MacOSFolderPath)" WorkingDirectory="$(PublishDir)" />
+
+		<Copy SourceFiles="@(InfoPath)" DestinationFolder="$(PublishDir)/Stardrop.app/Contents" />
+		<Copy SourceFiles="@(IconPath)" DestinationFolder="$(PublishDir)/Stardrop.app/Contents/Resources" />
 
 		<Exec Command="@(WSL) chmod +x Stardrop" WorkingDirectory="$(PublishDir)@(MacOSFolderPath)" />
 
