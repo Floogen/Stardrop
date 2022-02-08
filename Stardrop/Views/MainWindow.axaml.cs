@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using Semver;
+using System.Threading;
 
 namespace Stardrop.Views
 {
@@ -188,7 +189,7 @@ namespace Stardrop.Views
             }
         }
 
-        private async void CreateWarningWindow(string warningText, string buttonText)
+        private async Task CreateWarningWindow(string warningText, string buttonText)
         {
             var warningWindow = new WarningWindow(warningText, buttonText);
             await warningWindow.ShowDialog(this);
@@ -781,35 +782,86 @@ namespace Stardrop.Views
                     var extractedLatestReleasePath = await GitHub.DownloadLatestRelease(versionToUri?.Value);
                     if (String.IsNullOrEmpty(extractedLatestReleasePath))
                     {
-                        CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
                         return;
                     }
-                    CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_update_downloaded"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_update_downloaded"), _viewModel.Version), Program.translation.Get("internal.ok"));
 
-                    // Prepare the process
-                    string[] arguments = new string[] { "timeout 1", $"move \"{Path.Combine(extractedLatestReleasePath, "*")}\" .", $"move \"{Path.Combine(extractedLatestReleasePath, "Themes", "*")}\" .\\Themes", $"move \"{Path.Combine(extractedLatestReleasePath, "i18n", "*")}\" .\\i18n", $"rmdir /s /q \"{extractedLatestReleasePath}\"", $"\"{Path.Combine(Directory.GetCurrentDirectory(), "Stardrop.exe")}\"" };
-                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        arguments = new string[] { "sleep 1", $"mv \"{Path.Combine(extractedLatestReleasePath, "*")}\" .", $"mv \"{Path.Combine(extractedLatestReleasePath, "Themes", "*")}\" .\\Themes", $"mv \"{Path.Combine(extractedLatestReleasePath, "i18n", "*")}\" .\\i18n", $"rmdir \"{extractedLatestReleasePath}\"", $"\"{Path.Combine(Directory.GetCurrentDirectory(), "Stardrop")}\"" };
-                    }
-                    var processInfo = new ProcessStartInfo
-                    {
-                        FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash",
-                        Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C {string.Join(" & ", arguments)}" : $"-c \"{string.Join(" ; ", arguments)}\"",
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    };
+                        // Prepare the process
+                        string[] arguments = new string[] { "timeout 1", $"move \"{Path.Combine(extractedLatestReleasePath, "*")}\" .", $"move \"{Path.Combine(extractedLatestReleasePath, "Themes", "*")}\" .\\Themes", $"move \"{Path.Combine(extractedLatestReleasePath, "i18n", "*")}\" .\\i18n", $"rmdir /s /q \"{extractedLatestReleasePath}\"", $"\"{Path.Combine(Directory.GetCurrentDirectory(), "Stardrop.exe")}\"" };
+                        var processInfo = new ProcessStartInfo
+                        {
+                            FileName = "cmd",
+                            Arguments = $"/C {string.Join(" & ", arguments)}",
+                            CreateNoWindow = true,
+                            UseShellExecute = false
+                        };
 
-                    try
-                    {
-                        Program.helper.Log($"Starting update process from {_viewModel.Version} to {versionToUri?.Key}");
-                        Process.Start(processInfo);
-                        this.Close();
+                        try
+                        {
+                            Program.helper.Log($"Starting update process from {_viewModel.Version} to {versionToUri?.Key}");
+                            Process.Start(processInfo);
+                            this.Close();
+                        }
+                        catch (Exception ex)
+                        {
+                            Program.helper.Log($"Process failed to update Stardrop using {processInfo.FileName} with arguments: {processInfo.Arguments}");
+                            Program.helper.Log($"Exception for failed update process: {ex}");
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Program.helper.Log($"Process failed to update Stardrop using {processInfo.FileName} with arguments: {processInfo.Arguments}");
-                        Program.helper.Log($"Exception for failed update process: {ex}");
+                        try
+                        {
+                            // Move the top level files
+                            var adjustedExtractedLatestReleasePath = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? extractedLatestReleasePath : Path.Combine(extractedLatestReleasePath, "Contents", "MacOS");
+                            foreach (var file in new DirectoryInfo(adjustedExtractedLatestReleasePath).GetFiles())
+                            {
+                                file.MoveTo(Path.Combine(Directory.GetCurrentDirectory(), file.Name), true);
+                            }
+
+                            // Move the child folders / files
+                            foreach (var folder in new DirectoryInfo(adjustedExtractedLatestReleasePath).GetDirectories())
+                            {
+                                foreach (var file in folder.GetFiles())
+                                {
+                                    file.MoveTo(Path.Combine(Directory.GetCurrentDirectory(), folder.Name, file.Name), true);
+                                }
+                            }
+
+                            // Apply specific update logic for MacOS
+                            var macInfoPath = Path.Combine(extractedLatestReleasePath, "Contents", "Info.plist");
+                            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && File.Exists(macInfoPath))
+                            {
+                                File.Copy(macInfoPath, Path.Combine(Directory.GetCurrentDirectory(), "..", "Info.plist"), true);
+                            }
+
+                            // Delete the update package
+                            Directory.Delete(extractedLatestReleasePath, true);
+
+                            // Restart the application
+                            string scriptPath = $"'{Path.Combine(Directory.GetCurrentDirectory(), RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Stardrop.sh" : "Stardrop")}'";
+                            string[] arguments = new string[] { $"chmod +x {scriptPath}", $"{scriptPath}" };
+                            var processInfo = new ProcessStartInfo
+                            {
+                                FileName = "/bin/bash",
+                                Arguments = $"-c \"{string.Join(" ; ", arguments)}\"",
+                                CreateNoWindow = true,
+                                UseShellExecute = false
+                            };
+
+                            using (var process = Process.Start(processInfo))
+                            {
+                                this.Close();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Program.helper.Log($"Process failed to update Stardrop");
+                            Program.helper.Log($"Exception for failed update process: {ex}");
+                        }
                     }
                 }
             }
