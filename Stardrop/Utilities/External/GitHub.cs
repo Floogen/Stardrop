@@ -78,15 +78,17 @@ namespace Stardrop.Utilities.External
                     }
                 }
 
-                if (Directory.Exists("Stardrop"))
+                var extractFolderName = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Stardrop.app" : "Stardrop";
+                var adjustedExtractFolderName = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "~Stardrop.app" : "~Stardrop";
+                if (Directory.Exists(extractFolderName))
                 {
-                    if (Directory.Exists("~Stardrop"))
+                    if (Directory.Exists(adjustedExtractFolderName))
                     {
-                        Directory.Delete("~Stardrop", true);
+                        Directory.Delete(adjustedExtractFolderName, true);
                     }
-                    Directory.Move("Stardrop", "~Stardrop");
+                    Directory.Move(extractFolderName, adjustedExtractFolderName);
                 }
-                downloadedArchivePath = Path.Combine(Directory.GetCurrentDirectory(), "~Stardrop");
+                downloadedArchivePath = Path.Combine(Directory.GetCurrentDirectory(), adjustedExtractFolderName);
             }
             catch (Exception ex)
             {
