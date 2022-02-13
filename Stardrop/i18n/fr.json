@@ -101,6 +101,8 @@
     "ui.warning.mod_config_saved_but_not_enabled": "Les configurations du profil {0} on été sauvegardées, mais les configurations par profils ne sont pas activées.\n\nAller dans Affichage > Paramètres et cocher \"Activer La Configuration Par Profil\" pour que Stardrop sauvegarde et applique automatiquement les changements.",
     "ui.warning.unable_to_determine_profile": "Impossible de determiner le bon profil.\n\nSMAPI ne se lancera pas.",
     "ui.warning.stardrop_up_to_date": "Stardrop est à jour.\n\n{0} est la dernière version.",
+    "ui.warning.stardrop_unable_to_download_latest": "Impossible de télécharger la dernière version de Stardrop.\n\nVeuillez la télécharger manuellement.",
+    "ui.warning.stardrop_update_downloaded": "Le téléchargement de la dernière version est terminé.\n\nStardrop va maintenant redémarrer.",
     "ui.warning.update_cooldown_minutes": "La recherche de MAJ ne peut se faire que toutes les 5 minutes.\n\nRéessayer dans {0} minute(s).",
     "ui.warning.update_cooldown_seconds": "La recherche de MAJ ne peut se faire que toutes les 5 minutes.\n\nRéessayer dans {0} seconde(s).",
     "ui.warning.unable_to_locate_log": "Impossible de trouver SMAPI-latest.txt! Vous devez lancer SMAPI au moins une fois pour que Stardrop trouve les détails du jeu.",
