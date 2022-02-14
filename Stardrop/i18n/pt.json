@@ -101,6 +101,8 @@
   "ui.warning.mod_config_saved_but_not_enabled": "As configurações do mod foram salvas no perfil {0}, entretanto, a opção de configurações específicas de mods por perfil não está habilitada.\n\nVá até Ver > Configurações e marque a opção \"Habilitar configurações de mods específicas por perfil\" para que o Stardrop salve e aplique as alterações nas configurações dos mods automaticamente.",
   "ui.warning.unable_to_determine_profile": "Não foi possível determinar o perfil selecionado.\n\nO SMAPI não será iniciado.",
   "ui.warning.stardrop_up_to_date": "O Stardrop está atualizado.\n\n{0} é a última versão.",
+  "ui.warning.stardrop_unable_to_download_latest": "Não foi possível obter a última versão do Stardrop.\n\nPor favor, faça o download da última versão manualmente.",
+  "ui.warning.stardrop_update_downloaded": "A última versão foi obtida com sucesso.\n\nO Stardrop irá reiniciar agora.",
   "ui.warning.update_cooldown_minutes": "Atualizações só podem ser solicitadas a cada 5 minutos.\n\nPor favor, tente novamente em {0} minuto(s).",
   "ui.warning.update_cooldown_seconds": "Atualizações só podem ser solicitadas a cada 5 minutos.\n\nPor favor, tente novamente em {0} segundo(s).",
   "ui.warning.unable_to_locate_log": "Não foi possível localizar o SMAPI-latest.txt! É necessário que o SMAPI seja executado corretamente ao menos uma vez para que o Stardrop detecte os detalhes do jogo.",
