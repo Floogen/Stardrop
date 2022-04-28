@@ -77,7 +77,7 @@ namespace Stardrop.Utilities.External
 
             // Create a throwaway client
             HttpClient client = new HttpClient();
-            var parsedRequest = JsonSerializer.Serialize(searchData, new JsonSerializerOptions() { WriteIndented = true });
+            var parsedRequest = JsonSerializer.Serialize(searchData, new JsonSerializerOptions() { WriteIndented = true, IgnoreNullValues = true });
             var requestPackage = new StringContent(parsedRequest, Encoding.UTF8, "application/json");
             var response = await client.PostAsync("https://smapi.io/api/v3.0/mods", requestPackage);
 
