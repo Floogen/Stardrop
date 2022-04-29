@@ -40,6 +40,7 @@
   "ui.main_window.labels.profile": "Profile",
   "ui.main_window.labels.enabled_mods": "Enabled Mods: ",
   "ui.main_window.labels.total_mods": "Total Mods: ",
+  "ui.main_window.labels.updatable_mods": "Mods Ready to Update: ",
   "ui.main_window.labels.filter": "Filter",
 
   // Main Window - Hyperlinks
@@ -54,7 +55,7 @@
   "ui.main_window.buttons.show_updatable_mods": "Show Updatable Mods",
 
   // Main Window - Buttons - Update Status
-  "ui.main_window.button.update_status.generic": "Mods Ready to Update: Click to Refresh",
+  "ui.main_window.button.update_status.generic": "Click to Refresh Updatable Mods",
   "ui.main_window.button.update_status.updating": "Updating...",
   "ui.main_window.button.update_status.list_available_updates": "Mods Ready to Update: {0}",
   "ui.main_window.button.update_status.failed": "Mod Update Check Failed",

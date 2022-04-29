@@ -384,9 +384,10 @@
 					<TextBlock Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}"/>
 					<TextBlock Text="{i18n:Translate ui.main_window.labels.total_mods}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
 					<TextBlock Text="{Binding ActualModCount}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+					<TextBlock Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center" Margin="0 0 0 2"/>
+					<TextBlock Text="{i18n:Translate ui.main_window.labels.updatable_mods}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+					<TextBlock Text="{Binding ModsWithCachedUpdates}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
 				</StackPanel>
-				<TextBlock Grid.Column="1" Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center" Margin="0 0 0 2"/>
-				<Button Grid.Column="1" Content="{Binding UpdateStatusText}" Classes="hyperlink" Click="ModUpdateCheck_Click" VerticalAlignment="Center"  Margin="4 0 0 2"/>
 			</Grid>
 		</DockPanel>
 		<DockPanel Name="toolBar" Grid.Row="2"  Grid.Column="1">

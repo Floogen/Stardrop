@@ -1029,7 +1029,7 @@ namespace Stardrop.Views
 
             // Update the status to let the user know the update is finished
             _viewModel.ModsWithCachedUpdates = modsToUpdate;
-            _viewModel.UpdateStatusText = String.Format(Program.translation.Get("ui.main_window.button.update_status.list_available_updates"), modsToUpdate);
+            _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.generic");
 
             return oldUpdateCache;
         }
@@ -1212,7 +1212,7 @@ namespace Stardrop.Views
 
                 // Update the status to let the user know the update is finished
                 _viewModel.ModsWithCachedUpdates = modsToUpdate;
-                _viewModel.UpdateStatusText = String.Format(Program.translation.Get("ui.main_window.button.update_status.list_available_updates"), modsToUpdate);
+                _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.generic");
 
                 Program.helper.Log($"Mod update check {(useCache ? "via cache" : "via smapi.io")} completed without error");
             }
