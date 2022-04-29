@@ -44,7 +44,7 @@ namespace Stardrop.Views
             InitializeComponent();
 
             // Set the main window view
-            _viewModel = new MainWindowViewModel(Pathing.defaultModPath, typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
+            _viewModel = new MainWindowViewModel(Pathing.defaultModPath, Program.applicationVersion);
             DataContext = _viewModel;
 
             // Set the path according to the environmental variable SMAPI_MODS_PATH
@@ -106,6 +106,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("saveConfigsToProfile").Click += SaveConfigButton_Click;
             this.FindControl<Button>("smapiButton").Click += Smapi_Click;
             this.FindControl<CheckBox>("showUpdatableMods").Click += ShowUpdatableModsButton_Click;
+            this.FindControl<Button>("nexusModsButton").Click += NexusModsButton_Click;
 
             // Handle filtering via textbox
             this.FindControl<TextBox>("searchBox").AddHandler(KeyUpEvent, SearchBox_KeyUp);
@@ -537,6 +538,43 @@ namespace Stardrop.Views
                     CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.mod_config_saved_but_not_enabled"), profile.Name), Program.translation.Get("internal.ok"));
                 }
             }
+        }
+
+        private async void NexusModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (Program.settings.NexusDetails is null || Program.settings.NexusDetails.Key is null || File.Exists(Pathing.GetNotionCachePath()) is false)
+            {
+                // Display the login window
+                var loginWindow = new NexusLogin(_viewModel);
+                loginWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                var apiKey = await loginWindow.ShowDialog<string>(this);
+
+                if (String.IsNullOrEmpty(apiKey))
+                {
+                    return;
+                }
+
+                // Attempt to validate the API key
+                var isKeyValid = await Nexus.ValidateKey(apiKey);
+                if (isKeyValid is false)
+                {
+                    // Failed to validate, warn the user
+                    await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_validate_nexus_key"), Program.translation.Get("internal.ok"));
+                    return;
+                }
+
+                // Store the validated key
+                var obscurer = new SimpleObscure();
+                Program.settings.NexusDetails.Key = SimpleObscure.Encrypt(apiKey, obscurer.Key, obscurer.Vector);
+
+                // Cache the required data
+                File.WriteAllText(Pathing.GetNotionCachePath(), JsonSerializer.Serialize(new PairedKeys { Lock = obscurer.Key, Vector = obscurer.Vector }, new JsonSerializerOptions() { WriteIndented = true }));
+
+                // Set the status
+                _viewModel.NexusStatus = Program.translation.Get("internal.connected");
+            }
+
+            // TODO: Display information window here
         }
 
         // Menu related click events

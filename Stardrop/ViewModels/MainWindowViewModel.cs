@@ -57,6 +57,12 @@ namespace Stardrop.ViewModels
         public int ModsWithCachedUpdates { get; set; }
         public string Version { get; set; }
 
+        private string _nexusStatus = String.Concat("Nexus Mods: ", Program.translation.Get("internal.disconnected"));
+        public string NexusStatus { get { return _nexusStatus; } set { this.RaiseAndSetIfChanged(ref _nexusStatus, String.Concat("Nexus Mods: ", value)); } }
+
+        private string _nexusLimits;
+        public string NexusLimits { get { return _nexusLimits; } set { this.RaiseAndSetIfChanged(ref _nexusLimits, value); } }
+
         public MainWindowViewModel(string modsFilePath, string version)
         {
             DiscoverMods(modsFilePath);

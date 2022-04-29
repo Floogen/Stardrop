@@ -79,9 +79,15 @@ namespace Stardrop.Utilities
         {
             return Path.Combine(GetCacheFolderPath(), "Versions.json");
         }
+
         internal static string GetKeyCachePath()
         {
             return Path.Combine(GetCacheFolderPath(), "Keys.json");
+        }
+
+        public static string GetNotionCachePath()
+        {
+            return Path.Combine(GetCacheFolderPath(), "Notion.json");
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Semver;
+using Stardrop.Models.Nexus;
 using Stardrop.Models.SMAPI;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace Stardrop.Models
         public bool IgnoreHiddenFolders { get; set; } = true;
         public bool EnableProfileSpecificModConfigs { get; set; }
         public GameDetails GameDetails { get; set; }
+        public NexusUser NexusDetails { get; set; }
 
         public Settings ShallowCopy()
         {

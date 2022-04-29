@@ -5,6 +5,7 @@ using CommandLine;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.MaterialDesign;
 using Stardrop.Models;
+using Stardrop.Models.Nexus;
 using Stardrop.Utilities;
 using System;
 using System.Diagnostics;
@@ -25,6 +26,7 @@ namespace Stardrop
 
         internal static bool onBootStartSMAPI = false;
         internal static readonly string defaultProfileName = "Default";
+        internal static readonly string applicationVersion = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
         internal static readonly Regex gameDetailsPattern = new Regex(@"SMAPI (?<smapiVersion>.+) with Stardew Valley (?<gameVersion>.+) on (?<system>.+)");
 
         public class Options
@@ -50,7 +52,7 @@ namespace Stardrop
 
             try
             {
-                helper.Log($"{Environment.NewLine}-- Startup Data --{Environment.NewLine}Time: {DateTime.Now}{Environment.NewLine}OS: {RuntimeInformation.OSDescription}{Environment.NewLine}Settings Directory: {Pathing.defaultHomePath}{Environment.NewLine}Active Directory: {Directory.GetCurrentDirectory()}{Environment.NewLine}Version: {typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}{Environment.NewLine}----------------------{Environment.NewLine}");
+                helper.Log($"{Environment.NewLine}-- Startup Data --{Environment.NewLine}Time: {DateTime.Now}{Environment.NewLine}OS: {RuntimeInformation.OSDescription}{Environment.NewLine}Settings Directory: {Pathing.defaultHomePath}{Environment.NewLine}Active Directory: {Directory.GetCurrentDirectory()}{Environment.NewLine}Version: {applicationVersion}{Environment.NewLine}----------------------{Environment.NewLine}");
                 helper.Log($"Started with the following arguments: {String.Join('|', args)}");
 
                 // Set the argument values
@@ -87,6 +89,12 @@ namespace Stardrop
                 if (!String.IsNullOrEmpty(Pathing.defaultModPath) && String.IsNullOrEmpty(settings.ModInstallPath))
                 {
                     settings.ModInstallPath = Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods");
+                }
+
+                // Set the default Nexus Mods information
+                if (settings.NexusDetails is null)
+                {
+                    settings.NexusDetails = new NexusUser();
                 }
 
                 // Load the translations

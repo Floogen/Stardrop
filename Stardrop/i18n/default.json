@@ -89,6 +89,16 @@
   "ui.settings_window.tooltips.save_changes": "Save Changes",
   "ui.settings_window.tooltips.cancel_changes": "Cancel",
 
+  // Nexus Login Window - Buttons
+  "ui.nexus_login.buttons.nexus": "Go to Nexus Mods",
+
+  // Nexus Login Window - Labels
+  "ui.nexus_login.labels.note": "Please Note",
+  "ui.nexus_login.labels.get_key": "Get your Personal API key from Nexus Mods",
+  "ui.nexus_login.labels.paste": "Then paste the key below",
+  "ui.nexus_login.labels.share_warning": "Don't share your personal API key with others, doing so may result in actions against your Nexus account.",
+  "ui.nexus_login.labels.revoke": "You may reset / revoke your key at any time by going to My Nexus Account > API > Personal API Key.",
+
   // Warnings
   "ui.warning.unable_to_add_profile": "Unable to add {0}, a profile already exists under that name!",
   "ui.warning.given_mod_folder_does_not_exist": "The given mod folder path doesn't exist.\n\nReverting to previous path.",
@@ -109,6 +119,7 @@
   "ui.warning.unable_to_read_log": "Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.",
   "ui.warning.no_manifest": "No manifest.json found in \"{0}\"",
   "ui.warning.unable_to_load_mod": "Unable to load the file located at \"{0}\".\n\nSee log file for more information.",
+  "ui.warning.unable_to_validate_nexus_key": "Unable to validate Nexus Mod API key.\n\nPlease verify the key is correct and try again.",
 
   // Messages
   "ui.message.confirm_mod_deletion": "Are you sure you'd like to delete {0}? This cannot be undone.",
@@ -122,8 +133,11 @@
   "ui.window.setting.name": "Settings",
   "ui.window.profiles.name": "Profiles",
   "ui.window.profile_naming.name": "Profile Name",
+  "ui.window.nexus_login.name": "Nexus Mods Personal API Key",
 
   // Internals
+  "internal.connected": "Connected",
+  "internal.disconnected": "Disconnected",
   "internal.unknown": "Unknown",
   "internal.enable": "Enable",
   "internal.disable": "Disable",
