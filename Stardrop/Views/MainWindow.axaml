@@ -371,13 +371,23 @@
 			</ComboBox>
 			<Button Name="editProfilesButton" i:Attached.Icon="mdi-playlist-edit" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
 			<Button Name="saveConfigsToProfile" Content="{i18n:Translate ui.main_window.buttons.save_configs}" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
-			<StackPanel VerticalAlignment="Center" Orientation="Horizontal" Margin="10 0 0 2">
-				<TextBlock Text="{i18n:Translate ui.main_window.labels.enabled_mods}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
-				<TextBlock Text="{Binding EnabledModCount}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
-				<TextBlock Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}"/>
-				<TextBlock Text="{i18n:Translate ui.main_window.labels.total_mods}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
-				<TextBlock Text="{Binding ActualModCount}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
-			</StackPanel>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+				<StackPanel Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal" Margin="10 0 0 2">
+					<TextBlock Text="{i18n:Translate ui.main_window.labels.enabled_mods}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+					<TextBlock Text="{Binding EnabledModCount}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+					<TextBlock Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}"/>
+					<TextBlock Text="{i18n:Translate ui.main_window.labels.total_mods}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+					<TextBlock Text="{Binding ActualModCount}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+				</StackPanel>
+				<TextBlock Grid.Column="1" Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center" Margin="0 0 0 2"/>
+				<Button Grid.Column="1" Content="{Binding UpdateStatusText}" Classes="hyperlink" Click="ModUpdateCheck_Click" VerticalAlignment="Center"  Margin="4 0 0 2"/>
+			</Grid>
 		</DockPanel>
 		<DockPanel Name="toolBar" Grid.Row="2"  Grid.Column="1">
 			<Button Name="smapiButton" IsEnabled="{Binding !IsLocked}" Content="/Assets/icon.ico" Background="Transparent" HorizontalAlignment="Right" Width="60" Height="40" VerticalAlignment="Center"  Margin="0 0 10 0">
@@ -519,7 +529,18 @@
 			<CheckBox Name="showUpdatableMods" Content="{i18n:Translate ui.main_window.buttons.show_updatable_mods}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
 		</DockPanel>
 		<Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 2 0 0">
-			<Button Content="{Binding Version}" Classes="hyperlink" Command="{Binding OpenBrowser}" CommandParameter="https://www.nexusmods.com/stardewvalley/mods/10455" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0"/>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+				<Button Content="Nexus Mods: Disconnected" Grid.Column="1" Classes="hyperlink" Command="{Binding OpenBrowser}" CommandParameter="https://www.nexusmods.com/stardewvalley/mods/10455" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+				<TextBlock Text=" | " Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+				<Button Content="{Binding Version}" Grid.Column="3" Classes="hyperlink" Command="{Binding OpenBrowser}" CommandParameter="https://www.nexusmods.com/stardewvalley/mods/10455" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+			</Grid>
+
 		</Border>
 		<Menu Grid.Row="5" Grid.Column="0" Name="statusBar" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
 			<MenuItem Header="{Binding UpdateStatusText}" Click="ModUpdateCheck_Click" Classes="Bar"/>
