@@ -96,9 +96,6 @@ namespace Stardrop
                 }
                 translation.LoadTranslations(translation.GetLanguage(settings.Language));
 
-                // Register icon provider(s)
-                IconProvider.Register<MaterialDesignIconProvider>();
-
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
             }
             catch (Exception ex)
@@ -113,7 +110,9 @@ namespace Stardrop
             return AppBuilder.Configure<App>()
                 .UseReactiveUI()
                 .UsePlatformDetect()
-                .LogToTrace();
+                .LogToTrace()
+                .WithIcons(container => container
+                .Register<MaterialDesignIconProvider>());
         }
     }
 }
