@@ -184,6 +184,14 @@ namespace Stardrop.Views
         {
             await HandleStardropUpdateCheck();
 
+            // Check if we have a valid Nexus Mods key
+            var apiKey = Nexus.GetKey();
+            if (String.IsNullOrEmpty(apiKey) is false && await Nexus.ValidateKey(apiKey))
+            {
+                _viewModel.NexusStatus = Program.translation.Get("internal.connected");
+                _viewModel.NexusLimits = $"(Remaining Daily Requests: {Nexus.dailyRequestsRemaining} | Max Daily Requests: {Nexus.dailyRequestsLimit}) ";
+            }
+
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
                 CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));

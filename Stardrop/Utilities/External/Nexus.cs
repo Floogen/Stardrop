@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -21,7 +22,10 @@ namespace Stardrop.Utilities.External
 {
     static class Nexus
     {
-        private static Uri baseUrl = new Uri("http://api.nexusmods.com/v1/");
+        internal static int dailyRequestsRemaining;
+        internal static int dailyRequestsLimit;
+
+        private static Uri _baseUrl = new Uri("http://api.nexusmods.com/v1/");
 
         // Regex for extracting required components for Nexus file downloading: 
         // nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>[0-9]+)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)
@@ -53,7 +57,7 @@ namespace Stardrop.Utilities.External
             bool wasValidated = true;
             try
             {
-                var response = await client.GetAsync(new Uri(baseUrl, "users/validate"));
+                var response = await client.GetAsync(new Uri(_baseUrl, "users/validate"));
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
                 {
                     string content = await response.Content.ReadAsStringAsync();
@@ -69,6 +73,8 @@ namespace Stardrop.Utilities.External
                     else if (Program.settings.NexusDetails is not null)
                     {
                         Program.settings.NexusDetails.Username = validationModel.Name;
+
+                        UpdateRequestCounts(response.Headers);
                     }
                 }
                 else
@@ -97,6 +103,19 @@ namespace Stardrop.Utilities.External
             client.Dispose();
 
             return wasValidated;
+        }
+
+        private static void UpdateRequestCounts(HttpResponseHeaders headers)
+        {
+            if (headers.TryGetValues("x-rl-daily-limit", out var limitValues) && Int32.TryParse(limitValues.First(), out int dailyLimit))
+            {
+                dailyRequestsLimit = dailyLimit;
+            }
+
+            if (headers.TryGetValues("x-rl-daily-remaining", out var remainingValues) && Int32.TryParse(remainingValues.First(), out int dailyRemaining))
+            {
+                dailyRequestsRemaining = dailyRemaining;
+            }
         }
     }
 }
