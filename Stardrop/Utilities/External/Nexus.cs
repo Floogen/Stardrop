@@ -46,11 +46,11 @@ namespace Stardrop.Utilities.External
             return SimpleObscure.Decrypt(Program.settings.NexusDetails.Key, pairedKeys.Lock, pairedKeys.Vector);
         }
 
-        public async static Task<bool> ValidateKey(string key)
+        public async static Task<bool> ValidateKey(string apiKey)
         {
             // Create a throwaway client
             HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("apiKey", key);
+            client.DefaultRequestHeaders.Add("apiKey", apiKey);
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
             client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
 
@@ -103,6 +103,120 @@ namespace Stardrop.Utilities.External
             client.Dispose();
 
             return wasValidated;
+        }
+
+        public async static Task<int?> GetFileIdByVersion(string apiKey, string modId, string version)
+        {
+            // Create a throwaway client
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("apiKey", apiKey);
+            client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
+
+            int? fileId = null;
+            try
+            {
+                var response = await client.GetAsync(new Uri(_baseUrl, $"games/stardewvalley/mods/{modId}/files.json"));
+                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+                    ModFiles modFiles = JsonSerializer.Deserialize<ModFiles>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    if (modFiles is null || modFiles.Files is null || modFiles.Files.Count == 0)
+                    {
+                        Program.helper.Log($"Unable to get the mod file for Nexus Mods");
+                        Program.helper.Log($"Response from Nexus Mods:\n{content}");
+                    }
+                    else
+                    {
+                        var selectedFile = modFiles.Files.FirstOrDefault(x => x.Version == version);
+                        if (selectedFile is not null)
+                        {
+                            fileId = selectedFile.Id;
+                        }
+
+                        UpdateRequestCounts(response.Headers);
+                    }
+                }
+                else
+                {
+                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    {
+                        Program.helper.Log($"Bad status given from Nexus Mods: {response.StatusCode}");
+                        if (response.Content is not null)
+                        {
+                            Program.helper.Log($"Response from Nexus Mods:\n{await response.Content.ReadAsStringAsync()}");
+                        }
+                    }
+                    else if (response.Content is null)
+                    {
+                        Program.helper.Log($"No response from Nexus Mods!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to get the mod file for Nexus Mods: {ex}", Helper.Status.Alert);
+            }
+            client.Dispose();
+
+            return fileId;
+        }
+
+
+        public async static Task<List<Endorsement>> GetEndorsements(string apiKey)
+        {
+            // Create a throwaway client
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("apiKey", apiKey);
+            client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
+
+            try
+            {
+                var response = await client.GetAsync(new Uri(_baseUrl, $"user/endorsements"));
+                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+                    List<Endorsement> endorsements = JsonSerializer.Deserialize<List<Endorsement>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    if (endorsements is null || endorsements.Count == 0)
+                    {
+                        Program.helper.Log($"Unable to get endorsements for Nexus Mods");
+                        Program.helper.Log($"Response from Nexus Mods:\n{content}");
+                    }
+                    else
+                    {
+                        endorsements = endorsements.Where(e => e.DomainName?.ToLower() == "stardewvalley").ToList();
+
+                        UpdateRequestCounts(response.Headers);
+
+                        return endorsements;
+                    }
+                }
+                else
+                {
+                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    {
+                        Program.helper.Log($"Bad status given from Nexus Mods: {response.StatusCode}");
+                        if (response.Content is not null)
+                        {
+                            Program.helper.Log($"Response from Nexus Mods:\n{await response.Content.ReadAsStringAsync()}");
+                        }
+                    }
+                    else if (response.Content is null)
+                    {
+                        Program.helper.Log($"No response from Nexus Mods!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to get endorsements for Nexus Mods: {ex}", Helper.Status.Alert);
+            }
+            client.Dispose();
+
+            return new List<Endorsement>();
         }
 
         private static void UpdateRequestCounts(HttpResponseHeaders headers)

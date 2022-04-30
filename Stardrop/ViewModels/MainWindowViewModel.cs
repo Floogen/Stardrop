@@ -47,6 +47,8 @@ namespace Stardrop.ViewModels
         public bool ShowUpdatableMods { get { return _showUpdatableMods; } set { _showUpdatableMods = value; UpdateFilter(); } }
         private bool _showRequirements;
         public bool ShowRequirements { get { return _showRequirements; } set { this.RaiseAndSetIfChanged(ref _showRequirements, value); } }
+        private bool _showEndorsements;
+        public bool ShowEndorsements { get { return _showEndorsements; } set { this.RaiseAndSetIfChanged(ref _showEndorsements, value); } }
         public string RequirementColumnState { get { return ShowRequirements ? Program.translation.Get("ui.main_window.menu_items.context.hide_requirements") : Program.translation.Get("ui.main_window.menu_items.context.show_requirements"); } }
         private string _filterText;
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }

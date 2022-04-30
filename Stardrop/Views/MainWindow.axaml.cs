@@ -96,6 +96,9 @@ namespace Stardrop.Views
                 CheckForModUpdates(_viewModel.Mods.ToList(), probe: true);
             }
 
+            // Check if we have a valid Nexus Mods key
+            CheckForNexusConnection();
+
             // FOOTER: "Value cannot be null. (Parameter 'path1')" error clears removing the above chunk
 
             // Handle buttons
@@ -183,14 +186,6 @@ namespace Stardrop.Views
         private async void MainWindow_Opened(object? sender, EventArgs e)
         {
             await HandleStardropUpdateCheck();
-
-            // Check if we have a valid Nexus Mods key
-            var apiKey = Nexus.GetKey();
-            if (String.IsNullOrEmpty(apiKey) is false && await Nexus.ValidateKey(apiKey))
-            {
-                _viewModel.NexusStatus = Program.translation.Get("internal.connected");
-                _viewModel.NexusLimits = $"(Remaining Daily Requests: {Nexus.dailyRequestsRemaining} | Max Daily Requests: {Nexus.dailyRequestsLimit}) ";
-            }
 
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
@@ -1228,6 +1223,26 @@ namespace Stardrop.Views
             {
                 Program.helper.Log($"Failed to get mod updates via smapi.io: {ex}", Helper.Status.Alert);
                 _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.failed");
+            }
+        }
+
+        private async void CheckForNexusConnection()
+        {
+            var apiKey = Nexus.GetKey();
+            if (String.IsNullOrEmpty(apiKey) is false && await Nexus.ValidateKey(apiKey))
+            {
+                _viewModel.NexusStatus = Program.translation.Get("internal.connected");
+                _viewModel.NexusLimits = $"(Remaining Daily Requests: {Nexus.dailyRequestsRemaining}) ";
+
+                // Gather any endorsements
+                var endorsements = await Nexus.GetEndorsements(apiKey);
+                foreach (var mod in _viewModel.Mods.Where(m => m.HasUpdateKeys() && endorsements.Any(e => e.Id == m.GetNexusKey())))
+                {
+                    mod.Endorsement = endorsements.First(e => e.Id == mod.GetNexusKey()).GetEndorsementState();
+                }
+
+                // Show endorsements
+                _viewModel.ShowEndorsements = true;
             }
         }
 

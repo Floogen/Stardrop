@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media;
 using Semver;
 using Stardrop.Models.Data;
+using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
 using System;
 using System.Collections.Generic;
@@ -56,6 +57,8 @@ namespace Stardrop.Models
         public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); NotifyPropertyChanged("ChangeStateText"); } }
         private bool _isHidden { get; set; }
         public bool IsHidden { get { return _isHidden; } set { _isHidden = value; NotifyPropertyChanged("IsHidden"); } }
+        private EndorsementState _endorsement { get; set; }
+        public EndorsementState Endorsement { get { return _endorsement; } set { _endorsement = value; NotifyPropertyChanged("Endorsement"); } }
         public string ChangeStateText { get { return IsEnabled ? Program.translation.Get("internal.disable") : Program.translation.Get("internal.enable"); } }
         private WikiCompatibilityStatus _status { get; set; }
         public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); } }
@@ -123,6 +126,28 @@ namespace Stardrop.Models
             }
 
             return false;
+        }
+
+        public int? GetNexusKey()
+        {
+            if (HasUpdateKeys() is false)
+            {
+                return null;
+            }
+
+            foreach (string key in Manifest.UpdateKeys)
+            {
+                string cleanedKey = String.Concat(key.Where(c => !Char.IsWhiteSpace(c)));
+                if (cleanedKey.Contains("Nexus:", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (Int32.TryParse(key.Replace("Nexus:", ""), out int modId))
+                    {
+                        return modId;
+                    }
+                }
+            }
+
+            return null;
         }
 
         internal void NotifyPropertyChanged([CallerMemberName] String propertyName = "")

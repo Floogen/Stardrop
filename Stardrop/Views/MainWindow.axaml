@@ -117,6 +117,18 @@
 		<Style Selector="Button.status[Tag=Unofficial]">
 			<Setter Property="Foreground" Value="{DynamicResource UpdateUnofficialBrush}" />
 		</Style>
+		<Style Selector="Button.status[Tag=Undetermined]">
+			<Setter Property="Foreground" Value="{DynamicResource HighlightBrush}" />
+			<Setter Property="i:Attached.Icon" Value="mdi-thumb-up-outline" />
+		</Style>
+		<Style Selector="Button.status[Tag=Abstained]">
+			<Setter Property="Foreground" Value="{DynamicResource HighlightBrush}" />
+			<Setter Property="i:Attached.Icon" Value="mdi-thumb-up-outline" />
+		</Style>
+		<Style Selector="Button.status[Tag=Endorsed]">
+			<Setter Property="Foreground" Value="{DynamicResource HighlightBrush}" />
+			<Setter Property="i:Attached.Icon" Value="mdi-thumb-up" />
+		</Style>
 		<Style Selector="Button.hyperlink:pointerover /template/ ContentPresenter">
 			<Setter Property="Background" Value="Transparent" />
 			<Setter Property="TextBlock.Foreground" Value="White" />
@@ -439,6 +451,16 @@
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<TextBlock Text="{Binding Name}" TextAlignment="Left" VerticalAlignment="Center" Margin="7 0 0 0" />
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+					<DataGridTemplateColumn SortMemberPath="Endorsement" CellStyleClasses="centered" IsVisible="{Binding ShowEndorsements}">
+						<DataGridTemplateColumn.Header>
+							<TextBlock Text="Endorsement" TextAlignment="Center" />
+						</DataGridTemplateColumn.Header>
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<Button Name="endorsementButton" Tag="{Binding Endorsement, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding UpdateUri}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
