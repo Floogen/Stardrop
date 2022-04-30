@@ -5,6 +5,7 @@ using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
 using Stardrop.Utilities;
+using Stardrop.Utilities.External;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -115,6 +116,28 @@ namespace Stardrop.ViewModels
                     CreateNoWindow = true,
                     UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 });
+            }
+        }
+
+        public async void SetModEndorsement(int? modId)
+        {
+            var apiKey = Nexus.GetKey();
+            if (modId is null || String.IsNullOrEmpty(apiKey))
+            {
+                return;
+            }
+
+            var mod = Mods.FirstOrDefault(m => m.NexusModId == modId);
+            if (mod is null)
+            {
+                return;
+            }
+
+            EndorsementState targetState = mod.Endorsement == EndorsementState.Endorsed ? EndorsementState.Abstained : EndorsementState.Endorsed;
+            var result = await Nexus.SetModEndorsement(apiKey, (int)modId, targetState);
+            if (result)
+            {
+                Mods.First(m => m.NexusModId == modId).Endorsement = targetState;
             }
         }
 

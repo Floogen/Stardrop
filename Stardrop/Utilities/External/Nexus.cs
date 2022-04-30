@@ -1,6 +1,7 @@
 ﻿using SharpCompress.Archives;
 using Stardrop.Models;
 using Stardrop.Models.Data;
+using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus;
 using Stardrop.Models.Nexus.Web;
 using Stardrop.Models.SMAPI;
@@ -26,6 +27,7 @@ namespace Stardrop.Utilities.External
         internal static int dailyRequestsLimit;
 
         private static Uri _baseUrl = new Uri("http://api.nexusmods.com/v1/");
+        private static Uri _baseUrlSecured = new Uri("https://api.nexusmods.com/v1/");
 
         // Regex for extracting required components for Nexus file downloading: 
         // nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>[0-9]+)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)
@@ -217,6 +219,61 @@ namespace Stardrop.Utilities.External
             client.Dispose();
 
             return new List<Endorsement>();
+        }
+
+
+        public async static Task<bool> SetModEndorsement(string apiKey, int modId, EndorsementState state)
+        {
+            // Create a throwaway client
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("apiKey", apiKey);
+            client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
+
+            try
+            {
+                var requestPackage = new StringContent("{\"Version\":\"1.0.0\"}", Encoding.UTF8, "application/json");
+                var response = await client.PostAsync(new Uri(_baseUrlSecured, $"games/stardewvalley/mods/{modId}/{(state == EndorsementState.Endorsed ? "endorse.json" : "abstain.json")}"), requestPackage);
+                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+                    EndorsementResult endorsementResult = JsonSerializer.Deserialize<EndorsementResult>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    if (endorsementResult is null)
+                    {
+                        Program.helper.Log($"Unable to set endorsement for Nexus Mods");
+                        Program.helper.Log($"Response from Nexus Mods:\n{content}");
+                    }
+                    else
+                    {
+                        UpdateRequestCounts(response.Headers);
+
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    {
+                        Program.helper.Log($"Bad status given from Nexus Mods: {response.StatusCode}");
+                        if (response.Content is not null)
+                        {
+                            Program.helper.Log($"Response from Nexus Mods:\n{await response.Content.ReadAsStringAsync()}");
+                        }
+                    }
+                    else if (response.Content is null)
+                    {
+                        Program.helper.Log($"No response from Nexus Mods!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to set endorsement for Nexus Mods: {ex}", Helper.Status.Alert);
+            }
+            client.Dispose();
+
+            return false;
         }
 
         private static void UpdateRequestCounts(HttpResponseHeaders headers)

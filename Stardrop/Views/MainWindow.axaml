@@ -460,7 +460,7 @@
 						</DataGridTemplateColumn.Header>
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
-								<Button Name="endorsementButton" Tag="{Binding Endorsement, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding UpdateUri}"/>
+								<Button Name="endorsementButton" Tag="{Binding Endorsement, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Command="{Binding $parent[DataGrid].DataContext.SetModEndorsement}" CommandParameter="{Binding NexusModId}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>

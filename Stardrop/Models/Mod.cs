@@ -53,6 +53,7 @@ namespace Stardrop.Models
         public string UpdateUri { get { return _updateUri; } set { _updateUri = value; NotifyPropertyChanged("UpdateUri"); } }
         private string _modPageUri { get; set; }
         public string ModPageUri { get { return _modPageUri; } set { _modPageUri = value; NotifyPropertyChanged("ModPageUri"); } }
+        public int? NexusModId { get { return GetNexusKey(); } }
         private bool _isEnabled { get; set; }
         public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); NotifyPropertyChanged("ChangeStateText"); } }
         private bool _isHidden { get; set; }

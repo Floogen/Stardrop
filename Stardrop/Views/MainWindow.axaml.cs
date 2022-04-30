@@ -1237,9 +1237,9 @@ namespace Stardrop.Views
 
                 // Gather any endorsements
                 var endorsements = await Nexus.GetEndorsements(apiKey);
-                foreach (var mod in _viewModel.Mods.Where(m => m.HasUpdateKeys() && endorsements.Any(e => e.Id == m.GetNexusKey())))
+                foreach (var mod in _viewModel.Mods.Where(m => m.HasUpdateKeys() && endorsements.Any(e => e.Id == m.NexusModId)))
                 {
-                    mod.Endorsement = endorsements.First(e => e.Id == mod.GetNexusKey()).GetEndorsementState();
+                    mod.Endorsement = endorsements.First(e => e.Id == mod.NexusModId).GetEndorsementState();
                 }
 
                 // Show endorsements
