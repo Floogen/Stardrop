@@ -98,6 +98,7 @@ namespace Stardrop.Views
             }
 
             // Check if we have a valid Nexus Mods key
+            Nexus.SetDisplayWindow(_viewModel);
             CheckForNexusConnection();
 
             // FOOTER: "Value cannot be null. (Parameter 'path1')" error clears removing the above chunk
@@ -520,6 +521,8 @@ namespace Stardrop.Views
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
             _viewModel.EvaluateRequirements();
+            _viewModel.UpdateEndorsements(apiKey);
+            _viewModel.UpdateFilter();
         }
 
         private void EnabledBox_Clicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -1021,6 +1024,8 @@ namespace Stardrop.Views
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
             _viewModel.EvaluateRequirements();
+
+            CheckForNexusConnection();
         }
 
         private bool IsUpdateCacheValid()
@@ -1297,11 +1302,7 @@ namespace Stardrop.Views
                 _viewModel.NexusLimits = $"(Remaining Daily Requests: {Nexus.dailyRequestsRemaining}) ";
 
                 // Gather any endorsements
-                var endorsements = await Nexus.GetEndorsements(apiKey);
-                foreach (var mod in _viewModel.Mods.Where(m => m.HasUpdateKeys() && endorsements.Any(e => e.Id == m.NexusModId)))
-                {
-                    mod.Endorsement = endorsements.First(e => e.Id == mod.NexusModId).GetEndorsementState();
-                }
+                _viewModel.UpdateEndorsements(apiKey);
 
                 // Show endorsements
                 _viewModel.ShowEndorsements = true;

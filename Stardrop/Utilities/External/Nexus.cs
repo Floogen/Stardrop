@@ -6,6 +6,7 @@ using Stardrop.Models.Nexus;
 using Stardrop.Models.Nexus.Web;
 using Stardrop.Models.SMAPI;
 using Stardrop.Models.SMAPI.Web;
+using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,12 +27,19 @@ namespace Stardrop.Utilities.External
         internal static int dailyRequestsRemaining;
         internal static int dailyRequestsLimit;
 
+        private static MainWindowViewModel _displayModel;
         private static Uri _baseUrl = new Uri("http://api.nexusmods.com/v1/");
         private static Uri _baseUrlSecured = new Uri("https://api.nexusmods.com/v1/");
 
         // Regex for extracting required components for Nexus file downloading: 
         // nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>[0-9]+)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)
         //https://app.swaggerhub.com/apis-docs/NexusMods/nexus-mods_public_api_params_in_form_data/1.0#/Mod%20Files/get_v1_games_game_domain_mods_mod_id_files_id_download_link.json
+
+        public static void SetDisplayWindow(MainWindowViewModel viewModel)
+        {
+            _displayModel = viewModel;
+        }
+
         public static string? GetKey()
         {
             if (Program.settings.NexusDetails is null || Program.settings.NexusDetails.Key is null || File.Exists(Pathing.GetNotionCachePath()) is false)
@@ -367,6 +375,13 @@ namespace Stardrop.Utilities.External
             {
                 dailyRequestsRemaining = dailyRemaining;
             }
+
+            if (_displayModel is null)
+            {
+                return;
+            }
+
+            _displayModel.NexusLimits = $"(Remaining Daily Requests: {dailyRequestsRemaining}) ";
         }
     }
 }

@@ -470,6 +470,20 @@ namespace Stardrop.ViewModels
             return pendingConfigUpdates;
         }
 
+        internal async void UpdateEndorsements(string apiKey)
+        {
+            if (String.IsNullOrEmpty(apiKey))
+            {
+                return;
+            }
+
+            var endorsements = await Nexus.GetEndorsements(apiKey);
+            foreach (var mod in Mods.Where(m => m.HasUpdateKeys() && endorsements.Any(e => e.Id == m.NexusModId)))
+            {
+                mod.Endorsement = endorsements.First(e => e.Id == mod.NexusModId).GetEndorsementState();
+            }
+        }
+
         internal void ReadModConfigs(Profile profile)
         {
             ReadModConfigs(profile, GetPendingConfigUpdates(profile, inverseMerge: true));
