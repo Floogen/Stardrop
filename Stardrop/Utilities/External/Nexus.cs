@@ -314,7 +314,7 @@ namespace Stardrop.Utilities.External
             {
                 var requestPackage = new StringContent("{\"Version\":\"1.0.0\"}", Encoding.UTF8, "application/json");
                 var response = await client.PostAsync(new Uri(_baseUrlSecured, $"games/stardewvalley/mods/{modId}/{(state == EndorsementState.Endorsed ? "endorse.json" : "abstain.json")}"), requestPackage);
-                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
+                if ((response.StatusCode == System.Net.HttpStatusCode.OK || response.StatusCode == System.Net.HttpStatusCode.Created) && response.Content is not null)
                 {
                     string content = await response.Content.ReadAsStringAsync();
                     EndorsementResult endorsementResult = JsonSerializer.Deserialize<EndorsementResult>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -333,7 +333,7 @@ namespace Stardrop.Utilities.External
                 }
                 else
                 {
-                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    if (response.StatusCode != System.Net.HttpStatusCode.OK && response.StatusCode != System.Net.HttpStatusCode.Created)
                     {
                         Program.helper.Log($"Bad status given from Nexus Mods: {response.StatusCode}");
                         if (response.Content is not null)
