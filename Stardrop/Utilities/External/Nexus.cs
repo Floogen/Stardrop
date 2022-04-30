@@ -75,6 +75,7 @@ namespace Stardrop.Utilities.External
                     else if (Program.settings.NexusDetails is not null)
                     {
                         Program.settings.NexusDetails.Username = validationModel.Name;
+                        Program.settings.NexusDetails.IsPremium = validationModel.IsPremium;
 
                         UpdateRequestCounts(response.Headers);
                     }
@@ -107,7 +108,7 @@ namespace Stardrop.Utilities.External
             return wasValidated;
         }
 
-        public async static Task<int?> GetFileIdByVersion(string apiKey, string modId, string version)
+        public async static Task<ModFile?> GetFileByVersion(string apiKey, int modId, string version)
         {
             // Create a throwaway client
             HttpClient client = new HttpClient();
@@ -115,7 +116,6 @@ namespace Stardrop.Utilities.External
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
             client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
 
-            int? fileId = null;
             try
             {
                 var response = await client.GetAsync(new Uri(_baseUrl, $"games/stardewvalley/mods/{modId}/files.json"));
@@ -132,12 +132,10 @@ namespace Stardrop.Utilities.External
                     else
                     {
                         var selectedFile = modFiles.Files.FirstOrDefault(x => x.Version == version);
-                        if (selectedFile is not null)
-                        {
-                            fileId = selectedFile.Id;
-                        }
 
                         UpdateRequestCounts(response.Headers);
+
+                        return selectedFile;
                     }
                 }
                 else
@@ -162,9 +160,91 @@ namespace Stardrop.Utilities.External
             }
             client.Dispose();
 
-            return fileId;
+            return null;
         }
 
+        public async static Task<string?> GetFileDownloadLink(string apiKey, int modId, int fileId, string serverName = "Nexus CDN")
+        {
+            // Create a throwaway client
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("apiKey", apiKey);
+            client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
+
+            try
+            {
+                var response = await client.GetAsync(new Uri(_baseUrl, $"games/stardewvalley/mods/{modId}/files/{fileId}/download_link.json"));
+                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+                    List<DownloadLink> downloadLinks = JsonSerializer.Deserialize<List<DownloadLink>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    if (downloadLinks is null || downloadLinks.Count == 0)
+                    {
+                        Program.helper.Log($"Unable to get the download link for Nexus Mods");
+                        Program.helper.Log($"Response from Nexus Mods:\n{content}");
+                    }
+                    else
+                    {
+                        var selectedFile = downloadLinks.FirstOrDefault(x => x.ShortName?.ToLower() == serverName.ToLower());
+                        if (selectedFile is not null)
+                        {
+                            return selectedFile.Uri;
+                        }
+
+                        UpdateRequestCounts(response.Headers);
+                    }
+                }
+                else
+                {
+                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    {
+                        Program.helper.Log($"Bad status given from Nexus Mods: {response.StatusCode}");
+                        if (response.Content is not null)
+                        {
+                            Program.helper.Log($"Response from Nexus Mods:\n{await response.Content.ReadAsStringAsync()}");
+                        }
+                    }
+                    else if (response.Content is null)
+                    {
+                        Program.helper.Log($"No response from Nexus Mods!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to get the download link for Nexus Mods: {ex}", Helper.Status.Alert);
+            }
+            client.Dispose();
+
+            return null;
+        }
+
+        public async static Task<string?> DownloadFileAndGetPath(string uri, string fileName)
+        {
+            // Create a throwaway client
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
+
+            try
+            {
+                var stream = await client.GetStreamAsync(new Uri(uri));
+                using (var fileStream = new FileStream(Path.Combine(Pathing.GetNexusPath(), fileName), FileMode.CreateNew))
+                {
+                    await stream.CopyToAsync(fileStream);
+                }
+
+                return Path.Combine(Pathing.GetNexusPath(), fileName);
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to download mod file for Nexus Mods: {ex}", Helper.Status.Alert);
+            }
+            client.Dispose();
+
+            return null;
+        }
 
         public async static Task<List<Endorsement>> GetEndorsements(string apiKey)
         {

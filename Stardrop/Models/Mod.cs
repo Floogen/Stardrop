@@ -62,7 +62,7 @@ namespace Stardrop.Models
         public EndorsementState Endorsement { get { return _endorsement; } set { _endorsement = value; NotifyPropertyChanged("Endorsement"); } }
         public string ChangeStateText { get { return IsEnabled ? Program.translation.Get("internal.disable") : Program.translation.Get("internal.enable"); } }
         private WikiCompatibilityStatus _status { get; set; }
-        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); } }
+        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); NotifyPropertyChanged("InstallStatus"); } }
         public string ParsedStatus
         {
             get
@@ -78,6 +78,30 @@ namespace Stardrop.Models
                 else if (_status == WikiCompatibilityStatus.Broken)
                 {
                     return Program.translation.Get("ui.main_window.hyperlinks.broken_compatibility_issue");
+                }
+
+                return String.Empty;
+            }
+        }
+        private InstallState _installState { get; set; }
+        public InstallState InstallState { get { return _installState; } set { _installState = value; NotifyPropertyChanged("InstallState"); NotifyPropertyChanged("InstallStatus"); } }
+        public string InstallStatus
+        {
+            get
+            {
+                if (!String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
+                {
+                    var nexusModId = GetNexusKey();
+                    if (_status == WikiCompatibilityStatus.Unofficial || nexusModId is null)
+                    {
+                        return String.Empty;
+                    }
+                    else if (InstallState == InstallState.Unknown)
+                    {
+                        return Program.translation.Get("ui.main_window.hyperlinks.install_update");
+                    }
+
+                    return InstallState == InstallState.Downloading ? Program.translation.Get("ui.main_window.hyperlinks.downloading") : Program.translation.Get("ui.main_window.hyperlinks.installing");
                 }
 
                 return String.Empty;

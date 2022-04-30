@@ -456,7 +456,7 @@
 					</DataGridTemplateColumn>
 					<DataGridTemplateColumn SortMemberPath="Endorsement" CellStyleClasses="centered" IsVisible="{Binding ShowEndorsements}">
 						<DataGridTemplateColumn.Header>
-							<TextBlock Text="Endorsement" TextAlignment="Center" />
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.endorsement}" TextAlignment="Center" />
 						</DataGridTemplateColumn.Header>
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
@@ -528,6 +528,16 @@
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<Button Name="statusButton" Tag="{Binding Status, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding UpdateUri}"/>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+					<DataGridTemplateColumn SortMemberPath="InstallStatus" CellStyleClasses="centered" IsVisible="{Binding ShowInstalls}" >
+						<DataGridTemplateColumn.Header>
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.nexus_install}" TextAlignment="Center"/>
+						</DataGridTemplateColumn.Header>
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<Button Name="installButton" Classes="hyperlink status" Content="{Binding InstallStatus}" Click="InstallButton_Click" Tag="{Binding UniqueId}" Foreground="{DynamicResource HighlightForegroundBrush}" />
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>

@@ -50,6 +50,8 @@ namespace Stardrop.ViewModels
         public bool ShowRequirements { get { return _showRequirements; } set { this.RaiseAndSetIfChanged(ref _showRequirements, value); } }
         private bool _showEndorsements;
         public bool ShowEndorsements { get { return _showEndorsements; } set { this.RaiseAndSetIfChanged(ref _showEndorsements, value); } }
+        private bool _showInstalls;
+        public bool ShowInstalls { get { return _showInstalls; } set { this.RaiseAndSetIfChanged(ref _showInstalls, value); } }
         public string RequirementColumnState { get { return ShowRequirements ? Program.translation.Get("ui.main_window.menu_items.context.hide_requirements") : Program.translation.Get("ui.main_window.menu_items.context.show_requirements"); } }
         private string _filterText;
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }

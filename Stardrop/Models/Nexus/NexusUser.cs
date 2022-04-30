@@ -10,6 +10,7 @@ namespace Stardrop.Models.Nexus
     public class NexusUser
     {
         public string Username { get; set; }
+        public bool IsPremium { get; set; }
 
         public byte[] Key { get; set; }
 

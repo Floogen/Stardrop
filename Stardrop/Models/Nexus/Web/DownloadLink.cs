@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace Stardrop.Models.Nexus.Web
 {
-    public class ModFile
+    public class DownloadLink
     {
-        [JsonPropertyName("file_id")]
-        public int Id { get; set; }
-
-        [JsonPropertyName("file_name")]
+        [JsonPropertyName("name")]
         public string? Name { get; set; }
 
-        [JsonPropertyName("version")]
-        public string? Version { get; set; }
+        [JsonPropertyName("short_name")]
+        public string? ShortName { get; set; }
+
+        [JsonPropertyName("URI")]
+        public string? Uri { get; set; }
     }
 }

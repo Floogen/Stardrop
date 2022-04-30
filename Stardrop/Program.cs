@@ -66,6 +66,7 @@ namespace Stardrop
                 Directory.CreateDirectory(Pathing.GetLogFolderPath());
                 Directory.CreateDirectory(Pathing.GetProfilesFolderPath());
                 Directory.CreateDirectory(Pathing.GetSelectedModsFolderPath());
+                Directory.CreateDirectory(Pathing.GetNexusPath());
 
                 // Verify the settings folder path is created
                 if (File.Exists(Pathing.GetSettingsPath()))
@@ -95,6 +96,17 @@ namespace Stardrop
                 if (settings.NexusDetails is null)
                 {
                     settings.NexusDetails = new NexusUser();
+                }
+
+                // Delete any files underneath the Nexus folder
+                var nexusDirectory = new DirectoryInfo(Pathing.GetNexusPath());
+                foreach (FileInfo file in nexusDirectory.GetFiles())
+                {
+                    file.Delete();
+                }
+                foreach (DirectoryInfo dir in nexusDirectory.GetDirectories())
+                {
+                    dir.Delete(true);
                 }
 
                 // Load the translations

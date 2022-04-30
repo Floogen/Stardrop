@@ -35,6 +35,8 @@
   "ui.main_window.menu_headers.version": "Version",
   "ui.main_window.menu_headers.configuration": "Configuration",
   "ui.main_window.menu_headers.status": "Status",
+  "ui.main_window.menu_headers.endorsement": "Endorsement",
+  "ui.main_window.menu_headers.nexus_install": "Nexus Mods Updates",
 
   // Main Window - Labels
   "ui.main_window.labels.profile": "Profile",
@@ -48,6 +50,9 @@
   "ui.main_window.hyperlinks.update_available": "Update Available ({0})",
   "ui.main_window.hyperlinks.unofficial_update_available": "Unofficial Update Available ({0})",
   "ui.main_window.hyperlinks.broken_compatibility_issue": "[Broken] Compatibility Issue",
+  "ui.main_window.hyperlinks.install_update": "Install Update",
+  "ui.main_window.hyperlinks.downloading": "Downloading...",
+  "ui.main_window.hyperlinks.installing": "Installing...",
 
   // Main Window - Buttons
   "ui.main_window.buttons.save_configs": "Save Configs",

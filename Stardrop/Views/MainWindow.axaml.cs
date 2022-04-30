@@ -25,6 +25,7 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using Semver;
 using System.Threading;
+using Stardrop.Models.Data.Enums;
 
 namespace Stardrop.Views
 {
@@ -459,6 +460,66 @@ namespace Stardrop.Views
 
             // Update the EnabledModCount
             _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
+        }
+
+        private async void InstallButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var button = e.Source as Button;
+            var modGrid = this.FindControl<DataGrid>("modGrid");
+            if (button is null || modGrid is null)
+            {
+                return;
+            }
+
+            // Get the mod based on the checkbox's content (which contains the UniqueId)
+            var clickedMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(button.Tag));
+            if (clickedMod is null)
+            {
+                return;
+            }
+
+            var apiKey = Nexus.GetKey();
+            var modId = clickedMod.GetNexusKey();
+            if (modId is null || String.IsNullOrEmpty(apiKey))
+            {
+                return;
+            }
+
+            var mod = _viewModel.Mods.FirstOrDefault(m => m.NexusModId == modId);
+            if (mod is null)
+            {
+                return;
+            }
+            mod.InstallState = InstallState.Downloading;
+
+            var modFile = await Nexus.GetFileByVersion(apiKey, (int)modId, mod.SuggestedVersion);
+            if (modFile is null)
+            {
+                // TODO: Display error message
+                return;
+            }
+
+            var modDownloadLink = await Nexus.GetFileDownloadLink(apiKey, (int)modId, modFile.Id);
+            if (modDownloadLink is null)
+            {
+                // TODO: Display error message
+                return;
+            }
+
+            var downloadedFilePath = await Nexus.DownloadFileAndGetPath(modDownloadLink, modFile.Name);
+            if (downloadedFilePath is null)
+            {
+                // TODO: Display error message
+                return;
+            }
+            mod.InstallState = InstallState.Installing;
+
+            // Install the mod
+            var addedMods = await AddMods(new string[] { downloadedFilePath });
+            await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
+            await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+
+            _viewModel.EvaluateRequirements();
         }
 
         private void EnabledBox_Clicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -1244,6 +1305,9 @@ namespace Stardrop.Views
 
                 // Show endorsements
                 _viewModel.ShowEndorsements = true;
+
+                // Show Nexus mod download column, if user is premium
+                _viewModel.ShowInstalls = Program.settings.NexusDetails.IsPremium;
             }
         }
 
