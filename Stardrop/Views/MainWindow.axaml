@@ -315,6 +315,11 @@
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.stardrop_repository}" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop"/>
 				</NativeMenu>
 			</NativeMenuItem>
+			<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_headers.nexus}" IsEnabled="{Binding ShowEndorsements}">
+				<NativeMenu>
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_install_all}" Click="NexusModBulkInstall_Click" />
+				</NativeMenu>
+			</NativeMenuItem>
 		</NativeMenu>
 	</NativeMenu.Menu>
 
@@ -358,6 +363,9 @@
 					<Separator/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.check_for_stardrop_update}" Click="StardropUpdate_Click" Classes="Bar"/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.stardrop_repository}" Classes="Bar" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop"/>
+				</MenuItem>
+				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.nexus}" IsEnabled="{Binding ShowEndorsements}" Margin="-10 0 0 0" Classes="Bar">
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_install_all}" Click="NexusModBulkInstall_Click" Classes="Bar"/>
 				</MenuItem>
 			</Menu>
 		</Border>

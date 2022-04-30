@@ -478,44 +478,15 @@ namespace Stardrop.Views
             {
                 return;
             }
-
             var apiKey = Nexus.GetKey();
-            var modId = clickedMod.GetNexusKey();
-            if (modId is null || String.IsNullOrEmpty(apiKey))
-            {
-                return;
-            }
-
-            var mod = _viewModel.Mods.FirstOrDefault(m => m.NexusModId == modId);
-            if (mod is null)
-            {
-                return;
-            }
-            mod.InstallState = InstallState.Downloading;
-
-            var modFile = await Nexus.GetFileByVersion(apiKey, (int)modId, mod.SuggestedVersion);
-            if (modFile is null)
-            {
-                // TODO: Display error message
-                return;
-            }
-
-            var modDownloadLink = await Nexus.GetFileDownloadLink(apiKey, (int)modId, modFile.Id);
-            if (modDownloadLink is null)
-            {
-                // TODO: Display error message
-                return;
-            }
-
-            var downloadedFilePath = await Nexus.DownloadFileAndGetPath(modDownloadLink, modFile.Name);
-            if (downloadedFilePath is null)
-            {
-                // TODO: Display error message
-                return;
-            }
-            mod.InstallState = InstallState.Installing;
 
             // Install the mod
+            var downloadedFilePath = await InstallModViaNexus(apiKey, clickedMod);
+            if (String.IsNullOrEmpty(downloadedFilePath))
+            {
+                return;
+            }
+
             var addedMods = await AddMods(new string[] { downloadedFilePath });
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
@@ -721,6 +692,46 @@ namespace Stardrop.Views
         }
 
         private async void ModListRefresh_Click(object? sender, EventArgs e)
+        {
+            await HandleModListRefresh();
+        }
+
+        private async void NexusModBulkInstall_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var apiKey = Nexus.GetKey();
+            if (String.IsNullOrEmpty(apiKey))
+            {
+                return;
+            }
+
+            if (Program.settings.NexusDetails is null || Program.settings.NexusDetails.IsPremium is false)
+            {
+                await CreateWarningWindow(Program.translation.Get("ui.warning.download_without_premium"), Program.translation.Get("internal.ok"));
+                return;
+            }
+
+            List<string> updateFilePaths = new List<string>();
+            foreach (var mod in _viewModel.Mods.Where(m => String.IsNullOrEmpty(m.InstallStatus) is false))
+            {
+                var downloadFilePath = await InstallModViaNexus(apiKey, mod);
+
+                if (String.IsNullOrEmpty(downloadFilePath))
+                {
+                    continue;
+                }
+                updateFilePaths.Add(downloadFilePath);
+            }
+
+            var addedMods = await AddMods(updateFilePaths.ToArray());
+            await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
+            await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+
+            _viewModel.EvaluateRequirements();
+            _viewModel.UpdateEndorsements(apiKey);
+            _viewModel.UpdateFilter();
+        }
+
+        private async void NexusModBulkInstall_Click(object? sender, EventArgs e)
         {
             await HandleModListRefresh();
         }
@@ -1361,6 +1372,45 @@ namespace Stardrop.Views
 
             // Update the EnabledModCount
             _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
+        }
+
+        private async Task<string?> InstallModViaNexus(string apiKey, Mod mod)
+        {
+            if (mod is null)
+            {
+                return null;
+            }
+
+            var modId = mod.GetNexusKey();
+            if (modId is null || String.IsNullOrEmpty(apiKey))
+            {
+                return null;
+            }
+            mod.InstallState = InstallState.Downloading;
+
+            var modFile = await Nexus.GetFileByVersion(apiKey, (int)modId, mod.SuggestedVersion);
+            if (modFile is null)
+            {
+                // TODO: Display error message
+                return null;
+            }
+
+            var modDownloadLink = await Nexus.GetFileDownloadLink(apiKey, (int)modId, modFile.Id);
+            if (modDownloadLink is null)
+            {
+                // TODO: Display error message
+                return null;
+            }
+
+            var downloadedFilePath = await Nexus.DownloadFileAndGetPath(modDownloadLink, modFile.Name);
+            if (downloadedFilePath is null)
+            {
+                // TODO: Display error message
+                return null;
+            }
+            mod.InstallState = InstallState.Installing;
+
+            return downloadedFilePath;
         }
 
         private async Task<List<Mod>> AddMods(string[]? filePaths)

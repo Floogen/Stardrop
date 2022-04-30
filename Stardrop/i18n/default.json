@@ -12,6 +12,7 @@
   "ui.main_window.menu_items.disable_all_mods": "Disable All Mods",
   "ui.main_window.menu_items.check_for_stardrop_update": "Check for Stardrop Update",
   "ui.main_window.menu_items.stardrop_repository": "Stardrop Repository",
+  "ui.main_window.menu_items.nexus_install_all": "Install All Updates",
 
   // Main Window - Menu Items - Context
   "ui.main_window.menu_items.context.show_requirements": "Show Requirements",
@@ -25,6 +26,7 @@
   "ui.main_window.menu_headers.file": "File",
   "ui.main_window.menu_headers.view": "View",
   "ui.main_window.menu_headers.tools": "Tools",
+  "ui.main_window.menu_headers.nexus": "Nexus Mods",
 
   "ui.main_window.menu_headers.enabled": "Enabled",
   "ui.main_window.menu_headers.mod_name": "Mod Name",
@@ -126,6 +128,7 @@
   "ui.warning.no_manifest": "No manifest.json found in \"{0}\"",
   "ui.warning.unable_to_load_mod": "Unable to load the file located at \"{0}\".\n\nSee log file for more information.",
   "ui.warning.unable_to_validate_nexus_key": "Unable to validate Nexus Mod API key.\n\nPlease verify the key is correct and try again.",
+  "ui.warning.download_without_premium": "You must have a premium Nexus Mods membership to download via Stardrop.",
 
   // Messages
   "ui.message.confirm_mod_deletion": "Are you sure you'd like to delete {0}? This cannot be undone.",
