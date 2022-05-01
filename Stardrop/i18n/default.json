@@ -99,6 +99,7 @@
 
   // Nexus Login Window - Buttons
   "ui.nexus_login.buttons.nexus": "Go to Nexus Mods",
+  "ui.nexus_login.buttons.disconnect": "Disconnect From Nexus",
 
   // Nexus Login Window - Labels
   "ui.nexus_login.labels.note": "Please Note",
@@ -106,6 +107,10 @@
   "ui.nexus_login.labels.paste": "Then paste the key below",
   "ui.nexus_login.labels.share_warning": "Don't share your personal API key with others, doing so may result in actions against your Nexus account.",
   "ui.nexus_login.labels.revoke": "You may reset / revoke your key at any time by going to My Nexus Account > API > Personal API Key.",
+  "ui.nexus_login.labels.nexus_details": "Nexus Mods User Details",
+  "ui.nexus_login.labels.nexus_disconnect": "Click the button below to have Stardrop forget your personal key and disconnect from Nexus Mods.",
+  "ui.nexus_login.labels.username": "Username: {0}",
+  "ui.nexus_login.labels.is_premium": "Is Premium Member: {0}",
 
   // Warnings
   "ui.warning.unable_to_add_profile": "Unable to add {0}, a profile already exists under that name!",
@@ -143,6 +148,7 @@
   "ui.window.profiles.name": "Profiles",
   "ui.window.profile_naming.name": "Profile Name",
   "ui.window.nexus_login.name": "Nexus Mods Personal API Key",
+  "ui.window.nexus_user.name": "Nexus Mods User Info",
 
   // Internals
   "internal.connected": "Connected",

@@ -44,6 +44,9 @@
 		<PackageReference Include="SharpCompress" Version="0.31.0" />
 	</ItemGroup>
 	<ItemGroup>
+		<Compile Update="Views\NexusInfo.axaml.cs">
+			<DependentUpon>NexusInfo.axaml</DependentUpon>
+		</Compile>
 		<Compile Update="Views\ProfileNaming.axaml.cs">
 			<DependentUpon>ProfileNaming.axaml</DependentUpon>
 		</Compile>

@@ -610,9 +610,22 @@ namespace Stardrop.Views
 
                 // Set the status
                 _viewModel.NexusStatus = Program.translation.Get("internal.connected");
+
+                // Update any required Nexus Mods related components
+                CheckForNexusConnection();
+
+                return;
             }
 
-            // TODO: Display information window here
+            // Display information window 
+            var detailsWindow = new NexusInfo(Program.settings.NexusDetails);
+            detailsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            if (await detailsWindow.ShowDialog<bool>(this) is true)
+            {
+                _viewModel.NexusStatus = Program.translation.Get("internal.disconnected");
+                _viewModel.ShowEndorsements = false;
+                _viewModel.ShowInstalls = false;
+            }
         }
 
         // Menu related click events
