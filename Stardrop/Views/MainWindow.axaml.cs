@@ -724,7 +724,7 @@ namespace Stardrop.Views
             }
 
             List<string> updateFilePaths = new List<string>();
-            foreach (var mod in _viewModel.Mods.Where(m => String.IsNullOrEmpty(m.InstallStatus) is false))
+            foreach (var mod in _viewModel.Mods.Where(m => m.InstallState == InstallState.Unknown))
             {
                 var downloadFilePath = await InstallModViaNexus(apiKey, mod);
 
@@ -1389,7 +1389,7 @@ namespace Stardrop.Views
 
         private async Task<string?> InstallModViaNexus(string apiKey, Mod mod)
         {
-            if (mod is null)
+            if (mod is null || mod.InstallState != InstallState.Unknown)
             {
                 return null;
             }
@@ -1397,6 +1397,7 @@ namespace Stardrop.Views
             var modId = mod.GetNexusKey();
             if (modId is null || String.IsNullOrEmpty(apiKey))
             {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
                 return null;
             }
             mod.InstallState = InstallState.Downloading;
@@ -1404,21 +1405,24 @@ namespace Stardrop.Views
             var modFile = await Nexus.GetFileByVersion(apiKey, (int)modId, mod.SuggestedVersion);
             if (modFile is null)
             {
-                // TODO: Display error message
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                mod.InstallState = InstallState.Unknown;
                 return null;
             }
 
             var modDownloadLink = await Nexus.GetFileDownloadLink(apiKey, (int)modId, modFile.Id);
             if (modDownloadLink is null)
             {
-                // TODO: Display error message
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                mod.InstallState = InstallState.Unknown;
                 return null;
             }
 
             var downloadedFilePath = await Nexus.DownloadFileAndGetPath(modDownloadLink, modFile.Name);
             if (downloadedFilePath is null)
             {
-                // TODO: Display error message
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                mod.InstallState = InstallState.Unknown;
                 return null;
             }
             mod.InstallState = InstallState.Installing;
