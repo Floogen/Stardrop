@@ -1,4 +1,5 @@
-﻿using SharpCompress.Archives;
+﻿using Semver;
+using SharpCompress.Archives;
 using Stardrop.Models;
 using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
@@ -128,6 +129,12 @@ namespace Stardrop.Utilities.External
 
         public async static Task<ModFile?> GetFileByVersion(string apiKey, int modId, string version)
         {
+            if (SemVersion.TryParse(version.Replace("v", String.Empty), SemVersionStyles.Any, out var targetVersion) is false)
+            {
+                Program.helper.Log($"Unable to parse given target version {version}");
+                return null;
+            }
+
             // Create a throwaway client
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", apiKey);
@@ -150,7 +157,11 @@ namespace Stardrop.Utilities.External
                     }
                     else
                     {
-                        var selectedFile = modFiles.Files.FirstOrDefault(x => x.Version == version);
+                        var selectedFile = modFiles.Files.FirstOrDefault(x => String.IsNullOrEmpty(x.Version) is false && SemVersion.TryParse(x.Version.Replace("v", String.Empty), SemVersionStyles.Any, out var modVersion) && modVersion == targetVersion);
+                        if (selectedFile is null)
+                        {
+                            Program.helper.Log($"Unable to get a matching file for the mod {modId} with version {version} via Nexus Mods: \n{String.Join("\n", modFiles.Files.Select(m => $"{m.Name} | {m.Version}"))}");
+                        }
 
                         UpdateRequestCounts(response.Headers);
 

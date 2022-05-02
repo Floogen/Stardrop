@@ -136,7 +136,7 @@
   "ui.warning.unable_to_load_mod": "Unable to load the file located at \"{0}\".\n\nSee log file for more information.",
   "ui.warning.unable_to_validate_nexus_key": "Unable to validate Nexus Mod API key.\n\nPlease verify the key is correct and try again.",
   "ui.warning.download_without_premium": "You must have a premium Nexus Mods membership to download via Stardrop.",
-  "ui.warning.failed_nexus_install": "Failed to install the mod {0} due a connection with Nexus Mods.\n\nPlease try again.",
+  "ui.warning.failed_nexus_install": "Failed to install the mod {0} due a connection issue with Nexus Mods.\n\nPlease try again.",
   "ui.warning.unable_nexus_install": "Unable to install the mod {0}.",
 
   // Messages
