@@ -34,6 +34,8 @@ namespace Stardrop.Views
         {
             _viewModel.WarningText = warningText;
             _viewModel.ButtonText = buttonText;
+
+            Program.helper.Log($"Created a warning window with the following text: [{buttonText}] {warningText}");
         }
 
         public WarningWindow(string warningText, string buttonText, bool closeOnTrue) : this(warningText, buttonText)
