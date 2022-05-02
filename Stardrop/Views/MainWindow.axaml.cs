@@ -87,7 +87,7 @@ namespace Stardrop.Views
             _viewModel.EnableModsByProfile(profile);
 
             // Check if we have any cached updates for mods
-            if (!IsUpdateCacheValid())
+            if (_viewModel.IsCheckingForUpdates is false)
             {
                 _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.updating");
                 CheckForModUpdates(_viewModel.Mods.ToList(), useCache: true);
@@ -942,7 +942,7 @@ namespace Stardrop.Views
             }
             else if (manualCheck)
             {
-                CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_up_to_date"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_up_to_date"), _viewModel.Version), Program.translation.Get("internal.ok"));
             }
         }
 
@@ -950,21 +950,13 @@ namespace Stardrop.Views
         {
             if (Pathing.defaultModPath is null)
             {
-                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
                 return;
             }
 
-            if (!IsUpdateCacheValid())
+            if (_viewModel.IsCheckingForUpdates is false)
             {
                 await CheckForModUpdates(_viewModel.Mods.ToList());
-            }
-            else if ((int)GetTimeSpanBeforeAllowedUpdate().TotalMinutes > 0)
-            {
-                CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.update_cooldown_minutes"), (int)GetTimeSpanBeforeAllowedUpdate().TotalMinutes), Program.translation.Get("internal.ok"));
-            }
-            else
-            {
-                CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.update_cooldown_seconds"), (int)GetTimeSpanBeforeAllowedUpdate().TotalSeconds), Program.translation.Get("internal.ok"));
             }
         }
 
@@ -997,7 +989,7 @@ namespace Stardrop.Views
             }
 
             List<string> updateFilePaths = new List<string>();
-            foreach (var mod in _viewModel.Mods.Where(m => m.InstallState == InstallState.Unknown))
+            foreach (var mod in _viewModel.Mods.Where(m => String.IsNullOrEmpty(m.InstallStatus) is false))
             {
                 var downloadFilePath = await InstallModViaNexus(apiKey, mod);
 
@@ -1102,7 +1094,7 @@ namespace Stardrop.Views
                 return false;
             }
 
-            return updateCache.LastRuntime > DateTime.Now.AddMinutes(-5);
+            return true;
         }
 
         private TimeSpan GetTimeSpanBeforeAllowedUpdate()
@@ -1118,7 +1110,7 @@ namespace Stardrop.Views
                 return new TimeSpan(0);
             }
 
-            return updateCache.LastRuntime - DateTime.Now.AddMinutes(-5);
+            return updateCache.LastRuntime - DateTime.Now.AddSeconds(-1);
         }
 
         private async Task<UpdateCache?> GetCachedModUpdates(List<Mod> mods, bool skipCacheCheck = false)
@@ -1129,7 +1121,7 @@ namespace Stardrop.Views
             if (File.Exists(Pathing.GetVersionCachePath()))
             {
                 oldUpdateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
-                if (oldUpdateCache is not null && (skipCacheCheck || oldUpdateCache.LastRuntime > DateTime.Now.AddMinutes(-5)))
+                if (oldUpdateCache is not null && (skipCacheCheck || _viewModel.IsCheckingForUpdates is false))
                 {
                     foreach (var modItem in mods)
                     {
@@ -1168,15 +1160,16 @@ namespace Stardrop.Views
         {
             try
             {
-                // Only check once the previous check is over 5 minutes old
+                // Only check if Stardrop isn't currently checking for updates
                 UpdateCache? oldUpdateCache = await GetCachedModUpdates(mods, skipCacheCheck);
 
                 // Check if this was just a probe
-                if (probe)
+                if (probe || _viewModel.IsCheckingForUpdates is true)
                 {
                     return;
                 }
                 Program.helper.Log($"Attempting to check for mod updates {(useCache ? "via cache" : "via smapi.io")}");
+                _viewModel.IsCheckingForUpdates = true;
 
                 // Close the menu, as it will remain open until the process is complete
                 var mainMenu = this.FindControl<Menu>("mainMenu");
@@ -1216,16 +1209,20 @@ namespace Stardrop.Views
                     }
                     else
                     {
-                        CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_locate_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_locate_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
                         Program.helper.Log($"Unable to locate SMAPI-latest.txt", Helper.Status.Alert);
+
+                        _viewModel.IsCheckingForUpdates = false;
                         return;
                     }
                 }
 
                 if (Program.settings.GameDetails is null)
                 {
-                    CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_read_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_read_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
                     Program.helper.Log($"SMAPI started but Stardrop was unable to read SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
+
+                    _viewModel.IsCheckingForUpdates = false;
                     return;
                 }
 
@@ -1352,6 +1349,8 @@ namespace Stardrop.Views
                 Program.helper.Log($"Failed to get mod updates via smapi.io: {ex}", Helper.Status.Alert);
                 _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.failed");
             }
+
+            _viewModel.IsCheckingForUpdates = false;
         }
 
         private async void CheckForNexusConnection()

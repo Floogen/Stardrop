@@ -34,6 +34,8 @@ namespace Stardrop.ViewModels
         public string DragOverColor { get { return _dragOverColor; } set { this.RaiseAndSetIfChanged(ref _dragOverColor, value); } }
         private bool _isLocked;
         public bool IsLocked { get { return _isLocked; } set { this.RaiseAndSetIfChanged(ref _isLocked, value); } }
+        private bool _isCheckingForUpdates;
+        public bool IsCheckingForUpdates { get { return _isCheckingForUpdates; } set { this.RaiseAndSetIfChanged(ref _isCheckingForUpdates, value); } }
         public ObservableCollection<Mod> Mods { get; set; }
         private int _enabledModCount;
         public int EnabledModCount { get { return _enabledModCount; } set { this.RaiseAndSetIfChanged(ref _enabledModCount, value); } }
