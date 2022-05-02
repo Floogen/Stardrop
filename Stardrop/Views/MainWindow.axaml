@@ -315,8 +315,9 @@
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.stardrop_repository}" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop"/>
 				</NativeMenu>
 			</NativeMenuItem>
-			<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_headers.nexus}" IsEnabled="{Binding ShowEndorsements}">
+			<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_headers.nexus}">
 				<NativeMenu>
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_connection}" Click="NexusConnection_Click" />
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_install_all}" Click="NexusModBulkInstall_Click" />
 				</NativeMenu>
 			</NativeMenuItem>
@@ -364,8 +365,9 @@
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.check_for_stardrop_update}" Click="StardropUpdate_Click" Classes="Bar"/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.stardrop_repository}" Classes="Bar" Command="{Binding OpenBrowser}" CommandParameter="https://github.com/Floogen/Stardrop"/>
 				</MenuItem>
-				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.nexus}" IsEnabled="{Binding ShowEndorsements}" Margin="-10 0 0 0" Classes="Bar">
-					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_install_all}" Click="NexusModBulkInstall_Click" Classes="Bar"/>
+				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.nexus}" Margin="-10 0 0 0" Classes="Bar">
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_connection}" Click="NexusConnection_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_install_all}" Click="NexusModBulkInstall_Click" Classes="Bar" />
 				</MenuItem>
 			</Menu>
 		</Border>
@@ -578,7 +580,7 @@
 					<ColumnDefinition Width="Auto" />
 				</Grid.ColumnDefinitions>
 				<Button Name="nexusModsButton" Content="{Binding NexusStatus}" Grid.Column="0" Classes="hyperlink" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-				<TextBlock Text="{Binding NexusLimits}" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+				<TextBlock Text="{Binding NexusLimits}" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" IsVisible="{Binding ShowEndorsements}"/>
 				<TextBlock Text=" | " Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}"/>
 				<Button Content="{Binding Version}" Grid.Column="3" Classes="hyperlink" Command="{Binding OpenBrowser}" CommandParameter="https://www.nexusmods.com/stardewvalley/mods/10455" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 			</Grid>

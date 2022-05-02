@@ -586,52 +586,7 @@ namespace Stardrop.Views
 
         private async void NexusModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            if (Program.settings.NexusDetails is null || Program.settings.NexusDetails.Key is null || File.Exists(Pathing.GetNotionCachePath()) is false)
-            {
-                // Display the login window
-                var loginWindow = new NexusLogin(_viewModel);
-                loginWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                var apiKey = await loginWindow.ShowDialog<string>(this);
-
-                if (String.IsNullOrEmpty(apiKey))
-                {
-                    return;
-                }
-
-                // Attempt to validate the API key
-                var isKeyValid = await Nexus.ValidateKey(apiKey);
-                if (isKeyValid is false)
-                {
-                    // Failed to validate, warn the user
-                    await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_validate_nexus_key"), Program.translation.Get("internal.ok"));
-                    return;
-                }
-
-                // Store the validated key
-                var obscurer = new SimpleObscure();
-                Program.settings.NexusDetails.Key = SimpleObscure.Encrypt(apiKey, obscurer.Key, obscurer.Vector);
-
-                // Cache the required data
-                File.WriteAllText(Pathing.GetNotionCachePath(), JsonSerializer.Serialize(new PairedKeys { Lock = obscurer.Key, Vector = obscurer.Vector }, new JsonSerializerOptions() { WriteIndented = true }));
-
-                // Set the status
-                _viewModel.NexusStatus = Program.translation.Get("internal.connected");
-
-                // Update any required Nexus Mods related components
-                CheckForNexusConnection();
-
-                return;
-            }
-
-            // Display information window 
-            var detailsWindow = new NexusInfo(Program.settings.NexusDetails);
-            detailsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            if (await detailsWindow.ShowDialog<bool>(this) is true)
-            {
-                _viewModel.NexusStatus = Program.translation.Get("internal.disconnected");
-                _viewModel.ShowEndorsements = false;
-                _viewModel.ShowInstalls = false;
-            }
+            await HandleNexusConnection();
         }
 
         // Menu related click events
@@ -717,48 +672,22 @@ namespace Stardrop.Views
 
         private async void NexusModBulkInstall_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var apiKey = Nexus.GetKey();
-            if (String.IsNullOrEmpty(apiKey))
-            {
-                return;
-            }
-
-            if (Program.settings.NexusDetails is null || Program.settings.NexusDetails.IsPremium is false)
-            {
-                await CreateWarningWindow(Program.translation.Get("ui.warning.download_without_premium"), Program.translation.Get("internal.ok"));
-                return;
-            }
-
-            List<string> updateFilePaths = new List<string>();
-            foreach (var mod in _viewModel.Mods.Where(m => m.InstallState == InstallState.Unknown))
-            {
-                var downloadFilePath = await InstallModViaNexus(apiKey, mod);
-
-                if (String.IsNullOrEmpty(downloadFilePath))
-                {
-                    continue;
-                }
-                updateFilePaths.Add(downloadFilePath);
-            }
-
-            var addedMods = await AddMods(updateFilePaths.ToArray());
-            await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
-            await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
-
-            // Delete the downloaded archived mods
-            foreach (var filePath in updateFilePaths.Where(p => File.Exists(p)))
-            {
-                File.Delete(filePath);
-            }
-
-            _viewModel.EvaluateRequirements();
-            _viewModel.UpdateEndorsements(apiKey);
-            _viewModel.UpdateFilter();
+            await HandleBulkModInstall();
         }
 
         private async void NexusModBulkInstall_Click(object? sender, EventArgs e)
         {
-            await HandleModListRefresh();
+            await HandleBulkModInstall();
+        }
+
+        private async void NexusConnection_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            await HandleNexusConnection();
+        }
+
+        private async void NexusConnection_Click(object? sender, EventArgs e)
+        {
+            await HandleNexusConnection();
         }
 
         private async void EnableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -1045,6 +974,97 @@ namespace Stardrop.Views
                 }
 
                 UpdateProfile(GetCurrentProfile());
+            }
+        }
+
+        private async Task HandleBulkModInstall()
+        {
+            var apiKey = Nexus.GetKey();
+            if (String.IsNullOrEmpty(apiKey))
+            {
+                return;
+            }
+
+            if (Program.settings.NexusDetails is null || Program.settings.NexusDetails.IsPremium is false)
+            {
+                await CreateWarningWindow(Program.translation.Get("ui.warning.download_without_premium"), Program.translation.Get("internal.ok"));
+                return;
+            }
+
+            List<string> updateFilePaths = new List<string>();
+            foreach (var mod in _viewModel.Mods.Where(m => m.InstallState == InstallState.Unknown))
+            {
+                var downloadFilePath = await InstallModViaNexus(apiKey, mod);
+
+                if (String.IsNullOrEmpty(downloadFilePath))
+                {
+                    continue;
+                }
+                updateFilePaths.Add(downloadFilePath);
+            }
+
+            var addedMods = await AddMods(updateFilePaths.ToArray());
+            await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
+            await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+
+            // Delete the downloaded archived mods
+            foreach (var filePath in updateFilePaths.Where(p => File.Exists(p)))
+            {
+                File.Delete(filePath);
+            }
+
+            _viewModel.EvaluateRequirements();
+            _viewModel.UpdateEndorsements(apiKey);
+            _viewModel.UpdateFilter();
+        }
+
+        private async Task HandleNexusConnection()
+        {
+            if (String.IsNullOrEmpty(Nexus.GetKey()) || File.Exists(Pathing.GetNotionCachePath()) is false)
+            {
+                // Display the login window
+                var loginWindow = new NexusLogin(_viewModel);
+                loginWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                var apiKey = await loginWindow.ShowDialog<string>(this);
+
+                if (String.IsNullOrEmpty(apiKey))
+                {
+                    return;
+                }
+
+                // Attempt to validate the API key
+                var isKeyValid = await Nexus.ValidateKey(apiKey);
+                if (isKeyValid is false)
+                {
+                    // Failed to validate, warn the user
+                    await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_validate_nexus_key"), Program.translation.Get("internal.ok"));
+                    return;
+                }
+
+                // Store the validated key
+                var obscurer = new SimpleObscure();
+                Program.settings.NexusDetails.Key = SimpleObscure.Encrypt(apiKey, obscurer.Key, obscurer.Vector);
+
+                // Cache the required data
+                File.WriteAllText(Pathing.GetNotionCachePath(), JsonSerializer.Serialize(new PairedKeys { Lock = obscurer.Key, Vector = obscurer.Vector }, new JsonSerializerOptions() { WriteIndented = true }));
+
+                // Set the status
+                _viewModel.NexusStatus = Program.translation.Get("internal.connected");
+
+                // Update any required Nexus Mods related components
+                CheckForNexusConnection();
+
+                return;
+            }
+
+            // Display information window 
+            var detailsWindow = new NexusInfo(Program.settings.NexusDetails);
+            detailsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            if (await detailsWindow.ShowDialog<bool>(this) is true)
+            {
+                _viewModel.NexusStatus = Program.translation.Get("internal.disconnected");
+                _viewModel.ShowEndorsements = false;
+                _viewModel.ShowInstalls = false;
             }
         }
 

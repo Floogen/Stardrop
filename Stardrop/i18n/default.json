@@ -13,6 +13,7 @@
   "ui.main_window.menu_items.check_for_stardrop_update": "Check for Stardrop Update",
   "ui.main_window.menu_items.stardrop_repository": "Stardrop Repository",
   "ui.main_window.menu_items.nexus_install_all": "Install All Updates",
+  "ui.main_window.menu_items.nexus_connection": "API Connection",
 
   // Main Window - Menu Items - Context
   "ui.main_window.menu_items.context.show_requirements": "Show Requirements",

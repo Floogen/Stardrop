@@ -8,14 +8,15 @@
         mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="150"
         x:Class="Stardrop.Views.NexusInfo"
         Title="{i18n:Translate ui.window.nexus_user.name}"
-        MinWidth="500"
-        MinHeight="250"
-        Width="500"
-        Height="250"
+        MinWidth="350"
+        MinHeight="200"
+        Width="350"
+        Height="200"
         Background="{DynamicResource ThemeBackgroundBrush}"
 		ExtendClientAreaToDecorationsHint="true"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="-1"
+		CanResize="False"
         Icon="/Assets/icon.ico">
 
 	<Window.Styles>
@@ -74,12 +75,12 @@
 		</Menu>
 
 		<StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Margin="0 15 0 0">
-			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.nexus_details}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 15 0 0"/>
-			<TextBlock Name="nexusUserName" Text="{i18n:Translate ui.nexus_login.labels.username}" Width="400" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 25 0 0"/>
-			<TextBlock Name="nexusUserPremium" Text="{i18n:Translate ui.nexus_login.labels.is_premium}" Width="400" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 25 0 0"/>
+			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.nexus_details}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 0 0 0"/>
+			<TextBlock Name="nexusUserName" Text="{i18n:Translate ui.nexus_login.labels.username}" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 25 0 0"/>
+			<TextBlock Name="nexusUserPremium" Text="{i18n:Translate ui.nexus_login.labels.is_premium}" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 25 0 0"/>
 		</StackPanel>
 
-		<StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Margin="0 25 0 0">
+		<StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Margin="0 35 0 0">
 			<Button Name="disconnectNexusButton" Content="{i18n:Translate ui.nexus_login.buttons.disconnect}" HorizontalAlignment="Center" VerticalAlignment="Center"  Margin="0 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
 		</StackPanel>
 	</Grid>

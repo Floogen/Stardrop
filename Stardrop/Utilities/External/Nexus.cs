@@ -53,7 +53,16 @@ namespace Stardrop.Utilities.External
                 return null;
             }
 
-            return SimpleObscure.Decrypt(Program.settings.NexusDetails.Key, pairedKeys.Lock, pairedKeys.Vector);
+            try
+            {
+                return SimpleObscure.Decrypt(Program.settings.NexusDetails.Key, pairedKeys.Lock, pairedKeys.Vector);
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to parse API key when requested: {ex}");
+            }
+
+            return null;
         }
 
         public async static Task<bool> ValidateKey(string apiKey)
