@@ -335,7 +335,7 @@ namespace Stardrop.Utilities.External
         }
 
 
-        public async static Task<bool> SetModEndorsement(string apiKey, int modId, EndorsementState state)
+        public async static Task<EndorsementResponse> SetModEndorsement(string apiKey, int modId, bool isEndorsed)
         {
             // Create a throwaway client
             HttpClient client = new HttpClient();
@@ -347,8 +347,8 @@ namespace Stardrop.Utilities.External
             try
             {
                 var requestPackage = new StringContent("{\"Version\":\"1.0.0\"}", Encoding.UTF8, "application/json");
-                var response = await client.PostAsync(new Uri(_baseUrlSecured, $"games/stardewvalley/mods/{modId}/{(state == EndorsementState.Endorsed ? "endorse.json" : "abstain.json")}"), requestPackage);
-                if ((response.StatusCode == System.Net.HttpStatusCode.OK || response.StatusCode == System.Net.HttpStatusCode.Created) && response.Content is not null)
+                var response = await client.PostAsync(new Uri(_baseUrlSecured, $"games/stardewvalley/mods/{modId}/{(isEndorsed is true ? "endorse.json" : "abstain.json")}"), requestPackage);
+                if (response.Content is not null)
                 {
                     string content = await response.Content.ReadAsStringAsync();
                     EndorsementResult endorsementResult = JsonSerializer.Deserialize<EndorsementResult>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -357,28 +357,39 @@ namespace Stardrop.Utilities.External
                     {
                         Program.helper.Log($"Unable to set endorsement for Nexus Mods");
                         Program.helper.Log($"Response from Nexus Mods:\n{content}");
-                    }
-                    else
-                    {
-                        UpdateRequestCounts(response.Headers);
 
-                        return true;
+                        return EndorsementResponse.Unknown;
+                    }
+
+                    UpdateRequestCounts(response.Headers);
+
+                    switch (endorsementResult.Status?.ToUpper())
+                    {
+                        case "ENDORSED":
+                            return EndorsementResponse.Endorsed;
+                        case "ABSTAINED":
+                            return EndorsementResponse.Abstained;
+                        case "ERROR":
+                            var parsedMessage = endorsementResult.Message?.ToUpper();
+                            if (parsedMessage == "IS_OWN_MOD")
+                            {
+                                return EndorsementResponse.IsOwnMod;
+                            }
+                            else if (parsedMessage == "TOO_SOON_AFTER_DOWNLOAD")
+                            {
+                                return EndorsementResponse.TooSoonAfterDownload;
+                            }
+                            else if (parsedMessage == "NOT_DOWNLOADED_MOD")
+                            {
+                                return EndorsementResponse.NotDownloadedMod;
+                            }
+                            Program.helper.Log(parsedMessage);
+                            break;
                     }
                 }
                 else
                 {
-                    if (response.StatusCode != System.Net.HttpStatusCode.OK && response.StatusCode != System.Net.HttpStatusCode.Created)
-                    {
-                        Program.helper.Log($"Bad status given from Nexus Mods: {response.StatusCode}");
-                        if (response.Content is not null)
-                        {
-                            Program.helper.Log($"Response from Nexus Mods:\n{await response.Content.ReadAsStringAsync()}");
-                        }
-                    }
-                    else if (response.Content is null)
-                    {
-                        Program.helper.Log($"No response from Nexus Mods!");
-                    }
+                    Program.helper.Log($"No response from Nexus Mods! Status code: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
@@ -387,7 +398,7 @@ namespace Stardrop.Utilities.External
             }
             client.Dispose();
 
-            return false;
+            return EndorsementResponse.Unknown;
         }
 
         private static void UpdateRequestCounts(HttpResponseHeaders headers)

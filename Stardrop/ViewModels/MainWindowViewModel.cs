@@ -123,28 +123,6 @@ namespace Stardrop.ViewModels
             }
         }
 
-        public async void SetModEndorsement(int? modId)
-        {
-            var apiKey = Nexus.GetKey();
-            if (modId is null || String.IsNullOrEmpty(apiKey))
-            {
-                return;
-            }
-
-            var mod = Mods.FirstOrDefault(m => m.NexusModId == modId);
-            if (mod is null)
-            {
-                return;
-            }
-
-            EndorsementState targetState = mod.Endorsement == EndorsementState.Endorsed ? EndorsementState.Abstained : EndorsementState.Endorsed;
-            var result = await Nexus.SetModEndorsement(apiKey, (int)modId, targetState);
-            if (result)
-            {
-                Mods.First(m => m.NexusModId == modId).Endorsement = targetState;
-            }
-        }
-
         private static void ShellExec(string cmd, bool waitForExit = true)
         {
             var escapedArgs = Regex.Replace(cmd, "(?=[`~!#&*()|;'<>])", "\\")
@@ -482,7 +460,7 @@ namespace Stardrop.ViewModels
             var endorsements = await Nexus.GetEndorsements(apiKey);
             foreach (var mod in Mods.Where(m => m.HasUpdateKeys() && endorsements.Any(e => e.Id == m.NexusModId)))
             {
-                mod.Endorsement = endorsements.First(e => e.Id == mod.NexusModId).GetEndorsementState();
+                mod.IsEndorsed = endorsements.First(e => e.Id == mod.NexusModId).IsEndorsed();
             }
         }
 

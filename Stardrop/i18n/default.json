@@ -138,6 +138,10 @@
   "ui.warning.download_without_premium": "You must have a premium Nexus Mods membership to download via Stardrop.",
   "ui.warning.failed_nexus_install": "Failed to install the mod {0} due a connection issue with Nexus Mods.\n\nPlease try again.",
   "ui.warning.unable_nexus_install": "Unable to install the mod {0}.",
+  "ui.warning.unable_to_endorse": "Unable to set the endorsement for this mod due to the following reason:\n\n{0}",
+  "ui.warning.mod_owned": "You are the owner of this mod.",
+  "ui.warning.too_soon_after_download": "You must wait 15 minutes after downloading this minute.\n\nAttempting to endorse will reset this timer.",
+  "ui.warning.not_downloaded": "You must download this mod from Nexus Mods in order to endorse it.",
 
   // Messages
   "ui.message.confirm_mod_deletion": "Are you sure you'd like to delete {0}? This cannot be undone.",

@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 
 namespace Stardrop.Models.Data.Enums
 {
-    public enum InstallState
+    public enum EndorsementResponse
     {
         Unknown,
-        Downloading,
-        Installing
+        IsOwnMod,
+        TooSoonAfterDownload,
+        NotDownloadedMod,
+        Abstained,
+        Endorsed
     }
 }

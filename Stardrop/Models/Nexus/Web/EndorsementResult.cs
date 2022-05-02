@@ -19,14 +19,14 @@ namespace Stardrop.Models.Nexus.Web
         [JsonPropertyName("status")]
         public string? Status { get; set; }
 
-        public EndorsementState GetEndorsementState()
+        public bool IsEndorsed()
         {
-            if (Enum.TryParse(typeof(EndorsementState), Status, out var state) && state is not null)
+            if (Status?.ToUpper() == "ENDORSED")
             {
-                return (EndorsementState)state;
+                return true;
             }
 
-            return EndorsementState.Undetermined;
+            return false;
         }
     }
 }

@@ -463,6 +463,53 @@ namespace Stardrop.Views
             _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
         }
 
+        private async void EndorsementButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var button = e.Source as Button;
+            var modGrid = this.FindControl<DataGrid>("modGrid");
+            if (button is null || modGrid is null)
+            {
+                return;
+            }
+
+            var apiKey = Nexus.GetKey();
+            if (String.IsNullOrEmpty(apiKey))
+            {
+                return;
+            }
+
+            // Get the mod based on the checkbox's content (which contains the UniqueId)
+            var clickedMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(button.Tag));
+            if (clickedMod is null || clickedMod.NexusModId is null)
+            {
+                return;
+            }
+            int modId = (int)clickedMod.NexusModId;
+
+            bool targetState = !clickedMod.IsEndorsed;
+            var result = await Nexus.SetModEndorsement(apiKey, modId, targetState);
+            if (result == EndorsementResponse.Endorsed || result == EndorsementResponse.Abstained)
+            {
+                _viewModel.Mods.First(m => m.NexusModId == modId).IsEndorsed = targetState;
+            }
+            else if (result == EndorsementResponse.IsOwnMod)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("ui.warning.mod_owned")), Program.translation.Get("internal.ok"));
+            }
+            else if (result == EndorsementResponse.TooSoonAfterDownload)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("ui.warning.too_soon_after_download")), Program.translation.Get("internal.ok"));
+            }
+            else if (result == EndorsementResponse.NotDownloadedMod)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("ui.warning.not_downloaded")), Program.translation.Get("internal.ok"));
+            }
+            else
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("internal.unknown")), Program.translation.Get("internal.ok"));
+            }
+        }
+
         private async void InstallButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var button = e.Source as Button;

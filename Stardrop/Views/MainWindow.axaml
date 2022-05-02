@@ -117,15 +117,11 @@
 		<Style Selector="Button.status[Tag=Unofficial]">
 			<Setter Property="Foreground" Value="{DynamicResource UpdateUnofficialBrush}" />
 		</Style>
-		<Style Selector="Button.status[Tag=Undetermined]">
+		<Style Selector="Button.abstained">
 			<Setter Property="Foreground" Value="{DynamicResource HighlightBrush}" />
 			<Setter Property="i:Attached.Icon" Value="mdi-thumb-up-outline" />
 		</Style>
-		<Style Selector="Button.status[Tag=Abstained]">
-			<Setter Property="Foreground" Value="{DynamicResource HighlightBrush}" />
-			<Setter Property="i:Attached.Icon" Value="mdi-thumb-up-outline" />
-		</Style>
-		<Style Selector="Button.status[Tag=Endorsed]">
+		<Style Selector="Button.endorsed">
 			<Setter Property="Foreground" Value="{DynamicResource HighlightBrush}" />
 			<Setter Property="i:Attached.Icon" Value="mdi-thumb-up" />
 		</Style>
@@ -470,7 +466,7 @@
 						</DataGridTemplateColumn.Header>
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
-								<Button Name="endorsementButton" Tag="{Binding Endorsement, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Command="{Binding $parent[DataGrid].DataContext.SetModEndorsement}" CommandParameter="{Binding NexusModId}" IsVisible="{Binding ModPageUri, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+								<Button Name="endorsementButton" Tag="{Binding UniqueId}" Classes="hyperlink status" Classes.endorsed="{Binding IsEndorsed}" Classes.abstained="{Binding !IsEndorsed}" Click="EndorsementButton_Click" IsVisible="{Binding ModPageUri, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>

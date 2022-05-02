@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Stardrop.Models.Data.Enums
 {
-    public enum EndorsementState
+    public enum InstallState
     {
-        Undetermined,
-        Abstained,
-        Endorsed
+        Unknown,
+        Downloading,
+        Installing
     }
 }
