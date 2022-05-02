@@ -26,6 +26,7 @@ namespace Stardrop.Views
         public NexusInfo(NexusUser nexusUser) : this()
         {
             // Handle buttons
+            this.FindControl<Button>("exitButton").Click += delegate { this.Close(false); };
             this.FindControl<Button>("disconnectNexusButton").Click += DisconnectNexus_Click;
 
             this.FindControl<TextBlock>("nexusUserName").Text = String.Format(Program.translation.Get("ui.nexus_login.labels.username"), nexusUser.Username);

@@ -13,6 +13,9 @@
         Width="500"
         Height="400"
         Background="{DynamicResource ThemeBackgroundBrush}"
+		ExtendClientAreaToDecorationsHint="true"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
         Icon="/Assets/icon.ico">
 
 	<Window.Styles>
@@ -40,10 +43,17 @@
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
 			<Setter Property="Background" Value="{DynamicResource DataGridRowBackground}"/>
 		</Style>
+		<Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="Red"/>
+		</Style>
+		<Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="Pink"/>
+		</Style>
 	</Window.Styles>
 
 	<Grid>
 		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
@@ -55,25 +65,35 @@
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
 
-		<StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
-			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.get_key}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 15 0 5"/>
+		<Border Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
+			<Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
+				<Image Source="/Assets/icon.ico" Stretch="None"/>
+				<TextBlock Text="{i18n:Translate ui.window.nexus_login.name}" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			</Menu>
+		</Border>
+		<Menu Name="windowMenu" IsVisible="{Binding ShowMainMenu}" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
+			<Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+		</Menu>
+
+		<StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
+			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.get_key}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 15 0 10"/>
 			<Button Name="goToNexusButton" Content="{i18n:Translate ui.nexus_login.buttons.nexus}" HorizontalAlignment="Center" VerticalAlignment="Center"  Margin="0 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
 		</StackPanel>
 
-		<StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Margin="0 15 0 0">
+		<StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Margin="0 15 0 0">
 			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.paste}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}"/>
 			<Border Margin="0 10 0 0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
 				<TextBox Name="apiBox" TextWrapping="Wrap" Height="50" Width="450" Background="{DynamicResource DataGridRowBackground}" Foreground="{DynamicResource ThemeForegroundHighBrush}" />
 			</Border>
 		</StackPanel>
-		<StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Margin="0 15 0 0">
-			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.note}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 15 0 0"/>
+		<StackPanel Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Margin="0 15 0 0">
+			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.note}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 0 0 0"/>
 			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.share_warning}" Width="400" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 15 0 0"/>
 			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.revoke}" Width="400" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 25 0 0"/>
 		</StackPanel>
 
 
-		<DockPanel Grid.Row="4" Margin="0 0 0 10">
+		<DockPanel Grid.Row="5" Margin="0 0 0 10">
 			<Button Name="applyButton" i:Attached.Icon="mdi-check" Margin="25 0 0 0" HorizontalAlignment="Left" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent"/>
 			<Button Name="cancelButton" IsCancel="True" i:Attached.Icon="mdi-cancel" Margin="0 0 25 0" HorizontalAlignment="Right" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
 		</DockPanel>

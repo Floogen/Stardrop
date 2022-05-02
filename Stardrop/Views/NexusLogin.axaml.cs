@@ -20,6 +20,7 @@ namespace Stardrop.Views
         {
             // Handle buttons
             this.FindControl<Button>("cancelButton").Click += delegate { this.Close(null); };
+            this.FindControl<Button>("exitButton").Click += delegate { this.Close(null); };
             this.FindControl<Button>("goToNexusButton").Click += delegate { viewModel.OpenBrowser("https://www.nexusmods.com/users/myaccount?tab=api"); };
 
             var applyButton = this.FindControl<Button>("applyButton");
