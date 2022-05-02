@@ -491,6 +491,12 @@ namespace Stardrop.Views
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
+            // Delete the downloaded archived mod
+            if (File.Exists(downloadedFilePath))
+            {
+                File.Delete(downloadedFilePath);
+            }
+
             _viewModel.EvaluateRequirements();
             _viewModel.UpdateEndorsements(apiKey);
             _viewModel.UpdateFilter();
@@ -738,6 +744,12 @@ namespace Stardrop.Views
             var addedMods = await AddMods(updateFilePaths.ToArray());
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+
+            // Delete the downloaded archived mods
+            foreach (var filePath in updateFilePaths.Where(p => File.Exists(p)))
+            {
+                File.Delete(filePath);
+            }
 
             _viewModel.EvaluateRequirements();
             _viewModel.UpdateEndorsements(apiKey);
