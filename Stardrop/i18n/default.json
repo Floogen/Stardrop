@@ -126,6 +126,7 @@
   "ui.warning.unable_to_determine_profile": "Unable to determine selected profile.\n\nSMAPI will not be started.",
   "ui.warning.stardrop_up_to_date": "Stardrop is up-to-date.\n\n{0} is the latest version.",
   "ui.warning.stardrop_unable_to_download_latest": "Unable to download the latest release for Stardrop.\n\nPlease download the latest version manually.",
+  "ui.warning.stardrop_unable_to_find_latest": "Unable to check Stardrop's GitHub repository for an update'.\n\nPlease check GitHub for a possible update or try again later.",
   "ui.warning.stardrop_update_downloaded": "Downloaded the latest version successfully.\n\nStardrop will now restart.",
   "ui.warning.update_cooldown_minutes": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} minute(s).",
   "ui.warning.update_cooldown_seconds": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} second(s).",

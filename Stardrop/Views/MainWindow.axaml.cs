@@ -841,6 +841,11 @@ namespace Stardrop.Views
             {
                 updateAvailable = true;
             }
+            else if (versionToUri is null)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_unable_to_find_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                return;
+            }
 
             // If an update is available, notify the user otherwise let them know Stardrop is up-to-date
             if (updateAvailable)
