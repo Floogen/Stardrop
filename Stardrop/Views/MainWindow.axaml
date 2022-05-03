@@ -466,7 +466,7 @@
 						</DataGridTemplateColumn.Header>
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
-								<Button Name="endorsementButton" Tag="{Binding UniqueId}" Classes="hyperlink status" Classes.endorsed="{Binding IsEndorsed}" Classes.abstained="{Binding !IsEndorsed}" Click="EndorsementButton_Click" IsVisible="{Binding ModPageUri, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+								<Button Name="endorsementButton" Tag="{Binding UniqueId}" Classes="hyperlink status" Classes.endorsed="{Binding IsEndorsed}" Classes.abstained="{Binding !IsEndorsed}" Click="EndorsementButton_Click" IsVisible="{Binding NexusModId, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
