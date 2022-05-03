@@ -179,14 +179,21 @@ namespace Stardrop
                             links = new List<NXM>();
                         }
 
-                        links.Add(new NXM() { Link = nxmLink, Timestamp = DateTime.Now });
-                        Program.helper.Log(links.Count());
+                        try
+                        {
+                            links.Add(new NXM() { Link = nxmLink, Timestamp = DateTime.Now });
+                            Program.helper.Log(links.Count());
 
-                        stream.SetLength(0);
+                            stream.SetLength(0);
 
-                        JsonSerializer.SerializeAsync(stream, links, new JsonSerializerOptions() { WriteIndented = true });
+                            JsonSerializer.SerializeAsync(stream, links, new JsonSerializerOptions() { WriteIndented = true });
 
-                        break;
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            Program.helper.Log(ex);
+                        }
                     }
                 }
                 catch (Exception ex)

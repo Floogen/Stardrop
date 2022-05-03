@@ -9,9 +9,9 @@
         x:Class="Stardrop.Views.SettingsWindow"
         Title="{i18n:Translate ui.window.settings.name}"
         MinWidth="430"
-        MinHeight="350"
+        MinHeight="650"
         Width="430"
-        Height="350"
+        Height="650"
         Background="{DynamicResource ThemeBackgroundBrush}"
         HasSystemDecorations="true"
         ExtendClientAreaToDecorationsHint="true"
@@ -159,6 +159,7 @@
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 			<RowDefinition Height="50" />
 		</Grid.RowDefinitions>
@@ -199,12 +200,22 @@
 		</StackPanel>
 
 		<StackPanel Grid.Row="3" Margin="10 25 0 0">
+			<TextBlock Text="{i18n:Translate ui.settings_window.labels.nexus}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="{i18n:Translate ui.settings_window.labels.preferred_server}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+				<ComboBox Name="preferredServerBox" ToolTip.Tip="{Binding ToolTip_PreferredServer}" Margin="10 10 0 10" Width="150" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
+			</StackPanel>
+			<Button Name="registerNXMButton" ToolTip.Tip="{Binding ToolTip_NXMAssociation}" Content="{i18n:Translate ui.settings_window.buttons.register_nxm_association}" Margin="0 5 0 5" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" HorizontalAlignment="Left"/>
+			<CheckBox Name="askBeforeNXMInstallCheckbox" IsChecked="{Binding IsAskingBeforeAcceptingNXM}" Content="{i18n:Translate ui.settings_window.buttons.always_ask_for_NXM_installs}" ToolTip.Tip="{Binding ToolTip_AlwaysAskNXMFiles}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+		</StackPanel>
+
+		<StackPanel Grid.Row="4" Margin="10 25 0 0">
 			<TextBlock Text="{i18n:Translate ui.settings_window.labels.miscellaneous}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 			<CheckBox Name="ignoreHiddenFoldersCheckbox" IsChecked="{Binding IgnoreHiddenFolders}" Content="{i18n:Translate ui.settings_window.buttons.ignore_hidden_folders}" ToolTip.Tip="{Binding ToolTip_IgnoreHiddenFolders}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 			<CheckBox Name="enableProfileSpecificModConfigsCheckbox" IsChecked="{Binding EnableProfileSpecificModConfigs}" Content="{i18n:Translate ui.settings_window.buttons.enable_profile_specific_mod_configs}" ToolTip.Tip="{Binding ToolTip_EnableProfileSpecificModConfigs}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 		</StackPanel>
 
-		<DockPanel Grid.Row="4" Grid.Column="1" Margin="0 0 0 0">
+		<DockPanel Grid.Row="5" Grid.Column="1" Margin="0 0 0 0">
 			<Button Name="applyButton" ToolTip.Tip="{Binding ToolTip_Save}" i:Attached.Icon="mdi-check" Margin="0 0 15 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent" HorizontalAlignment="Right"/>
 			<Button Name="cancelButton" IsCancel="True" ToolTip.Tip="{Binding ToolTip_Cancel}" i:Attached.Icon="mdi-cancel" Margin="0 0 15 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent" HorizontalAlignment="Right"/>
 		</DockPanel>

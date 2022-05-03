@@ -4,7 +4,9 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Stardrop.Models;
+using Stardrop.Models.Data.Enums;
 using Stardrop.Utilities;
+using Stardrop.Utilities.Internal;
 using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -35,6 +37,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("smapiFolderButton").Click += SmapiFolderButton_Click;
             this.FindControl<Button>("modFolderButton").Click += ModFolderButton_Click;
             this.FindControl<Button>("modInstallButton").Click += ModInstallButton_Click;
+            this.FindControl<Button>("registerNXMButton").Click += RegisterNXMButton_Click;
             this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
 
             // Push the focus for the textboxes to the end of their strings
@@ -70,6 +73,24 @@ namespace Stardrop.Views
                 Program.settings.Theme = themeName;
             };
 
+            // Handle Nexus Mods preferred server
+            var descriptionToServerEnum = new Dictionary<string, NexusServers>();
+            foreach (NexusServers serverName in Enum.GetValues(typeof(NexusServers)))
+            {
+                if (EnumParser.GetDescription(serverName) is not null)
+                {
+                    descriptionToServerEnum[EnumParser.GetDescription(serverName)] = serverName;
+                }
+            }
+
+            var preferredComboBox = this.FindControl<ComboBox>("preferredServerBox");
+            preferredComboBox.Items = descriptionToServerEnum.Keys;
+            preferredComboBox.SelectedItem = EnumParser.GetDescription(Program.settings.PreferredNexusServer);
+            preferredComboBox.SelectionChanged += (sender, e) =>
+            {
+                Program.settings.PreferredNexusServer = descriptionToServerEnum[preferredComboBox.SelectedItem.ToString()];
+            };
+
             // Handle adding the languages
             var languageComboBox = this.FindControl<ComboBox>("languageComboBox");
             languageComboBox.Items = Program.translation.GetAvailableTranslations();
@@ -89,6 +110,11 @@ namespace Stardrop.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void RegisterNXMButton_Click(object? sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void Exit_Click(object? sender, RoutedEventArgs e)

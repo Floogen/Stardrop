@@ -19,6 +19,7 @@ namespace Stardrop.ViewModels
         public string ModFolderPath { get { return Program.settings.ModFolderPath; } set { Program.settings.ModFolderPath = value; Pathing.SetModPath(Program.settings.ModFolderPath); } }
         public string ModInstallPath { get { return Program.settings.ModInstallPath; } set { Program.settings.ModInstallPath = value; } }
         public bool IgnoreHiddenFolders { get { return Program.settings.IgnoreHiddenFolders; } set { Program.settings.IgnoreHiddenFolders = value; } }
+        public bool IsAskingBeforeAcceptingNXM { get { return Program.settings.IsAskingBeforeAcceptingNXM; } set { Program.settings.IsAskingBeforeAcceptingNXM = value; } }
         public bool EnableProfileSpecificModConfigs { get { return Program.settings.EnableProfileSpecificModConfigs; } set { Program.settings.EnableProfileSpecificModConfigs = value; } }
 
         // Tooltips
@@ -28,6 +29,9 @@ namespace Stardrop.ViewModels
         public string ToolTip_Theme { get; set; }
         public string ToolTip_Language { get; set; }
         public string ToolTip_IgnoreHiddenFolders { get; set; }
+        public string ToolTip_PreferredServer { get; set; }
+        public string ToolTip_NXMAssociation { get; set; }
+        public string ToolTip_AlwaysAskNXMFiles { get; set; }
         public string ToolTip_EnableProfileSpecificModConfigs { get; set; }
         public string ToolTip_Save { get; set; }
         public string ToolTip_Cancel { get; set; }
@@ -45,6 +49,9 @@ namespace Stardrop.ViewModels
                 ToolTip_Theme = Program.translation.Get("ui.settings_window.tooltips.theme");
                 ToolTip_Language = Program.translation.Get("ui.settings_window.tooltips.language");
                 ToolTip_IgnoreHiddenFolders = Program.translation.Get("ui.settings_window.tooltips.ignore_hidden_folders");
+                ToolTip_PreferredServer = Program.translation.Get("ui.settings_window.tooltips.preferred_server");
+                ToolTip_NXMAssociation = Program.translation.Get("ui.settings_window.tooltips.nxm_file_association");
+                ToolTip_AlwaysAskNXMFiles = Program.translation.Get("ui.settings_window.tooltips.always_ask_nxm_files");
                 ToolTip_EnableProfileSpecificModConfigs = Program.translation.Get("ui.settings_window.tooltips.enable_profile_specific_configs");
                 ToolTip_Save = Program.translation.Get("ui.settings_window.tooltips.save_changes");
                 ToolTip_Cancel = Program.translation.Get("ui.settings_window.tooltips.cancel_changes");

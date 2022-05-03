@@ -27,6 +27,7 @@ using Semver;
 using System.Threading;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus.Web;
+using Stardrop.Utilities.Internal;
 
 namespace Stardrop.Views
 {
@@ -1197,8 +1198,8 @@ namespace Stardrop.Views
                 return false;
             }
 
-            Program.helper.Log($"Processing NXM link: {nxmLink}");
-            var processedDownloadLink = await Nexus.GetFileDownloadLink(apiKey, nxmLink);
+            Program.helper.Log($"Processing NXM link: {nxmLink.Link}");
+            var processedDownloadLink = await Nexus.GetFileDownloadLink(apiKey, nxmLink, EnumParser.GetDescription(Program.settings.PreferredNexusServer));
             Program.helper.Log($"Processed link: {processedDownloadLink}");
 
             if (String.IsNullOrEmpty(processedDownloadLink))
@@ -1215,9 +1216,8 @@ namespace Stardrop.Views
                 return false;
             }
 
-            // TODO: Make it a setting to automatically accept NXM files
             var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
-            if (await requestWindow.ShowDialog<bool>(this))
+            if (Program.settings.IsAskingBeforeAcceptingNXM is false || await requestWindow.ShowDialog<bool>(this))
             {
                 var downloadedFilePath = await Nexus.DownloadFileAndGetPath(processedDownloadLink, modDetails.Name);
                 if (downloadedFilePath is null)
@@ -1609,7 +1609,7 @@ namespace Stardrop.Views
                 return null;
             }
 
-            var modDownloadLink = await Nexus.GetFileDownloadLink(apiKey, (int)modId, modFile.Id);
+            var modDownloadLink = await Nexus.GetFileDownloadLink(apiKey, (int)modId, modFile.Id, serverName: EnumParser.GetDescription(Program.settings.PreferredNexusServer));
             if (modDownloadLink is null)
             {
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));

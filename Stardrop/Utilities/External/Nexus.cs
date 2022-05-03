@@ -257,7 +257,7 @@ namespace Stardrop.Utilities.External
             return null;
         }
 
-        public async static Task<string?> GetFileDownloadLink(string apiKey, NXM nxmData, string serverName = "Nexus CDN")
+        public async static Task<string?> GetFileDownloadLink(string apiKey, NXM nxmData, string? serverName = null)
         {
             if (nxmData.Link is null)
             {
@@ -274,8 +274,13 @@ namespace Stardrop.Utilities.External
         }
 
         // TODO: Make it a setting for Nexus Mod server preference
-        public async static Task<string?> GetFileDownloadLink(string apiKey, int modId, int fileId, string? nxmKey = null, string? nxmExpiry = null, string serverName = "Nexus CDN")
+        public async static Task<string?> GetFileDownloadLink(string apiKey, int modId, int fileId, string? nxmKey = null, string? nxmExpiry = null, string? serverName = null)
         {
+            if (String.IsNullOrEmpty(serverName) || Program.settings.NexusDetails.IsPremium is false)
+            {
+                serverName = "Nexus CDN";
+            }
+
             // Create a throwaway client
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", apiKey);
@@ -304,13 +309,14 @@ namespace Stardrop.Utilities.External
                     }
                     else
                     {
+                        UpdateRequestCounts(response.Headers);
+
                         var selectedFile = downloadLinks.FirstOrDefault(x => x.ShortName?.ToLower() == serverName.ToLower());
                         if (selectedFile is not null)
                         {
+                            Program.helper.Log($"Requested download link from Nexus Mods using their {serverName} server");
                             return selectedFile.Uri;
                         }
-
-                        UpdateRequestCounts(response.Headers);
                     }
                 }
                 else
@@ -382,7 +388,7 @@ namespace Stardrop.Utilities.External
                     string content = await response.Content.ReadAsStringAsync();
                     List<Endorsement> endorsements = JsonSerializer.Deserialize<List<Endorsement>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    if (endorsements is null || endorsements.Count == 0)
+                    if (endorsements is null)
                     {
                         Program.helper.Log($"Unable to get endorsements for Nexus Mods");
                         Program.helper.Log($"Response from Nexus Mods:\n{content}");
