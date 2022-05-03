@@ -271,8 +271,6 @@ namespace Stardrop.Views
 
         private async void _nxmSentinelTimer_Tick(object? sender, EventArgs e)
         {
-            _nxmSentinel.Stop();
-
             if (File.Exists(Pathing.GetLinksCachePath()) is false)
             {
                 return;
@@ -297,13 +295,27 @@ namespace Stardrop.Views
                     await JsonSerializer.SerializeAsync(stream, new List<NXM>(), new JsonSerializerOptions() { WriteIndented = true });
                 }
             }
+            catch (IOException ex)
+            {
+                //Program.helper.Log($"Unable to access the Links.json file");
+                return;
+            }
             catch (Exception ex)
             {
                 Program.helper.Log($"Failed to process the Links.json file: {ex}");
-                File.Delete(Pathing.GetLinksCachePath());
-            }
 
-            _nxmSentinel.Start();
+                try
+                {
+                    if (File.Exists(Pathing.GetLinksCachePath()))
+                    {
+                        File.Delete(Pathing.GetLinksCachePath());
+                    }
+                }
+                catch (IOException ioEx)
+                {
+                    Program.helper.Log($"Failed to delete the Links.json file: {ioEx}");
+                }
+            }
         }
 
         private void ModGridMenuColumn_ChangeRequirementVisibility(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
