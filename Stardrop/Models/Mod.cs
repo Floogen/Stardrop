@@ -11,6 +11,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 
@@ -163,9 +164,10 @@ namespace Stardrop.Models
             foreach (string key in Manifest.UpdateKeys)
             {
                 string cleanedKey = String.Concat(key.Where(c => !Char.IsWhiteSpace(c)));
-                if (cleanedKey.Contains("Nexus:", StringComparison.OrdinalIgnoreCase))
+                var match = Regex.Match(key, @"Nexus:(?<modId>\d+).*");
+                if (match.Success)
                 {
-                    if (Int32.TryParse(key.Replace("Nexus:", ""), out int modId))
+                    if (Int32.TryParse(match.Groups["modId"].ToString(), out int modId))
                     {
                         return modId;
                     }

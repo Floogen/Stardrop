@@ -6,15 +6,19 @@ using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.MaterialDesign;
 using Stardrop.Models;
 using Stardrop.Models.Nexus;
+using Stardrop.Models.Nexus.Web;
 using Stardrop.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Stardrop
 {
@@ -25,6 +29,7 @@ namespace Stardrop
         internal static Translation translation = new Translation();
 
         internal static bool onBootStartSMAPI = false;
+        internal static string? nxmLink = null;
         internal static readonly string defaultProfileName = "Default";
         internal static readonly string applicationVersion = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
         internal static readonly Regex gameDetailsPattern = new Regex(@"SMAPI (?<smapiVersion>.+) with Stardew Valley (?<gameVersion>.+) on (?<system>.+)");
@@ -33,6 +38,8 @@ namespace Stardrop
         {
             [Option("start-smapi", Required = false, HelpText = "Automatically starts SMAPI based on the last selected mod profile.")]
             public bool StartSmapi { get; set; }
+            [Option("nxm", Required = false, HelpText = "Downloads the given NXM file from Nexus Mods.")]
+            public string? NXMLink { get; set; }
         }
 
         // Initialization code. Don't use any Avalonia, third-party APIs or any
@@ -47,8 +54,17 @@ namespace Stardrop
             // Establish file and folders paths
             Pathing.SetHomePath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
+            // Verify if another instance is already running
+            if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location)).Count() > 1)
+            {
+                helper = new Helper($"nxm", ".txt", Pathing.GetLogFolderPath());
+
+                HandleSecondaryInstance(args);
+                return;
+            }
+
             // Set up our logger
-            helper = new Helper("log", ".txt", Pathing.GetLogFolderPath());
+            helper = new Helper($"log", ".txt", Pathing.GetLogFolderPath());
 
             try
             {
@@ -122,6 +138,73 @@ namespace Stardrop
             {
                 helper.Log(ex, Helper.Status.Alert);
             }
+        }
+
+        private static void HandleSecondaryInstance(string[] args)
+        {
+            Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(o =>
+            {
+                nxmLink = o.NXMLink;
+            });
+
+            // Verify NXM link is valid
+            if (String.IsNullOrEmpty(nxmLink))
+            {
+                return;
+            }
+
+            // Write to bridge file
+            int attempts = 0;
+
+            Program.helper.Log("STARTING");
+            while (true)
+            {
+                try
+                {
+                    using (FileStream stream = new FileStream(Pathing.GetLinksCachePath(), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        List<NXM> links;
+                        try
+                        {
+                            links = JsonSerializer.DeserializeAsync<List<NXM>>(stream, new JsonSerializerOptions { AllowTrailingCommas = true }).Result;
+
+                            if (links is null)
+                            {
+                                links = new List<NXM>();
+                            }
+                        }
+                        catch (JsonException ex)
+                        {
+                            links = new List<NXM>();
+                        }
+
+                        links.Add(new NXM() { Link = nxmLink, Timestamp = DateTime.Now });
+                        Program.helper.Log(links.Count());
+
+                        stream.SetLength(0);
+
+                        JsonSerializer.SerializeAsync(stream, links, new JsonSerializerOptions() { WriteIndented = true });
+
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log(ex);
+                }
+
+                if (attempts >= 3)
+                {
+                    return;
+                }
+                else
+                {
+                    attempts += 1;
+                    Thread.Sleep(500);
+                }
+            }
+
+            Program.helper.Log("DONE");
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.

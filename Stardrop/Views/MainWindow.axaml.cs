@@ -26,6 +26,7 @@ using System.Reflection;
 using Semver;
 using System.Threading;
 using Stardrop.Models.Data.Enums;
+using Stardrop.Models.Nexus.Web;
 
 namespace Stardrop.Views
 {
@@ -35,6 +36,7 @@ namespace Stardrop.Views
         private readonly ProfileEditorViewModel _editorView;
         private DispatcherTimer _searchBoxTimer;
         private DispatcherTimer _smapiProcessTimer;
+        private DispatcherTimer _nxmSentinel;
 
         // Tracking related
         private bool shiftPressed;
@@ -100,6 +102,12 @@ namespace Stardrop.Views
             // Check if we have a valid Nexus Mods key
             Nexus.SetDisplayWindow(_viewModel);
             CheckForNexusConnection();
+
+            // Start sentinel for watching NXM files
+            _nxmSentinel = new DispatcherTimer();
+            _nxmSentinel.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 1000);
+            _nxmSentinel.Tick += _nxmSentinelTimer_Tick;
+            _nxmSentinel.Start();
 
             // FOOTER: "Value cannot be null. (Parameter 'path1')" error clears removing the above chunk
 
@@ -193,6 +201,16 @@ namespace Stardrop.Views
             {
                 CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
             }
+
+            if (Program.settings.IsAssociatedWithNXM is false)
+            {
+                var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
+                if (await requestWindow.ShowDialog<bool>(this))
+                {
+                    NXMProtocol.Register(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Stardrop.exe"));
+                    Program.settings.IsAssociatedWithNXM = true;
+                }
+            }
         }
 
         private async Task CreateWarningWindow(string warningText, string buttonText)
@@ -243,6 +261,86 @@ namespace Stardrop.Views
 
                 this.WindowState = WindowState.Normal;
             }
+        }
+
+        private async void _nxmSentinelTimer_Tick(object? sender, EventArgs e)
+        {
+            _nxmSentinel.Stop();
+
+            if (File.Exists(Pathing.GetLinksCachePath()) is false)
+            {
+                return;
+            }
+
+            try
+            {
+                var apiKey = Nexus.GetKey();
+                using (FileStream stream = new FileStream(Pathing.GetLinksCachePath(), FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                {
+                    foreach (var nxmLink in await JsonSerializer.DeserializeAsync<List<NXM>>(stream, new JsonSerializerOptions { AllowTrailingCommas = true }))
+                    {
+                        if (String.IsNullOrEmpty(apiKey))
+                        {
+                            await CreateWarningWindow(Program.translation.Get("ui.message.require_nexus_login"), Program.translation.Get("internal.ok"));
+                            break;
+                        }
+
+                        Program.helper.Log($"Processing NXM link: {nxmLink}");
+                        var processedDownloadLink = await Nexus.GetFileDownloadLink(apiKey, nxmLink);
+                        Program.helper.Log($"Processed link: {processedDownloadLink}");
+
+                        if (String.IsNullOrEmpty(processedDownloadLink))
+                        {
+                            return;
+                        }
+
+                        // Get the mod details
+                        var modDetails = await Nexus.GetModDetailsViaNXM(apiKey, nxmLink);
+                        if (modDetails is null || String.IsNullOrEmpty(modDetails.Name))
+                        {
+                            return;
+                        }
+
+                        // TODO: Make it a setting to automatically accept NXM files
+                        var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
+                        if (await requestWindow.ShowDialog<bool>(this))
+                        {
+                            var downloadedFilePath = await Nexus.DownloadFileAndGetPath(processedDownloadLink, modDetails.Name);
+                            if (downloadedFilePath is null)
+                            {
+                                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
+                                return;
+                            }
+
+                            var addedMods = await AddMods(new string[] { downloadedFilePath });
+                            await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
+                            await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+
+                            // Delete the downloaded archived mod
+                            if (File.Exists(downloadedFilePath))
+                            {
+                                File.Delete(downloadedFilePath);
+                            }
+
+                            _viewModel.EvaluateRequirements();
+                            _viewModel.UpdateEndorsements(apiKey);
+                            _viewModel.UpdateFilter();
+                        }
+                    }
+
+                    // Clear the stream and empty out the file
+                    stream.SetLength(0);
+
+                    await JsonSerializer.SerializeAsync(stream, new List<NXM>(), new JsonSerializerOptions() { WriteIndented = true });
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to process the Links.json file: {ex}");
+                File.Delete(Pathing.GetLinksCachePath());
+            }
+
+            _nxmSentinel.Start();
         }
 
         private void ModGridMenuColumn_ChangeRequirementVisibility(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -491,6 +589,7 @@ namespace Stardrop.Views
             if (result == EndorsementResponse.Endorsed || result == EndorsementResponse.Abstained)
             {
                 _viewModel.Mods.First(m => m.NexusModId == modId).IsEndorsed = targetState;
+                Program.helper.Log($"Set endorsement state ({targetState}) for mod id: {modId}");
             }
             else if (result == EndorsementResponse.IsOwnMod)
             {
@@ -1561,6 +1660,7 @@ namespace Stardrop.Views
                             {
                                 if (!manifest.DeleteOldVersion)
                                 {
+                                    // TODO: Update this warning to account for the config preserving setting, if enabled
                                     var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_mod_update_method"), manifest.Name));
                                     if (await requestWindow.ShowDialog<bool>(this))
                                     {

@@ -150,6 +150,9 @@
   "ui.message.confirm_bulk_change_mod_states_enable": "Enable all mods?\n\nNote: This cannot be undone.",
   "ui.message.confirm_bulk_change_mod_states_disable": "Disable all mods?\n\nNote: This cannot be undone.",
   "ui.message.confirm_mod_update_method": "An previous version of {0} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended, however any config files will be lost.",
+  "ui.message.confirm_nxm_association": "Would you like to associate the NXM protocl with Stardrop?\n\nThis will allow Stardrop to automatically install mods downloaded from Nexus Mods.",
+  "ui.message.confirm_nxm_install": "Would you like to install the following mod:\n\n{0}\n\nYou can disable this confirmation in the settings menu.",
+  "ui.message.require_nexus_login": "This action requires being signed into the Nexus Mods API.",
 
   // Window Names
   "ui.window.setting.name": "Settings",

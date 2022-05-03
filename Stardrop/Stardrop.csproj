@@ -38,6 +38,7 @@
 		<PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.13" />
 		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.13" />
 		<PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
+		<PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
 		<PackageReference Include="Projektanker.Icons.Avalonia" Version="4.4.0" />
 		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="4.4.0" />
 		<PackageReference Include="semver" Version="2.1.0" />

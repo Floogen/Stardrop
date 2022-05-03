@@ -90,6 +90,11 @@ namespace Stardrop.Utilities
             return Path.Combine(GetCacheFolderPath(), "Notion.json");
         }
 
+        public static string GetLinksCachePath()
+        {
+            return Path.Combine(GetCacheFolderPath(), "Links.json");
+        }
+
         public static string GetNexusPath()
         {
             return Path.Combine(defaultHomePath, "Nexus");

@@ -19,6 +19,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Stardrop.Utilities.External
@@ -31,10 +32,7 @@ namespace Stardrop.Utilities.External
         private static MainWindowViewModel _displayModel;
         private static Uri _baseUrl = new Uri("http://api.nexusmods.com/v1/");
         private static Uri _baseUrlSecured = new Uri("https://api.nexusmods.com/v1/");
-
-        // Regex for extracting required components for Nexus file downloading: 
-        // nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>[0-9]+)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)
-        //https://app.swaggerhub.com/apis-docs/NexusMods/nexus-mods_public_api_params_in_form_data/1.0#/Mod%20Files/get_v1_games_game_domain_mods_mod_id_files_id_download_link.json
+        private static string _nxmPattern = @"nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>.*)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)";
 
         public static void SetDisplayWindow(MainWindowViewModel viewModel)
         {
@@ -127,6 +125,72 @@ namespace Stardrop.Utilities.External
             return wasValidated;
         }
 
+
+        public async static Task<ModDetails?> GetModDetailsViaNXM(string apiKey, NXM nxmData)
+        {
+            if (nxmData.Link is null)
+            {
+                return null;
+            }
+
+            var match = Regex.Match(Regex.Unescape(nxmData.Link), _nxmPattern);
+            if (match.Success is false || match.Groups["domain"].ToString().ToLower() != "stardewvalley" || Int32.TryParse(match.Groups["mod"].ToString(), out int modId) is false)
+            {
+                return null;
+            }
+
+            // Create a throwaway client
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("apiKey", apiKey);
+            client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
+            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.applicationVersion} {Environment.OSVersion}");
+
+            try
+            {
+                var response = await client.GetAsync(new Uri(_baseUrl, $"games/stardewvalley/mods/{modId}.json"));
+                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+                    ModDetails modDetails = JsonSerializer.Deserialize<ModDetails>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    if (modDetails is null)
+                    {
+                        Program.helper.Log($"Unable to get mod details for the mod {modId} on Nexus Mods");
+                        Program.helper.Log($"Response from Nexus Mods:\n{content}");
+
+                        return null;
+                    }
+
+                    UpdateRequestCounts(response.Headers);
+
+                    return modDetails;
+                }
+                else
+                {
+                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    {
+                        Program.helper.Log($"Bad status given from Nexus Mods: {response.StatusCode}");
+                        if (response.Content is not null)
+                        {
+                            Program.helper.Log($"Response from Nexus Mods:\n{await response.Content.ReadAsStringAsync()}");
+                        }
+                    }
+                    else if (response.Content is null)
+                    {
+                        Program.helper.Log($"No response from Nexus Mods!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to get mod details for the mod {modId} on Nexus Mods: {ex}", Helper.Status.Alert);
+            }
+            client.Dispose();
+
+            return null;
+        }
+
         public async static Task<ModFile?> GetFileByVersion(string apiKey, int modId, string version)
         {
             if (SemVersion.TryParse(version.Replace("v", String.Empty), SemVersionStyles.Any, out var targetVersion) is false)
@@ -193,7 +257,24 @@ namespace Stardrop.Utilities.External
             return null;
         }
 
-        public async static Task<string?> GetFileDownloadLink(string apiKey, int modId, int fileId, string serverName = "Nexus CDN")
+        public async static Task<string?> GetFileDownloadLink(string apiKey, NXM nxmData, string serverName = "Nexus CDN")
+        {
+            if (nxmData.Link is null)
+            {
+                return null;
+            }
+
+            var match = Regex.Match(Regex.Unescape(nxmData.Link), _nxmPattern);
+            if (match.Success is false || match.Groups["domain"].ToString().ToLower() != "stardewvalley" || Int32.TryParse(match.Groups["mod"].ToString(), out int modId) is false || Int32.TryParse(match.Groups["file"].ToString(), out int fileId) is false)
+            {
+                return null;
+            }
+
+            return await GetFileDownloadLink(apiKey, modId, fileId, match.Groups["key"].ToString(), match.Groups["expiry"].ToString(), serverName);
+        }
+
+        // TODO: Make it a setting for Nexus Mod server preference
+        public async static Task<string?> GetFileDownloadLink(string apiKey, int modId, int fileId, string? nxmKey = null, string? nxmExpiry = null, string serverName = "Nexus CDN")
         {
             // Create a throwaway client
             HttpClient client = new HttpClient();
@@ -204,7 +285,8 @@ namespace Stardrop.Utilities.External
 
             try
             {
-                var response = await client.GetAsync(new Uri(_baseUrl, $"games/stardewvalley/mods/{modId}/files/{fileId}/download_link.json"));
+                var response = await client.GetAsync(new Uri(_baseUrl, $"games/stardewvalley/mods/{modId}/files/{fileId}/download_link.json?key={nxmKey}&expires={nxmExpiry}"));
+
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
                 {
                     string content = await response.Content.ReadAsStringAsync();
@@ -384,6 +466,9 @@ namespace Stardrop.Utilities.External
                                 return EndorsementResponse.NotDownloadedMod;
                             }
                             Program.helper.Log(parsedMessage);
+                            break;
+                        default:
+                            Program.helper.Log($"Unhandled status for endorsement: {endorsementResult.Status} | {endorsementResult.Message}");
                             break;
                     }
                 }
