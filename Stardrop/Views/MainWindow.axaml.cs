@@ -1677,8 +1677,16 @@ namespace Stardrop.Views
                             {
                                 if (!manifest.DeleteOldVersion)
                                 {
-                                    // TODO: Update this warning to account for the config preserving setting, if enabled
-                                    var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_mod_update_method"), manifest.Name));
+                                    string warningMessage = Program.translation.Get("ui.message.confirm_mod_update_method_no_config");
+                                    if (mod.HasConfig)
+                                    {
+                                        warningMessage = Program.translation.Get("ui.message.confirm_mod_update_method");
+                                        if (Program.settings.EnableProfileSpecificModConfigs)
+                                        {
+                                            warningMessage = Program.translation.Get("ui.message.confirm_mod_update_method_preserved");
+                                        }
+                                    }
+                                    var requestWindow = new MessageWindow(String.Format(warningMessage, manifest.Name));
                                     if (await requestWindow.ShowDialog<bool>(this))
                                     {
                                         // Delete old vesrion

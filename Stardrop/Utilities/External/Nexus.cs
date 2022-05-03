@@ -285,7 +285,12 @@ namespace Stardrop.Utilities.External
 
             try
             {
-                var response = await client.GetAsync(new Uri(_baseUrl, $"games/stardewvalley/mods/{modId}/files/{fileId}/download_link.json?key={nxmKey}&expires={nxmExpiry}"));
+                string url = $"games/stardewvalley/mods/{modId}/files/{fileId}/download_link.json";
+                if (String.IsNullOrEmpty(nxmKey) is false && String.IsNullOrEmpty(nxmExpiry) is false)
+                {
+                    url = $"{url}?key={nxmKey}&expires={nxmExpiry}";
+                }
+                var response = await client.GetAsync(new Uri(_baseUrl, url));
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
                 {
