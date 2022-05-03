@@ -151,6 +151,8 @@
   "ui.warning.not_downloaded": "You must download this mod from Nexus Mods in order to endorse it.",
   "ui.warning.failed_to_get_mod_details": "Failed to get the mod details from the NXM link: {0}",
   "ui.warning.failed_to_get_download_link": "Failed to get the download url from Nexus Mods via the NXM link: {0}",
+  "ui.warning.failed_to_set_association": "Failed to register the NXM protocol with Stardrop.\n\nSee log for details.",
+  "ui.warning.already_associated": "Stardrop is already associated with the NXM protocol.",
 
   // Messages
   "ui.message.confirm_mod_deletion": "Are you sure you'd like to delete {0}? This cannot be undone.",
@@ -161,7 +163,7 @@
   "ui.message.confirm_mod_update_method": "A previous version of {0} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended, however any config files will be lost.",
   "ui.message.confirm_mod_update_method_no_config": "A previous version of {0} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended.",
   "ui.message.confirm_mod_update_method_preserved": "A previous version of {0} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended and your config files will be restored.",
-  "ui.message.confirm_nxm_association": "Would you like to associate the NXM protocl with Stardrop?\n\nThis will allow Stardrop to automatically install mods downloaded from Nexus Mods.",
+  "ui.message.confirm_nxm_association": "Would you like to associate the NXM protocol with Stardrop?\n\nThis will allow Stardrop to automatically install mods downloaded from Nexus Mods.",
   "ui.message.confirm_nxm_install": "Would you like to install the following mod:\n\n{0}\n\nYou can disable this confirmation in the settings menu.",
   "ui.message.require_nexus_login": "This action requires being signed into the Nexus Mods API.",
 

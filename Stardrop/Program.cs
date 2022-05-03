@@ -31,6 +31,7 @@ namespace Stardrop
         internal static bool onBootStartSMAPI = false;
         internal static string? nxmLink = null;
         internal static readonly string defaultProfileName = "Default";
+        internal static readonly string executablePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Stardrop.exe");
         internal static readonly string applicationVersion = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
         internal static readonly Regex gameDetailsPattern = new Regex(@"SMAPI (?<smapiVersion>.+) with Stardew Valley (?<gameVersion>.+) on (?<system>.+)");
 

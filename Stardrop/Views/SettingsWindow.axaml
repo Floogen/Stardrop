@@ -201,11 +201,11 @@
 
 		<StackPanel Grid.Row="3" Margin="10 25 0 0">
 			<TextBlock Text="{i18n:Translate ui.settings_window.labels.nexus}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
-			<StackPanel Orientation="Horizontal">
+			<StackPanel Orientation="Horizontal" IsVisible="{Binding ShowNexusServers}">
 				<TextBlock Text="{i18n:Translate ui.settings_window.labels.preferred_server}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 				<ComboBox Name="preferredServerBox" ToolTip.Tip="{Binding ToolTip_PreferredServer}" Margin="10 10 0 10" Width="150" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
 			</StackPanel>
-			<Button Name="registerNXMButton" ToolTip.Tip="{Binding ToolTip_NXMAssociation}" Content="{i18n:Translate ui.settings_window.buttons.register_nxm_association}" Margin="0 5 0 5" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" HorizontalAlignment="Left"/>
+			<Button Name="registerNXMButton" IsVisible="{Binding ShowNXMAssociationButton}" ToolTip.Tip="{Binding ToolTip_NXMAssociation}" Content="{i18n:Translate ui.settings_window.buttons.register_nxm_association}" Margin="0 5 0 10" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" HorizontalAlignment="Left"/>
 			<CheckBox Name="askBeforeNXMInstallCheckbox" IsChecked="{Binding IsAskingBeforeAcceptingNXM}" Content="{i18n:Translate ui.settings_window.buttons.always_ask_for_NXM_installs}" ToolTip.Tip="{Binding ToolTip_AlwaysAskNXMFiles}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 		</StackPanel>
 

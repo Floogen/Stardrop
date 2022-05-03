@@ -38,6 +38,8 @@ namespace Stardrop.ViewModels
 
         // Other UI controls
         public bool ShowMainMenu { get; set; }
+        public bool ShowNXMAssociationButton { get; set; }
+        public bool ShowNexusServers { get; set; }
 
         public SettingsWindowViewModel()
         {
@@ -63,6 +65,8 @@ namespace Stardrop.ViewModels
             }
 
             ShowMainMenu = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            ShowNXMAssociationButton = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            ShowNexusServers = Program.settings.NexusDetails is not null && Program.settings.NexusDetails.IsPremium;
         }
     }
 }

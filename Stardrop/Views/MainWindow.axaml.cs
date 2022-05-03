@@ -203,13 +203,15 @@ namespace Stardrop.Views
                 CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
             }
 
-            if (Program.settings.IsAssociatedWithNXM is false)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NXMProtocol.Validate(Program.executablePath) is false && await Nexus.ValidateKey(Nexus.GetKey()))
             {
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
-                    NXMProtocol.Register(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Stardrop.exe"));
-                    Program.settings.IsAssociatedWithNXM = true;
+                    if (NXMProtocol.Register(Program.executablePath) is false)
+                    {
+                        await new WarningWindow(Program.translation.Get("ui.warning.failed_to_set_association"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                    }
                 }
             }
             else if (String.IsNullOrEmpty(Program.nxmLink) is false)
@@ -1171,6 +1173,19 @@ namespace Stardrop.Views
 
                 // Update any required Nexus Mods related components
                 CheckForNexusConnection();
+
+                // Verify NXM protocol usage
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NXMProtocol.Validate(Program.executablePath) is false && await Nexus.ValidateKey(apiKey))
+                {
+                    var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
+                    if (await requestWindow.ShowDialog<bool>(this))
+                    {
+                        if (NXMProtocol.Register(Program.executablePath) is false)
+                        {
+                            await new WarningWindow(Program.translation.Get("ui.warning.failed_to_set_association"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                        }
+                    }
+                }
 
                 return;
             }

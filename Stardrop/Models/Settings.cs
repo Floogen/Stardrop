@@ -21,7 +21,6 @@ namespace Stardrop.Models
         public bool IgnoreHiddenFolders { get; set; } = true;
         public bool EnableProfileSpecificModConfigs { get; set; }
         public NexusServers PreferredNexusServer { get; set; } = NexusServers.NexusCDN;
-        public bool IsAssociatedWithNXM { get; set; }
         public bool IsAskingBeforeAcceptingNXM { get; set; } = true;
         public GameDetails GameDetails { get; set; }
         public NexusUser NexusDetails { get; set; }

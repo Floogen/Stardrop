@@ -6,6 +6,7 @@ using Avalonia.Styling;
 using Stardrop.Models;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Utilities;
+using Stardrop.Utilities.External;
 using Stardrop.Utilities.Internal;
 using Stardrop.ViewModels;
 using System;
@@ -112,9 +113,23 @@ namespace Stardrop.Views
 #endif
         }
 
-        private void RegisterNXMButton_Click(object? sender, RoutedEventArgs e)
+        private async void RegisterNXMButton_Click(object? sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            if (NXMProtocol.Validate(Program.executablePath) is false)
+            {
+                var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
+                if (await requestWindow.ShowDialog<bool>(this))
+                {
+                    if (NXMProtocol.Register(Program.executablePath) is false)
+                    {
+                        await new WarningWindow(Program.translation.Get("ui.warning.failed_to_set_association"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                    }
+                }
+            }
+            else
+            {
+                await new WarningWindow(Program.translation.Get("ui.warning.already_associated"), Program.translation.Get("internal.ok")).ShowDialog(this);
+            }
         }
 
         private void Exit_Click(object? sender, RoutedEventArgs e)

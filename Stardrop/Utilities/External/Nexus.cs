@@ -64,8 +64,13 @@ namespace Stardrop.Utilities.External
             return null;
         }
 
-        public async static Task<bool> ValidateKey(string apiKey)
+        public async static Task<bool> ValidateKey(string? apiKey)
         {
+            if (String.IsNullOrEmpty(apiKey))
+            {
+                return false;
+            }
+
             // Create a throwaway client
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", apiKey);
@@ -273,7 +278,6 @@ namespace Stardrop.Utilities.External
             return await GetFileDownloadLink(apiKey, modId, fileId, match.Groups["key"].ToString(), match.Groups["expiry"].ToString(), serverName);
         }
 
-        // TODO: Make it a setting for Nexus Mod server preference
         public async static Task<string?> GetFileDownloadLink(string apiKey, int modId, int fileId, string? nxmKey = null, string? nxmExpiry = null, string? serverName = null)
         {
             if (String.IsNullOrEmpty(serverName) || Program.settings.NexusDetails.IsPremium is false)
