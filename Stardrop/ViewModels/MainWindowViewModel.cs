@@ -105,21 +105,28 @@ namespace Stardrop.ViewModels
                 return;
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            try
             {
-                // If no associated application/json MimeType is found xdg-open opens retrun error
-                // but it tries to open it anyway using the console editor (nano, vim, other..)
-                ShellExec($"xdg-open {url}", waitForExit: false);
-            }
-            else
-            {
-                using Process process = Process.Start(new ProcessStartInfo
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
-                    Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"{url}" : "",
-                    CreateNoWindow = true,
-                    UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                });
+                    // If no associated application/json MimeType is found xdg-open opens retrun error
+                    // but it tries to open it anyway using the console editor (nano, vim, other..)
+                    ShellExec($"xdg-open {url}", waitForExit: false);
+                }
+                else
+                {
+                    using Process process = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
+                        Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"{url}" : "",
+                        CreateNoWindow = true,
+                        UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to utilize OpenBrowser with the url ({url}): {ex}");
             }
         }
 
