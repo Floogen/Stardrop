@@ -211,6 +211,11 @@ namespace Stardrop.Views
                     Program.settings.IsAssociatedWithNXM = true;
                 }
             }
+            else if (String.IsNullOrEmpty(Program.nxmLink) is false)
+            {
+                await ProcessNXMLink(Nexus.GetKey(), new NXM() { Link = Program.nxmLink, Timestamp = DateTime.Now });
+                Program.nxmLink = null;
+            }
         }
 
         private async Task CreateWarningWindow(string warningText, string buttonText)
@@ -279,52 +284,9 @@ namespace Stardrop.Views
                 {
                     foreach (var nxmLink in await JsonSerializer.DeserializeAsync<List<NXM>>(stream, new JsonSerializerOptions { AllowTrailingCommas = true }))
                     {
-                        if (String.IsNullOrEmpty(apiKey))
+                        if (await ProcessNXMLink(apiKey, nxmLink) is false)
                         {
-                            await CreateWarningWindow(Program.translation.Get("ui.message.require_nexus_login"), Program.translation.Get("internal.ok"));
                             break;
-                        }
-
-                        Program.helper.Log($"Processing NXM link: {nxmLink}");
-                        var processedDownloadLink = await Nexus.GetFileDownloadLink(apiKey, nxmLink);
-                        Program.helper.Log($"Processed link: {processedDownloadLink}");
-
-                        if (String.IsNullOrEmpty(processedDownloadLink))
-                        {
-                            return;
-                        }
-
-                        // Get the mod details
-                        var modDetails = await Nexus.GetModDetailsViaNXM(apiKey, nxmLink);
-                        if (modDetails is null || String.IsNullOrEmpty(modDetails.Name))
-                        {
-                            return;
-                        }
-
-                        // TODO: Make it a setting to automatically accept NXM files
-                        var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
-                        if (await requestWindow.ShowDialog<bool>(this))
-                        {
-                            var downloadedFilePath = await Nexus.DownloadFileAndGetPath(processedDownloadLink, modDetails.Name);
-                            if (downloadedFilePath is null)
-                            {
-                                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
-                                return;
-                            }
-
-                            var addedMods = await AddMods(new string[] { downloadedFilePath });
-                            await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
-                            await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
-
-                            // Delete the downloaded archived mod
-                            if (File.Exists(downloadedFilePath))
-                            {
-                                File.Delete(downloadedFilePath);
-                            }
-
-                            _viewModel.EvaluateRequirements();
-                            _viewModel.UpdateEndorsements(apiKey);
-                            _viewModel.UpdateFilter();
                         }
                     }
 
@@ -1225,6 +1187,61 @@ namespace Stardrop.Views
             _viewModel.EvaluateRequirements();
 
             CheckForNexusConnection();
+        }
+
+        private async Task<bool> ProcessNXMLink(string? apiKey, NXM nxmLink)
+        {
+            if (String.IsNullOrEmpty(apiKey))
+            {
+                await CreateWarningWindow(Program.translation.Get("ui.message.require_nexus_login"), Program.translation.Get("internal.ok"));
+                return false;
+            }
+
+            Program.helper.Log($"Processing NXM link: {nxmLink}");
+            var processedDownloadLink = await Nexus.GetFileDownloadLink(apiKey, nxmLink);
+            Program.helper.Log($"Processed link: {processedDownloadLink}");
+
+            if (String.IsNullOrEmpty(processedDownloadLink))
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_get_download_link"), nxmLink.Link), Program.translation.Get("internal.ok"));
+                return false;
+            }
+
+            // Get the mod details
+            var modDetails = await Nexus.GetModDetailsViaNXM(apiKey, nxmLink);
+            if (modDetails is null || String.IsNullOrEmpty(modDetails.Name))
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_get_mod_details"), nxmLink.Link), Program.translation.Get("internal.ok"));
+                return false;
+            }
+
+            // TODO: Make it a setting to automatically accept NXM files
+            var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
+            if (await requestWindow.ShowDialog<bool>(this))
+            {
+                var downloadedFilePath = await Nexus.DownloadFileAndGetPath(processedDownloadLink, modDetails.Name);
+                if (downloadedFilePath is null)
+                {
+                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
+                    return false;
+                }
+
+                var addedMods = await AddMods(new string[] { downloadedFilePath });
+                await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
+                await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+
+                // Delete the downloaded archived mod
+                if (File.Exists(downloadedFilePath))
+                {
+                    File.Delete(downloadedFilePath);
+                }
+
+                _viewModel.EvaluateRequirements();
+                _viewModel.UpdateEndorsements(apiKey);
+                _viewModel.UpdateFilter();
+            }
+
+            return true;
         }
 
         private bool IsUpdateCacheValid()

@@ -75,6 +75,7 @@ namespace Stardrop
                 Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(o =>
                 {
                     onBootStartSMAPI = o.StartSmapi;
+                    nxmLink = o.NXMLink;
                 });
 
                 // Verify the folder paths are created

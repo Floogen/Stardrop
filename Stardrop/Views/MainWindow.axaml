@@ -460,7 +460,7 @@
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTemplateColumn SortMemberPath="Endorsement" CellStyleClasses="centered" IsVisible="{Binding ShowEndorsements}">
+					<DataGridTemplateColumn CellStyleClasses="centered" IsVisible="{Binding ShowEndorsements}">
 						<DataGridTemplateColumn.Header>
 							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.endorsement}" TextAlignment="Center" />
 						</DataGridTemplateColumn.Header>
