@@ -19,13 +19,18 @@ namespace Stardrop
         {
             AvaloniaXamlLoader.Load(this);
 
+            // Verify that the helper is instantiated, if it isn't then this code is likely reached by Avalonia amd bypassed Main
+            if (Program.helper is null)
+            {
+                Program.helper = new Helper();
+            }
+
+            // Load in translations
+            Program.translation.LoadTranslations();
+
             // Handle adding the themes
             Dictionary<string, IStyle> themes = new Dictionary<string, IStyle>();
-#if DEBUG
-            themes["Stardrop"] = AvaloniaRuntimeXamlLoader.Parse<Styles>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"Themes\Stardrop.xaml")));
-            Program.translation.LoadTranslations();
-#else
-            foreach (string fileFullName in Directory.EnumerateFiles("Themes", "*.xaml"))
+            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Themes"), "*.xaml"))
             {
                 try
                 {
@@ -38,8 +43,6 @@ namespace Stardrop
                     Program.helper.Log($"Unable to load theme on {Path.GetFileNameWithoutExtension(fileFullName)}: {ex}", Helper.Status.Warning);
                 }
             }
-#endif
-
 
             Current.Styles.Insert(0, !themes.ContainsKey(Program.settings.Theme) ? themes.Values.First() : themes[Program.settings.Theme]);
         }

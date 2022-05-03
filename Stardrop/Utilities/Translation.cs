@@ -109,10 +109,7 @@ namespace Stardrop.Utilities
         public void LoadTranslations()
         {
             // Load the languages
-#if DEBUG
-            _languageTranslations[LanguageAbbreviation.@default] = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"i18n\default.json")), new JsonSerializerOptions { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
-#else
-            foreach (string fileFullName in Directory.EnumerateFiles("i18n", "*.json"))
+            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "i18n"), "*.json"))
             {
                 try
                 {
@@ -128,7 +125,6 @@ namespace Stardrop.Utilities
                     Program.helper.Log($"Unable to load theme on {Path.GetFileNameWithoutExtension(fileFullName)}: {ex}", Helper.Status.Warning);
                 }
             }
-#endif
         }
 
         public void LoadTranslations(Language language)

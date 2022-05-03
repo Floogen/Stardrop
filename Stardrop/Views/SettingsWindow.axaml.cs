@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
@@ -45,7 +46,7 @@ namespace Stardrop.Views
             SetTextboxTextFocusToEnd(modInstallTextBox, modInstallTextBox.Text);
 
             // Handle adding the themes
-            foreach (string fileFullName in Directory.EnumerateFiles("Themes", "*.xaml"))
+            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Themes"), "*.xaml"))
             {
                 try
                 {
