@@ -152,6 +152,7 @@ namespace Stardrop
             // Verify NXM link is valid
             if (String.IsNullOrEmpty(nxmLink))
             {
+                Program.helper.Log("Given empty NXM link");
                 return;
             }
 

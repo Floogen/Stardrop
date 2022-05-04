@@ -164,7 +164,7 @@ namespace Stardrop.Models
             foreach (string key in Manifest.UpdateKeys)
             {
                 string cleanedKey = String.Concat(key.Where(c => !Char.IsWhiteSpace(c)));
-                var match = Regex.Match(key, @"Nexus:(?<modId>\d+).*");
+                var match = Regex.Match(key, @"Nexus:\D*(?<modId>\d+).*");
                 if (match.Success)
                 {
                     if (Int32.TryParse(match.Groups["modId"].ToString(), out int modId))
