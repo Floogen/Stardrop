@@ -233,9 +233,21 @@ namespace Stardrop.Views
             var modInstallPathBox = this.FindControl<TextBox>("modInstallPathBox");
             if (String.IsNullOrEmpty(modInstallPathBox.Text) || !Directory.Exists(modInstallPathBox.Text))
             {
-                new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
-                SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
-                return;
+                if (Directory.Exists(_oldSettings.ModInstallPath) is false)
+                {
+                    _oldSettings.ModInstallPath = Path.Combine(modFolderPathBox.Text, "Stardrop Installed Mods");
+                    Directory.CreateDirectory(_oldSettings.ModInstallPath);
+
+                    new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist_default"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
+                    SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
+                    return;
+                }
+                else
+                {
+                    new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
+                    SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
+                    return;
+                }
             }
             else if (!modInstallPathBox.Text.Contains(modFolderPathBox.Text, StringComparison.OrdinalIgnoreCase))
             {
