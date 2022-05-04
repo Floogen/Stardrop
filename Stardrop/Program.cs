@@ -56,7 +56,7 @@ namespace Stardrop
             Pathing.SetHomePath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
             // Verify if another instance is already running
-            if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location)).Count() > 1)
+            if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Count() > 1)
             {
                 helper = new Helper($"nxm", ".txt", Pathing.GetLogFolderPath());
 

@@ -50,7 +50,7 @@ namespace Stardrop.Views
             SetTextboxTextFocusToEnd(modInstallTextBox, modInstallTextBox.Text);
 
             // Handle adding the themes
-            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Themes"), "*.xaml"))
+            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Themes"), "*.xaml"))
             {
                 try
                 {

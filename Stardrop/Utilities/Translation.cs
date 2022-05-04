@@ -109,7 +109,7 @@ namespace Stardrop.Utilities
         public void LoadTranslations()
         {
             // Load the languages
-            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "i18n"), "*.json"))
+            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "i18n"), "*.json"))
             {
                 try
                 {
