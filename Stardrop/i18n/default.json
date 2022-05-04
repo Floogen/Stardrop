@@ -167,6 +167,7 @@
   "ui.message.confirm_nxm_association": "Would you like to associate the NXM protocol with Stardrop?\n\nThis will allow Stardrop to automatically install mods downloaded from Nexus Mods.",
   "ui.message.confirm_nxm_install": "Would you like to install the following mod:\n\n{0}\n\nYou can disable this confirmation in the settings menu.",
   "ui.message.require_nexus_login": "This action requires being signed into the Nexus Mods API.",
+  "ui.message.succeeded_nexus_install": "Successfully installed the following mod via Nexus Mods:\n\n{0}",
 
   // Window Names
   "ui.window.setting.name": "Settings",

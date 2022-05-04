@@ -1275,6 +1275,9 @@ namespace Stardrop.Views
                 _viewModel.EvaluateRequirements();
                 _viewModel.UpdateEndorsements(apiKey);
                 _viewModel.UpdateFilter();
+
+                // Let the user know that the mod was installed via NXM
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.succeeded_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
             }
 
             return true;
