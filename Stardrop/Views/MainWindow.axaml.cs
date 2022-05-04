@@ -1119,6 +1119,11 @@ namespace Stardrop.Views
                 await CreateWarningWindow(Program.translation.Get("ui.warning.download_without_premium"), Program.translation.Get("internal.ok"));
                 return;
             }
+            else if (_viewModel.Mods.Where(m => String.IsNullOrEmpty(m.InstallStatus) is false).Count() == 0)
+            {
+                await CreateWarningWindow(Program.translation.Get("ui.warning.no_downloads_available"), Program.translation.Get("internal.ok"));
+                return;
+            }
 
             List<string> updateFilePaths = new List<string>();
             foreach (var mod in _viewModel.Mods.Where(m => String.IsNullOrEmpty(m.InstallStatus) is false))
