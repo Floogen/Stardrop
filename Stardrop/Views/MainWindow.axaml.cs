@@ -281,20 +281,29 @@ namespace Stardrop.Views
             try
             {
                 var apiKey = Nexus.GetKey();
+                var nxmLinks = new List<NXM>();
+
+                // Gather the NXM links, then clear the file
                 using (FileStream stream = new FileStream(Pathing.GetLinksCachePath(), FileMode.Open, FileAccess.ReadWrite, FileShare.None))
                 {
                     foreach (var nxmLink in await JsonSerializer.DeserializeAsync<List<NXM>>(stream, new JsonSerializerOptions { AllowTrailingCommas = true }))
                     {
-                        if (await ProcessNXMLink(apiKey, nxmLink) is false)
-                        {
-                            break;
-                        }
+                        nxmLinks.Add(nxmLink);
                     }
 
                     // Clear the stream and empty out the file
                     stream.SetLength(0);
 
                     await JsonSerializer.SerializeAsync(stream, new List<NXM>(), new JsonSerializerOptions() { WriteIndented = true });
+                }
+
+                // Process each link
+                foreach (var nxmLink in nxmLinks)
+                {
+                    if (await ProcessNXMLink(apiKey, nxmLink) is false)
+                    {
+                        break;
+                    }
                 }
             }
             catch (IOException ex)

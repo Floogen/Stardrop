@@ -196,7 +196,7 @@ namespace Stardrop.Utilities.External
             return null;
         }
 
-        public async static Task<ModFile?> GetFileByVersion(string apiKey, int modId, string version)
+        public async static Task<ModFile?> GetFileByVersion(string apiKey, int modId, string version, string category = "MAIN")
         {
             if (SemVersion.TryParse(version.Replace("v", String.Empty), SemVersionStyles.Any, out var targetVersion) is false)
             {
@@ -226,7 +226,7 @@ namespace Stardrop.Utilities.External
                     }
                     else
                     {
-                        var selectedFile = modFiles.Files.FirstOrDefault(x => String.IsNullOrEmpty(x.Version) is false && SemVersion.TryParse(x.Version.Replace("v", String.Empty), SemVersionStyles.Any, out var modVersion) && modVersion == targetVersion);
+                        var selectedFile = modFiles.Files.FirstOrDefault(x => String.IsNullOrEmpty(x.Version) is false && SemVersion.TryParse(x.Version.Replace("v", String.Empty), SemVersionStyles.Any, out var modVersion) && modVersion == targetVersion && x.Category?.ToUpper() == category.ToUpper());
                         if (selectedFile is null)
                         {
                             Program.helper.Log($"Unable to get a matching file for the mod {modId} with version {version} via Nexus Mods: \n{String.Join("\n", modFiles.Files.Select(m => $"{m.Name} | {m.Version}"))}");

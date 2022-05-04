@@ -124,6 +124,7 @@
   "ui.warning.unable_to_add_profile": "Unable to add {0}, a profile already exists under that name!",
   "ui.warning.given_mod_folder_does_not_exist": "The given mod folder path doesn't exist.\n\nReverting to previous path.",
   "ui.warning.given_install_folder_not_exist": "The given Stardrop installed mods folder path doesn't exist.\n\nReverting to previous path.",
+  "ui.warning.given_install_folder_not_exist_default": "The given Stardrop installed mods folder path doesn't exist.\n\nReverting to default path.",
   "ui.warning.given_install_folder_not_under_mod_folder": "The given Stardrop installed mods folder path doesn't exist under {0}\n\nReverting to previous path.",
   "ui.warning.given_invalid_smapi_executable": "The given file isn't {0}\n\nReverting to previous path.",
   "ui.warning.stardrop_locked": "Stardrop is locked while the SMAPI is running. Any changes made will not reflect until SMAPI is closed.",
@@ -172,7 +173,7 @@
   "ui.window.profiles.name": "Profiles",
   "ui.window.profile_naming.name": "Profile Name",
   "ui.window.nexus_login.name": "Nexus Mods Personal API Key",
-  "ui.window.nexus_user.name": "Nexus Mods User Info",
+  "ui.window.nexus_user.name": "Nexus Mods User Details",
 
   // Internals
   "internal.connected": "Connected",

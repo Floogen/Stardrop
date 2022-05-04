@@ -17,5 +17,8 @@ namespace Stardrop.Models.Nexus.Web
 
         [JsonPropertyName("version")]
         public string? Version { get; set; }
+
+        [JsonPropertyName("category_name")]
+        public string? Category { get; set; }
     }
 }
