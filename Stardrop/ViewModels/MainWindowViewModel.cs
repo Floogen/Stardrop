@@ -301,6 +301,9 @@ namespace Stardrop.ViewModels
 
             // Update the EnabledModCount
             EnabledModCount = Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
+
+            // Update filter
+            UpdateFilter();
         }
 
         public void EvaluateRequirements()
@@ -544,8 +547,11 @@ namespace Stardrop.ViewModels
 
         internal void UpdateFilter()
         {
-            DataView.Filter = null;
-            DataView.Filter = ModFilter;
+            if (DataView is not null)
+            {
+                DataView.Filter = null;
+                DataView.Filter = ModFilter;
+            }
         }
 
         private bool ModFilter(object item)

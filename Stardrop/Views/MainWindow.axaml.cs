@@ -1229,9 +1229,14 @@ namespace Stardrop.Views
             // Refresh cached mods
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
+            // Evaluate mod requirements
             _viewModel.EvaluateRequirements();
 
+            // Check for Nexus Mods connection perform related tasks
             CheckForNexusConnection();
+
+            // Hide the required mods
+            _viewModel.HideRequiredMods();
         }
 
         internal async Task<bool> ProcessNXMLink(string? apiKey, NXM nxmLink)
