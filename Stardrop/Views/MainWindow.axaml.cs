@@ -1700,28 +1700,38 @@ namespace Stardrop.Views
                     // Extract the archive data
                     using (var archive = ArchiveFactory.Open(fileFullName))
                     {
-                        // Verify the zip file has a manifest
                         Manifest? manifest = null;
+                        bool hasTopLevelFolder = true;
+                        Uri? topLevelFolderName = null;
                         foreach (var entry in archive.Entries)
                         {
-                            if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase))
-                            {
-                                continue;
-                            }
-                            else if (entry.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase))
+                            // Verify the zip file has a manifest
+                            if (entry.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase))
                             {
                                 using (Stream stream = entry.OpenEntryStream())
                                 {
                                     manifest = await JsonSerializer.DeserializeAsync<Manifest>(stream, new JsonSerializerOptions() { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
                                 }
                             }
-                        }
 
-                        // Verify the archive has a top level single folder
-                        bool hasTopLevelFolder = false;
-                        if (archive.Entries.Count(e => e.Key.Substring(0, e.Key.Length - 1).Count(k => k == '/' || k == '\\') == 0 && e.IsDirectory) == 1)
-                        {
-                            hasTopLevelFolder = true;
+                            // Verify the zip file has a top level single folder
+                            var directoryName = Path.GetDirectoryName(entry.Key);
+                            if (String.IsNullOrEmpty(directoryName) is false)
+                            {
+                                var fullDirectoryPath = new Uri(new DirectoryInfo(entry.Key).FullName);
+                                if (topLevelFolderName is null)
+                                {
+                                    topLevelFolderName = fullDirectoryPath;
+                                }
+                                else if (topLevelFolderName.IsBaseOf(fullDirectoryPath) is false)
+                                {
+                                    hasTopLevelFolder = false;
+                                }
+                            }
+                            else
+                            {
+                                hasTopLevelFolder = false;
+                            }
                         }
 
                         // If the archive doesn't have a manifest, warn the user
