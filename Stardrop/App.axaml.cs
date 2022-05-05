@@ -2,7 +2,9 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using Stardrop.Models.Nexus.Web;
 using Stardrop.Utilities;
+using Stardrop.Utilities.External;
 using Stardrop.ViewModels;
 using Stardrop.Views;
 using System;
@@ -19,7 +21,7 @@ namespace Stardrop
         {
             AvaloniaXamlLoader.Load(this);
 
-            // Verify that the helper is instantiated, if it isn't then this code is likely reached by Avalonia amd bypassed Main
+            // Verify that the helper is instantiated, if it isn't then this code is likely reached by Avalonia's previewer and bypassed Main
             if (Program.helper is null)
             {
                 Program.helper = new Helper();
@@ -47,11 +49,23 @@ namespace Stardrop
             Current.Styles.Insert(0, !themes.ContainsKey(Program.settings.Theme) ? themes.Values.First() : themes[Program.settings.Theme]);
         }
 
+        private async void OnUrlsOpen(object? sender, UrlOpenedEventArgs e, MainWindow mainWindow)
+        {
+            foreach (string? url in e.Urls.Where(u => String.IsNullOrEmpty(u) is false))
+            {
+                await mainWindow.ProcessNXMLink(Nexus.GetKey(), new NXM() { Link = url, Timestamp = DateTime.Now });
+            }
+        }
+
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow();
+                var mainWindow = new MainWindow();
+                desktop.MainWindow = mainWindow;
+
+                // Register events
+                this.UrlsOpened += (sender, e) => OnUrlsOpen(sender, e, mainWindow);
             }
 
             base.OnFrameworkInitializationCompleted();

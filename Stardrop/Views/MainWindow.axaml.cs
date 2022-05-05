@@ -105,10 +105,13 @@ namespace Stardrop.Views
             CheckForNexusConnection();
 
             // Start sentinel for watching NXM files
-            _nxmSentinel = new DispatcherTimer();
-            _nxmSentinel.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 1000);
-            _nxmSentinel.Tick += _nxmSentinelTimer_Tick;
-            _nxmSentinel.Start();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) is false)
+            {
+                _nxmSentinel = new DispatcherTimer();
+                _nxmSentinel.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 1000);
+                _nxmSentinel.Tick += _nxmSentinelTimer_Tick;
+                _nxmSentinel.Start();
+            }
 
             // FOOTER: "Value cannot be null. (Parameter 'path1')" error clears removing the above chunk
 
@@ -1231,7 +1234,7 @@ namespace Stardrop.Views
             CheckForNexusConnection();
         }
 
-        private async Task<bool> ProcessNXMLink(string? apiKey, NXM nxmLink)
+        internal async Task<bool> ProcessNXMLink(string? apiKey, NXM nxmLink)
         {
             if (String.IsNullOrEmpty(apiKey))
             {
