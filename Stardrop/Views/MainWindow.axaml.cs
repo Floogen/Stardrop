@@ -1708,7 +1708,7 @@ namespace Stardrop.Views
 
                         // Verify the archive has a top level single folder
                         bool hasTopLevelFolder = false;
-                        if (archive.Entries.Count(e => e.Key.Count(k => k == '/') == 1 && e.IsDirectory) == 1)
+                        if (archive.Entries.Any(e => !e.Key.Contains("/") && e.IsDirectory))
                         {
                             hasTopLevelFolder = true;
                         }
