@@ -1580,6 +1580,14 @@ namespace Stardrop.Views
                 // Show Nexus mod download column, if user is premium
                 _viewModel.ShowInstalls = Program.settings.NexusDetails.IsPremium;
             }
+            else
+            {
+                Program.settings.NexusDetails = new Models.Nexus.NexusUser();
+
+                _viewModel.NexusStatus = Program.translation.Get("internal.disconnected");
+                _viewModel.ShowEndorsements = false;
+                _viewModel.ShowInstalls = false;
+            }
         }
 
         private void AdjustWindowState()
