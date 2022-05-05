@@ -1708,7 +1708,7 @@ namespace Stardrop.Views
 
                         // Verify the archive has a top level single folder
                         bool hasTopLevelFolder = false;
-                        if (archive.Entries.Any(e => !e.Key.Contains("/") && e.IsDirectory))
+                        if (archive.Entries.Count(e => e.Key.Substring(0, e.Key.Length - 1).Count(k => k == '/' || k == '\\') == 0 && e.IsDirectory) == 1)
                         {
                             hasTopLevelFolder = true;
                         }
@@ -1745,7 +1745,7 @@ namespace Stardrop.Views
                             }
 
                             // Correct the installPath if the archive doesn't come with a top level folder
-                            if (!hasTopLevelFolder)
+                            if (hasTopLevelFolder is false)
                             {
                                 installPath = Path.Combine(installPath, manifest.UniqueID);
                             }
