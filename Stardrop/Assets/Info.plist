@@ -19,9 +19,16 @@
 		<string>1.0.0</string>
 		<key>CFBundleShortVersionString</key>
 		<string>1.0</string>
-		<key>CFBundleURLSchemes</key>
+		<key>CFBundleURLTypes</key>
 		<array>
-			<string>nxm</string>
+			<dict>
+				<key>CFBundleURLName</key>
+				<string>NXM</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>nxm</string>
+				</array>
+			</dict>
 		</array>
 		<key>NSHighResolutionCapable</key>
 		<string>true</string>
