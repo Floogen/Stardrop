@@ -1707,7 +1707,7 @@ namespace Stardrop.Views
                     {
                         Manifest? manifest = null;
                         bool hasTopLevelFolder = true;
-                        Uri? topLevelFolderName = null;
+                        Uri? topLevelFolderPath = null;
                         foreach (var entry in archive.Entries)
                         {
                             // Verify the zip file has a manifest
@@ -1724,11 +1724,11 @@ namespace Stardrop.Views
                             if (String.IsNullOrEmpty(directoryName) is false)
                             {
                                 var fullDirectoryPath = new Uri(new DirectoryInfo(entry.Key).FullName);
-                                if (topLevelFolderName is null)
+                                if (topLevelFolderPath is null)
                                 {
-                                    topLevelFolderName = fullDirectoryPath;
+                                    topLevelFolderPath = fullDirectoryPath;
                                 }
-                                else if (topLevelFolderName.IsBaseOf(fullDirectoryPath) is false)
+                                else if (topLevelFolderPath.IsBaseOf(fullDirectoryPath) is false)
                                 {
                                     hasTopLevelFolder = false;
                                 }
@@ -1774,6 +1774,10 @@ namespace Stardrop.Views
                             if (hasTopLevelFolder is false)
                             {
                                 installPath = Path.Combine(installPath, manifest.UniqueID);
+                            }
+                            else if (topLevelFolderPath is not null && new DirectoryInfo(topLevelFolderPath.LocalPath).Name.Equals(new DirectoryInfo(installPath).Name, StringComparison.OrdinalIgnoreCase))
+                            {
+                                installPath = new DirectoryInfo(installPath).Parent.FullName;
                             }
 
                             foreach (var entry in archive.Entries)
