@@ -165,6 +165,12 @@ namespace Stardrop.Views
             {
                 ctrlPressed = true;
             }
+            else
+            {
+                var searchBox = this.FindControl<TextBox>("searchBox");
+                searchBox.Focus();
+                SearchBox_KeyUp(sender, e);
+            }
         }
 
         private void MainWindow_KeyUp(object? sender, KeyEventArgs e)
