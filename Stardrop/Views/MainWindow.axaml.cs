@@ -203,7 +203,8 @@ namespace Stardrop.Views
 
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
-                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
+                await DisplaySettingsWindow();
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NXMProtocol.Validate(Program.executablePath) is false && await Nexus.ValidateKey(Nexus.GetKey()))

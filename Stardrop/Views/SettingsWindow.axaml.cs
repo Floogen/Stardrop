@@ -277,15 +277,18 @@ namespace Stardrop.Views
                 return false;
             }
 
+            var modFolderPathBox = this.FindControl<TextBox>("modFolderPathBox");
+            var modInstallPathBox = this.FindControl<TextBox>("modInstallPathBox");
+
             SetTextboxTextFocusToEnd(this.FindControl<TextBox>("smapiFolderPathBox"), smapiFileInfo.DirectoryName);
-            if (String.IsNullOrEmpty(Program.settings.ModFolderPath))
+            if (String.IsNullOrEmpty(Program.settings.ModFolderPath) || !Directory.Exists(modFolderPathBox.Text))
             {
-                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modFolderPathBox"), Pathing.defaultModPath);
+                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modFolderPathBox"), Path.Combine(smapiFileInfo.DirectoryName, "Mods"));
             }
 
-            if (String.IsNullOrEmpty(Program.settings.ModInstallPath))
+            if (String.IsNullOrEmpty(Program.settings.ModInstallPath) || !Directory.Exists(modInstallPathBox.Text))
             {
-                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modInstallPathBox"), Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods"));
+                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modInstallPathBox"), Path.Combine(smapiFileInfo.DirectoryName, "Mods", "Stardrop Installed Mods"));
             }
 
             return true;
