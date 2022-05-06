@@ -235,7 +235,8 @@ namespace Stardrop.Views
         {
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
-                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
+                await DisplaySettingsWindow();
                 return;
             }
 
@@ -940,7 +941,8 @@ namespace Stardrop.Views
         {
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
-                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
+                await DisplaySettingsWindow();
                 return;
             }
 
@@ -1246,6 +1248,24 @@ namespace Stardrop.Views
             {
                 await CreateWarningWindow(Program.translation.Get("ui.message.require_nexus_login"), Program.translation.Get("internal.ok"));
                 return false;
+            }
+            else if (Program.settings.SMAPIFolderPath is null || !File.Exists(Pathing.GetSmapiPath()))
+            {
+                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
+                if (Program.settings.SMAPIFolderPath is null)
+                {
+                    Program.helper.Log("No path given for StardewModdingAPI.", Helper.Status.Warning);
+                }
+                else
+                {
+                    Program.helper.Log($"Bad path given for StardewModdingAPI: {Pathing.GetSmapiPath()}", Helper.Status.Warning);
+                }
+                await DisplaySettingsWindow();
+
+                if (Program.settings.SMAPIFolderPath is null || !File.Exists(Pathing.GetSmapiPath()))
+                {
+                    return false;
+                }
             }
 
             Program.helper.Log($"Processing NXM link: {nxmLink.Link}");
