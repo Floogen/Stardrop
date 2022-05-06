@@ -63,7 +63,7 @@
   "ui.main_window.buttons.show_updatable_mods": "Show Updatable Mods",
 
   // Main Window - Buttons - Update Status
-  "ui.main_window.button.update_status.generic": "Click to Refresh Updatable Mods",
+  "ui.main_window.button.update_status.generic": "Click To Check For Mod Updates",
   "ui.main_window.button.update_status.updating": "Updating...",
   "ui.main_window.button.update_status.list_available_updates": "Mods Ready to Update: {0}",
   "ui.main_window.button.update_status.failed": "Mod Update Check Failed",
