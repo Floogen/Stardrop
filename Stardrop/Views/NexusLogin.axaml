@@ -7,7 +7,7 @@
 		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
         mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="150"
         x:Class="Stardrop.Views.NexusLogin"
-        Title="{i18n:Translate ui.window.nexus_login.name}"
+        Title="{i18n:Translate ui.window.nexus_login_actual.name}"
         MinWidth="500"
         MinHeight="400"
         Width="500"
@@ -68,7 +68,7 @@
 		<Border Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
 			<Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
 				<Image Source="/Assets/icon.ico" Stretch="None"/>
-				<TextBlock Text="{i18n:Translate ui.window.nexus_login.name}" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+				<TextBlock Text="{i18n:Translate ui.window.nexus_login_actual.name}" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 			</Menu>
 		</Border>
 		<Menu Name="windowMenu" IsVisible="{Binding ShowMainMenu}" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
@@ -76,7 +76,7 @@
 		</Menu>
 
 		<StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
-			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.get_key}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 15 0 10"/>
+			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.get_key_actual}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 15 0 10"/>
 			<Button Name="goToNexusButton" Content="{i18n:Translate ui.nexus_login.buttons.nexus}" HorizontalAlignment="Center" VerticalAlignment="Center"  Margin="0 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
 		</StackPanel>
 
@@ -88,8 +88,8 @@
 		</StackPanel>
 		<StackPanel Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Margin="0 15 0 0">
 			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.note}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 0 0 0"/>
-			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.share_warning}" Width="400" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 15 0 0"/>
-			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.revoke}" Width="400" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 25 0 0"/>
+			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.share_warning_actual}" Width="400" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 15 0 0"/>
+			<TextBlock Text="{i18n:Translate ui.nexus_login.labels.revoke_actual}" Width="400" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 25 0 0"/>
 		</StackPanel>
 
 
