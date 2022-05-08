@@ -12,6 +12,8 @@
   "ui.main_window.menu_items.disable_all_mods": "Вимкнути всі модифікації",
   "ui.main_window.menu_items.check_for_stardrop_update": "Перевірити наявність оновлень Stardrop",
   "ui.main_window.menu_items.stardrop_repository": "Репозиторій Stardrop",
+  "ui.main_window.menu_items.nexus_install_all": "Завантажити всі оновлення",
+  "ui.main_window.menu_items.nexus_connection": "Підключення через API",
 
   // Main Window - Menu Items - Context
   "ui.main_window.menu_items.context.show_requirements": "Показувати вимоги",
@@ -25,6 +27,7 @@
   "ui.main_window.menu_headers.file": "Файл",
   "ui.main_window.menu_headers.view": "Перегляд",
   "ui.main_window.menu_headers.tools": "Інструменти",
+  "ui.main_window.menu_headers.nexus": "Nexusmods",
 
   "ui.main_window.menu_headers.enabled": "Увімкнено",
   "ui.main_window.menu_headers.mod_name": "Назва модифікації",
@@ -35,11 +38,14 @@
   "ui.main_window.menu_headers.version": "Версія",
   "ui.main_window.menu_headers.configuration": "Конфігурація",
   "ui.main_window.menu_headers.status": "Статус",
+  "ui.main_window.menu_headers.endorsement": "Cхвалення спільноти",
+  "ui.main_window.menu_headers.nexus_install": "Оновлення з сайту Nexusmods",
 
   // Main Window - Labels
   "ui.main_window.labels.profile": "Профіль",
-  "ui.main_window.labels.enabled_mods": "Увімкнуто модифікацій: ",
-  "ui.main_window.labels.total_mods": "Загалом модифікацій: ",
+  "ui.main_window.labels.enabled_mods": "Увімкнуто модів: ",
+  "ui.main_window.labels.total_mods": "Загалом модів: ",
+  "ui.main_window.labels.updatable_mods": "Готових до оновлення: ",
   "ui.main_window.labels.filter": "Фільтр",
 
   // Main Window - Hyperlinks
@@ -47,6 +53,9 @@
   "ui.main_window.hyperlinks.update_available": "Оновлень доступно ({0})",
   "ui.main_window.hyperlinks.unofficial_update_available": "Неофіційних оновлень доступно ({0})",
   "ui.main_window.hyperlinks.broken_compatibility_issue": "[Broken] Проблема сумісності",
+  "ui.main_window.hyperlinks.install_update": "Оновити",
+  "ui.main_window.hyperlinks.downloading": "Завантаження...",
+  "ui.main_window.hyperlinks.installing": "Встановлення...",
 
   // Main Window - Buttons
   "ui.main_window.buttons.save_configs": "Зберегти конфігурацію",
@@ -73,10 +82,14 @@
   "ui.settings_window.labels.themes": "Теми",
   "ui.settings_window.labels.languages": "Мова",
   "ui.settings_window.labels.miscellaneous": "Інше",
+  "ui.settings_window.labels.nexus": "Nexusmods",
+  "ui.settings_window.labels.preferred_server": "Бажаний сервер:",
 
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "Ігнорувати приховані теки",
-  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Увімкнути прив'язку конфігурації модифікацій до профілю",
+  "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Увімкнути прив'язку cурисування модифікацій\nдо профілю",
+  "ui.settings_window.buttons.always_ask_for_NXM_installs": "Завжди питати перед встановленням файлів з\nNexusmods",
+  "ui.settings_window.buttons.register_nxm_association": "Пов'язати з NXM",
 
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "Шлях до файлу StardewModdingAPI",
@@ -85,14 +98,37 @@
   "ui.settings_window.tooltips.theme": "Поточна тема Stardrop",
   "ui.settings_window.tooltips.language": "Поточна мова Stardrop",
   "ui.settings_window.tooltips.ignore_hidden_folders": "Якщо активно, Stardrop ігноруватиме кореневі теки з модифікаціями, які починаються на \".\"",
+  "ui.settings_window.tooltips.nxm_file_association": "Реєструє протокол NXM, який буде пов’язаний зі Stardrop, що дозволяє здійснювати пряме встановлення з www.nexusmods.com.",
+  "ui.settings_window.tooltips.always_ask_nxm_files": "Якщо так, Stardrop завжди запитуватиме вам перед встановленням моду з www.nexusmods.com через NXM.",
   "ui.settings_window.tooltips.enable_profile_specific_configs": "Якщо активно, Stardrop зберігатиме та відновлюватиме config.json файли з модифікацій при зміні профілю.",
+  "ui.settings_window.tooltips.preferred_server": "Встановлює вас бажаний сервер для використання під час завантаження з Nexusmods.",
   "ui.settings_window.tooltips.save_changes": "Зберегти зміни",
   "ui.settings_window.tooltips.cancel_changes": "Скасувати",
+  
+  // Nexus Login Window - Buttons
+  "ui.nexus_login.buttons.nexus": "Перейти на Nexusmods",
+  "ui.nexus_login.buttons.disconnect": "Від'єднатися від Nexusmods",
+
+  // Nexus Login Window - Labels
+  "ui.nexus_login.labels.note": "Зауваження",
+  "ui.nexus_login.labels.get_key": "Отримати свій особистий ключ API від Nexusmods",
+  "ui.nexus_login.labels.get_key_actual": "Отримати API ключ Stardrop від Nexusmods",
+  "ui.nexus_login.labels.paste": "Потім вставте ключ нижче",
+  "ui.nexus_login.labels.share_warning": "Не передавайте свій особистий ключ API іншим, це може призвести до зловмисних дій щодо вашої обліківки Nexusmods.",
+  "ui.nexus_login.labels.share_warning_actual": "Не передавайте свій ключ API іншим, це може призвести до зловмисних дій щодо вашої обліківки Nexusmods.",
+  "ui.nexus_login.labels.revoke": "Ви можете скинути / відкликати свій ключ у будь-який час, перейшовши в My Nexus Account > API > Personal API Key.",
+  "ui.nexus_login.labels.revoke_actual": "Ви можете будь-коли скинути або відкликати свій API ключ Stardrop, перейшовши в My Nexus Account > API > Stardrop.",
+  "ui.nexus_login.labels.nexus_details": "Інформація про користувача Nexusmods",
+  "ui.nexus_login.labels.nexus_disconnect": "Натисніть на кнопку нижче, щоб Stardrop видалив зі своєї системи ваш особистий ключ та від'єднався від Nexusmods.",
+  "ui.nexus_login.labels.nexus_disconnect_actual": "Натисніть на кнопку нижче, щоб Stardrop видалив зі своєї системи ваш особистий API ключ Stardrop та від'єднався від Nexusmods.",
+  "ui.nexus_login.labels.username": "Ім'я: {0}",
+  "ui.nexus_login.labels.is_premium": "Користувач преміуму: {0}",
 
   // Warnings
   "ui.warning.unable_to_add_profile": "Не вдалося додати \"{0}\", профіль з такою назвою вже існує!",
   "ui.warning.given_mod_folder_does_not_exist": "Обраної теки з модифікаціями не існує.\n\nПовертаємо попередній шлях.",
   "ui.warning.given_install_folder_not_exist": "Вказаний шлях до встановлених Stardrop модифікацій не існує.\n\nПовертаємо попередній шлях.",
+  "ui.warning.given_install_folder_not_exist_default": "Вказаний шлях до теки встановлених Stardrop модифікацій не існує.\n\nПовертаємо на шлях за замовчуванням.",
   "ui.warning.given_install_folder_not_under_mod_folder": "Вказаний шлях до встановлених Stardrop модифікацій не існує в {0}\n\nПовертаємо попередній шлях.",
   "ui.warning.given_invalid_smapi_executable": "Вказаний файл не є {0}\n\nПовертаємо попередній шлях.",
   "ui.warning.stardrop_locked": "Stardrop заблоковано, коли SMAPI запущено. Жодні зміни не набудуть чинності доки не закрити SMAPI.",
@@ -101,12 +137,28 @@
   "ui.warning.mod_config_saved_but_not_enabled": "Налаштування конфігурації моду збережено в профілі \"{0}\", однак специфічні конфігурації модифікації в профілі не ввімкнено.\n\nПерейдіть до \"Перегляд\" > \"Налаштування\" та оберіть \"Увімкнути прив'язку конфігурації модифікацій до профілю\", щоб Stardrop автоматично зберігав і застосовував зміни конфігурації моду.",
   "ui.warning.unable_to_determine_profile": "Не вдалося визначити обраний профіль.\n\nSMAPI не буде запущено.",
   "ui.warning.stardrop_up_to_date": "Stardrop не потребує оновлення.\n\n{0} в актуальному стані.",
+  "ui.warning.stardrop_unable_to_download_latest": "Не вдається завантажити останню версію Stardrop.\n\nБудь ласка, завантажте останню версію вручну.",
+  "ui.warning.stardrop_unable_to_find_latest": "Не вдається перевірити сховище Stardrop в GitHub на наявність оновлення.\n\nБудь ласка, перевірте GitHub на наявність можливого оновлення або повторіть спробу пізніше.",
+  "ui.warning.stardrop_update_downloaded": "Успішно завантажено останню версію.\n\nТепер Stardrop перезапуститься.",
   "ui.warning.update_cooldown_minutes": "Запит на оновлення можна робити не частіше 5 хв.\n\nБудь ласка, спробуйте ще раз через {0} хв.",
   "ui.warning.update_cooldown_seconds": "Запит на оновлення можна робити не частіше 5 хв.\n\nБудь ласка, спробуйте ще раз через {0} сек.",
   "ui.warning.unable_to_locate_log": "Не вдалося виявити SMAPI-latest.txt! SMAPI необхідний для визначення додаткової інформації про гру.",
   "ui.warning.unable_to_read_log": "Не вдалося прочитати файл звіту SMAPI, аби отримати версію гри.\n\nМодифікації не будуть перевірятись на наявність оновлень.",
   "ui.warning.no_manifest": "Файл manifest.json не знайдено в \"{0}\"",
   "ui.warning.unable_to_load_mod": "Не вдалося завантажити файл з \"{0}\".\n\nЗа деталями зверніться до файлу звіту.",
+  "ui.warning.unable_to_validate_nexus_key": "Не вдається перевірити API ключ Nexusmods.\n\nБудь ласка, переконайтеся, що ключ правильний, і повторіть спробу.",
+  "ui.warning.download_without_premium": "Щоб завантажити через Stardrop, ви повинні мати преміум-членство на Nexusmods.",
+  "ui.warning.no_downloads_available": "Наразі немає модів із оновленнями, доступними на Nexusmods.",
+  "ui.warning.failed_nexus_install": "Не вдалося встановити мод {0} через проблему з'єднання з Nexusmods.\n\nБудь ласка, спробуйте ще раз.",
+  "ui.warning.unable_nexus_install": "Не вдається встановити мод {0}.",
+  "ui.warning.unable_to_endorse": "Неможливо встановити стан схвалень від спільноти:\n\n{0}",
+  "ui.warning.mod_owned": "Ви є власником цього моду.",
+  "ui.warning.too_soon_after_download": "Ви повинні почекати 15 хвилин після завантаження цього моду.\n\nСпроба вподобати скине цей таймер.",
+  "ui.warning.not_downloaded": "Ви повинні завантажити цей мод з Nexusmods, щоб його вподобати.",
+  "ui.warning.failed_to_get_mod_details": "Не вдалося отримати деталі моду за посиланням NXM: {0}",
+  "ui.warning.failed_to_get_download_link": "Не вдалося отримати URL-адресу для завантаження з Nexusmods за посиланням NXM: {0}",
+  "ui.warning.failed_to_set_association": "Не вдалося зареєструвати протокол NXM у Stardrop.\n\nПодробиці дивіться в журналі.",
+  "ui.warning.already_associated": "Stardrop вже пов'язано з протоколом NXM.",
 
   // Messages
   "ui.message.confirm_mod_deletion": "Бажаєте видалити {0}? Ця дія безповоротна.",
@@ -115,13 +167,24 @@
   "ui.message.confirm_bulk_change_mod_states_enable": "Увімкнути всі модифікації?\n\nПримітка: Ця дія безповоротна.",
   "ui.message.confirm_bulk_change_mod_states_disable": "Вимкнути всі модифікації?\n\nПримітка: Ця дія безповоротна.",
   "ui.message.confirm_mod_update_method": "Виявлено попередню версію {0}. Бажаєте очистити попереднє встановлення?\n\nПримітка: Зазвичай рекомендується очищати попередню версію, але тоді файли конфігурацій буде втрачено.",
+  "ui.message.confirm_mod_update_method_no_config": "Виявлено попередню версію {0}. Бажаєте очистити попереднє встановлення?\n\nПримітка: Зазвичай рекомендується очистити попередні версії.",
+  "ui.message.confirm_mod_update_method_preserved": "Виявлено попередню версію {0}. Бажаєте очистити попереднє встановлення?\n\nПримітка: Зазвичай рекомендується очистити попередні версії, ваші файли сурисування будуть відновлені.",
+  "ui.message.confirm_nxm_association": "Чи хотіли б ви пов'язати протокол NXM зі Stardrop?\n\nЦе дозволить Stardrop автоматично встановлювати моди, завантажені з Nexusmods.",
+  "ui.message.confirm_nxm_install": "Чи хотіли б ви встановити наступний мод:\n\n{0}?\n\nВи можете вимкнути це підтвердження в меню налаштувань",
+  "ui.message.require_nexus_login": "Для цієї дії потрібно ввійти в Nexusmods API.",
+  "ui.message.succeeded_nexus_install": "Успішно встановлено наступний мод через Nexusmods:\n\n{0}",
 
   // Window Names
   "ui.window.setting.name": "Налаштування",
   "ui.window.profiles.name": "Профілі",
   "ui.window.profile_naming.name": "Назва профілю",
+  "ui.window.nexus_login.name": "Персональний API ключ Nexusmods",
+  "ui.window.nexus_login_actual.name": "API ключ Nexusmods",
+  "ui.window.nexus_user.name": "Інформація про користувача Nexusmods",
 
   // Internals
+  "internal.connected": "Під'єднано",
+  "internal.disconnected": "Роз'єднано",
   "internal.unknown": "Невідомо",
   "internal.enable": "Ввімкнено",
   "internal.disable": "Вимкнуто",
