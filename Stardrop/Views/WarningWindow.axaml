@@ -40,7 +40,7 @@
 
 			<StackPanel Grid.Column="1">
 				<TextBlock Grid.Row="0" Text="{Binding WarningText}" TextWrapping="Wrap" Foreground="{DynamicResource ThemeForegroundBrush}" HorizontalAlignment="Center" TextAlignment="Center"  Margin="0 35 0 20"/>
-				<Button Grid.Row="2" Name="unlockButton" IsCancel="True" Content="{Binding ButtonText}" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+				<Button Grid.Row="2" IsVisible="{Binding IsButtonVisible}" Name="unlockButton" IsCancel="True" Content="{Binding ButtonText}" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
 			</StackPanel>
 		</Grid>
 	</Border>

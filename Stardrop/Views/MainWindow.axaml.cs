@@ -40,8 +40,10 @@ namespace Stardrop.Views
         private DispatcherTimer _nxmSentinel;
 
         // Tracking related
-        private bool shiftPressed;
-        private bool ctrlPressed;
+        private bool _shiftPressed;
+        private bool _ctrlPressed;
+
+        private string _lockedFor;
 
         public MainWindow()
         {
@@ -159,11 +161,11 @@ namespace Stardrop.Views
         {
             if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
             {
-                shiftPressed = true;
+                _shiftPressed = true;
             }
             else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
             {
-                ctrlPressed = true;
+                _ctrlPressed = true;
             }
             else
             {
@@ -177,11 +179,11 @@ namespace Stardrop.Views
         {
             if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
             {
-                shiftPressed = false;
+                _shiftPressed = false;
             }
             else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
             {
-                ctrlPressed = false;
+                _ctrlPressed = false;
             }
         }
 
@@ -190,6 +192,12 @@ namespace Stardrop.Views
             if (e.Property == WindowStateProperty && (WindowState)e.OldValue == WindowState.Minimized && SMAPI.IsRunning)
             {
                 var warningWindow = new WarningWindow(Program.translation.Get("ui.warning.stardrop_locked"), Program.translation.Get("internal.unlock"), true);
+                warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                await warningWindow.ShowDialog(this);
+            }
+            else if (this.OwnedWindows.Any(w => w is WarningWindow) is false && _viewModel.IsLocked && String.IsNullOrEmpty(_lockedFor) is false)
+            {
+                var warningWindow = new WarningWindow(_lockedFor == "Stardrop" ? Program.translation.Get("ui.warning.stardrop_downloading") : Program.translation.Get("ui.warning.SMAPI_downloading"), _viewModel);
                 warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 await warningWindow.ShowDialog(this);
             }
@@ -377,7 +385,7 @@ namespace Stardrop.Views
                 // Add the selected mod into the selection list if shift or ctrl is held, otherwise clear the current selection
                 if (!modGrid.SelectedItems.Contains(selectedMod))
                 {
-                    if (!(ctrlPressed || shiftPressed))
+                    if (!(_ctrlPressed || _shiftPressed))
                     {
                         modGrid.SelectedItems.Clear();
                     }
@@ -442,7 +450,7 @@ namespace Stardrop.Views
                 // Add the selected mod into the selection list if shift or ctrl is held, otherwise clear the current selection
                 if (!modGrid.SelectedItems.Contains(selectedMod))
                 {
-                    if (!(ctrlPressed || shiftPressed))
+                    if (!(_ctrlPressed || _shiftPressed))
                     {
                         modGrid.SelectedItems.Clear();
                     }
@@ -679,7 +687,7 @@ namespace Stardrop.Views
                 // Add the selected mod into the selection list if shift or ctrl is held, otherwise clear the current selection
                 if (!modGrid.SelectedItems.Contains(clickedMod))
                 {
-                    if (!(ctrlPressed || shiftPressed))
+                    if (!(_ctrlPressed || _shiftPressed))
                     {
                         modGrid.SelectedItems.Clear();
                     }
@@ -998,7 +1006,7 @@ namespace Stardrop.Views
             bool updateAvailable = false;
 
             // Check if current version is the latest
-            var versionToUri = await GitHub.GetLatestRelease();
+            var versionToUri = await GitHub.GetLatestStardropRelease();
             if (versionToUri is not null && SemVersion.TryParse(versionToUri?.Key.Replace("v", String.Empty), out latestVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), out var currentVersion) && latestVersion > currentVersion)
             {
                 updateAvailable = true;
@@ -1015,15 +1023,16 @@ namespace Stardrop.Views
                 var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.stardrop_update_available"), latestVersion));
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
-                    //_viewModel.OpenBrowser("https://www.nexusmods.com/stardewvalley/mods/10455?tab=files");
-                    var extractedLatestReleasePath = await GitHub.DownloadLatestRelease(versionToUri?.Value);
+                    SetLockState(true, "Stardrop");
+                    var extractedLatestReleasePath = await GitHub.DownloadLatestStardropRelease(versionToUri?.Value);
                     if (String.IsNullOrEmpty(extractedLatestReleasePath))
                     {
                         await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
                         return;
                     }
-                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_update_downloaded"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                    SetLockState(false);
 
+                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_update_downloaded"), _viewModel.Version), Program.translation.Get("internal.ok"));
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
                         // Prepare the process
@@ -1341,36 +1350,10 @@ namespace Stardrop.Views
             return true;
         }
 
-        private bool IsUpdateCacheValid()
+        private void SetLockState(bool isWindowLocked, string? lockedFor = null)
         {
-            if (!File.Exists(Pathing.GetVersionCachePath()))
-            {
-                return false;
-            }
-
-            var updateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
-            if (updateCache is null)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private TimeSpan GetTimeSpanBeforeAllowedUpdate()
-        {
-            if (!File.Exists(Pathing.GetVersionCachePath()))
-            {
-                return new TimeSpan(0);
-            }
-
-            var updateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
-            if (updateCache is null)
-            {
-                return new TimeSpan(0);
-            }
-
-            return updateCache.LastRuntime - DateTime.Now.AddSeconds(-1);
+            _viewModel.IsLocked = isWindowLocked;
+            _lockedFor = lockedFor is null ? String.Empty : lockedFor;
         }
 
         private async Task<UpdateCache?> GetCachedModUpdates(List<Mod> mods, bool skipCacheCheck = false)

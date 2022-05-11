@@ -11,8 +11,10 @@ namespace Stardrop.Views
 {
     public partial class WarningWindow : Window
     {
+        private readonly MainWindowViewModel _mainWindowModel;
         private readonly WarningWindowViewModel _viewModel;
-        private bool _closeOnTrue;
+        private bool _closeOnExitSMAPI;
+        private bool _closeOnParentUnlock;
 
         public WarningWindow()
         {
@@ -34,28 +36,51 @@ namespace Stardrop.Views
         {
             _viewModel.WarningText = warningText;
             _viewModel.ButtonText = buttonText;
+            _viewModel.IsButtonVisible = true;
 
             Program.helper.Log($"Created a warning window with the following text: [{buttonText}] {warningText}");
         }
 
-        public WarningWindow(string warningText, string buttonText, bool closeOnTrue) : this(warningText, buttonText)
+        public WarningWindow(string warningText, string buttonText, bool closeOnExitSMAPI) : this(warningText, buttonText)
         {
-            _closeOnTrue = closeOnTrue;
+            _closeOnExitSMAPI = closeOnExitSMAPI;
+        }
+
+        public WarningWindow(string warningText, MainWindowViewModel model, bool closeOnParentUnlock = true) : this(warningText, String.Empty)
+        {
+            _mainWindowModel = model;
+            _closeOnParentUnlock = closeOnParentUnlock;
+            _viewModel.IsButtonVisible = false;
         }
 
         public override void Show()
         {
             base.Show();
 
-            if (_closeOnTrue)
+            if (_closeOnExitSMAPI)
             {
                 WaitForProcessToClose();
+            }
+
+            if (_closeOnParentUnlock)
+            {
+                WaitForParentToUnlock();
             }
         }
 
         private async Task WaitForProcessToClose()
         {
             while (SMAPI.IsRunning)
+            {
+                await Task.Delay(500);
+            }
+            this.Close();
+        }
+
+
+        private async Task WaitForParentToUnlock()
+        {
+            while (_mainWindowModel.IsLocked)
             {
                 await Task.Delay(500);
             }

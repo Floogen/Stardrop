@@ -17,7 +17,7 @@ namespace Stardrop.Utilities.External
 {
     static class GitHub
     {
-        public async static Task<KeyValuePair<string, string>?> GetLatestRelease()
+        public async static Task<KeyValuePair<string, string>?> GetLatestStardropRelease()
         {
             KeyValuePair<string, string>? versionToUri = null;
 
@@ -60,7 +60,7 @@ namespace Stardrop.Utilities.External
             return versionToUri;
         }
 
-        public async static Task<string> DownloadLatestRelease(string uri)
+        public async static Task<string> DownloadLatestStardropRelease(string uri)
         {
             // Create a throwaway client
             HttpClient client = new HttpClient();

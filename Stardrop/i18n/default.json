@@ -132,6 +132,8 @@
   "ui.warning.given_install_folder_not_under_mod_folder": "The given Stardrop installed mods folder path doesn't exist under {0}\n\nReverting to previous path.",
   "ui.warning.given_invalid_smapi_executable": "The given file isn't {0}\n\nReverting to previous path.",
   "ui.warning.stardrop_locked": "Stardrop is locked while the SMAPI is running. Any changes made will not reflect until SMAPI is closed.",
+  "ui.warning.stardrop_downloading": "Downloading the latest version of Stardrop.",
+  "ui.warning.SMAPI_downloading": "Downloading the latest version of SMAPI.",
 
   "ui.warning.unable_to_locate_smapi": "Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings",
   "ui.warning.mod_config_saved_but_not_enabled": "Saved mod config settings to profile {0}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.",
