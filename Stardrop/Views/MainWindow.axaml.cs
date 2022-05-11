@@ -225,7 +225,7 @@ namespace Stardrop.Views
                 Program.settings.Version = _viewModel.Version.Replace("v", String.Empty);
             }
 
-            if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
+            if (Pathing.defaultGamePath is null || File.Exists(Pathing.GetSmapiPath()) is false)
             {
                 await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
                 await DisplaySettingsWindow();
