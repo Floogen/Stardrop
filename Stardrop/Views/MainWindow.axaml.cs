@@ -213,7 +213,7 @@ namespace Stardrop.Views
             {
                 Program.settings.Version = _viewModel.Version.Replace("v", String.Empty);
             }
-            else if (SemVersion.TryParse(Program.settings.Version, out var cachedVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), out var currentVersion) && cachedVersion < currentVersion)
+            else if (SemVersion.TryParse(Program.settings.Version, SemVersionStyles.Any, out var cachedVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), SemVersionStyles.Any, out var currentVersion) && cachedVersion < currentVersion)
             {
                 // Display message with link to release notes
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.stardrop_update_complete"));
