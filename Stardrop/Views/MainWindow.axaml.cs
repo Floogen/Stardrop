@@ -205,7 +205,25 @@ namespace Stardrop.Views
 
         private async void MainWindow_Opened(object? sender, EventArgs e)
         {
+            // Check for Stardrop updates
             await HandleStardropUpdateCheck();
+
+            // Check if Stardrop should display the changelog (if it has updated since last boot)
+            if (String.IsNullOrEmpty(Program.settings.Version))
+            {
+                Program.settings.Version = _viewModel.Version.Replace("v", String.Empty);
+            }
+            else if (SemVersion.TryParse(Program.settings.Version, out var cachedVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), out var currentVersion) && cachedVersion < currentVersion)
+            {
+                // Display message with link to release notes
+                var requestWindow = new MessageWindow(Program.translation.Get("ui.message.stardrop_update_complete"));
+                if (await requestWindow.ShowDialog<bool>(this))
+                {
+                    _viewModel.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
+                }
+
+                Program.settings.Version = _viewModel.Version.Replace("v", String.Empty);
+            }
 
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
