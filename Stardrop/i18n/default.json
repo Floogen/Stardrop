@@ -47,6 +47,7 @@
   "ui.main_window.labels.total_mods": "Total Mods: ",
   "ui.main_window.labels.updatable_mods": "Mods Ready to Update: ",
   "ui.main_window.labels.filter": "Filter",
+  "ui.main_window.labels.unknown_SMAPI": "Unknown SMAPI version",
 
   // Main Window - Hyperlinks
   "ui.main_window.hyperlinks.click_to_open": "Click to open",

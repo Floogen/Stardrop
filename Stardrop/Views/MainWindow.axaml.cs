@@ -242,6 +242,12 @@ namespace Stardrop.Views
             {
                 // Check for SMAPI updates
                 var smapiInfo = FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath());
+                if (smapiInfo is not null && Program.settings.GameDetails is not null)
+                {
+                    Program.settings.GameDetails.SmapiVersion = smapiInfo.ProductVersion;
+                    _viewModel.SmapiVersion = Program.settings.GameDetails.SmapiVersion;
+                }
+
                 KeyValuePair<string, string>? latestSmapiToUri = await GitHub.GetLatestSMAPIRelease();
                 if (latestSmapiToUri is not null && SemVersion.TryParse(latestSmapiToUri?.Key, SemVersionStyles.Any, out var latestVersion) && String.IsNullOrEmpty(smapiInfo.ProductVersion) is false && SemVersion.TryParse(smapiInfo.ProductVersion, SemVersionStyles.Any, out var currentVersion) && latestVersion > currentVersion)
                 {
@@ -310,6 +316,10 @@ namespace Stardrop.Views
                         OpenNativeExplorer(extractedLatestReleasePath);
                         return;
                     }
+
+                    // Update the setting version
+                    Program.settings.GameDetails.SmapiVersion = latestVersion.ToString();
+                    _viewModel.SmapiVersion = Program.settings.GameDetails.SmapiVersion;
 
                     // Delete any files underneath the SMAPI upgrade folder
                     var upgradeDirectory = new DirectoryInfo(Pathing.GetSmapiUpgradeFolderPath());

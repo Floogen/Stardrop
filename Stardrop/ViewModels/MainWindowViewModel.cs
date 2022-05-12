@@ -70,11 +70,14 @@ namespace Stardrop.ViewModels
 
         private string _nexusLimits;
         public string NexusLimits { get { return _nexusLimits; } set { this.RaiseAndSetIfChanged(ref _nexusLimits, value); } }
+        private string _smapiVersion;
+        public string SmapiVersion { get { return $"v{_smapiVersion}"; } set { this.RaiseAndSetIfChanged(ref _smapiVersion, value); } }
 
         public MainWindowViewModel(string modsFilePath, string version)
         {
             DiscoverMods(modsFilePath);
             Version = $"v{version}";
+            SmapiVersion = String.IsNullOrEmpty(Program.settings.GameDetails?.SmapiVersion) ? Program.translation.Get("ui.main_window.labels.unknown_SMAPI") : Program.settings.GameDetails?.SmapiVersion;
 
             // Create data view
             var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
