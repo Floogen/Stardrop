@@ -463,7 +463,7 @@ namespace Stardrop.ViewModels
             return pendingConfigUpdates;
         }
 
-        internal async void UpdateEndorsements(string apiKey)
+        internal async void UpdateEndorsements(string? apiKey)
         {
             if (String.IsNullOrEmpty(apiKey))
             {

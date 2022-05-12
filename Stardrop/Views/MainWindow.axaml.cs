@@ -387,6 +387,8 @@ namespace Stardrop.Views
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
             _viewModel.EvaluateRequirements();
+            _viewModel.UpdateEndorsements(Nexus.GetKey());
+            _viewModel.UpdateFilter();
 
             _viewModel.DragOverColor = "#ff9f2a";
         }
@@ -1091,6 +1093,8 @@ namespace Stardrop.Views
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
             _viewModel.EvaluateRequirements();
+            _viewModel.UpdateEndorsements(Nexus.GetKey());
+            _viewModel.UpdateFilter();
         }
 
         private async Task DisplaySettingsWindow()
