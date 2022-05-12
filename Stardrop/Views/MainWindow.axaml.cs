@@ -43,7 +43,7 @@ namespace Stardrop.Views
         private bool _shiftPressed;
         private bool _ctrlPressed;
 
-        private string _lockedFor;
+        private string _lockReason;
 
         public MainWindow()
         {
@@ -195,9 +195,9 @@ namespace Stardrop.Views
                 warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 await warningWindow.ShowDialog(this);
             }
-            else if (this.OwnedWindows.Any(w => w is WarningWindow) is false && _viewModel.IsLocked && String.IsNullOrEmpty(_lockedFor) is false)
+            else if (this.OwnedWindows.Any(w => w is WarningWindow) is false && _viewModel.IsLocked && String.IsNullOrEmpty(_lockReason) is false)
             {
-                var warningWindow = new WarningWindow(_lockedFor == "Stardrop" ? Program.translation.Get("ui.warning.stardrop_downloading") : Program.translation.Get("ui.warning.SMAPI_downloading"), _viewModel);
+                var warningWindow = new WarningWindow(_lockReason, _viewModel);
                 warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 await warningWindow.ShowDialog(this);
             }
@@ -237,6 +237,99 @@ namespace Stardrop.Views
             {
                 await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
                 await DisplaySettingsWindow();
+            }
+            else
+            {
+                // Check for SMAPI updates
+                var smapiInfo = FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath());
+                KeyValuePair<string, string>? latestSmapiToUri = await GitHub.GetLatestSMAPIRelease();
+                if (latestSmapiToUri is not null && SemVersion.TryParse(latestSmapiToUri?.Key, SemVersionStyles.Any, out var latestVersion) && String.IsNullOrEmpty(smapiInfo.ProductVersion) is false && SemVersion.TryParse(smapiInfo.ProductVersion, SemVersionStyles.Any, out var currentVersion) && latestVersion > currentVersion)
+                {
+                    var confirmationWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.SMAPI_update_available"), latestVersion));
+                    if (await confirmationWindow.ShowDialog<bool>(this) is false)
+                    {
+                        Program.helper.Log("Player opted to not install the latest version of SMAPI");
+                        return;
+                    }
+
+                    SetLockState(true, Program.translation.Get("ui.warning.SMAPI_downloading"));
+                    var extractedLatestReleasePath = await GitHub.DownloadLatestSMAPIRelease(latestSmapiToUri?.Value);
+                    if (String.IsNullOrEmpty(extractedLatestReleasePath))
+                    {
+                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                        SetLockState(false);
+                        return;
+                    }
+                    SetLockState(true, Program.translation.Get("ui.warning.SMAPI_installing"));
+
+                    // Pre the process
+                    var subFolderName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "windows" : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "macOS" : "linux";
+                    var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "SMAPI.Installer.exe" : "SMAPI.Installer";
+                    var processInfo = new ProcessStartInfo
+                    {
+                        FileName = Path.Combine(extractedLatestReleasePath, "internal", subFolderName, fileName),
+                        Arguments = $" --install --game-path \"{Pathing.defaultGamePath}\"",
+                        RedirectStandardError = true,
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+                    var process = new Process { StartInfo = processInfo };
+                    Program.helper.Log($"Attempting update SMAPI: {processInfo.FileName} | {processInfo.Arguments}");
+
+                    // Prep version checking timer
+                    CancellationTokenSource source = new CancellationTokenSource();
+                    var versionCheckTimer = new DispatcherTimer() { Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 2000) };
+                    try
+                    {
+                        process.ErrorDataReceived += (sender, args) => Program.helper.Log($"Standard Error: {(String.IsNullOrWhiteSpace(args.Data) ? "Empty" : String.Concat(Environment.NewLine, args.Data))}");
+
+                        versionCheckTimer.Tick += (sender, e) => { if (SemVersion.Parse(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion, SemVersionStyles.Any) == latestVersion) { source.Cancel(false); versionCheckTimer.Stop(); } };
+                        versionCheckTimer.Start();
+
+                        process.Start();
+                        process.BeginErrorReadLine();
+                        await process.WaitForExitAsync(source.Token);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        Program.helper.Log($"Update task was canceled, likely due to the update process finishing but not exiting the process.\n\nSMAPI Current Version: {currentVersion} | SMAPI Target Version: {SemVersion.Parse(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion, SemVersionStyles.Any)}");
+                        process.Kill();
+                        process.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        SetLockState(false);
+
+                        versionCheckTimer.Stop();
+                        process.Kill();
+                        process.Dispose();
+
+                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_install_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                        Program.helper.Log($"Failed to install SMAPI's update due to the following error: {ex}");
+
+                        OpenNativeExplorer(extractedLatestReleasePath);
+                        return;
+                    }
+
+                    // Delete any files underneath the SMAPI upgrade folder
+                    var upgradeDirectory = new DirectoryInfo(Pathing.GetSmapiUpgradeFolderPath());
+                    foreach (FileInfo file in upgradeDirectory.GetFiles())
+                    {
+                        file.Delete();
+                    }
+                    foreach (DirectoryInfo dir in upgradeDirectory.GetDirectories())
+                    {
+                        dir.Delete(true);
+                    }
+                    SetLockState(false);
+
+                    // Display message with link to release notes
+                    var requestWindow = new MessageWindow(Program.translation.Get("ui.message.SMAPI_update_complete"));
+                    if (await requestWindow.ShowDialog<bool>(this))
+                    {
+                        _viewModel.OpenBrowser($"https://smapi.io/release/{latestSmapiToUri?.Key.Replace(".", String.Empty)}");
+                    }
+                }
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NXMProtocol.Validate(Program.executablePath) is false && await Nexus.ValidateKey(Nexus.GetKey()))
@@ -1023,11 +1116,12 @@ namespace Stardrop.Views
                 var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.stardrop_update_available"), latestVersion));
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
-                    SetLockState(true, "Stardrop");
+                    SetLockState(true, Program.translation.Get("ui.warning.stardrop_downloading"));
                     var extractedLatestReleasePath = await GitHub.DownloadLatestStardropRelease(versionToUri?.Value);
                     if (String.IsNullOrEmpty(extractedLatestReleasePath))
                     {
                         await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                        SetLockState(false);
                         return;
                     }
                     SetLockState(false);
@@ -1350,10 +1444,15 @@ namespace Stardrop.Views
             return true;
         }
 
-        private void SetLockState(bool isWindowLocked, string? lockedFor = null)
+        private void SetLockState(bool isWindowLocked, string? lockReason = null)
         {
             _viewModel.IsLocked = isWindowLocked;
-            _lockedFor = lockedFor is null ? String.Empty : lockedFor;
+            _lockReason = lockReason is null ? String.Empty : lockReason;
+
+            foreach (var ownedWindow in this.OwnedWindows.ToList())
+            {
+                ownedWindow.Close();
+            }
         }
 
         private async Task<UpdateCache?> GetCachedModUpdates(List<Mod> mods, bool skipCacheCheck = false)

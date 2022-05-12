@@ -99,5 +99,10 @@ namespace Stardrop.Utilities
         {
             return Path.Combine(defaultHomePath, "Nexus");
         }
+
+        public static string GetSmapiUpgradeFolderPath()
+        {
+            return Path.Combine(defaultHomePath, "SMAPI");
+        }
     }
 }

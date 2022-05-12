@@ -17,6 +17,65 @@ namespace Stardrop.Utilities.External
 {
     static class GitHub
     {
+        public async static Task<KeyValuePair<string, string>?> GetLatestSMAPIRelease()
+        {
+            KeyValuePair<string, string>? versionToUri = null;
+
+            // Create a throwaway client
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "Stardrop - SDV Mod Manager");
+
+            try
+            {
+                var response = await client.GetAsync("https://api.github.com/repos/Pathoschild/SMAPI/releases/latest");
+
+                if (response.Content is not null)
+                {
+                    JsonDocument parsedContent = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+                    string tagName = parsedContent.RootElement.GetProperty("tag_name").ToString();
+                    string downloadUri = parsedContent.RootElement.GetProperty("html_url").ToString();
+                    downloadUri = String.Concat(downloadUri, "/", "SMAPI-3.14.2-installer.zip").Replace("releases/tag/", "releases/download/");
+
+                    versionToUri = new KeyValuePair<string, string>(tagName, downloadUri);
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to get latest the version of SMAPI: {ex}", Helper.Status.Alert);
+            }
+            client.Dispose();
+
+            return versionToUri;
+        }
+
+        public async static Task<string> DownloadLatestSMAPIRelease(string uri)
+        {
+            // Create a throwaway client
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "Stardrop - SDV Mod Manager");
+
+            string downloadedArchivePath = String.Empty;
+            try
+            {
+                var response = await client.GetAsync(uri);
+                using (var archive = ArchiveFactory.Open(await response.Content.ReadAsStreamAsync()))
+                {
+                    downloadedArchivePath = Path.Combine(Pathing.GetSmapiUpgradeFolderPath(), Path.GetDirectoryName(archive.Entries.First().Key));
+                    foreach (var entry in archive.Entries)
+                    {
+                        entry.WriteToDirectory(Pathing.GetSmapiUpgradeFolderPath(), new SharpCompress.Common.ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to download latest the version of SMAPI: {ex}", Helper.Status.Alert);
+            }
+            client.Dispose();
+
+            return downloadedArchivePath;
+        }
+
         public async static Task<KeyValuePair<string, string>?> GetLatestStardropRelease()
         {
             KeyValuePair<string, string>? versionToUri = null;

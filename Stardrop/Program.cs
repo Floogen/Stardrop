@@ -85,6 +85,7 @@ namespace Stardrop
                 Directory.CreateDirectory(Pathing.GetProfilesFolderPath());
                 Directory.CreateDirectory(Pathing.GetSelectedModsFolderPath());
                 Directory.CreateDirectory(Pathing.GetNexusPath());
+                Directory.CreateDirectory(Pathing.GetSmapiUpgradeFolderPath());
 
                 // Verify the settings folder path is created
                 if (File.Exists(Pathing.GetSettingsPath()))
