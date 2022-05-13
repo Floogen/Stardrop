@@ -189,6 +189,11 @@ namespace Stardrop.Views
 
         private async void MainWindow_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
+            if (this.IsVisible is false)
+            {
+                return;
+            }
+
             if (e.Property == WindowStateProperty && (WindowState)e.OldValue == WindowState.Minimized && SMAPI.IsRunning)
             {
                 var warningWindow = new WarningWindow(Program.translation.Get("ui.warning.stardrop_locked"), Program.translation.Get("internal.unlock"), true);
@@ -241,15 +246,15 @@ namespace Stardrop.Views
             else
             {
                 // Check for SMAPI updates
-                var smapiInfo = FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath());
-                if (smapiInfo is not null && Program.settings.GameDetails is not null)
+                var currentSmapiVersion = SMAPI.GetVersion();
+                if (currentSmapiVersion is not null && Program.settings.GameDetails is not null)
                 {
-                    Program.settings.GameDetails.SmapiVersion = smapiInfo.ProductVersion;
+                    Program.settings.GameDetails.SmapiVersion = currentSmapiVersion.ToString();
                     _viewModel.SmapiVersion = Program.settings.GameDetails.SmapiVersion;
                 }
 
                 KeyValuePair<string, string>? latestSmapiToUri = await GitHub.GetLatestSMAPIRelease();
-                if (latestSmapiToUri is not null && SemVersion.TryParse(latestSmapiToUri?.Key, SemVersionStyles.Any, out var latestVersion) && String.IsNullOrEmpty(smapiInfo.ProductVersion) is false && SemVersion.TryParse(smapiInfo.ProductVersion, SemVersionStyles.Any, out var currentVersion) && latestVersion > currentVersion)
+                if (latestSmapiToUri is not null && SemVersion.TryParse(latestSmapiToUri?.Key, SemVersionStyles.Any, out var latestVersion) && currentSmapiVersion is not null && latestVersion > currentSmapiVersion)
                 {
                     var confirmationWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.SMAPI_update_available"), latestVersion));
                     if (await confirmationWindow.ShowDialog<bool>(this) is false)
@@ -266,52 +271,57 @@ namespace Stardrop.Views
                         SetLockState(false);
                         return;
                     }
-                    SetLockState(true, Program.translation.Get("ui.warning.SMAPI_installing"));
 
-                    // Pre the process
+                    // Get the install.dat archive
                     var subFolderName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "windows" : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "macOS" : "linux";
-                    var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "SMAPI.Installer.exe" : "SMAPI.Installer";
-                    var processInfo = new ProcessStartInfo
-                    {
-                        FileName = Path.Combine(extractedLatestReleasePath, "internal", subFolderName, fileName),
-                        Arguments = $" --install --game-path \"{Pathing.defaultGamePath}\"",
-                        RedirectStandardError = true,
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    };
-                    var process = new Process { StartInfo = processInfo };
-                    Program.helper.Log($"Attempting update SMAPI: {processInfo.FileName} | {processInfo.Arguments}");
+                    var filePath = Path.Combine(extractedLatestReleasePath, "internal", subFolderName, "install.dat");
 
-                    // Prep version checking timer
-                    CancellationTokenSource source = new CancellationTokenSource();
-                    var versionCheckTimer = new DispatcherTimer() { Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 2000) };
+                    // Verify it exists
+                    if (File.Exists(filePath) is false)
+                    {
+                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                        SetLockState(false);
+                        return;
+                    }
+
+                    // Attempt to install
+                    SetLockState(true, Program.translation.Get("ui.warning.SMAPI_installing"));
                     try
                     {
-                        process.ErrorDataReceived += (sender, args) => Program.helper.Log($"Standard Error: {(String.IsNullOrWhiteSpace(args.Data) ? "Empty" : String.Concat(Environment.NewLine, args.Data))}");
+                        // Extract the items from internal/OS_TYPE/install.dat to Pathing.defaultGamePath
+                        ArchiveFactory.WriteToDirectory(filePath, Pathing.defaultGamePath, new ExtractionOptions() { Overwrite = true, ExtractFullPath = true });
 
-                        versionCheckTimer.Tick += (sender, e) => { if (SemVersion.Parse(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion, SemVersionStyles.Any) == latestVersion) { source.Cancel(false); versionCheckTimer.Stop(); } };
-                        versionCheckTimer.Start();
+                        // Create a copy of Stardew Valley.deps.json with the name of StardewModdingAPI.deps.json
+                        if (File.Exists(Path.Combine(Pathing.defaultGamePath, "Stardew Valley.deps.json")))
+                        {
+                            File.Copy(Path.Combine(Pathing.defaultGamePath, "Stardew Valley.deps.json"), Path.Combine(Pathing.defaultGamePath, "StardewModdingAPI.deps.json"), true);
+                        }
 
-                        process.Start();
-                        process.BeginErrorReadLine();
-                        await process.WaitForExitAsync(source.Token);
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        Program.helper.Log($"Update task was canceled, likely due to the update process finishing but not exiting the process.\n\nSMAPI Current Version: {currentVersion} | SMAPI Target Version: {SemVersion.Parse(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion, SemVersionStyles.Any)}");
-                        process.Kill();
-                        process.Dispose();
+                        // For Linux / macOS, follow the steps defined here: https://github.com/Pathoschild/SMAPI/blob/c1342bd4cd6b75b24d11275bdd73ebf893f916ea/src/SMAPI.Installer/InteractiveInstaller.cs#L398
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false && File.Exists(Path.Combine(Pathing.defaultGamePath, "StardewModdingAPI")))
+                        {
+                            File.Move(Path.Combine(Pathing.defaultGamePath, "unix-launcher.sh"), Path.Combine(Pathing.defaultGamePath, "StardewValley"), true);
+
+                            foreach (string path in new[] { Path.Combine(Pathing.defaultGamePath, "StardewValley"), Path.Combine(Pathing.defaultGamePath, "StardewModdingAPI") })
+                            {
+                                new Process
+                                {
+                                    StartInfo = new ProcessStartInfo
+                                    {
+                                        FileName = "chmod",
+                                        Arguments = $"755 \"{path}\"",
+                                        CreateNoWindow = true
+                                    }
+                                }.Start();
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
-                        SetLockState(false);
-
-                        versionCheckTimer.Stop();
-                        process.Kill();
-                        process.Dispose();
-
-                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_install_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
                         Program.helper.Log($"Failed to install SMAPI's update due to the following error: {ex}");
+
+                        SetLockState(false);
+                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_install_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
 
                         OpenNativeExplorer(extractedLatestReleasePath);
                         return;
@@ -1541,7 +1551,7 @@ namespace Stardrop.Views
                 var enabledModsPath = Path.Combine(Pathing.GetSelectedModsFolderPath());
                 Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
 
-                if (Program.settings.GameDetails is null || Program.settings.GameDetails.HasBadGameVersion() || Program.settings.GameDetails.HasSMAPIUpdated(FileVersionInfo.GetVersionInfo(Pathing.GetSmapiPath()).ProductVersion))
+                if (Program.settings.GameDetails is null || String.IsNullOrEmpty(Program.settings.GameDetails.SmapiVersion) || Program.settings.GameDetails.HasBadGameVersion() || Program.settings.GameDetails.HasSMAPIUpdated(SMAPI.GetVersion()))
                 {
                     var smapiLogPath = Path.Combine(Pathing.GetSmapiLogFolderPath(), "SMAPI-latest.txt");
                     if (File.Exists(smapiLogPath))
@@ -1573,13 +1583,17 @@ namespace Stardrop.Views
                     }
                 }
 
-                if (Program.settings.GameDetails is null)
+                if (Program.settings.GameDetails is null || String.IsNullOrEmpty(Program.settings.GameDetails.SmapiVersion))
                 {
                     await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_read_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
                     Program.helper.Log($"SMAPI started but Stardrop was unable to read SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
 
                     _viewModel.IsCheckingForUpdates = false;
                     return;
+                }
+                else
+                {
+                    _viewModel.SmapiVersion = Program.settings.GameDetails.SmapiVersion;
                 }
 
                 // Fetch the mods to see if there are updates available
@@ -1940,13 +1954,13 @@ namespace Stardrop.Views
                         }
                         else
                         {
-                            CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName), Program.translation.Get("internal.ok"));
+                            await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName), Program.translation.Get("internal.ok"));
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_load_mod"), fileFullName), Program.translation.Get("internal.ok"));
+                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_load_mod"), fileFullName), Program.translation.Get("internal.ok"));
                     Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
                 }
             }

@@ -1,4 +1,5 @@
-﻿using Stardrop.Models;
+﻿using Semver;
+using Stardrop.Models;
 using Stardrop.Models.SMAPI;
 using Stardrop.Models.SMAPI.Web;
 using System;
@@ -7,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -124,6 +126,18 @@ namespace Stardrop.Utilities.External
             client.Dispose();
 
             return modUpdateData;
+        }
+
+        internal static SemVersion? GetVersion()
+        {
+            AssemblyName smapiAssembly = AssemblyName.GetAssemblyName(Path.Combine(Pathing.defaultGamePath, "StardewModdingAPI.dll"));
+
+            if (smapiAssembly is null || smapiAssembly.Version is null)
+            {
+                return null;
+            }
+
+            return SemVersion.Parse($"{smapiAssembly.Version.Major}.{smapiAssembly.Version.Minor}.{smapiAssembly.Version.Build}", SemVersionStyles.Any);
         }
     }
 }
