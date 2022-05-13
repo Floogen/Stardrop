@@ -34,7 +34,7 @@ namespace Stardrop.Utilities.External
                     JsonDocument parsedContent = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
                     string tagName = parsedContent.RootElement.GetProperty("tag_name").ToString();
                     string downloadUri = parsedContent.RootElement.GetProperty("html_url").ToString();
-                    downloadUri = String.Concat(downloadUri, "/", "SMAPI-3.14.2-installer.zip").Replace("releases/tag/", "releases/download/");
+                    downloadUri = String.Concat(downloadUri, "/", $"SMAPI-{tagName}-installer.zip").Replace("releases/tag/", "releases/download/");
 
                     versionToUri = new KeyValuePair<string, string>(tagName, downloadUri);
                 }
