@@ -14,6 +14,7 @@
   "ui.main_window.menu_items.stardrop_repository": "Репозиторій Stardrop",
   "ui.main_window.menu_items.nexus_install_all": "Завантажити всі оновлення",
   "ui.main_window.menu_items.nexus_connection": "Підключення через API",
+  "ui.main_window.menu_items.check_for_SMAPI_update": "Перевірити SMAPI на оновлення",
 
   // Main Window - Menu Items - Context
   "ui.main_window.menu_items.context.show_requirements": "Показувати вимоги",
@@ -47,6 +48,7 @@
   "ui.main_window.labels.total_mods": "Загалом модів: ",
   "ui.main_window.labels.updatable_mods": "Готових до оновлення: ",
   "ui.main_window.labels.filter": "Фільтр",
+  "ui.main_window.labels.unknown_SMAPI": "Невідома версія SMAPI",
 
   // Main Window - Hyperlinks
   "ui.main_window.hyperlinks.click_to_open": "Відкрити",
@@ -132,14 +134,19 @@
   "ui.warning.given_install_folder_not_under_mod_folder": "Вказаний шлях до встановлених Stardrop модифікацій не існує в {0}\n\nПовертаємо попередній шлях.",
   "ui.warning.given_invalid_smapi_executable": "Вказаний файл не є {0}\n\nПовертаємо попередній шлях.",
   "ui.warning.stardrop_locked": "Stardrop заблоковано, коли SMAPI запущено. Жодні зміни не набудуть чинності доки не закрити SMAPI.",
-
+  "ui.warning.stardrop_downloading": "Завантаження останньої версії Stardrop.",
+  "ui.warning.SMAPI_downloading": "Завантаження останньої версії SMAPI з Ґітхабу.",
+  "ui.warning.SMAPI_installing": "Оновлення SMAPI до останньої версії.",
   "ui.warning.unable_to_locate_smapi": "Не вдалося виявити розташування StardewModdingAPI.exe\n\nБудь ласка, встановіть вірний шлях в меню:\nПерегляд > Налаштування",
   "ui.warning.mod_config_saved_but_not_enabled": "Налаштування конфігурації моду збережено в профілі \"{0}\", однак специфічні конфігурації модифікації в профілі не ввімкнено.\n\nПерейдіть до \"Перегляд\" > \"Налаштування\" та оберіть \"Увімкнути прив'язку конфігурації модифікацій до профілю\", щоб Stardrop автоматично зберігав і застосовував зміни конфігурації моду.",
   "ui.warning.unable_to_determine_profile": "Не вдалося визначити обраний профіль.\n\nSMAPI не буде запущено.",
   "ui.warning.stardrop_up_to_date": "Stardrop не потребує оновлення.\n\n{0} в актуальному стані.",
   "ui.warning.stardrop_unable_to_download_latest": "Не вдається завантажити останню версію Stardrop.\n\nБудь ласка, завантажте останню версію вручну.",
   "ui.warning.stardrop_unable_to_find_latest": "Не вдається перевірити сховище Stardrop в GitHub на наявність оновлення.\n\nБудь ласка, перевірте GitHub на наявність можливого оновлення або повторіть спробу пізніше.",
+  "ui.warning.stardrop_unable_to_find_latest": "Не вдалося перевірити GitHub репозиторій Stardrop'у на оновлення.\n\nБудь ласка, перевірте Ґітхаб на можливе оновлення або спробуйте пізніше.",
   "ui.warning.stardrop_update_downloaded": "Успішно завантажено останню версію.\n\nТепер Stardrop перезапуститься.",
+  "ui.warning.SMAPI_unable_to_download_latest": "Не вдалося завантажити останню версію SMAPI.\n\nБудь ласка, завантажте останню версію власноруч.",
+  "ui.warning.SMAPI_unable_to_install_latest": "Не вдалося встановити останню версію SMAPI.\n\nБудь ласка, завантажте останню версію власноруч.",
   "ui.warning.update_cooldown_minutes": "Запит на оновлення можна робити не частіше 5 хв.\n\nБудь ласка, спробуйте ще раз через {0} хв.",
   "ui.warning.update_cooldown_seconds": "Запит на оновлення можна робити не частіше 5 хв.\n\nБудь ласка, спробуйте ще раз через {0} сек.",
   "ui.warning.unable_to_locate_log": "Не вдалося виявити SMAPI-latest.txt! SMAPI необхідний для визначення додаткової інформації про гру.",
@@ -164,6 +171,9 @@
   "ui.message.confirm_mod_deletion": "Бажаєте видалити {0}? Ця дія безповоротна.",
   "ui.message.unsaved_config_changes": "Виявлено не збережені зміни конфігурації модифікацій для профілю {0}.\n\nБажаєте зберегти зміни?",
   "ui.message.stardrop_update_available": "Доступне оновлення Stardrop (v{0}).\n\nБажаєте завантажити зараз?",
+  "ui.message.SMAPI_update_available": "Доступне оновлення для SMAPI(в.{0}).\n\nЧи хотіли б ви завантажити його зараз?",
+  "ui.message.stardrop_update_complete": "Stardrop успішно оновився.\n\nЧи хотіли б ви дізнатися про зміни?",
+  "ui.message.SMAPI_update_complete": "SMAPI успішно оновився.\n\nЧи хотіли б ви дізнатися про зміни?",
   "ui.message.confirm_bulk_change_mod_states_enable": "Увімкнути всі модифікації?\n\nПримітка: Ця дія безповоротна.",
   "ui.message.confirm_bulk_change_mod_states_disable": "Вимкнути всі модифікації?\n\nПримітка: Ця дія безповоротна.",
   "ui.message.confirm_mod_update_method": "Виявлено попередню версію {0}. Бажаєте очистити попереднє встановлення?\n\nПримітка: Зазвичай рекомендується очищати попередню версію, але тоді файли конфігурацій буде втрачено.",
