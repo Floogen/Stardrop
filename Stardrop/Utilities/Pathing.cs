@@ -62,7 +62,7 @@ namespace Stardrop.Utilities
 
         public static string GetSmapiPath()
         {
-            return Path.Combine(defaultGamePath, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "StardewModdingAPI.exe" : "StardewModdingAPI");
+            return Path.Combine(defaultGamePath, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "StardewModdingAPI.exe" : "StardewModdingAPI.dll");
         }
 
         internal static string GetSmapiLogFolderPath()

@@ -25,11 +25,11 @@ namespace Stardrop.Utilities.External
             var smapiInfo = new FileInfo(Pathing.GetSmapiPath());
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                arguments = $"-c \"SMAPI_MODS_PATH='{Pathing.GetSelectedModsFolderPath()}'; '{Pathing.GetSmapiPath().Replace("StardewModdingAPI", "StardewValley")}'\"";
+                arguments = $"-c \"SMAPI_MODS_PATH='{Pathing.GetSelectedModsFolderPath()}'; '{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewValley")}'\"";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                arguments = $"\"{Pathing.GetSmapiPath().Replace("StardewModdingAPI", "StardewValley")}\"";
+                arguments = $"\"{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewValley")}\"";
             }
 
             var processInfo = new ProcessStartInfo
