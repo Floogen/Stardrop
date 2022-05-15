@@ -1875,108 +1875,117 @@ namespace Stardrop.Views
                     // Extract the archive data
                     using (var archive = ArchiveFactory.Open(fileFullName))
                     {
-                        Manifest? manifest = null;
-                        bool hasTopLevelFolder = true;
-                        Uri? topLevelFolderPath = null;
-                        foreach (var entry in archive.Entries)
+                        Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
+                        foreach (var manifest in archive.Entries.Where(e => e.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase)))
                         {
-                            // Verify the zip file has a manifest
-                            if (entry.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase))
+                            Program.helper.Log($"{manifest.Key}");
+                            using (Stream stream = manifest.OpenEntryStream())
                             {
-                                using (Stream stream = entry.OpenEntryStream())
-                                {
-                                    manifest = await JsonSerializer.DeserializeAsync<Manifest>(stream, new JsonSerializerOptions() { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
-                                }
-                            }
-
-                            // Verify the zip file has a top level single folder
-                            var directoryName = Path.GetDirectoryName(entry.Key);
-                            if (String.IsNullOrEmpty(directoryName) is false)
-                            {
-                                var fullDirectoryPath = new Uri(new DirectoryInfo(entry.Key).FullName);
-                                if (topLevelFolderPath is null)
-                                {
-                                    topLevelFolderPath = fullDirectoryPath;
-                                }
-                                else if (topLevelFolderPath.IsBaseOf(fullDirectoryPath) is false)
-                                {
-                                    hasTopLevelFolder = false;
-                                }
-                            }
-                            else
-                            {
-                                hasTopLevelFolder = false;
+                                pathToManifests[manifest.Key] = await JsonSerializer.DeserializeAsync<Manifest>(stream, new JsonSerializerOptions() { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
                             }
                         }
 
-                        // If the archive doesn't have a manifest, warn the user
-                        if (manifest is not null)
+                        foreach (var manifestPath in pathToManifests.Keys)
                         {
-                            string installPath = Program.settings.ModInstallPath;
-                            if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null)
+                            var manifest = pathToManifests[manifestPath];
+
+                            // If the archive doesn't have a manifest, warn the user
+                            if (manifest is not null)
                             {
-                                if (!manifest.DeleteOldVersion)
+                                string installPath = Program.settings.ModInstallPath;
+                                if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null && mod.ModFileInfo.Directory is not null)
                                 {
-                                    string warningMessage = Program.translation.Get("ui.message.confirm_mod_update_method_no_config");
-                                    if (mod.HasConfig)
+                                    if (!manifest.DeleteOldVersion)
                                     {
-                                        warningMessage = Program.translation.Get("ui.message.confirm_mod_update_method");
-                                        if (Program.settings.EnableProfileSpecificModConfigs)
+                                        string warningMessage = Program.translation.Get("ui.message.confirm_mod_update_method_no_config");
+                                        if (mod.HasConfig)
                                         {
-                                            warningMessage = Program.translation.Get("ui.message.confirm_mod_update_method_preserved");
+                                            warningMessage = Program.translation.Get("ui.message.confirm_mod_update_method");
+                                            if (Program.settings.EnableProfileSpecificModConfigs)
+                                            {
+                                                warningMessage = Program.translation.Get("ui.message.confirm_mod_update_method_preserved");
+                                            }
+                                        }
+                                        var requestWindow = new MessageWindow(String.Format(warningMessage, manifest.Name));
+                                        if (await requestWindow.ShowDialog<bool>(this))
+                                        {
+                                            // Delete old vesrion
+                                            var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
+                                            if (targetDirectory is not null && targetDirectory.Exists)
+                                            {
+                                                targetDirectory.Delete(true);
+                                            }
                                         }
                                     }
-                                    var requestWindow = new MessageWindow(String.Format(warningMessage, manifest.Name));
-                                    if (await requestWindow.ShowDialog<bool>(this))
-                                    {
-                                        // Delete old vesrion
-                                        var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
-                                        if (targetDirectory is not null)
-                                        {
-                                            targetDirectory.Delete(true);
-                                        }
-                                    }
+
+                                    installPath = mod.ModFileInfo.Directory.FullName;
                                 }
-                                installPath = mod.ModFileInfo.Directory.Parent.FullName;
-                            }
-
-                            // Correct the installPath if the archive doesn't come with a top level folder
-                            if (hasTopLevelFolder is false)
-                            {
-                                installPath = Path.Combine(installPath, manifest.UniqueID);
-                            }
-                            else if (topLevelFolderPath is not null && new DirectoryInfo(topLevelFolderPath.LocalPath).Name.Equals(new DirectoryInfo(installPath).Name, StringComparison.OrdinalIgnoreCase))
-                            {
-                                installPath = new DirectoryInfo(installPath).Parent.FullName;
-                            }
-
-                            foreach (var entry in archive.Entries)
-                            {
-                                if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase))
+                                else if (String.IsNullOrEmpty(manifestPath.Replace("manifest.json", String.Empty)))
                                 {
-                                    continue;
+                                    installPath = Path.Combine(installPath, manifest.UniqueID);
                                 }
 
-                                // Create the default location if it doesn't exist
-                                if (!Directory.Exists(installPath))
+                                // Create the base directory, if needed
+                                if (Directory.Exists(installPath) is false)
                                 {
                                     Directory.CreateDirectory(installPath);
                                 }
-                                entry.WriteToDirectory(installPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
-                            }
 
-                            addedMods.Add(new Mod(manifest, null, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
-                        }
-                        else
-                        {
-                            await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName), Program.translation.Get("internal.ok"));
+
+                                Program.helper.Log($"Install path for mod {manifest.UniqueID}:{installPath}");
+                                var manifestFolderPath = manifestPath.Replace("manifest.json", String.Empty);
+                                foreach (var entry in archive.Entries.Where(e => e.Key.StartsWith(manifestFolderPath)))
+                                {
+                                    if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        continue;
+                                    }
+                                    var outputPath = Path.Combine(installPath, manifestFolderPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+
+                                    Program.helper.Log(manifestFolderPath);
+                                    if (String.IsNullOrEmpty(manifestFolderPath) is false)
+                                    {
+                                        var installDirectory = new DirectoryInfo(installPath);
+                                        var manifestDirectory = new DirectoryInfo(manifestFolderPath);
+                                        if (installDirectory.Exists && (installDirectory.Name.Equals(manifestDirectory.Name) || installDirectory.Name.Equals(manifest.UniqueID)))
+                                        {
+                                            outputPath = Path.Combine(installPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+
+                                            Program.helper.Log(outputPath);
+                                        }
+                                    }
+
+                                    // Create the default location if it doesn't existe
+                                    var outputFolder = Path.GetDirectoryName(outputPath);
+                                    if (String.IsNullOrEmpty(outputFolder))
+                                    {
+                                        continue;
+                                    }
+                                    else if (Directory.Exists(outputFolder) is false)
+                                    {
+                                        Directory.CreateDirectory(outputFolder);
+                                    }
+
+                                    if (entry.IsDirectory is false)
+                                    {
+                                        Program.helper.Log($"Writing mod file to {outputPath}");
+                                        entry.WriteToFile(outputPath, new ExtractionOptions() { ExtractFullPath = false, Overwrite = true });
+                                    }
+                                }
+
+                                addedMods.Add(new Mod(manifest, null, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
+                            }
+                            else
+                            {
+                                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName), Program.translation.Get("internal.ok"));
+                            }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_load_mod"), fileFullName), Program.translation.Get("internal.ok"));
                     Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
+                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_load_mod"), fileFullName), Program.translation.Get("internal.ok"));
                 }
             }
 
