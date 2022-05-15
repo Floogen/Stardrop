@@ -37,6 +37,7 @@ namespace Stardrop.Views
         private readonly ProfileEditorViewModel _editorView;
         private DispatcherTimer _searchBoxTimer;
         private DispatcherTimer _smapiProcessTimer;
+        private DispatcherTimer _lockSentinel;
         private DispatcherTimer _nxmSentinel;
 
         // Tracking related
@@ -114,6 +115,12 @@ namespace Stardrop.Views
                 _nxmSentinel.Tick += _nxmSentinelTimer_Tick;
                 _nxmSentinel.Start();
             }
+
+            // Start sentinel for watching for lock state
+            _lockSentinel = new DispatcherTimer();
+            _lockSentinel.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 100);
+            _lockSentinel.Tick += _lockSentinelTimer_Tick;
+            _lockSentinel.Start();
 
             // FOOTER: "Value cannot be null. (Parameter 'path1')" error clears removing the above chunk
 
@@ -197,12 +204,6 @@ namespace Stardrop.Views
             if (e.Property == WindowStateProperty && (WindowState)e.OldValue == WindowState.Minimized && SMAPI.IsRunning)
             {
                 var warningWindow = new WarningWindow(Program.translation.Get("ui.warning.stardrop_locked"), Program.translation.Get("internal.unlock"), true);
-                warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                await warningWindow.ShowDialog(this);
-            }
-            else if (this.OwnedWindows.Any(w => w is WarningWindow) is false && _viewModel.IsLocked && String.IsNullOrEmpty(_lockReason) is false)
-            {
-                var warningWindow = new WarningWindow(_lockReason, _viewModel);
                 warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 await warningWindow.ShowDialog(this);
             }
@@ -374,6 +375,16 @@ namespace Stardrop.Views
                 {
                     Program.helper.Log($"Failed to delete the Links.json file: {ioEx}");
                 }
+            }
+        }
+
+        private async void _lockSentinelTimer_Tick(object? sender, EventArgs e)
+        {
+            if (this.OwnedWindows.Any(w => w is WarningWindow) is false && _viewModel.IsLocked && String.IsNullOrEmpty(_lockReason) is false)
+            {
+                var warningWindow = new WarningWindow(_lockReason, _viewModel);
+                warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                await warningWindow.ShowDialog(this);
             }
         }
 
@@ -1878,7 +1889,6 @@ namespace Stardrop.Views
                         Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
                         foreach (var manifest in archive.Entries.Where(e => e.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase)))
                         {
-                            Program.helper.Log($"{manifest.Key}");
                             using (Stream stream = manifest.OpenEntryStream())
                             {
                                 pathToManifests[manifest.Key] = await JsonSerializer.DeserializeAsync<Manifest>(stream, new JsonSerializerOptions() { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
@@ -1890,6 +1900,7 @@ namespace Stardrop.Views
                             var manifest = pathToManifests[manifestPath];
 
                             // If the archive doesn't have a manifest, warn the user
+                            bool isUpdate = false;
                             if (manifest is not null)
                             {
                                 string installPath = Program.settings.ModInstallPath;
@@ -1918,6 +1929,7 @@ namespace Stardrop.Views
                                         }
                                     }
 
+                                    isUpdate = true;
                                     installPath = mod.ModFileInfo.Directory.FullName;
                                 }
                                 else if (String.IsNullOrEmpty(manifestPath.Replace("manifest.json", String.Empty)))
@@ -1931,6 +1943,8 @@ namespace Stardrop.Views
                                     Directory.CreateDirectory(installPath);
                                 }
 
+                                // Set lock state to let user know we are installing the mod
+                                SetLockState(true, String.Format(isUpdate ? Program.translation.Get("ui.warning.mod_updating") : Program.translation.Get("ui.warning.mod_installing"), manifest.Name));
 
                                 Program.helper.Log($"Install path for mod {manifest.UniqueID}:{installPath}");
                                 var manifestFolderPath = manifestPath.Replace("manifest.json", String.Empty);
@@ -1942,7 +1956,6 @@ namespace Stardrop.Views
                                     }
                                     var outputPath = Path.Combine(installPath, manifestFolderPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
 
-                                    Program.helper.Log(manifestFolderPath);
                                     if (String.IsNullOrEmpty(manifestFolderPath) is false)
                                     {
                                         var installDirectory = new DirectoryInfo(installPath);
@@ -1969,14 +1982,16 @@ namespace Stardrop.Views
                                     if (entry.IsDirectory is false)
                                     {
                                         Program.helper.Log($"Writing mod file to {outputPath}");
-                                        entry.WriteToFile(outputPath, new ExtractionOptions() { ExtractFullPath = false, Overwrite = true });
+                                        await Task.Run(() => entry.WriteToFile(outputPath, new ExtractionOptions() { ExtractFullPath = false, Overwrite = true }));
                                     }
                                 }
 
+                                SetLockState(false);
                                 addedMods.Add(new Mod(manifest, null, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
                             }
                             else
                             {
+                                SetLockState(false);
                                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName), Program.translation.Get("internal.ok"));
                             }
                         }
@@ -1985,6 +2000,7 @@ namespace Stardrop.Views
                 catch (Exception ex)
                 {
                     Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
+                    SetLockState(false);
                     await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_load_mod"), fileFullName), Program.translation.Get("internal.ok"));
                 }
             }

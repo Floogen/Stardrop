@@ -137,6 +137,8 @@
   "ui.warning.stardrop_downloading": "Downloading the latest version of Stardrop.",
   "ui.warning.SMAPI_downloading": "Downloading the latest version of SMAPI from GitHub.",
   "ui.warning.SMAPI_installing": "Updating SMAPI to the latest version.",
+  "ui.warning.mod_installing": "Installing {0}",
+  "ui.warning.mod_updating": "Updating {0}",
 
   "ui.warning.unable_to_locate_smapi": "Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings",
   "ui.warning.mod_config_saved_but_not_enabled": "Saved mod config settings to profile {0}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.",
