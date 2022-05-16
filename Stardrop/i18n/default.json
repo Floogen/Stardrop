@@ -201,7 +201,9 @@
   "internal.enable": "Enable",
   "internal.disable": "Disable",
   "internal.yes": "Yes",
+  "internal.yes_all": "Yes to All",
   "internal.no": "No",
+  "internal.no_all": "No to All",
   "internal.ok": "OK",
   "internal.unlock": "Unlock"
 }

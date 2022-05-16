@@ -45,6 +45,9 @@
 		<PackageReference Include="SharpCompress" Version="0.31.0" />
 	</ItemGroup>
 	<ItemGroup>
+		<Compile Update="Views\FlexibleOptionWindow.axaml.cs">
+		  <DependentUpon>FlexibleOptionWindow.axaml</DependentUpon>
+		</Compile>
 		<Compile Update="Views\NexusInfo.axaml.cs">
 			<DependentUpon>NexusInfo.axaml</DependentUpon>
 		</Compile>

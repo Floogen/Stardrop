@@ -1895,6 +1895,7 @@ namespace Stardrop.Views
                             }
                         }
 
+                        bool alwaysAskToDelete = true;
                         foreach (var manifestPath in pathToManifests.Keys)
                         {
                             var manifest = pathToManifests[manifestPath];
@@ -1906,7 +1907,7 @@ namespace Stardrop.Views
                                 string installPath = Program.settings.ModInstallPath;
                                 if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null && mod.ModFileInfo.Directory is not null)
                                 {
-                                    if (!manifest.DeleteOldVersion)
+                                    if (manifest.DeleteOldVersion is false && alwaysAskToDelete is true)
                                     {
                                         string warningMessage = Program.translation.Get("ui.message.confirm_mod_update_method_no_config");
                                         if (mod.HasConfig)
@@ -1917,9 +1918,16 @@ namespace Stardrop.Views
                                                 warningMessage = Program.translation.Get("ui.message.confirm_mod_update_method_preserved");
                                             }
                                         }
-                                        var requestWindow = new MessageWindow(String.Format(warningMessage, manifest.Name));
-                                        if (await requestWindow.ShowDialog<bool>(this))
+
+                                        var requestWindow = new FlexibleOptionWindow(String.Format(warningMessage, manifest.Name), Program.translation.Get("internal.yes"), Program.translation.Get("internal.yes_all"), Program.translation.Get("internal.no"));
+                                        Choice response = await requestWindow.ShowDialog<Choice>(this);
+                                        if (response == Choice.First || response == Choice.Second)
                                         {
+                                            if (response == Choice.Second)
+                                            {
+                                                alwaysAskToDelete = false;
+                                            }
+
                                             // Delete old vesrion
                                             var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
                                             if (targetDirectory is not null && targetDirectory.Exists)
