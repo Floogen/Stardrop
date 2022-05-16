@@ -1834,7 +1834,7 @@ namespace Stardrop.Views
                 return null;
             }
 
-            var modId = mod.GetNexusKey();
+            var modId = mod.GetNexusId();
             if (modId is null || String.IsNullOrEmpty(apiKey))
             {
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
@@ -1842,7 +1842,7 @@ namespace Stardrop.Views
             }
             mod.InstallState = InstallState.Downloading;
 
-            var modFile = await Nexus.GetFileByVersion(apiKey, (int)modId, mod.SuggestedVersion);
+            var modFile = await Nexus.GetFileByVersion(apiKey, (int)modId, mod.SuggestedVersion, modFlag: mod.GetNexusFlag());
             if (modFile is null)
             {
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));

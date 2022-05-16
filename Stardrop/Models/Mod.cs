@@ -54,7 +54,7 @@ namespace Stardrop.Models
         public string UpdateUri { get { return _updateUri; } set { _updateUri = value; NotifyPropertyChanged("UpdateUri"); } }
         private string _modPageUri { get; set; }
         public string ModPageUri { get { return _modPageUri; } set { _modPageUri = value; NotifyPropertyChanged("ModPageUri"); } }
-        public int? NexusModId { get { return GetNexusKey(); } }
+        public int? NexusModId { get { return GetNexusId(); } }
         private bool _isEnabled { get; set; }
         public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); NotifyPropertyChanged("ChangeStateText"); } }
         private bool _isHidden { get; set; }
@@ -92,7 +92,7 @@ namespace Stardrop.Models
             {
                 if (!String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
                 {
-                    var nexusModId = GetNexusKey();
+                    var nexusModId = GetNexusId();
                     if (_status == WikiCompatibilityStatus.Unofficial || nexusModId is null)
                     {
                         return String.Empty;
@@ -154,7 +154,7 @@ namespace Stardrop.Models
             return false;
         }
 
-        public int? GetNexusKey()
+        public int? GetNexusId()
         {
             if (HasUpdateKeys() is false)
             {
@@ -164,12 +164,35 @@ namespace Stardrop.Models
             foreach (string key in Manifest.UpdateKeys)
             {
                 string cleanedKey = String.Concat(key.Where(c => !Char.IsWhiteSpace(c)));
-                var match = Regex.Match(key, @"Nexus:[^0-9-]*(?<modId>-?\d+).*");
+                var match = Regex.Match(key, @"Nexus:[^0-9-]*(?<modId>-?\d+)(?<flag>\@.*)?.*");
                 if (match.Success)
                 {
                     if (Int32.TryParse(match.Groups["modId"].ToString(), out int modId) && modId > 0)
                     {
                         return modId;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public string? GetNexusFlag()
+        {
+            if (HasUpdateKeys() is false)
+            {
+                return null;
+            }
+
+            foreach (string key in Manifest.UpdateKeys)
+            {
+                string cleanedKey = String.Concat(key.Where(c => !Char.IsWhiteSpace(c)));
+                var match = Regex.Match(key, @"Nexus:[^0-9-]*(?<modId>-?\d+)(?<flag>\@.*)?.*");
+                if (match.Success)
+                {
+                    if (match.Groups.ContainsKey("flag"))
+                    {
+                        return match.Groups["flag"].ToString();
                     }
                 }
             }
