@@ -112,16 +112,22 @@ namespace Stardrop.ViewModels
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    // If no associated application/json MimeType is found xdg-open opens retrun error
+                    // If no associated application/json MimeType is found xdg-open returns error
                     // but it tries to open it anyway using the console editor (nano, vim, other..)
-                    ShellExec($"xdg-open {url}", waitForExit: false);
+                    using Process process = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "/bin/bash",
+                        Arguments = $"xdg-open \"{url}\"",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    });
                 }
                 else
                 {
                     using Process process = Process.Start(new ProcessStartInfo
                     {
                         FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
-                        Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"{url}" : "",
+                        Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"\"{url}\"" : "",
                         CreateNoWindow = true,
                         UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                     });
@@ -130,30 +136,6 @@ namespace Stardrop.ViewModels
             catch (Exception ex)
             {
                 Program.helper.Log($"Failed to utilize OpenBrowser with the url ({url}): {ex}");
-            }
-        }
-
-        private static void ShellExec(string cmd, bool waitForExit = true)
-        {
-            var escapedArgs = Regex.Replace(cmd, "(?=[`~!#&*()|;'<>])", "\\")
-                .Replace("\"", "\\\\\\\"");
-
-            using (var process = Process.Start(
-                new ProcessStartInfo
-                {
-                    FileName = "/bin/sh",
-                    Arguments = $"-c \"{escapedArgs}\"",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
-                }
-            ))
-            {
-                if (waitForExit)
-                {
-                    process.WaitForExit();
-                }
             }
         }
 
