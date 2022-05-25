@@ -110,28 +110,14 @@ namespace Stardrop.ViewModels
 
             try
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                using Process process = Process.Start(new ProcessStartInfo
                 {
-                    // If no associated application/json MimeType is found xdg-open returns error
-                    // but it tries to open it anyway using the console editor (nano, vim, other..)
-                    using Process process = Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "/bin/bash",
-                        Arguments = $"xdg-open \"{url}\"",
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    });
-                }
-                else
-                {
-                    using Process process = Process.Start(new ProcessStartInfo
-                    {
-                        FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
-                        Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"\"{url}\"" : "",
-                        CreateNoWindow = true,
-                        UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                    });
-                }
+                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : 
+                        RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" : "xdg-open",
+                    Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : $"\"{url}\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                });
             }
             catch (Exception ex)
             {
