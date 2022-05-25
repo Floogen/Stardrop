@@ -80,7 +80,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='linux-x64'">
-		<WSL Include="wsl" />
+		<WSL Include="wsl" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
 		<BashScript Include="$(ProjectDir)\Assets\Stardrop.sh" />
 		<RenameExecutableLinux Include="$(PublishDir)\Stardrop" />
 		<RenameDatabaseLinux Include="$(PublishDir)\Stardrop.pdb" />
