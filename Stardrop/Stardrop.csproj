@@ -95,7 +95,6 @@
 		<Delete Files="@(RenameExecutableLinux);@(RenameDatabaseLinux)" />
 
 		<Copy SourceFiles="@(BashScript)" DestinationFolder="$(PublishDir)" />
-		<Exec Command="@(WSL) dos2unix Stardrop.sh" WorkingDirectory="$(PublishDir)" />
 
 		<Exec Command="@(WSL) mkdir Stardrop" WorkingDirectory="$(PublishDir)" />
 
