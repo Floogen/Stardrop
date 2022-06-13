@@ -1887,8 +1887,9 @@ namespace Stardrop.Views
                     using (var archive = ArchiveFactory.Open(fileFullName))
                     {
                         Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
-                        foreach (var manifest in archive.Entries.Where(e => e.Key.Contains("manifest.json", StringComparison.OrdinalIgnoreCase)))
+                        foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key).Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
                         {
+                            Program.helper.Log(manifest.Key);
                             using (Stream stream = manifest.OpenEntryStream())
                             {
                                 pathToManifests[manifest.Key] = await JsonSerializer.DeserializeAsync<Manifest>(stream, new JsonSerializerOptions() { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
@@ -1958,7 +1959,7 @@ namespace Stardrop.Views
                                 var manifestFolderPath = manifestPath.Replace("manifest.json", String.Empty);
                                 foreach (var entry in archive.Entries.Where(e => e.Key.StartsWith(manifestFolderPath)))
                                 {
-                                    if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase))
+                                    if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) || entry.Key.Contains(".DS_Store", StringComparison.OrdinalIgnoreCase))
                                     {
                                         continue;
                                     }
