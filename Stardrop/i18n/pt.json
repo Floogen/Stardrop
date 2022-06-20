@@ -137,6 +137,8 @@
   "ui.warning.stardrop_downloading": "Baixando a última versão do Stardrop.",
   "ui.warning.SMAPI_downloading": "Baixando a última versão do SMAPI no GitHub.",
   "ui.warning.SMAPI_installing": "Atualizando o SMAPI para a última versão.",
+  "ui.warning.mod_installing": "Instalando {0}",
+  "ui.warning.mod_updating": "Atualizando {0}",
 
   "ui.warning.unable_to_locate_smapi": "Não foi possível localizar o StardewModdingAPI.exe\n\nPor favor, defina o caminho correto do arquivo em\nVer > Configurações",
   "ui.warning.mod_config_saved_but_not_enabled": "As configurações do mod foram salvas no perfil {0}, entretanto, a opção de configurações específicas de mods por perfil não está habilitada.\n\nVá até Ver > Configurações e marque a opção \"Habilitar configurações de mods específicas por perfil\" para que o Stardrop salve e aplique as alterações nas configurações dos mods automaticamente.",
@@ -199,7 +201,9 @@
   "internal.enable": "Habilitado",
   "internal.disable": "Desabilitado",
   "internal.yes": "Sim",
+  "internal.yes_all": "Sim para tudo",
   "internal.no": "Não",
+  "internal.no_all": "Não para tudo",
   "internal.ok": "OK",
   "internal.unlock": "Desbloquear"
 }
