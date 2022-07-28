@@ -30,19 +30,19 @@
 		<None Remove="Themes\Solarized-Lite.xaml" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Avalonia" Version="0.10.13" />
-		<PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.13" />
-		<PackageReference Include="Avalonia.Desktop" Version="0.10.13" />
+		<PackageReference Include="Avalonia" Version="0.10.17" />
+		<PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.17" />
+		<PackageReference Include="Avalonia.Desktop" Version="0.10.17" />
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.13" />
-		<PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.13" />
-		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.13" />
-		<PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.17" />
+		<PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.17" />
+		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.17" />
+		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 		<PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-		<PackageReference Include="Projektanker.Icons.Avalonia" Version="4.4.0" />
-		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="4.4.0" />
-		<PackageReference Include="semver" Version="2.1.0" />
-		<PackageReference Include="SharpCompress" Version="0.31.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia" Version="5.2.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="5.2.0" />
+		<PackageReference Include="semver" Version="2.2.0" />
+		<PackageReference Include="SharpCompress" Version="0.32.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Update="Views\FlexibleOptionWindow.axaml.cs">
