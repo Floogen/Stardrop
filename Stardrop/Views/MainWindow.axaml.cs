@@ -1259,6 +1259,10 @@ namespace Stardrop.Views
                     _viewModel.OpenBrowser($"https://smapi.io/release/{latestSmapiToUri?.Key.Replace(".", String.Empty)}");
                 }
             }
+            else if (manualCheck is true)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.SMAPI_up_to_date"), _viewModel.SmapiVersion), Program.translation.Get("internal.ok"));
+            }
         }
 
         private async Task HandleModUpdateCheck()

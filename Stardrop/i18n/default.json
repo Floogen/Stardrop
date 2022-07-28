@@ -137,6 +137,7 @@
   "ui.warning.stardrop_downloading": "Downloading the latest version of Stardrop.",
   "ui.warning.SMAPI_downloading": "Downloading the latest version of SMAPI from GitHub.",
   "ui.warning.SMAPI_installing": "Updating SMAPI to the latest version.",
+  "ui.warning.SMAPI_up_to_date": "SMAPI is up-to-date.\n\n{0} is the latest version.",
   "ui.warning.mod_installing": "Installing {0}",
   "ui.warning.mod_updating": "Updating {0}",
 
