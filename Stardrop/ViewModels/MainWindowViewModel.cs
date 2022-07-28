@@ -1,4 +1,5 @@
 using Avalonia.Collections;
+using Json.More;
 using ReactiveUI;
 using Stardrop.Models;
 using Stardrop.Models.Data;
@@ -405,8 +406,7 @@ namespace Stardrop.ViewModels
                             // Merge the config
                             var originalJson = mod.Config.Data;
                             var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]);
-
-                            if (originalJson != archivedJson)
+                            if (JsonDocumentEqualityComparer.Instance.Equals(JsonDocument.Parse(mod.Config.Data), profile.PreservedModConfigs[modId]) is false)
                             {
                                 // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
                                 string mergedJson = inverseMerge ? JsonTools.Merge(archivedJson, originalJson) : JsonTools.Merge(originalJson, archivedJson);
