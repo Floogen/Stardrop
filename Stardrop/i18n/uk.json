@@ -137,12 +137,14 @@
   "ui.warning.stardrop_downloading": "Завантаження останньої версії Stardrop.",
   "ui.warning.SMAPI_downloading": "Завантаження останньої версії SMAPI з Ґітхабу.",
   "ui.warning.SMAPI_installing": "Оновлення SMAPI до останньої версії.",
+  "ui.warning.mod_installing": "Встановлення мода \"{0}\"",
+  "ui.warning.mod_updating": "Оновлення мода \"{0}\"",
+
   "ui.warning.unable_to_locate_smapi": "Не вдалося виявити розташування StardewModdingAPI.exe\n\nБудь ласка, встановіть вірний шлях в меню:\nПерегляд > Налаштування",
   "ui.warning.mod_config_saved_but_not_enabled": "Налаштування конфігурації моду збережено в профілі \"{0}\", однак специфічні конфігурації модифікації в профілі не ввімкнено.\n\nПерейдіть до \"Перегляд\" > \"Налаштування\" та оберіть \"Увімкнути прив'язку конфігурації модифікацій до профілю\", щоб Stardrop автоматично зберігав і застосовував зміни конфігурації моду.",
   "ui.warning.unable_to_determine_profile": "Не вдалося визначити обраний профіль.\n\nSMAPI не буде запущено.",
   "ui.warning.stardrop_up_to_date": "Stardrop не потребує оновлення.\n\n{0} в актуальному стані.",
   "ui.warning.stardrop_unable_to_download_latest": "Не вдається завантажити останню версію Stardrop.\n\nБудь ласка, завантажте останню версію вручну.",
-  "ui.warning.stardrop_unable_to_find_latest": "Не вдається перевірити сховище Stardrop в GitHub на наявність оновлення.\n\nБудь ласка, перевірте GitHub на наявність можливого оновлення або повторіть спробу пізніше.",
   "ui.warning.stardrop_unable_to_find_latest": "Не вдалося перевірити GitHub репозиторій Stardrop'у на оновлення.\n\nБудь ласка, перевірте Ґітхаб на можливе оновлення або спробуйте пізніше.",
   "ui.warning.stardrop_update_downloaded": "Успішно завантажено останню версію.\n\nТепер Stardrop перезапуститься.",
   "ui.warning.SMAPI_unable_to_download_latest": "Не вдалося завантажити останню версію SMAPI.\n\nБудь ласка, завантажте останню версію власноруч.",
@@ -199,7 +201,9 @@
   "internal.enable": "Ввімкнено",
   "internal.disable": "Вимкнуто",
   "internal.yes": "Так",
+  "internal.yes_all": "Погодити все",
   "internal.no": "Ні",
+  "internal.no_all": "Не погоджувати нічого",
   "internal.ok": "Гаразд",
   "internal.unlock": "Розблокувати"
 }
