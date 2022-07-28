@@ -80,7 +80,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='linux-x64'">
-		<WSL Include="wsl" />
+		<WSL Include="wsl" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
 		<BashScript Include="$(ProjectDir)\Assets\Stardrop.sh" />
 		<RenameExecutableLinux Include="$(PublishDir)\Stardrop" />
 		<RenameDatabaseLinux Include="$(PublishDir)\Stardrop.pdb" />
@@ -88,14 +88,13 @@
 	</ItemGroup>
 
 	<Target Name="FolderProfile - Linux" AfterTargets="Publish" Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='linux-x64'">
-		<Exec Command="del @(ZipName) 2&gt;nul" WorkingDirectory="$(PublishDir)" />
+		<Delete Files="$(PublishDir)/$(ZipName)" />
 
 		<Copy SourceFiles="@(RenameExecutableLinux)" DestinationFiles="@(RenameExecutableLinux-&gt;Replace('Stardrop','Internal'))" />
 		<Copy SourceFiles="@(RenameDatabaseLinux)" DestinationFiles="@(RenameDatabaseLinux-&gt;Replace('Stardrop','Internal'))" />
 		<Delete Files="@(RenameExecutableLinux);@(RenameDatabaseLinux)" />
 
 		<Copy SourceFiles="@(BashScript)" DestinationFolder="$(PublishDir)" />
-		<Exec Command="@(WSL) dos2unix Stardrop.sh" WorkingDirectory="$(PublishDir)" />
 
 		<Exec Command="@(WSL) mkdir Stardrop" WorkingDirectory="$(PublishDir)" />
 
@@ -109,7 +108,7 @@
 		<Exec Command="@(WSL) chmod 644 Internal.pdb" WorkingDirectory="$(PublishDir)/Stardrop" />
 		<Exec Command="@(WSL) zip -r @(ZipName) Stardrop" WorkingDirectory="$(PublishDir)" />
 
-		<Exec Command="rmdir Stardrop /S /Q" WorkingDirectory="$(PublishDir)" />
+		<RemoveDir Directories="$(PublishDir)/Stardrop" />
 	</Target>
 
 	<ItemGroup Condition="$(Configuration)=='Release' And $(RuntimeIdentifier)=='osx-x64'">
