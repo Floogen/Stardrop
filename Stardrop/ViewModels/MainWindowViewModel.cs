@@ -207,7 +207,7 @@ namespace Stardrop.ViewModels
                 try
                 {
                     var manifest = JsonSerializer.Deserialize<Manifest>(File.ReadAllText(fileInfo.FullName), new JsonSerializerOptions { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
-                    if (manifest is null)
+                    if (manifest is null || String.IsNullOrEmpty(manifest.UniqueID))
                     {
                         Program.helper.Log($"The manifest.json was empty or not deserializable from {fileInfo.DirectoryName}", Helper.Status.Alert);
                         continue;
