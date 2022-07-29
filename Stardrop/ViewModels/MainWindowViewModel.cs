@@ -113,7 +113,7 @@ namespace Stardrop.ViewModels
             {
                 using Process process = Process.Start(new ProcessStartInfo
                 {
-                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : 
+                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url :
                         RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" : "xdg-open",
                     Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : $"\"{url}\"",
                     CreateNoWindow = true,
@@ -156,14 +156,21 @@ namespace Stardrop.ViewModels
             List<FileInfo> manifests = new List<FileInfo>();
             foreach (var directory in modDirectory.EnumerateDirectories())
             {
-                var localManifest = directory.EnumerateFiles("manifest.json");
-                if (localManifest.Count() == 0)
+                try
                 {
-                    manifests.AddRange(GetManifestFiles(directory));
+                    var localManifest = directory.EnumerateFiles("manifest.json");
+                    if (localManifest.Count() == 0)
+                    {
+                        manifests.AddRange(GetManifestFiles(directory));
+                    }
+                    else
+                    {
+                        manifests.Add(localManifest.First());
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    manifests.Add(localManifest.First());
+                    Program.helper.Log($"There was an error when attempting to get the manifest.json within the directory ({(directory is null ? String.Empty : directory.FullName)}): {ex}", Helper.Status.Alert);
                 }
             }
 

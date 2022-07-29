@@ -28,6 +28,7 @@ using System.Threading;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus.Web;
 using Stardrop.Utilities.Internal;
+using System.Text.RegularExpressions;
 
 namespace Stardrop.Views
 {
@@ -1977,6 +1978,7 @@ namespace Stardrop.Views
                                             Program.helper.Log(outputPath);
                                         }
                                     }
+                                    outputPath = Regex.Replace(outputPath, @"\s+\/", "/");
 
                                     // Create the default location if it doesn't existe
                                     var outputFolder = Path.GetDirectoryName(outputPath);
