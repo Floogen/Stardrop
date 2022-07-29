@@ -523,6 +523,21 @@ namespace Stardrop.ViewModels
             EnabledModCount = Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
         }
 
+        public void ForceModState(Profile profile, List<Mod> mods, bool modEnableState = false)
+        {
+            foreach (var mod in Mods)
+            {
+                if (mods.Any(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)) is false)
+                {
+                    continue;
+                }
+                mod.IsEnabled = modEnableState;
+            }
+
+            // Update the EnabledModCount
+            EnabledModCount = Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
+        }
+
         internal void UpdateFilter()
         {
             if (DataView is not null)

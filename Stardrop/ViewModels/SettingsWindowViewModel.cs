@@ -21,6 +21,7 @@ namespace Stardrop.ViewModels
         public bool IgnoreHiddenFolders { get { return Program.settings.IgnoreHiddenFolders; } set { Program.settings.IgnoreHiddenFolders = value; } }
         public bool IsAskingBeforeAcceptingNXM { get { return Program.settings.IsAskingBeforeAcceptingNXM; } set { Program.settings.IsAskingBeforeAcceptingNXM = value; } }
         public bool EnableProfileSpecificModConfigs { get { return Program.settings.EnableProfileSpecificModConfigs; } set { Program.settings.EnableProfileSpecificModConfigs = value; } }
+        public bool EnableModsOnAdd { get { return Program.settings.EnableModsOnAdd; } set { Program.settings.EnableModsOnAdd = value; } }
 
         // Tooltips
         public string ToolTip_SMAPI { get; set; }
@@ -33,6 +34,7 @@ namespace Stardrop.ViewModels
         public string ToolTip_NXMAssociation { get; set; }
         public string ToolTip_AlwaysAskNXMFiles { get; set; }
         public string ToolTip_EnableProfileSpecificModConfigs { get; set; }
+        public string ToolTip_EnableModsOnAdd { get; set; }
         public string ToolTip_Save { get; set; }
         public string ToolTip_Cancel { get; set; }
 
@@ -55,6 +57,7 @@ namespace Stardrop.ViewModels
                 ToolTip_NXMAssociation = Program.translation.Get("ui.settings_window.tooltips.nxm_file_association");
                 ToolTip_AlwaysAskNXMFiles = Program.translation.Get("ui.settings_window.tooltips.always_ask_nxm_files");
                 ToolTip_EnableProfileSpecificModConfigs = Program.translation.Get("ui.settings_window.tooltips.enable_profile_specific_configs");
+                ToolTip_EnableModsOnAdd = Program.translation.Get("ui.settings_window.tooltips.enable_mods_on_add");
                 ToolTip_Save = Program.translation.Get("ui.settings_window.tooltips.save_changes");
                 ToolTip_Cancel = Program.translation.Get("ui.settings_window.tooltips.cancel_changes");
             }

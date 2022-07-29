@@ -2017,14 +2017,25 @@ namespace Stardrop.Views
                 }
             }
 
-            // Update the current profile
-            UpdateProfile(GetCurrentProfile());
-
             // Refresh mod list
             _viewModel.DiscoverMods(Pathing.defaultModPath);
 
             // Refresh enabled mods
             _viewModel.EnableModsByProfile(GetCurrentProfile());
+
+            // Handle automatically enabling the added mods, if the setting is enabled
+            if (Program.settings.EnableModsOnAdd is true)
+            {
+                _viewModel.ForceModState(GetCurrentProfile(), addedMods, modEnableState: true);
+
+                foreach (var mod in addedMods)
+                {
+                    EnableRequirements(mod);
+                }
+            }
+
+            // Update the current profile
+            UpdateProfile(GetCurrentProfile());
 
             return addedMods;
         }

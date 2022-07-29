@@ -213,6 +213,7 @@
 			<TextBlock Text="{i18n:Translate ui.settings_window.labels.miscellaneous}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 			<CheckBox Name="ignoreHiddenFoldersCheckbox" IsChecked="{Binding IgnoreHiddenFolders}" Content="{i18n:Translate ui.settings_window.buttons.ignore_hidden_folders}" ToolTip.Tip="{Binding ToolTip_IgnoreHiddenFolders}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 			<CheckBox Name="enableProfileSpecificModConfigsCheckbox" IsChecked="{Binding EnableProfileSpecificModConfigs}" Content="{i18n:Translate ui.settings_window.buttons.enable_profile_specific_mod_configs}" ToolTip.Tip="{Binding ToolTip_EnableProfileSpecificModConfigs}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<CheckBox Name="enableModsOnAdd" IsChecked="{Binding EnableModsOnAdd}" Content="{i18n:Translate ui.settings_window.buttons.enable_mods_on_add}" ToolTip.Tip="{Binding ToolTip_EnableModsOnAdd}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 		</StackPanel>
 
 		<DockPanel Grid.Row="5" Grid.Column="1" Margin="0 0 0 0">
