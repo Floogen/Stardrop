@@ -90,6 +90,7 @@
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "Ignorar pastas ocultas",
   "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Habilitar configurações de mods específicas por perfil",
+  "ui.settings_window.buttons.enable_mods_on_add": "Habilitar os mods automaticamente ao instalar",
   "ui.settings_window.buttons.always_ask_for_NXM_installs": "Sempre perguntar antes de instalar arquivos NXM",
   "ui.settings_window.buttons.register_nxm_association": "Registrar associação NXM",
 
@@ -103,6 +104,7 @@
   "ui.settings_window.tooltips.nxm_file_association": "Registra a associação do protocolo NXM com o Stardrop, permitindo instalações diretas a partir de www.nexusmods.com",
   "ui.settings_window.tooltips.always_ask_nxm_files": "Se estiver marcado, o Stardrop sempre perguntará antes de instalar um mod de www.nexusmods.com via NXM",
   "ui.settings_window.tooltips.enable_profile_specific_configs": "Se estiver marcado, o Stardrop irá salvar e restaurar arquivos config.json dos mods, ao alterar o perfil",
+  "ui.settings_window.tooltips.enable_mods_on_add": "Se estiver marcado, o Stardrop habilitará, automaticamente, mods novos ou atualizados",
   "ui.settings_window.tooltips.preferred_server": "Define o seu servidor preferencial usado para baixar mods do Nexus",
   "ui.settings_window.tooltips.save_changes": "Salvar alterações",
   "ui.settings_window.tooltips.cancel_changes": "Cancelar",
@@ -137,6 +139,7 @@
   "ui.warning.stardrop_downloading": "Baixando a última versão do Stardrop.",
   "ui.warning.SMAPI_downloading": "Baixando a última versão do SMAPI no GitHub.",
   "ui.warning.SMAPI_installing": "Atualizando o SMAPI para a última versão.",
+  "ui.warning.SMAPI_up_to_date": "O SMAPI está atualizado.\n\n{0} é a última versão.",
   "ui.warning.mod_installing": "Instalando {0}",
   "ui.warning.mod_updating": "Atualizando {0}",
 
