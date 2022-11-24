@@ -1,34 +1,31 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using Stardrop.Models;
-using Stardrop.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System;
-using Avalonia.Input;
-using Avalonia.Threading;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using SharpCompress.Common;
-using SharpCompress.Archives;
-using SharpCompress.Readers;
-using System.Text.Json;
-using Stardrop.Models.SMAPI;
-using Stardrop.Utilities.External;
-using Stardrop.Models.SMAPI.Web;
-using Stardrop.Models.Data;
-using Stardrop.Utilities;
-using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Reflection;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Semver;
-using System.Threading;
+using SharpCompress.Archives;
+using SharpCompress.Common;
+using Stardrop.Models;
+using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus.Web;
+using Stardrop.Models.SMAPI;
+using Stardrop.Models.SMAPI.Web;
+using Stardrop.Utilities;
+using Stardrop.Utilities.External;
 using Stardrop.Utilities.Internal;
-using System.Text.RegularExpressions;
+using Stardrop.ViewModels;
+using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 
 namespace Stardrop.Views
 {
@@ -242,15 +239,16 @@ namespace Stardrop.Views
 
             if (Pathing.defaultGamePath is null || File.Exists(Pathing.GetSmapiPath()) is false)
             {
-                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
-                await DisplaySettingsWindow();
+                await DisplayInvalidSmApiWarning();
             }
             else
             {
                 await HandleSMAPIUpdateCheck(false);
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NXMProtocol.Validate(Program.executablePath) is false && await Nexus.ValidateKey(Nexus.GetKey()))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                NXMProtocol.Validate(Program.executablePath) is false &&
+                await Nexus.ValidateKey(Nexus.GetKey()))
             {
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
                 if (await requestWindow.ShowDialog<bool>(this))
@@ -276,10 +274,9 @@ namespace Stardrop.Views
 
         private async void Drop(object sender, DragEventArgs e)
         {
-            if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
+            if (!string.IsNullOrWhiteSpace(Pathing.defaultModPath) || !Directory.Exists(Pathing.defaultModPath))
             {
-                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
-                await DisplaySettingsWindow();
+                await DisplayInvalidSmApiWarning();
                 return;
             }
 
@@ -941,20 +938,11 @@ namespace Stardrop.Views
         }
 
         // End of events
-        private void StartSMAPI()
+        private async Task StartSMAPI()
         {
             Program.helper.Log($"Starting SMAPI at path: {Program.settings.SMAPIFolderPath}", Helper.Status.Debug);
-            if (Program.settings.SMAPIFolderPath is null || !File.Exists(Pathing.GetSmapiPath()))
+            if (!await ValidateSmApiPath())
             {
-                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
-                if (Program.settings.SMAPIFolderPath is null)
-                {
-                    Program.helper.Log("No path given for StardewModdingAPI.", Helper.Status.Warning);
-                }
-                else
-                {
-                    Program.helper.Log($"Bad path given for StardewModdingAPI: {Pathing.GetSmapiPath()}", Helper.Status.Warning);
-                }
                 return;
             }
 
@@ -1003,8 +991,7 @@ namespace Stardrop.Views
         {
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
-                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
-                await DisplaySettingsWindow();
+                await DisplayInvalidSmApiWarning();
                 return;
             }
 
@@ -1152,6 +1139,12 @@ namespace Stardrop.Views
 
         private async Task HandleSMAPIUpdateCheck(bool manualCheck = false)
         {
+            // Handle failure gracefully with a warning.
+            if (!await ValidateSmApiPath())
+            {
+                return;
+            }
+
             // Check for SMAPI updates
             var currentSmapiVersion = SMAPI.GetVersion();
             if (currentSmapiVersion is not null && Program.settings.GameDetails is not null)
@@ -1267,7 +1260,7 @@ namespace Stardrop.Views
         {
             if (Pathing.defaultModPath is null)
             {
-                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
+                await DisplayInvalidSmApiWarning();
                 return;
             }
 
@@ -1389,7 +1382,7 @@ namespace Stardrop.Views
                 return;
             }
 
-            // Display information window 
+            // Display information window
             var detailsWindow = new NexusInfo(Program.settings.NexusDetails);
             detailsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (await detailsWindow.ShowDialog<bool>(this) is true)
@@ -1428,23 +1421,10 @@ namespace Stardrop.Views
                 await CreateWarningWindow(Program.translation.Get("ui.message.require_nexus_login"), Program.translation.Get("internal.ok"));
                 return false;
             }
-            else if (Program.settings.SMAPIFolderPath is null || !File.Exists(Pathing.GetSmapiPath()))
-            {
-                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
-                if (Program.settings.SMAPIFolderPath is null)
-                {
-                    Program.helper.Log("No path given for StardewModdingAPI.", Helper.Status.Warning);
-                }
-                else
-                {
-                    Program.helper.Log($"Bad path given for StardewModdingAPI: {Pathing.GetSmapiPath()}", Helper.Status.Warning);
-                }
-                await DisplaySettingsWindow();
 
-                if (Program.settings.SMAPIFolderPath is null || !File.Exists(Pathing.GetSmapiPath()))
-                {
-                    return false;
-                }
+            if (!await ValidateSmApiPath())
+            {
+                return false;
             }
 
             Program.helper.Log($"Processing NXM link: {nxmLink.Link}");
@@ -2197,6 +2177,31 @@ namespace Stardrop.Views
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private async Task<bool> ValidateSmApiPath()
+        {
+            if (Program.settings.SMAPIFolderPath is not null && File.Exists(Pathing.GetSmapiPath()))
+            {
+                return true;
+            }
+
+            await DisplayInvalidSmApiWarning();
+
+            Program.helper.Log(
+                Program.settings.SMAPIFolderPath is null
+                    ? "No path given for StardewModdingAPI."
+                    : $"Bad path given for StardewModdingAPI: {Pathing.GetSmapiPath()}", Helper.Status.Warning);
+
+            return false;
+        }
+
+        private async Task DisplayInvalidSmApiWarning()
+        {
+            await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"),
+                Program.translation.Get("internal.ok"));
+
+            await DisplaySettingsWindow();
         }
     }
 }
