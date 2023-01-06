@@ -239,7 +239,7 @@ namespace Stardrop.Views
 
             if (Pathing.defaultGamePath is null || File.Exists(Pathing.GetSmapiPath()) is false)
             {
-                await DisplayInvalidSmApiWarning();
+                await DisplayInvalidSMAPIWarning();
             }
             else
             {
@@ -274,7 +274,7 @@ namespace Stardrop.Views
         {
             if (String.IsNullOrWhiteSpace(Pathing.defaultModPath) is false || Directory.Exists(Pathing.defaultModPath) is false)
             {
-                await DisplayInvalidSmApiWarning();
+                await DisplayInvalidSMAPIWarning();
                 return;
             }
 
@@ -939,7 +939,7 @@ namespace Stardrop.Views
         private async Task StartSMAPI()
         {
             Program.helper.Log($"Starting SMAPI at path: {Program.settings.SMAPIFolderPath}", Helper.Status.Debug);
-            if (await ValidateSmApiPath() is false)
+            if (await ValidateSMAPIPath() is false)
             {
                 return;
             }
@@ -989,7 +989,7 @@ namespace Stardrop.Views
         {
             if (Pathing.defaultModPath is null || !Directory.Exists(Pathing.defaultModPath))
             {
-                await DisplayInvalidSmApiWarning();
+                await DisplayInvalidSMAPIWarning();
                 return;
             }
 
@@ -1138,7 +1138,7 @@ namespace Stardrop.Views
         private async Task HandleSMAPIUpdateCheck(bool manualCheck = false)
         {
             // Handle failure gracefully with a warning.
-            if (await ValidateSmApiPath() is false)
+            if (await ValidateSMAPIPath() is false)
             {
                 return;
             }
@@ -1258,7 +1258,7 @@ namespace Stardrop.Views
         {
             if (Pathing.defaultModPath is null)
             {
-                await DisplayInvalidSmApiWarning();
+                await DisplayInvalidSMAPIWarning();
                 return;
             }
 
@@ -1420,7 +1420,7 @@ namespace Stardrop.Views
                 return false;
             }
 
-            if (await ValidateSmApiPath() is false)
+            if (await ValidateSMAPIPath() is false)
             {
                 return false;
             }
@@ -2177,14 +2177,14 @@ namespace Stardrop.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private async Task<bool> ValidateSmApiPath()
+        private async Task<bool> ValidateSMAPIPath()
         {
             if (Program.settings.SMAPIFolderPath is not null && File.Exists(Pathing.GetSmapiPath()))
             {
                 return true;
             }
 
-            await DisplayInvalidSmApiWarning();
+            await DisplayInvalidSMAPIWarning();
 
             Program.helper.Log(
                 Program.settings.SMAPIFolderPath is null
@@ -2194,7 +2194,7 @@ namespace Stardrop.Views
             return false;
         }
 
-        private async Task DisplayInvalidSmApiWarning()
+        private async Task DisplayInvalidSMAPIWarning()
         {
             await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
 
