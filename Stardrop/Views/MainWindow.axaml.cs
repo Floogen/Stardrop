@@ -246,9 +246,7 @@ namespace Stardrop.Views
                 await HandleSMAPIUpdateCheck(false);
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                NXMProtocol.Validate(Program.executablePath) is false &&
-                await Nexus.ValidateKey(Nexus.GetKey()))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NXMProtocol.Validate(Program.executablePath) is false && await Nexus.ValidateKey(Nexus.GetKey()))
             {
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
                 if (await requestWindow.ShowDialog<bool>(this))
@@ -274,7 +272,7 @@ namespace Stardrop.Views
 
         private async void Drop(object sender, DragEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(Pathing.defaultModPath) || !Directory.Exists(Pathing.defaultModPath))
+            if (String.IsNullOrWhiteSpace(Pathing.defaultModPath) is false || Directory.Exists(Pathing.defaultModPath) is false)
             {
                 await DisplayInvalidSmApiWarning();
                 return;
@@ -941,7 +939,7 @@ namespace Stardrop.Views
         private async Task StartSMAPI()
         {
             Program.helper.Log($"Starting SMAPI at path: {Program.settings.SMAPIFolderPath}", Helper.Status.Debug);
-            if (!await ValidateSmApiPath())
+            if (await ValidateSmApiPath() is false)
             {
                 return;
             }
@@ -1140,7 +1138,7 @@ namespace Stardrop.Views
         private async Task HandleSMAPIUpdateCheck(bool manualCheck = false)
         {
             // Handle failure gracefully with a warning.
-            if (!await ValidateSmApiPath())
+            if (await ValidateSmApiPath() is false)
             {
                 return;
             }
@@ -1422,7 +1420,7 @@ namespace Stardrop.Views
                 return false;
             }
 
-            if (!await ValidateSmApiPath())
+            if (await ValidateSmApiPath() is false)
             {
                 return false;
             }
@@ -2198,8 +2196,7 @@ namespace Stardrop.Views
 
         private async Task DisplayInvalidSmApiWarning()
         {
-            await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"),
-                Program.translation.Get("internal.ok"));
+            await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_locate_smapi"), Program.translation.Get("internal.ok"));
 
             await DisplaySettingsWindow();
         }
