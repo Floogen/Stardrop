@@ -272,7 +272,7 @@ namespace Stardrop.Views
 
         private async void Drop(object sender, DragEventArgs e)
         {
-            if (String.IsNullOrWhiteSpace(Pathing.defaultModPath) is false || Directory.Exists(Pathing.defaultModPath) is false)
+            if (String.IsNullOrWhiteSpace(Pathing.defaultModPath) || Directory.Exists(Pathing.defaultModPath) is false)
             {
                 await DisplayInvalidSMAPIWarning();
                 return;
