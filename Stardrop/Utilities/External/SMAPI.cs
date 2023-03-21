@@ -25,9 +25,13 @@ namespace Stardrop.Utilities.External
         {
             var arguments = String.Empty;
             var smapiInfo = new FileInfo(Pathing.GetSmapiPath());
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) is true)
             {
                 arguments = $"-c \"SMAPI_MODS_PATH='{Pathing.GetSelectedModsFolderPath()}' '{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewValley")}'\"";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) is true)
+            {
+                arguments = $"-c \"'{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewModdingAPI")}' --mods-path '{Pathing.GetSelectedModsFolderPath()}'\"";
             }
 
             Program.helper.Log($"Starting SMAPI with the following arguments: {arguments}");
