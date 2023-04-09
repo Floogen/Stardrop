@@ -122,7 +122,7 @@ namespace Stardrop.Utilities
                 }
                 catch (Exception ex)
                 {
-                    Program.helper.Log($"Unable to load theme on {Path.GetFileNameWithoutExtension(fileFullName)}: {ex}", Helper.Status.Warning);
+                    Program.helper.Log($"Unable to load translation at {Path.GetFileNameWithoutExtension(fileFullName)}: {ex}", Helper.Status.Warning);
                 }
             }
         }
