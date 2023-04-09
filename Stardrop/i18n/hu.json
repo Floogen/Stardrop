@@ -143,7 +143,7 @@
   "ui.warning.mod_installing": "A {0} telepítése.",
   "ui.warning.mod_updating": "A {0} frissítése.",
 
-  "ui.warning.unable_to_locate_smapi": "Nem található a StardewModdingAPI.exe fájl.\n\nKérjük, állítsd be a fájl helyes elérési útvonalát a\Nézet > Beállítások menüpont alatt.",
+  "ui.warning.unable_to_locate_smapi": "Nem található a StardewModdingAPI.exe fájl.\n\nKérjük, állítsd be a fájl helyes elérési útvonalát a Nézet > Beállítások menüpont alatt.",
   "ui.warning.mod_config_saved_but_not_enabled": "A mod config beállítások elmentve a(z) {0} profilba, azonban a profilon a specifikus mod konfigurációk nincsenek engedélyezve.\n\nVálaszd a Nézet > Beállítások menüpontot, és ellenőrizd a \"Profil specifikus mod konfigurációk engedélyezése\" menüpontot hogy a Stardrop automatikusan mentse és alkalmazza a mod konfigurációs módosításokat.",
   "ui.warning.unable_to_determine_profile": "Nem sikerült meghatározni a kiválasztott profilt.\n\nA SMAPI nem fog elindulni.",
   "ui.warning.stardrop_up_to_date": "A Stardrop naprakész.\n\nA {0} a legfrissebb verzió.",
