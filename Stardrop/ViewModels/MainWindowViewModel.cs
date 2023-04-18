@@ -7,6 +7,7 @@ using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
 using Stardrop.Utilities;
 using Stardrop.Utilities.External;
+using Stardrop.Utilities.Internal;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -206,7 +207,7 @@ namespace Stardrop.ViewModels
 
                 try
                 {
-                    var manifest = JsonSerializer.Deserialize<Manifest>(File.ReadAllText(fileInfo.FullName), new JsonSerializerOptions { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
+                    var manifest = ManifestParser.GetData(File.ReadAllText(fileInfo.FullName));
                     if (manifest is null || String.IsNullOrEmpty(manifest.UniqueID))
                     {
                         Program.helper.Log($"The manifest.json was empty or not deserializable from {fileInfo.DirectoryName}", Helper.Status.Alert);

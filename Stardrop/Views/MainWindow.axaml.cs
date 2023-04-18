@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus.Web;
 using Stardrop.Models.SMAPI;
+using Stardrop.Models.SMAPI.Converters;
 using Stardrop.Models.SMAPI.Web;
 using Stardrop.Utilities;
 using Stardrop.Utilities.External;
@@ -1870,10 +1872,7 @@ namespace Stardrop.Views
                         foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key).Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
                         {
                             Program.helper.Log(manifest.Key);
-                            using (Stream stream = manifest.OpenEntryStream())
-                            {
-                                pathToManifests[manifest.Key] = await JsonSerializer.DeserializeAsync<Manifest>(stream, new JsonSerializerOptions() { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
-                            }
+                            pathToManifests[manifest.Key] = await ManifestParser.GetDataAsync(manifest);
                         }
 
                         bool alwaysAskToDelete = true;
