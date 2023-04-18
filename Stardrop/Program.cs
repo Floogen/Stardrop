@@ -91,7 +91,15 @@ namespace Stardrop
                 // Verify the settings folder path is created
                 if (File.Exists(Pathing.GetSettingsPath()))
                 {
-                    settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(Pathing.GetSettingsPath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                    try
+                    {
+                        settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(Pathing.GetSettingsPath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                    }
+                    catch (JsonException ex)
+                    {
+                        settings = new Settings();
+                        helper.Log($"Reset the settings.json file as it was unreadable: {ex}", Helper.Status.Alert);
+                    }
                 }
 
                 // Set the default paths
