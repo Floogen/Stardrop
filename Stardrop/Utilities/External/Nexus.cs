@@ -231,7 +231,10 @@ namespace Stardrop.Utilities.External
                         {
                             if (String.IsNullOrEmpty(modFlag) || ((String.IsNullOrEmpty(file.Name) is false && file.Name.Contains(modFlag, StringComparison.OrdinalIgnoreCase)) || (String.IsNullOrEmpty(file.Description) is false && file.Description.Contains(modFlag, StringComparison.OrdinalIgnoreCase))))
                             {
-                                selectedFile = file;
+                                if (String.IsNullOrEmpty(file.Category) is false && file.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    selectedFile = file;
+                                }
                             }
                         }
 
