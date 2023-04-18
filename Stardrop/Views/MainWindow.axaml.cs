@@ -1875,6 +1875,13 @@ namespace Stardrop.Views
                             pathToManifests[manifest.Key] = await ManifestParser.GetDataAsync(manifest);
                         }
 
+                        // Warn and skip the install logic if the given archive has no manifest.json
+                        if (pathToManifests.Count == 0)
+                        {
+                            await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName), Program.translation.Get("internal.ok"));
+                            continue;
+                        }
+
                         bool alwaysAskToDelete = true;
                         foreach (var manifestPath in pathToManifests.Keys)
                         {
