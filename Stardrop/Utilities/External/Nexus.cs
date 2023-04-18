@@ -204,6 +204,8 @@ namespace Stardrop.Utilities.External
                 return null;
             }
 
+            Program.helper.Log($"Requesting version {version} of mod {modId}{(String.IsNullOrEmpty(modFlag) is false ? $" with flag {modFlag}" : String.Empty)}");
+
             // Create a throwaway client
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", apiKey);
@@ -229,18 +231,19 @@ namespace Stardrop.Utilities.External
                         ModFile? selectedFile = null;
                         foreach (var file in modFiles.Files.Where(x => String.IsNullOrEmpty(x.Version) is false && SemVersion.TryParse(x.Version.Replace("v", String.Empty), SemVersionStyles.Any, out var modVersion) && modVersion == targetVersion))
                         {
-                            if (String.IsNullOrEmpty(modFlag) || ((String.IsNullOrEmpty(file.Name) is false && file.Name.Contains(modFlag, StringComparison.OrdinalIgnoreCase)) || (String.IsNullOrEmpty(file.Description) is false && file.Description.Contains(modFlag, StringComparison.OrdinalIgnoreCase))))
+                            if (String.IsNullOrEmpty(modFlag) is false && ((String.IsNullOrEmpty(file.Name) is false && file.Name.Contains(modFlag, StringComparison.OrdinalIgnoreCase)) || (String.IsNullOrEmpty(file.Description) is false && file.Description.Contains(modFlag, StringComparison.OrdinalIgnoreCase))))
                             {
-                                if (String.IsNullOrEmpty(file.Category) is false && file.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    selectedFile = file;
-                                }
+                                selectedFile = file;
+                            }
+                            else if (String.IsNullOrEmpty(modFlag) is true && String.IsNullOrEmpty(file.Category) is false && file.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase))
+                            {
+                                selectedFile = file;
                             }
                         }
 
                         if (selectedFile is null)
                         {
-                            Program.helper.Log($"Unable to get a matching file for the mod {modId} with version {version} via Nexus Mods: \n{String.Join("\n", modFiles.Files.Select(m => $"{m.Name} | {m.Version}"))}");
+                            Program.helper.Log($"Unable to get a matching file for the mod {modId} with version {version}{(String.IsNullOrEmpty(modFlag) is false ? $" and with the flag {modFlag}" : String.Empty)} via Nexus Mods: \n{String.Join("\n", modFiles.Files.Select(m => $"{m.Name} | {m.Version}"))}");
                         }
 
                         UpdateRequestCounts(response.Headers);
