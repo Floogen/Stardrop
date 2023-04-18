@@ -1921,7 +1921,7 @@ namespace Stardrop.Views
                                     isUpdate = true;
                                     installPath = mod.ModFileInfo.Directory.FullName;
                                 }
-                                else if (String.IsNullOrEmpty(manifestPath.Replace("manifest.json", String.Empty)))
+                                else if (String.IsNullOrEmpty(manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase)))
                                 {
                                     installPath = Path.Combine(installPath, manifest.UniqueID);
                                 }
@@ -1936,7 +1936,7 @@ namespace Stardrop.Views
                                 SetLockState(true, String.Format(isUpdate ? Program.translation.Get("ui.warning.mod_updating") : Program.translation.Get("ui.warning.mod_installing"), manifest.Name));
 
                                 Program.helper.Log($"Install path for mod {manifest.UniqueID}:{installPath}");
-                                var manifestFolderPath = manifestPath.Replace("manifest.json", String.Empty);
+                                var manifestFolderPath = manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase);
                                 foreach (var entry in archive.Entries.Where(e => e.Key.StartsWith(manifestFolderPath)))
                                 {
                                     if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) || entry.Key.Contains(".DS_Store", StringComparison.OrdinalIgnoreCase))
