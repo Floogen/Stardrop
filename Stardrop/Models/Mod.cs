@@ -1,6 +1,4 @@
-﻿using Avalonia.Media;
-using Semver;
-using Stardrop.Models.Data;
+﻿using Semver;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
 using System;
@@ -10,9 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 
 namespace Stardrop.Models

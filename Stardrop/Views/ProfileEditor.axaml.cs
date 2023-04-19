@@ -1,13 +1,9 @@
 using Avalonia;
-using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models;
 using Stardrop.ViewModels;
 using System;
-using System.IO;
 using System.Linq;
 
 namespace Stardrop.Views

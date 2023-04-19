@@ -5,13 +5,11 @@ using Avalonia.Styling;
 using Stardrop.Models.Nexus.Web;
 using Stardrop.Utilities;
 using Stardrop.Utilities.External;
-using Stardrop.ViewModels;
 using Stardrop.Views;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace Stardrop
 {

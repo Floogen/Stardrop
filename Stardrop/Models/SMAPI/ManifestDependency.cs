@@ -1,12 +1,6 @@
-﻿using Semver;
-using Stardrop.Models.SMAPI.Converters;
-using System;
-using System.Collections.Generic;
+﻿using Stardrop.Models.SMAPI.Converters;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Stardrop.Models.SMAPI
 {

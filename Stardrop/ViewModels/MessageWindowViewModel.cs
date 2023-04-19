@@ -1,13 +1,4 @@
 using ReactiveUI;
-using Stardrop.Models;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Reactive;
-using System.Text;
-using System.Text.Json;
 
 namespace Stardrop.ViewModels
 {

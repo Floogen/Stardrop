@@ -1,14 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -22,12 +11,20 @@ using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus.Web;
 using Stardrop.Models.SMAPI;
-using Stardrop.Models.SMAPI.Converters;
 using Stardrop.Models.SMAPI.Web;
 using Stardrop.Utilities;
 using Stardrop.Utilities.External;
 using Stardrop.Utilities.Internal;
 using Stardrop.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 
 namespace Stardrop.Views

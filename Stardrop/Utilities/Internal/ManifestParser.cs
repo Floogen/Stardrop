@@ -1,14 +1,7 @@
-﻿using Microsoft.Win32;
-using SharpCompress.Archives;
+﻿using SharpCompress.Archives;
 using Stardrop.Models.SMAPI;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 

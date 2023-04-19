@@ -1,7 +1,7 @@
-﻿using System;
-using Avalonia.Data;
+﻿using Avalonia.Data;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using System;
 
 
 namespace Stardrop.Utilities.Extension

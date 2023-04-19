@@ -4,8 +4,6 @@ using Avalonia.Markup.Xaml;
 using Stardrop.Models.Data.Enums;
 using Stardrop.ViewModels;
 using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace Stardrop.Views
 {

@@ -3,8 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Stardrop.ViewModels;
 using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace Stardrop.Views
 {

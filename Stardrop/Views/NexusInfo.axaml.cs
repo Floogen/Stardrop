@@ -1,11 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models.Data;
 using Stardrop.Models.Nexus;
 using Stardrop.Utilities;
-using Stardrop.ViewModels;
 using System;
 using System.IO;
 using System.Text.Json;
