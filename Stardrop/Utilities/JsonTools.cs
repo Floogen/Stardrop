@@ -26,7 +26,7 @@ namespace Stardrop.Utilities
         }
 
         // https://stackoverflow.com/questions/58694837/system-text-json-merge-two-objects
-        public static string Merge(string originalJson, string newContent)
+        public static string Merge(string originalJson, string newContent, bool includeMissingProperties)
         {
             var outputBuffer = new ArrayBufferWriter<byte>();
 
@@ -53,14 +53,14 @@ namespace Stardrop.Utilities
                 }
                 else
                 {
-                    MergeObjects(jsonWriter, root1, root2);
+                    MergeObjects(jsonWriter, root1, root2, includeMissingProperties);
                 }
             }
 
             return Encoding.UTF8.GetString(outputBuffer.WrittenSpan);
         }
 
-        private static void MergeObjects(Utf8JsonWriter jsonWriter, JsonElement root1, JsonElement root2)
+        private static void MergeObjects(Utf8JsonWriter jsonWriter, JsonElement root1, JsonElement root2, bool includeMissingProperties)
         {
             Debug.Assert(root1.ValueKind == JsonValueKind.Object);
             Debug.Assert(root2.ValueKind == JsonValueKind.Object);
@@ -87,7 +87,7 @@ namespace Stardrop.Utilities
 
                     if (newValueKind == JsonValueKind.Object && originalValueKind == JsonValueKind.Object)
                     {
-                        MergeObjects(jsonWriter, originalValue, newValue); // Recursive call
+                        MergeObjects(jsonWriter, originalValue, newValue, includeMissingProperties); // Recursive call
                     }
                     else if (newValueKind == JsonValueKind.Array && originalValueKind == JsonValueKind.Array)
                     {
@@ -104,12 +104,15 @@ namespace Stardrop.Utilities
                 }
             }
 
-            // Write all the properties of the second document that are unique to it.
-            foreach (JsonProperty property in root2.EnumerateObject())
+            // Write all the properties of the second document that are unique to it
+            if (includeMissingProperties is true)
             {
-                if (!root1.TryGetProperty(property.Name, out _))
+                foreach (JsonProperty property in root2.EnumerateObject())
                 {
-                    property.WriteTo(jsonWriter);
+                    if (!root1.TryGetProperty(property.Name, out _))
+                    {
+                        property.WriteTo(jsonWriter);
+                    }
                 }
             }
 
