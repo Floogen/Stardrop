@@ -420,7 +420,7 @@ namespace Stardrop.ViewModels
                                 string mergedJson = JsonTools.Merge(currentJson, archivedJson, false);
 
                                 // Apply the changes to the config file
-                                Program.helper.Log($"The mod {modId} does not have its current configuration preserved\nCurrent:\n{currentJson}\nArchived:\n{archivedJson}", Helper.Status.Warning);
+                                //Program.helper.Log($"The mod {modId} does not have its current configuration preserved\nCurrent:\n{currentJson}\nArchived:\n{archivedJson}", Helper.Status.Warning);
                                 pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mergedJson });
                             }
                         }

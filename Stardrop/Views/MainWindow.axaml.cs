@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -584,6 +585,11 @@ namespace Stardrop.Views
             {
                 _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
                 var pendingConfigUpdates = _viewModel.GetPendingConfigUpdates(oldProfile, excludeMissingConfigs: true);
+                foreach (var pendingConfigUpdate in pendingConfigUpdates)
+                {
+                    Program.helper.Log($"The mod {pendingConfigUpdate.UniqueId} for profile \"{oldProfile.Name}\" does not have its current configuration preserved ->\nModified configuration:\n{pendingConfigUpdate.Data}", Helper.Status.Warning);
+                }
+
                 if (pendingConfigUpdates.Count > 0 && await new MessageWindow(String.Format(Program.translation.Get("ui.message.unsaved_config_changes"), oldProfile.Name)).ShowDialog<bool>(this))
                 {
                     _viewModel.ReadModConfigs(oldProfile, pendingConfigUpdates);
