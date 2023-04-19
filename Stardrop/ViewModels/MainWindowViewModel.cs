@@ -382,7 +382,7 @@ namespace Stardrop.ViewModels
             }
         }
 
-        internal List<Config> GetPendingConfigUpdates(Profile profile, bool inverseMerge = false, bool excludeMissingConfigs = false)
+        internal List<Config> GetPendingConfigUpdates(Profile profile, bool excludeMissingConfigs = false)
         {
             // Merge any existing preserved configs
             List<Config> pendingConfigUpdates = new List<Config>();
@@ -412,15 +412,15 @@ namespace Stardrop.ViewModels
                         else
                         {
                             // Merge the config
-                            var originalJson = mod.Config.Data;
+                            var currentJson = mod.Config.Data;
                             var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]);
                             if (JsonDocumentEqualityComparer.Instance.Equals(JsonDocument.Parse(mod.Config.Data), profile.PreservedModConfigs[modId]) is false)
                             {
                                 // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
-                                string mergedJson = inverseMerge ? JsonTools.Merge(archivedJson, originalJson) : JsonTools.Merge(originalJson, archivedJson);
-                                mod.Config.Data = mergedJson;
+                                string mergedJson = JsonTools.Merge(currentJson, archivedJson, false);
 
                                 // Apply the changes to the config file
+                                Program.helper.Log($"The mod {modId} does not have its current configuration preserved\nCurrent:\n{currentJson}\nArchived:\n{archivedJson}", Helper.Status.Warning);
                                 pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mergedJson });
                             }
                         }
@@ -455,7 +455,7 @@ namespace Stardrop.ViewModels
 
         internal void ReadModConfigs(Profile profile)
         {
-            ReadModConfigs(profile, GetPendingConfigUpdates(profile, inverseMerge: true));
+            ReadModConfigs(profile, GetPendingConfigUpdates(profile));
         }
 
         internal void ReadModConfigs(Profile profile, List<Config> pendingConfigUpdates)

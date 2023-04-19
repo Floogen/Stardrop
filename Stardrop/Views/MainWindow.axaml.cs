@@ -583,7 +583,7 @@ namespace Stardrop.Views
             if (Program.settings.EnableProfileSpecificModConfigs && e.RemovedItems.Count > 0 && e.RemovedItems[0] is Profile oldProfile && oldProfile is not null)
             {
                 _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
-                var pendingConfigUpdates = _viewModel.GetPendingConfigUpdates(oldProfile, inverseMerge: true, excludeMissingConfigs: true);
+                var pendingConfigUpdates = _viewModel.GetPendingConfigUpdates(oldProfile, excludeMissingConfigs: true);
                 if (pendingConfigUpdates.Count > 0 && await new MessageWindow(String.Format(Program.translation.Get("ui.message.unsaved_config_changes"), oldProfile.Name)).ShowDialog<bool>(this))
                 {
                     _viewModel.ReadModConfigs(oldProfile, pendingConfigUpdates);
@@ -763,7 +763,7 @@ namespace Stardrop.Views
             if (profile is not null)
             {
                 _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
-                _viewModel.ReadModConfigs(profile, _viewModel.GetPendingConfigUpdates(profile, inverseMerge: true));
+                _viewModel.ReadModConfigs(profile, _viewModel.GetPendingConfigUpdates(profile));
                 UpdateProfile(profile);
 
                 if (!Program.settings.EnableProfileSpecificModConfigs)
@@ -966,7 +966,7 @@ namespace Stardrop.Views
             if (Program.settings.EnableProfileSpecificModConfigs)
             {
                 _viewModel.DiscoverConfigs(enabledModsPath, useArchive: true);
-                _viewModel.ReadModConfigs(profile, _viewModel.GetPendingConfigUpdates(profile, inverseMerge: true));
+                _viewModel.ReadModConfigs(profile, _viewModel.GetPendingConfigUpdates(profile));
                 UpdateProfile(profile);
 
                 // Set the config files
