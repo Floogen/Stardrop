@@ -597,14 +597,10 @@ namespace Stardrop.Views
             // Enable the mods for the selected profile
             _viewModel.EnableModsByProfile(profile);
 
-            // Set the configs
-            if (Program.settings.EnableProfileSpecificModConfigs && _viewModel.WriteModConfigs(profile))
-            {
-                UpdateProfile(profile);
-            }
-
             // Update the EnabledModCount
             _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
+
+            Program.settings.ShouldWriteToModConfigs = true;
         }
 
         private async void EndorsementButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -773,6 +769,8 @@ namespace Stardrop.Views
                 {
                     CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.mod_config_saved_but_not_enabled"), profile.Name), Program.translation.Get("internal.ok"));
                 }
+
+                Program.settings.ShouldWriteToModConfigs = true;
             }
         }
 
@@ -966,14 +964,15 @@ namespace Stardrop.Views
             UpdateEnabledModsFolder(profile, enabledModsPath);
 
             // Update the profile's configurations
-            if (Program.settings.EnableProfileSpecificModConfigs)
+            if (Program.settings.EnableProfileSpecificModConfigs && Program.settings.ShouldWriteToModConfigs)
             {
-                _viewModel.DiscoverConfigs(enabledModsPath, useArchive: true);
-                _viewModel.ReadModConfigs(profile, _viewModel.GetPendingConfigUpdates(profile));
-                UpdateProfile(profile);
-
                 // Set the config files
                 _viewModel.WriteModConfigs(profile);
+
+                Program.settings.ShouldWriteToModConfigs = false;
+
+                // Write the settings cache
+                File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, new JsonSerializerOptions() { WriteIndented = true }));
             }
 
             using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
