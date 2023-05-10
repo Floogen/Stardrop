@@ -379,7 +379,7 @@ namespace Stardrop.ViewModels
             }
         }
 
-        internal List<Config> GetPendingConfigUpdates(Profile profile, bool excludeMissingConfigs = false)
+        internal List<Config> GetPendingConfigUpdates(Profile profile, bool excludeMissingConfigs = false, bool useArchiveAsBase = false)
         {
             // Merge any existing preserved configs
             List<Config> pendingConfigUpdates = new List<Config>();
@@ -414,7 +414,15 @@ namespace Stardrop.ViewModels
                             if (JsonDocumentEqualityComparer.Instance.Equals(JsonDocument.Parse(mod.Config.Data), profile.PreservedModConfigs[modId]) is false)
                             {
                                 // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
-                                string mergedJson = JsonTools.Merge(currentJson, archivedJson, false);
+                                string mergedJson = String.Empty;
+                                if (useArchiveAsBase is false)
+                                {
+                                    mergedJson = JsonTools.Merge(archivedJson, currentJson, false); ;
+                                }
+                                else
+                                {
+                                    mergedJson = JsonTools.Merge(currentJson, archivedJson, false);
+                                }
 
                                 // Apply the changes to the config file
                                 //Program.helper.Log($"The mod {modId} does not have its current configuration preserved\nCurrent:\n{currentJson}\nArchived:\n{archivedJson}", Helper.Status.Warning);
@@ -472,7 +480,7 @@ namespace Stardrop.ViewModels
 
         internal bool WriteModConfigs(Profile profile)
         {
-            return WriteModConfigs(profile, GetPendingConfigUpdates(profile));
+            return WriteModConfigs(profile, GetPendingConfigUpdates(profile, useArchiveAsBase: true));
         }
 
         internal bool WriteModConfigs(Profile profile, List<Config> pendingConfigUpdates)
