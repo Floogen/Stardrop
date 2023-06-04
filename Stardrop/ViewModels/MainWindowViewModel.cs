@@ -78,11 +78,15 @@ namespace Stardrop.ViewModels
             Version = $"v{version}";
             SmapiVersion = Program.settings.GameDetails?.SmapiVersion;
 
-            // Create data view
+            // Create data view.
             var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
+            var dataGridGroupDescriptionPath = new DataGridPathGroupDescription(nameof(Mod.Path));
+            var dataGridGroupDescriptionAuthor = new DataGridPathGroupDescription(nameof(Mod.Author));
 
-            DataView = new DataGridCollectionView(Mods);
+            DataView = new DataGridCollectionView(Mods, isDataSorted: false, isDataInGroupOrder: false);
             DataView.SortDescriptions.Add(dataGridSortDescription);
+            // DataView.GroupDescriptions.Add(dataGridGroupDescriptionAuthor);
+            DataView.GroupDescriptions.Add(dataGridGroupDescriptionPath);
             UpdateFilter();
 
             // Do OS specific setup
@@ -556,6 +560,7 @@ namespace Stardrop.ViewModels
         private bool ModFilter(object item)
         {
             var mod = item as Mod;
+            if (mod == null) { return false; }
 
             if (mod.IsHidden)
             {
@@ -577,7 +582,11 @@ namespace Stardrop.ViewModels
             }
             if (!String.IsNullOrEmpty(_filterText) && !String.IsNullOrEmpty(_columnFilter))
             {
-                if (_columnFilter == Program.translation.Get("ui.main_window.combobox.mod_name") && !mod.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                if (_columnFilter == Program.translation.Get("ui.main_window.combobox.mod_name")
+                    // Try filtering on mod path name (group name).
+                    && !mod.Path.Contains(_filterText, StringComparison.OrdinalIgnoreCase)
+                    // Try filtering on Mod name.
+                    && !mod.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -592,6 +601,6 @@ namespace Stardrop.ViewModels
             }
 
             return true;
-        }
+        } // ModFilter().
     }
 }

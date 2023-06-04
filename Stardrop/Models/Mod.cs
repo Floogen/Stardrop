@@ -23,6 +23,8 @@ namespace Stardrop.Models
         public string ParsedVersion { get { return Version.ToString(); } }
         public string SuggestedVersion { get; set; }
         public string Name { get; set; }
+        // Whole mod path inside installed mods path for grouping mod components in the same mod.
+        public string Path { get; set; }
         public string Description { get; set; }
         public string GetDescriptionToolTip
         {
@@ -105,19 +107,62 @@ namespace Stardrop.Models
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
         public Mod(Manifest manifest, FileInfo modFileInfo, string uniqueId, string version, string? name = null, string? description = null, string? author = null)
         {
             Manifest = manifest;
             ModFileInfo = modFileInfo;
-
             UniqueId = uniqueId;
             Version = SemVersion.TryParse(version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : SemVersion.ParsedFrom(0, 0, 0, "bad-version");
             Name = String.IsNullOrEmpty(name) ? uniqueId : name;
+            Path = ComputeModPath(modFileInfo);
             Description = String.IsNullOrEmpty(description) ? String.Empty : description;
             Author = String.IsNullOrEmpty(author) ? Program.translation.Get("internal.unknown") : author;
-
             Requirements = new List<ManifestDependency>();
+        }
+
+        /// <summary>
+        /// Compute relative path to a mod from the installed mods path or default Stardew Valley mods path.
+        /// </summary>
+        private string ComputeModPath(FileInfo modFileInfo)
+        {
+            // Set whole mod path for grouping with other mods from the same mod.
+            var commonNameInstalledFolder = Program.settings.ModInstallPath;
+            var commonNameModsFolder = Program.settings.ModFolderPath;
+            string modNamePath;
+            if (System.IO.Path.EndsInDirectorySeparator(commonNameInstalledFolder))
+            {
+                commonNameInstalledFolder += System.IO.Path.DirectorySeparatorChar;
+            }
+
+            if (modFileInfo.DirectoryName.Contains(commonNameInstalledFolder))
+            {
+                // Mod inside Stardrop installed folder.
+                modNamePath = modFileInfo.DirectoryName.Substring(commonNameInstalledFolder.Length + 1);
+            }
+            else if (modFileInfo.DirectoryName.Contains(commonNameModsFolder))
+            {
+                // Mod inside default Stardew Valley mods folder.
+                modNamePath = modFileInfo.DirectoryName.Substring(commonNameModsFolder.Length + 1);
+            }
+            else
+            {
+                throw new Exception($"Invalid mod folder path: {modFileInfo.DirectoryName}");
+            }
+
+            // TODO: Add program config option to switch between both approaches? And to disable grouping entirely?
+            // For top-level folder grouping.
+            // Producing group "automation" as a single group for both "automation/Automate" and
+            //  "automation/Producer Framework Mod".
+            // var foundIndex = modNamePath.IndexOf(System.IO.Path.DirectorySeparatorChar);
+            // For subfolders-specific grouping.
+            // Producing groups "automation/Automate" (with mods `[CP] Automate/manifest.json`, `[JA] Automate/manifest.json`)
+            //  and "automation/Producer Framework Mod" (with mods `[CP] PFM` and `[JA] PFM`) folders as separate groups.
+            var foundIndex = modNamePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar);
+
+            var nameLength = foundIndex == -1 ? modNamePath.Length : foundIndex;
+            var finalPath = modNamePath.Substring(0, nameLength);
+            return String.IsNullOrEmpty(finalPath) ? Program.translation.Get("internal.unknown") : finalPath;
         }
 
         public bool IsModOutdated(string version)
