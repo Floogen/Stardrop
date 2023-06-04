@@ -1,6 +1,7 @@
 {
   // Main Window - Menu Items
   "ui.main_window.menu_items.add_mod": "Add Mod",
+  "ui.main_window.menu_items.add_mods_from_folder": "Add Mods From Folder",
   "ui.main_window.menu_items.start_smapi": "Start SMAPI",
   "ui.main_window.menu_items.exit": "Exit",
   "ui.main_window.menu_items.settings": "Settings",
@@ -8,6 +9,7 @@
   "ui.main_window.menu_items.smapi_log_file": "SMAPI Log File",
   "ui.main_window.menu_items.refresh_mod_list": "Refresh Mod List",
   "ui.main_window.menu_items.check_for_mod_updates": "Check for Mod Updates",
+  "ui.main_window.menu_items.update_profile": "Update Profile",
   "ui.main_window.menu_items.enable_all_mods": "Enable All Mods",
   "ui.main_window.menu_items.disable_all_mods": "Disable All Mods",
   "ui.main_window.menu_items.check_for_stardrop_update": "Check for Stardrop Update",
@@ -81,6 +83,7 @@
   "ui.settings_window.labels.smapi_path": "SMAPI Path",
   "ui.settings_window.labels.mod_path": "Mod Folder Path",
   "ui.settings_window.labels.mod_install": "Stardrop Installed Mods Path",
+  "ui.settings_window.labels.folder_for_mods_to_add_path": "Mods to Add Folder Path",
   "ui.settings_window.labels.themes": "Themes",
   "ui.settings_window.labels.languages": "Languages",
   "ui.settings_window.labels.miscellaneous": "Miscellaneous",
@@ -98,6 +101,7 @@
   "ui.settings_window.tooltips.smapi": "The file path of StardewModdingAPI",
   "ui.settings_window.tooltips.mod_folder_path": "The folder path of the mod folder",
   "ui.settings_window.tooltips.mod_install_path": "The folder path which Stardrop will place newly installed mods. Must be under the folder given in \"Mod Folder Path\"",
+  "ui.settings_window.tooltips.folder_for_mods_to_add_path": "The folder path which Stardrop will extract mod archives from.",
   "ui.settings_window.tooltips.theme": "The current theme of Stardrop",
   "ui.settings_window.tooltips.language": "The current language of Stardrop",
   "ui.settings_window.tooltips.ignore_hidden_folders": "If checked, Stardrop will ignore any mods which have a parent folder that start with \".\"",

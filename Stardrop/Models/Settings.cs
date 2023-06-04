@@ -13,6 +13,7 @@ namespace Stardrop.Models
         public string SMAPIFolderPath { get; set; }
         public string ModFolderPath { get; set; }
         public string ModInstallPath { get; set; }
+        public string FolderForModsToAddPath { get; set; }
         public bool IgnoreHiddenFolders { get; set; } = true;
         public bool EnableProfileSpecificModConfigs { get; set; }
         public bool ShouldWriteToModConfigs { get; set; }
