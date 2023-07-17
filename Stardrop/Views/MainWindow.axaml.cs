@@ -1957,7 +1957,7 @@ namespace Stardrop.Views
                                     {
                                         var installDirectory = new DirectoryInfo(installPath);
                                         var manifestDirectory = new DirectoryInfo(manifestFolderPath);
-                                        if (installDirectory.Exists && (installDirectory.Name.Equals(manifestDirectory.Name) || installDirectory.Name.Equals(manifest.UniqueID)))
+                                        if (installDirectory.Exists && (installDirectory.Name.Equals(manifestDirectory.Name, StringComparison.OrdinalIgnoreCase) || installDirectory.Name.Equals(manifest.UniqueID)))
                                         {
                                             outputPath = Path.Combine(installPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
 
