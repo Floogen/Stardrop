@@ -454,6 +454,26 @@ namespace Stardrop.Views
             _viewModel.OpenBrowser(selectedMod.ModPageUri);
         }
 
+        private void ModGridMenuRow_ShowWholeModGroup(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var selectedMod = (sender as MenuItem)?.DataContext as Mod;
+            if (selectedMod is null) { return; }
+
+            this.FindControl<ComboBox>("searchFilterColumnBox").SelectedIndex = 1;
+            this.FindControl<TextBox>("searchBox").Text = selectedMod.Path;
+            _viewModel.FilterText = selectedMod.Path;
+        }
+
+        private void ModGridMenuRow_ShowAuthorsMods(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var selectedMod = (sender as MenuItem)?.DataContext as Mod;
+            if (selectedMod is null) { return; }
+
+            this.FindControl<ComboBox>("searchFilterColumnBox").SelectedIndex = 2;
+            this.FindControl<TextBox>("searchBox").Text = selectedMod.Author;
+            _viewModel.FilterText = selectedMod.Author;
+        }
+
         private async void ModGridMenuRow_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var modGrid = this.FindControl<DataGrid>("modGrid");
