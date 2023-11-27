@@ -216,6 +216,8 @@
   "internal.unknown": "Unknown",
   "internal.enable": "Enable",
   "internal.disable": "Disable",
+  "internal.enable_whole_mod": "Enable Whole Mod Group",
+  "internal.disable_whole_mod": "Disable Whole Mod Group",
   "internal.yes": "Yes",
   "internal.yes_all": "Yes to All",
   "internal.no": "No",
