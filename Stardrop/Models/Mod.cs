@@ -112,7 +112,7 @@ namespace Stardrop.Models
             ModFileInfo = modFileInfo;
 
             UniqueId = uniqueId;
-            Version = SemVersion.TryParse(version, out var parsedVersion) ? parsedVersion : new SemVersion(0, 0, 0, "bad-version");
+            Version = SemVersion.TryParse(version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : SemVersion.ParsedFrom(0, 0, 0, "bad-version");
             Name = String.IsNullOrEmpty(name) ? uniqueId : name;
             Description = String.IsNullOrEmpty(description) ? String.Empty : description;
             Author = String.IsNullOrEmpty(author) ? Program.translation.Get("internal.unknown") : author;
@@ -127,7 +127,7 @@ namespace Stardrop.Models
                 return false;
             }
 
-            return SemVersion.Parse(version) > Version;
+            return SemVersion.Parse(version, SemVersionStyles.Any).CompareSortOrderTo(Version) > 0;
         }
 
         public bool HasValidVersion()

@@ -247,10 +247,10 @@ namespace Stardrop.ViewModels
                     {
                         Mods.Add(mod);
                     }
-                    else if (Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase) && m.Version < mod.Version) is Mod oldMod && oldMod is not null)
+                    else if (Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase) && m.Version.CompareSortOrderTo(mod.Version) < 0) is Mod oldMod && oldMod is not null)
                     {
                         // Replace old mod with newer one
-                        int oldModIndex = Mods.IndexOf(Mods.First(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase) && m.Version < mod.Version));
+                        int oldModIndex = Mods.IndexOf(Mods.First(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase) && m.Version.CompareSortOrderTo(mod.Version) < 0));
                         Mods[oldModIndex] = mod;
                     }
                 }
