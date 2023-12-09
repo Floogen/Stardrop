@@ -1887,6 +1887,8 @@ namespace Stardrop.Views
 
         private async Task<List<Mod>> AddMods(string[]? filePaths)
         {
+            await HandleModListRefresh();
+
             var addedMods = new List<Mod>();
             if (filePaths is null)
             {
