@@ -1908,11 +1908,10 @@ namespace Stardrop.Views
 
         private async Task<List<Mod>> AddMods(string[]? filePaths)
         {
+            await HandleModListRefresh();
+
             var addedMods = new List<Mod>();
-            if (filePaths is null)
-            {
-                return addedMods;
-            }
+            if (filePaths is null) { return addedMods; }
 
             // Export zip to the default mods folder
             foreach (string fileFullName in filePaths)
