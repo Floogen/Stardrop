@@ -62,6 +62,7 @@
 
   // Main Window - Buttons
   "ui.main_window.buttons.save_configs": "Save Configs",
+  "ui.main_window.buttons.save_changes": "Save Changes",
   "ui.main_window.buttons.hide_disabled_mods": "Hide Disabled Mods",
   "ui.main_window.buttons.show_updatable_mods": "Show Updatable Mods",
 
