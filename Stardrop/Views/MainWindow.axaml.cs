@@ -1884,7 +1884,7 @@ namespace Stardrop.Views
                             continue;
                         }
 
-                        bool alwaysAskToDelete = true;
+                        bool alwaysAskToDelete = Program.settings.AlwaysAskToDelete;
                         foreach (var manifestPath in pathToManifests.Keys)
                         {
                             var manifest = pathToManifests[manifestPath];
