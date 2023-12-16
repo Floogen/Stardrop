@@ -128,6 +128,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("exitButton").Click += Exit_Click;
             this.FindControl<Button>("editProfilesButton").Click += EditProfilesButton_Click;
             this.FindControl<Button>("saveConfigsToProfile").Click += SaveConfigButton_Click;
+            this.FindControl<Button>("saveChangesButton").Click += SaveChanges_Click;
             this.FindControl<Button>("smapiButton").Click += Smapi_Click;
             this.FindControl<CheckBox>("showUpdatableMods").Click += ShowUpdatableModsButton_Click;
             this.FindControl<Button>("nexusModsButton").Click += NexusModsButton_Click;
@@ -778,14 +779,24 @@ namespace Stardrop.Views
         }
 
         // Menu related click events
-        private void Smapi_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void SaveChanges_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            StartSMAPI();
+            await SaveChanges();
         }
 
-        private void Smapi_Click(object? sender, EventArgs e)
+        private async void SaveChanges_Click(object? sender, EventArgs e)
         {
-            StartSMAPI();
+            await SaveChanges();
+        }
+
+        private async void Smapi_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            await StartSMAPI();
+        }
+
+        private async void Smapi_Click(object? sender, EventArgs e)
+        {
+            await StartSMAPI();
         }
 
         private async void AddMod_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -957,7 +968,7 @@ namespace Stardrop.Views
         }
 
         // End of events
-        private async Task StartSMAPI()
+        private async Task SaveChanges()
         {
             UpdateProfile(GetCurrentProfile());
 
@@ -994,6 +1005,11 @@ namespace Stardrop.Views
                 // Write the settings cache
                 File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, new JsonSerializerOptions() { WriteIndented = true }));
             }
+        }
+
+        private async Task StartSMAPI()
+        {
+            await SaveChanges();
 
             using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
             {
@@ -1953,7 +1969,7 @@ namespace Stardrop.Views
                                                 alwaysAskToDelete = false;
                                             }
 
-                                            // Delete old vesrion
+                                            // Delete old version.
                                             var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
                                             if (targetDirectory is not null && targetDirectory.Exists)
                                             {
