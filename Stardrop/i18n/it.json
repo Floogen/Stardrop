@@ -117,7 +117,7 @@
   "ui.message.confirm_mod_update_method": "É stata rilevata una versione precedente di {0}. Vuoi eliminare la precedente installazione?\n\nNota: Eliminare ogni versione precedente è in genere raccomandato, ogni file di configurazione andrà però perso.",
 
   // Window Names
-  "ui.window.setting.name": "Impostazioni",
+  "ui.window.settings.name": "Impostazioni",
   "ui.window.profiles.name": "Profili",
   "ui.window.profile_naming.name": "Nome Profilo",
 

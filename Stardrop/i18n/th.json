@@ -117,7 +117,7 @@
   "ui.message.confirm_mod_update_method": "ตรวจพบ {0} เวอร์ชันก่อนหน้าแล้ว คุณต้องการล้างการติดตั้งก่อนหน้านี้หรือไม่?\n\nหมายเหตุ: โดยปกติแล้ว แนะนำให้ล้างเวอร์ชันก่อนหน้า อย่างไรก็ตาม ไฟล์ปรับแต่งใดๆ จะสูญหายไป",
 
   // Window Names
-  "ui.window.setting.name": "การตั้งค่า",
+  "ui.window.settings.name": "การตั้งค่า",
   "ui.window.profiles.name": "โปรไฟล์",
   "ui.window.profile_naming.name": "ชื่อโปรไฟล์",
 

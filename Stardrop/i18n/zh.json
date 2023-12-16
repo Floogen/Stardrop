@@ -116,7 +116,7 @@
   "ui.message.confirm_mod_update_method": "检测到先前版本的 {0}。是否要清除先前的安装？\n\n注意：通常建议清除先前版本，但任何配置都会丢失。",
 
   // Window Names
-  "ui.window.setting.name": "设置",
+  "ui.window.settings.name": "设置",
   "ui.window.profiles.name": "配置文件",
   "ui.window.profile_naming.name": "配置文件名称",
 

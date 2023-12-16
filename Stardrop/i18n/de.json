@@ -117,7 +117,7 @@
   "ui.message.confirm_mod_update_method": "Es wurde eine frühere Version von {0} erkannt. Möchtest du die vorherige Installation löschen?\n\nHinweis: Das Löschen früherer Versionen wird normalerweise empfohlen, allerdings gehen dabei alle Konfig Dateien verloren.",
 
   // Window Names
-  "ui.window.setting.name": "Einstellungen",
+  "ui.window.settings.name": "Einstellungen",
   "ui.window.profiles.name": "Profile",
   "ui.window.profile_naming.name": "Profil Name",
 
