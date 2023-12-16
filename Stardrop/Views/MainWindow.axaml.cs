@@ -995,7 +995,7 @@ namespace Stardrop.Views
 
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Filters.Add(new FileDialogFilter() { Name = "Mod Archive (*.zip, *.7z, *.rar)", Extensions = { "zip", "7z", "rar" } });
-            dialog.AllowMultiple = false;
+            dialog.AllowMultiple = true;
 
             var addedMods = await AddMods(await dialog.ShowAsync(this));
 
