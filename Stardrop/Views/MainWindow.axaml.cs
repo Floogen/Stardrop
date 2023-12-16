@@ -2037,7 +2037,7 @@ namespace Stardrop.Views
                                     }
                                 }
                                 SetLockState(false);
-                                addedMods.Add(new Mod(manifest, new FileInfo(manifestFolderPath), manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
+                                addedMods.Add(new Mod(manifest, new FileInfo(Path.Join(installPath, manifestFolderPath)), manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
                             }
                             else
                             {
