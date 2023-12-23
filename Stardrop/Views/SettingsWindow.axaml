@@ -171,7 +171,7 @@
 		<Border Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
 			<Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
 				<Image Source="/Assets/icon.ico" Stretch="None"/>
-				<TextBlock Text="{i18n:Translate ui.window.setting.name}" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+				<TextBlock Text="{i18n:Translate ui.window.settings.name}" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 			</Menu>
 		</Border>
 		<Menu Name="windowMenu" IsVisible="{Binding ShowMainMenu}" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">

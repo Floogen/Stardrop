@@ -111,7 +111,7 @@
 	"ui.message.confirm_mod_update_method": "{0} modunun eski bir sürümü tespit edildi. Eski sürümü temizlemek ister misin?\n\nNot: Eski sürümleri temizlemek genellikle önerilir, ancak her türlü yapılandırma dosyası kaybolacaktır.",
 
 	// Window Names
-	"ui.window.setting.name": "Ayarlar",
+	"ui.window.settings.name": "Ayarlar",
 	"ui.window.profiles.name": "Profiller",
 	"ui.window.profile_naming.name": "Profil İsmi",
 

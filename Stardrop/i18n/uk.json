@@ -190,7 +190,7 @@
   "ui.message.succeeded_nexus_install": "Успішно встановлено наступний мод через Nexusmods:\n\n{0}",
 
   // Window Names
-  "ui.window.setting.name": "Налаштування",
+  "ui.window.settings.name": "Налаштування",
   "ui.window.profiles.name": "Профілі",
   "ui.window.profile_naming.name": "Назва профілю",
   "ui.window.nexus_login.name": "Персональний API ключ Nexusmods",

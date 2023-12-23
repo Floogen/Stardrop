@@ -190,7 +190,7 @@
   "ui.message.succeeded_nexus_install": "成功通过 Nexus Mods 安装了以下模组：\n\n{0}",
 
   // Window Names
-  "ui.window.setting.name": "设置",
+  "ui.window.settings.name": "设置",
   "ui.window.profiles.name": "配置文件",
   "ui.window.profile_naming.name": "配置文件名称",
   "ui.window.nexus_login.name": "Nexus Mods 个人 API 密钥",

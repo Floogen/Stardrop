@@ -190,7 +190,7 @@
   "ui.message.succeeded_nexus_install": "A Nexus mods segítségével sikeresen telepítve a következő mod:\n\n{0}",
 
   // Ablak nevek
-  "ui.window.setting.name": "Beállítások",
+  "ui.window.settings.name": "Beállítások",
   "ui.window.profiles.name": "Profilok",
   "ui.window.profile_naming.name": "Profil név",
   "ui.window.nexus_login.name": "Nexus mods személyes API kulcs",

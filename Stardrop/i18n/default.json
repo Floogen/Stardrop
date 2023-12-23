@@ -190,7 +190,7 @@
   "ui.message.succeeded_nexus_install": "Successfully installed the following mod via Nexus Mods:\n\n{0}",
 
   // Window Names
-  "ui.window.setting.name": "Settings",
+  "ui.window.settings.name": "Settings",
   "ui.window.profiles.name": "Profiles",
   "ui.window.profile_naming.name": "Profile Name",
   "ui.window.nexus_login.name": "Nexus Mods Personal API Key",

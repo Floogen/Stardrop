@@ -119,7 +119,7 @@
     "ui.message.confirm_mod_update_method": "Une version antèrieure de {0} a été détecté. Voulez-vous supprimer l'ancienne version?\n\nNote: Supprimer les versions antèrieures est souvent recommandé. Les configurations seront en revanche perdues..",
   
     // Window Names
-    "ui.window.setting.name": "Paramètres",
+    "ui.window.settings.name": "Paramètres",
     "ui.window.profiles.name": "Profils",
     "ui.window.profile_naming.name": "Non Du Profil",
   
