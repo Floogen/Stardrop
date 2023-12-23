@@ -67,8 +67,8 @@ namespace Stardrop.Utilities.External
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", apiKey);
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
-            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
-            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.applicationVersion} {Environment.OSVersion}");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.ApplicationVersion);
+            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.ApplicationVersion} {Environment.OSVersion}");
 
             bool wasValidated = true;
             try
@@ -140,8 +140,8 @@ namespace Stardrop.Utilities.External
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", apiKey);
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
-            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
-            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.applicationVersion} {Environment.OSVersion}");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.ApplicationVersion);
+            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.ApplicationVersion} {Environment.OSVersion}");
 
             try
             {
@@ -202,8 +202,8 @@ namespace Stardrop.Utilities.External
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", apiKey);
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
-            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
-            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.applicationVersion} {Environment.OSVersion}");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.ApplicationVersion);
+            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.ApplicationVersion} {Environment.OSVersion}");
 
             try
             {
@@ -295,8 +295,8 @@ namespace Stardrop.Utilities.External
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", apiKey);
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
-            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
-            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.applicationVersion} {Environment.OSVersion}");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.ApplicationVersion);
+            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.ApplicationVersion} {Environment.OSVersion}");
 
             try
             {
@@ -359,8 +359,8 @@ namespace Stardrop.Utilities.External
             // Create a throwaway client
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
-            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
-            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.applicationVersion} {Environment.OSVersion}");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.ApplicationVersion);
+            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.ApplicationVersion} {Environment.OSVersion}");
 
             try
             {
@@ -387,8 +387,8 @@ namespace Stardrop.Utilities.External
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", apiKey);
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
-            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
-            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.applicationVersion} {Environment.OSVersion}");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.ApplicationVersion);
+            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.ApplicationVersion} {Environment.OSVersion}");
 
             try
             {
@@ -444,8 +444,8 @@ namespace Stardrop.Utilities.External
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", apiKey);
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
-            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
-            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.applicationVersion} {Environment.OSVersion}");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.ApplicationVersion);
+            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.ApplicationVersion} {Environment.OSVersion}");
 
             try
             {

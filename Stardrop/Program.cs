@@ -1,8 +1,10 @@
 using Avalonia;
+using Avalonia.OpenGL;
 using Avalonia.ReactiveUI;
 using CommandLine;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.MaterialDesign;
+using Semver;
 using Stardrop.Models;
 using Stardrop.Models.Nexus;
 using Stardrop.Models.Nexus.Web;
@@ -31,8 +33,10 @@ namespace Stardrop
         internal static string? nxmLink = null;
         internal static readonly string defaultProfileName = "Default";
         internal static readonly string executablePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Stardrop.exe");
-        internal static readonly string applicationVersion = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
         internal static readonly Regex gameDetailsPattern = new Regex(@"SMAPI (?<smapiVersion>.+) with Stardew Valley (?<gameVersion>.+) on (?<system>.+)");
+
+        public static string ApplicationVersion { get { return $"{_applicationVersion.WithoutMetadata()}"; } }
+        private static readonly SemVersion _applicationVersion = SemVersion.Parse(typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, SemVersionStyles.Any);
 
         public class Options
         {
@@ -69,7 +73,7 @@ namespace Stardrop
             try
             {
                 var operatingSystem = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" : RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Unix" : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "macOS" : "Unknown";
-                helper.Log($"{Environment.NewLine}-- Startup Data --{Environment.NewLine}Time: {DateTime.Now}{Environment.NewLine}OS: [{operatingSystem}] {RuntimeInformation.OSDescription}{Environment.NewLine}Settings Directory: {Pathing.defaultHomePath}{Environment.NewLine}Active Directory: {Directory.GetCurrentDirectory()}{Environment.NewLine}Version: {applicationVersion}{Environment.NewLine}----------------------{Environment.NewLine}");
+                helper.Log($"{Environment.NewLine}-- Startup Data --{Environment.NewLine}Time: {DateTime.Now}{Environment.NewLine}OS: [{operatingSystem}] {RuntimeInformation.OSDescription}{Environment.NewLine}Settings Directory: {Pathing.defaultHomePath}{Environment.NewLine}Active Directory: {Directory.GetCurrentDirectory()}{Environment.NewLine}Version: v{ApplicationVersion}{Environment.NewLine}----------------------{Environment.NewLine}");
                 helper.Log($"Started with the following arguments: {String.Join('|', args)}");
 
                 // Set the argument values

@@ -81,8 +81,8 @@ namespace Stardrop.Utilities.External
             // Create a throwaway client
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
-            client.DefaultRequestHeaders.Add("Application-Version", Program.applicationVersion);
-            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.applicationVersion} {Environment.OSVersion}");
+            client.DefaultRequestHeaders.Add("Application-Version", Program.ApplicationVersion);
+            client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.ApplicationVersion} {Environment.OSVersion}");
 
             var parsedRequest = JsonSerializer.Serialize(searchData, new JsonSerializerOptions() { WriteIndented = true, IgnoreNullValues = true });
             var requestPackage = new StringContent(parsedRequest, Encoding.UTF8, "application/json");

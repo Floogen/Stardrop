@@ -49,7 +49,7 @@ namespace Stardrop.Views
             InitializeComponent();
 
             // Set the main window view
-            _viewModel = new MainWindowViewModel(Pathing.defaultModPath, Program.applicationVersion);
+            _viewModel = new MainWindowViewModel(Pathing.defaultModPath, Program.ApplicationVersion);
             DataContext = _viewModel;
 
             // Set the path according to the environmental variable SMAPI_MODS_PATH
