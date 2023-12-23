@@ -225,7 +225,7 @@ namespace Stardrop.Views
             {
                 Program.settings.Version = _viewModel.Version.Replace("v", String.Empty);
             }
-            else if (SemVersion.TryParse(Program.settings.Version, SemVersionStyles.Any, out var cachedVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), SemVersionStyles.Any, out var currentVersion) && cachedVersion < currentVersion)
+            else if (SemVersion.TryParse(Program.settings.Version, SemVersionStyles.Any, out var cachedVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), SemVersionStyles.Any, out var currentVersion) && cachedVersion.CompareSortOrderTo(currentVersion) < 0)
             {
                 // Display message with link to release notes
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.stardrop_update_complete"));
@@ -1028,7 +1028,7 @@ namespace Stardrop.Views
 
             // Check if current version is the latest
             var versionToUri = await GitHub.GetLatestStardropRelease();
-            if (versionToUri is not null && SemVersion.TryParse(versionToUri?.Key.Replace("v", String.Empty), out latestVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), out var currentVersion) && latestVersion > currentVersion)
+            if (versionToUri is not null && SemVersion.TryParse(versionToUri?.Key.Replace("v", String.Empty), out latestVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), out var currentVersion) && latestVersion.CompareSortOrderTo(currentVersion) > 0)
             {
                 updateAvailable = true;
             }
@@ -1156,7 +1156,7 @@ namespace Stardrop.Views
             }
 
             KeyValuePair<string, string>? latestSmapiToUri = await GitHub.GetLatestSMAPIRelease();
-            if (latestSmapiToUri is not null && SemVersion.TryParse(latestSmapiToUri?.Key, SemVersionStyles.Any, out var latestVersion) && currentSmapiVersion is not null && latestVersion > currentSmapiVersion)
+            if (latestSmapiToUri is not null && SemVersion.TryParse(latestSmapiToUri?.Key, SemVersionStyles.Any, out var latestVersion) && currentSmapiVersion is not null && latestVersion.CompareSortOrderTo(currentSmapiVersion) > 0)
             {
                 var confirmationWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.SMAPI_update_available"), latestVersion));
                 if (await confirmationWindow.ShowDialog<bool>(this) is false)

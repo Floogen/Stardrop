@@ -42,7 +42,7 @@
 		<PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
 		<PackageReference Include="Projektanker.Icons.Avalonia" Version="5.2.0" />
 		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="5.2.0" />
-		<PackageReference Include="semver" Version="2.2.0" />
+		<PackageReference Include="semver" Version="2.3.0" />
 		<PackageReference Include="SharpCompress" Version="0.32.1" />
 	</ItemGroup>
 	<ItemGroup>
