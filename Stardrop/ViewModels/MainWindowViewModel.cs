@@ -156,14 +156,14 @@ namespace Stardrop.ViewModels
             {
                 try
                 {
-                    var localManifest = directory.EnumerateFiles().Where(file => file.Name.Equals("manifest.json", StringComparison.OrdinalIgnoreCase));
-                    if (localManifest.Count() == 0)
+                    var localManifest = directory.EnumerateFiles().FirstOrDefault(file => file.Name.Equals("manifest.json", StringComparison.OrdinalIgnoreCase));
+                    if (localManifest is null)
                     {
                         manifests.AddRange(GetManifestFiles(directory));
                     }
                     else
                     {
-                        manifests.Add(localManifest.First());
+                        manifests.Add(localManifest);
                     }
                 }
                 catch (Exception ex)
