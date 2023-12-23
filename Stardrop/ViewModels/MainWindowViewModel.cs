@@ -156,7 +156,7 @@ namespace Stardrop.ViewModels
             {
                 try
                 {
-                    var localManifest = directory.EnumerateFiles("manifest.json");
+                    var localManifest = directory.EnumerateFiles().Where(file => file.Name.Equals("manifest.json", StringComparison.OrdinalIgnoreCase));
                     if (localManifest.Count() == 0)
                     {
                         manifests.AddRange(GetManifestFiles(directory));
