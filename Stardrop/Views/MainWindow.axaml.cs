@@ -483,11 +483,7 @@ namespace Stardrop.Views
                     if (await requestWindow.ShowDialog<bool>(this))
                     {
                         // Delete old vesrion
-                        var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
-                        if (targetDirectory is not null)
-                        {
-                            targetDirectory.Delete(true);
-                        }
+                        DeleteMod(mod);
 
                         hasDeletedAMod = true;
                     }
@@ -1854,6 +1850,15 @@ namespace Stardrop.Views
             return downloadedFilePath;
         }
 
+        private void DeleteMod(Mod mod)
+        {
+            var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
+            if (targetDirectory is not null && targetDirectory.Exists)
+            {
+                targetDirectory.Delete(true);
+            }
+        }
+
         private async Task<List<Mod>> AddMods(string[]? filePaths)
         {
             var addedMods = new List<Mod>();
@@ -1884,7 +1889,7 @@ namespace Stardrop.Views
                             continue;
                         }
 
-                        bool alwaysAskToDelete = true;
+                        bool alwaysAskToDelete = Program.settings.AlwaysAskToDelete;
                         foreach (var manifestPath in pathToManifests.Keys)
                         {
                             var manifest = pathToManifests[manifestPath];
@@ -1917,13 +1922,14 @@ namespace Stardrop.Views
                                                 alwaysAskToDelete = false;
                                             }
 
-                                            // Delete old vesrion
-                                            var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
-                                            if (targetDirectory is not null && targetDirectory.Exists)
-                                            {
-                                                targetDirectory.Delete(true);
-                                            }
+                                            // Delete old version
+                                            DeleteMod(mod);
                                         }
+                                    }
+                                    else
+                                    {
+                                        // Delete old version
+                                        DeleteMod(mod);
                                     }
 
                                     isUpdate = true;
