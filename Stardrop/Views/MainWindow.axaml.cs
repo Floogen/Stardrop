@@ -1926,6 +1926,11 @@ namespace Stardrop.Views
                                             DeleteMod(mod);
                                         }
                                     }
+                                    else
+                                    {
+                                        // Delete old version
+                                        DeleteMod(mod);
+                                    }
 
                                     isUpdate = true;
                                     installPath = mod.ModFileInfo.Directory.FullName;
