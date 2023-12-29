@@ -22,9 +22,8 @@ namespace Stardrop.Models
         public SemVersion Version { get; set; }
         public string ParsedVersion { get { return Version.ToString(); } }
         public string SuggestedVersion { get; set; }
-        public string Name { get; set; }
-        // Whole mod path inside installed mods path for grouping mod components in the same mod.
-        public string Path { get; set; }
+        public string Name { get; set; }        
+        public string Path { get; set; } // Whole mod path inside installed mods path for grouping mod components in the same mod
         public string Description { get; set; }
         public string GetDescriptionToolTip
         {

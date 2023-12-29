@@ -78,15 +78,13 @@ namespace Stardrop.ViewModels
             Version = $"v{version}";
             SmapiVersion = Program.settings.GameDetails?.SmapiVersion;
 
-            // Create data view.
-            var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
-            var dataGridGroupDescriptionPath = new DataGridPathGroupDescription(nameof(Mod.Path));
-            var dataGridGroupDescriptionAuthor = new DataGridPathGroupDescription(nameof(Mod.Author));
+            // Create data view
+            var sortGridByModName = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
+            var groupGridByModPath = new DataGridPathGroupDescription(nameof(Mod.Path));
 
             DataView = new DataGridCollectionView(Mods, isDataSorted: false, isDataInGroupOrder: false);
-            DataView.SortDescriptions.Add(dataGridSortDescription);
-            // DataView.GroupDescriptions.Add(dataGridGroupDescriptionAuthor);
-            DataView.GroupDescriptions.Add(dataGridGroupDescriptionPath);
+            DataView.SortDescriptions.Add(sortGridByModName);
+            DataView.GroupDescriptions.Add(groupGridByModPath);
             UpdateFilter();
 
             // Do OS specific setup
@@ -560,7 +558,10 @@ namespace Stardrop.ViewModels
         private bool ModFilter(object item)
         {
             var mod = item as Mod;
-            if (mod == null) { return false; }
+            if (mod is null)
+            {
+                return false;
+            }
 
             if (mod.IsHidden)
             {
@@ -601,6 +602,6 @@ namespace Stardrop.ViewModels
             }
 
             return true;
-        } // ModFilter().
+        }
     }
 }
