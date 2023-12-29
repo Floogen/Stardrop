@@ -21,6 +21,7 @@ namespace Stardrop.ViewModels
         public string ToolTip_ModInstall { get; set; }
         public string ToolTip_Theme { get; set; }
         public string ToolTip_Language { get; set; }
+        public string ToolTip_Grouping { get; set; }
         public string ToolTip_IgnoreHiddenFolders { get; set; }
         public string ToolTip_PreferredServer { get; set; }
         public string ToolTip_NXMAssociation { get; set; }
@@ -44,6 +45,7 @@ namespace Stardrop.ViewModels
                 ToolTip_ModInstall = Program.translation.Get("ui.settings_window.tooltips.mod_install_path");
                 ToolTip_Theme = Program.translation.Get("ui.settings_window.tooltips.theme");
                 ToolTip_Language = Program.translation.Get("ui.settings_window.tooltips.language");
+                ToolTip_Grouping = Program.translation.Get("ui.settings_window.tooltips.grouping");
                 ToolTip_IgnoreHiddenFolders = Program.translation.Get("ui.settings_window.tooltips.ignore_hidden_folders");
                 ToolTip_PreferredServer = Program.translation.Get("ui.settings_window.tooltips.preferred_server");
                 ToolTip_NXMAssociation = Program.translation.Get("ui.settings_window.tooltips.nxm_file_association");

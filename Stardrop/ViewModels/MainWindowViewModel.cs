@@ -79,12 +79,8 @@ namespace Stardrop.ViewModels
             SmapiVersion = Program.settings.GameDetails?.SmapiVersion;
 
             // Create data view
-            var sortGridByModName = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
-            var groupGridByModPath = new DataGridPathGroupDescription(nameof(Mod.Path));
-
             DataView = new DataGridCollectionView(Mods, isDataSorted: false, isDataInGroupOrder: false);
-            DataView.SortDescriptions.Add(sortGridByModName);
-            DataView.GroupDescriptions.Add(groupGridByModPath);
+            DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending));
             UpdateFilter();
 
             // Do OS specific setup
@@ -550,6 +546,16 @@ namespace Stardrop.ViewModels
         {
             if (DataView is not null)
             {
+                DataView.GroupDescriptions.Clear();
+                switch (Program.settings.ModGroupingMethod)
+                {
+                    case ModGrouping.None:
+                        break;
+                    case ModGrouping.Folder:
+                        DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.Path)));
+                        break;
+                }
+
                 DataView.Filter = null;
                 DataView.Filter = ModFilter;
             }
@@ -581,6 +587,7 @@ namespace Stardrop.ViewModels
             {
                 return false;
             }
+
             if (!String.IsNullOrEmpty(_filterText) && !String.IsNullOrEmpty(_columnFilter))
             {
                 if (_columnFilter == Program.translation.Get("ui.main_window.combobox.mod_name")
