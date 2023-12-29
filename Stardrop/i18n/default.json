@@ -76,6 +76,7 @@
   "ui.main_window.combobox.mod_name": "Mod Name",
   "ui.main_window.combobox.author": "Author",
   "ui.main_window.combobox.requirements": "Requirements",
+  "ui.main_window.combobox.group": "Mod Group",
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Path",
