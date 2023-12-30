@@ -961,7 +961,7 @@ namespace Stardrop.Views
             var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
             if (profile is null)
             {
-                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_determine_profile"), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_determine_profile"), Program.translation.Get("internal.ok"));
                 Program.helper.Log($"Unable to determine selected profile, SMAPI will not be started!", Helper.Status.Alert);
                 return;
             }
@@ -1908,7 +1908,7 @@ namespace Stardrop.Views
                             bool isUpdate = false;
                             if (manifest is not null)
                             {
-                                string installPath = Program.settings.ModInstallPath;
+                                var installPath = Program.settings.ModInstallPath;
                                 if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null && mod.ModFileInfo.Directory is not null)
                                 {
                                     if (manifest.DeleteOldVersion is false && alwaysAskToDelete is true)
@@ -1960,6 +1960,7 @@ namespace Stardrop.Views
                                 SetLockState(true, String.Format(isUpdate ? Program.translation.Get("ui.warning.mod_updating") : Program.translation.Get("ui.warning.mod_installing"), manifest.Name));
 
                                 Program.helper.Log($"Install path for mod {manifest.UniqueID}:{installPath}");
+                                string outputPath;
                                 var manifestFolderPath = manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase);
                                 foreach (var entry in archive.Entries.Where(e => e.Key.StartsWith(manifestFolderPath)))
                                 {
@@ -1967,7 +1968,7 @@ namespace Stardrop.Views
                                     {
                                         continue;
                                     }
-                                    var outputPath = Path.Combine(installPath, manifestFolderPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+                                    outputPath = Path.Combine(installPath, manifestFolderPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
 
                                     if (String.IsNullOrEmpty(manifestFolderPath) is false)
                                     {
