@@ -726,8 +726,6 @@ namespace Stardrop.Views
                     }
                 }
             }
-
-            UpdateProfile(GetCurrentProfile());
         }
 
         private async void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -947,6 +945,8 @@ namespace Stardrop.Views
         // End of events
         private async Task StartSMAPI()
         {
+            UpdateProfile(GetCurrentProfile());
+
             Program.helper.Log($"Starting SMAPI at path: {Program.settings.SMAPIFolderPath}", Helper.Status.Debug);
             if (await ValidateSMAPIPath() is false)
             {
