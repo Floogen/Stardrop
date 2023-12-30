@@ -1,6 +1,7 @@
 {
   // Main Window - Menu Items
   "ui.main_window.menu_items.add_mod": "Add Mod",
+  "ui.main_window.menu_items.add_mods": "Add Mods",
   "ui.main_window.menu_items.start_smapi": "Start SMAPI",
   "ui.main_window.menu_items.exit": "Exit",
   "ui.main_window.menu_items.settings": "Settings",
