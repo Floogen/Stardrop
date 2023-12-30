@@ -244,6 +244,11 @@
 			<Setter Property="TextBlock.HorizontalAlignment" Value="Center"/>
 			<Setter Property="TextBlock.VerticalAlignment" Value="Center"/>
 		</Style>
+		<Style Selector="DataGridRowGroupHeader">
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
+		</Style>
 		<Style Selector="DataGridColumnHeader">
 			<Setter Property="FontWeight" Value="Bold"/>
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
