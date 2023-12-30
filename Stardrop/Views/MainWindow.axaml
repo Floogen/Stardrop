@@ -289,7 +289,7 @@
 		<NativeMenu>
 			<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_headers.file}">
 				<NativeMenu>
-					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mod}" Click="AddMod_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mods}" Click="AddMod_Click" />
 					<NativeMenuItemSeparator/>
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.start_smapi}" Click="Smapi_Click" />
 					<NativeMenuItemSeparator/>
@@ -346,7 +346,7 @@
 			<Menu Name="mainMenu" IsVisible="{Binding ShowMainMenu}" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
 				<Image Name="menuIcon" Source="/Assets/icon.ico" Stretch="None"/>
 				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.file}" Margin="-10 0 0 0" Classes="Bar">
-					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mod}" Click="AddMod_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mods}" Click="AddMod_Click" Classes="Bar"/>
 					<Separator/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.start_smapi}" Click="Smapi_Click" Classes="Bar"/>
 					<Separator/>
