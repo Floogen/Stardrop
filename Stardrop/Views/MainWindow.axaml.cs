@@ -2000,9 +2000,8 @@ namespace Stardrop.Views
                                         await Task.Run(() => entry.WriteToFile(outputPath, new ExtractionOptions() { ExtractFullPath = false, Overwrite = true }));
                                     }
                                 }
-
                                 SetLockState(false);
-                                addedMods.Add(new Mod(manifest, null, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
+                                addedMods.Add(new Mod(manifest, new FileInfo(Path.Join(installPath, manifestFolderPath)), manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
                             }
                             else
                             {
