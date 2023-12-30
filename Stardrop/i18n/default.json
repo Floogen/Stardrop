@@ -76,6 +76,7 @@
   "ui.main_window.combobox.mod_name": "Mod Name",
   "ui.main_window.combobox.author": "Author",
   "ui.main_window.combobox.requirements": "Requirements",
+  "ui.main_window.combobox.group": "Mod Group",
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Path",
@@ -83,6 +84,7 @@
   "ui.settings_window.labels.mod_install": "Stardrop Installed Mods Path",
   "ui.settings_window.labels.themes": "Themes",
   "ui.settings_window.labels.languages": "Languages",
+  "ui.settings_window.labels.grouping": "Mod Grouping",
   "ui.settings_window.labels.miscellaneous": "Miscellaneous",
   "ui.settings_window.labels.nexus": "Nexus Mods",
   "ui.settings_window.labels.preferred_server": "Preferred Server:",
@@ -101,6 +103,7 @@
   "ui.settings_window.tooltips.mod_install_path": "The folder path which Stardrop will place newly installed mods. Must be under the folder given in \"Mod Folder Path\"",
   "ui.settings_window.tooltips.theme": "The current theme of Stardrop",
   "ui.settings_window.tooltips.language": "The current language of Stardrop",
+  "ui.settings_window.tooltips.grouping": "The current method for grouping mods.",
   "ui.settings_window.tooltips.ignore_hidden_folders": "If checked, Stardrop will ignore any mods which have a parent folder that start with \".\"",
   "ui.settings_window.tooltips.nxm_file_association": "Registers NXM protocol to be associated with Stardrop, allowing for direct installs from www.nexusmods.com",
   "ui.settings_window.tooltips.always_ask_nxm_files": "If checked, Stardrop will always ask before installing a mod from www.nexusmods.com via NXM",

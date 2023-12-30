@@ -8,6 +8,7 @@ namespace Stardrop.Models
     {
         public string Theme { get; set; } = "Stardrop";
         public string Language { get; set; }
+        public ModGrouping ModGroupingMethod { get; set; } = ModGrouping.None;
         public string Version { get; set; }
         public string LastSelectedProfileName { get; set; }
         public string SMAPIFolderPath { get; set; }

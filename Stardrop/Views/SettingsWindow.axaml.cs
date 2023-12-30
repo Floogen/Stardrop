@@ -101,6 +101,16 @@ namespace Stardrop.Views
                 Program.settings.Language = language;
             };
 
+            // Handle adding the mod grouping methods
+            var groupingComboBox = this.FindControl<ComboBox>("groupingComboBox");
+            groupingComboBox.Items = Enum.GetValues(typeof(ModGrouping)).Cast<ModGrouping>();
+            groupingComboBox.SelectedItem = Program.settings.ModGroupingMethod;
+            groupingComboBox.SelectionChanged += (sender, e) =>
+            {
+                var modGroupingMethod = (ModGrouping)groupingComboBox.SelectedItem;
+                Program.settings.ModGroupingMethod = modGroupingMethod;
+            };
+
             this.FontFamily = new Avalonia.Media.FontFamily("Segoe UI Symbol");
 
             // Cache the old settings

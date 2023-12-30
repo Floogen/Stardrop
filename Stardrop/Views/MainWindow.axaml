@@ -244,6 +244,11 @@
 			<Setter Property="TextBlock.HorizontalAlignment" Value="Center"/>
 			<Setter Property="TextBlock.VerticalAlignment" Value="Center"/>
 		</Style>
+		<Style Selector="DataGridRowGroupHeader">
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
+		</Style>
 		<Style Selector="DataGridColumnHeader">
 			<Setter Property="FontWeight" Value="Bold"/>
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
@@ -561,6 +566,7 @@
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.mod_name}" />
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.author}" />
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.requirements}" />
+				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.group}" />
 			</ComboBox>
 			<StackPanel Orientation="Horizontal" Margin="10 0 10 0">
 				<Separator Width="1" Height="15" Background="{DynamicResource HighlightBrush}" />
