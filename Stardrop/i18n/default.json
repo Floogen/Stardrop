@@ -8,6 +8,7 @@
   "ui.main_window.menu_items.smapi_log_file": "SMAPI Log File",
   "ui.main_window.menu_items.refresh_mod_list": "Refresh Mod List",
   "ui.main_window.menu_items.check_for_mod_updates": "Check for Mod Updates",
+  "ui.main_window.menu_items.update_profile": "Update Profile",
   "ui.main_window.menu_items.enable_all_mods": "Enable All Mods",
   "ui.main_window.menu_items.disable_all_mods": "Disable All Mods",
   "ui.main_window.menu_items.check_for_stardrop_update": "Check for Stardrop Update",

@@ -304,6 +304,8 @@
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.refresh_mod_list}" Click="ModListRefresh_Click" />
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.check_for_mod_updates}" Click="ModUpdateCheck_Click" />
 					<NativeMenuItemSeparator/>
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.update_profile}" Click="UpdateProfile_Click" />
+					<NativeMenuItemSeparator/>
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.enable_all_mods}" Click="EnableAllMods_Click" />
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.disable_all_mods}" Click="DisableAllMods_Click" />
 					<NativeMenuItemSeparator/>
@@ -356,6 +358,8 @@
 				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.tools}" Margin="-10 0 0 0" Classes="Bar">
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.refresh_mod_list}" Click="ModListRefresh_Click" Classes="Bar"/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.check_for_mod_updates}" Click="ModUpdateCheck_Click" Classes="Bar"/>
+					<Separator/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.update_profile}" Click="UpdateProfile_Click" Classes="Bar"/>
 					<Separator/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.enable_all_mods}" Click="EnableAllMods_Click" Classes="Bar"/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.disable_all_mods}" Click="DisableAllMods_Click" Classes="Bar"/>
