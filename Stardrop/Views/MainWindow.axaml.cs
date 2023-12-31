@@ -482,6 +482,18 @@ namespace Stardrop.Views
 
             this.FindControl<TextBox>("searchBox").Text = selectedMod.Author;
             _viewModel.FilterText = selectedMod.Author;
+        }        
+
+        private void ModGridMenuRow_ClearFilter(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var selectedMod = (sender as MenuItem)?.DataContext as Mod;
+            if (selectedMod is null)
+            {
+                return;
+            }
+
+            this.FindControl<TextBox>("searchBox").Text = String.Empty;
+            _viewModel.FilterText = String.Empty;
         }
 
         private async void ModGridMenuRow_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
