@@ -457,9 +457,14 @@ namespace Stardrop.Views
         private void ModGridMenuRow_ShowWholeModGroup(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var selectedMod = (sender as MenuItem)?.DataContext as Mod;
-            if (selectedMod is null) { return; }
+            if (selectedMod is null)
+            {
+                return;
+            }
 
-            this.FindControl<ComboBox>("searchFilterColumnBox").SelectedIndex = 1;
+            var searchFilterColumnBox = this.FindControl<ComboBox>("searchFilterColumnBox");
+            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ComboBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.group"));
+            
             this.FindControl<TextBox>("searchBox").Text = selectedMod.Path;
             _viewModel.FilterText = selectedMod.Path;
         }
@@ -467,9 +472,14 @@ namespace Stardrop.Views
         private void ModGridMenuRow_ShowAuthorsMods(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var selectedMod = (sender as MenuItem)?.DataContext as Mod;
-            if (selectedMod is null) { return; }
+            if (selectedMod is null)
+            {
+                return;
+            }
 
-            this.FindControl<ComboBox>("searchFilterColumnBox").SelectedIndex = 2;
+            var searchFilterColumnBox = this.FindControl<ComboBox>("searchFilterColumnBox");
+            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ComboBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.author"));
+
             this.FindControl<TextBox>("searchBox").Text = selectedMod.Author;
             _viewModel.FilterText = selectedMod.Author;
         }
