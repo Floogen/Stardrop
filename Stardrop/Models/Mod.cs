@@ -25,20 +25,7 @@ namespace Stardrop.Models
         public string Name { get; set; }        
         public string Path { get; set; } // Whole mod path inside installed mods path for grouping mod components in the same mod
         public string Description { get; set; }
-        public string GetDescriptionToolTip
-        {
-            get
-            {
-                // TEMPORARY FIX: Due to bug with Avalonia on Linux platforms, tooltips currently cause crashes when they disappear
-                // To work around this, tooltips are purposely not displayed
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    return null;
-                }
-
-                return Description;
-            }
-        }
+        public string GetDescriptionToolTip => Description;
         public string Author { get; set; }
         public Config? _config { get; set; }
         public Config? Config { get { return _config; } set { _config = value; NotifyPropertyChanged("Config"); NotifyPropertyChanged("HasConfig"); } }
