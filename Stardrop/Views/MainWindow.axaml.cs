@@ -128,7 +128,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("exitButton").Click += Exit_Click;
             this.FindControl<Button>("editProfilesButton").Click += EditProfilesButton_Click;
             this.FindControl<Button>("saveConfigsToProfile").Click += SaveConfigButton_Click;
-            this.FindControl<Button>("saveChangesButton").Click += SaveChanges_Click;
+            this.FindControl<Button>("saveProfileChanges").Click += SaveProfileChanges_Click;
             this.FindControl<Button>("smapiButton").Click += Smapi_Click;
             this.FindControl<CheckBox>("showUpdatableMods").Click += ShowUpdatableModsButton_Click;
             this.FindControl<Button>("nexusModsButton").Click += NexusModsButton_Click;
@@ -775,12 +775,12 @@ namespace Stardrop.Views
         }
 
         // Menu related click events
-        private async void SaveChanges_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void SaveProfileChanges_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             await SaveChanges();
         }
 
-        private async void SaveChanges_Click(object? sender, EventArgs e)
+        private async void SaveProfileChanges_Click(object? sender, EventArgs e)
         {
             await SaveChanges();
         }
