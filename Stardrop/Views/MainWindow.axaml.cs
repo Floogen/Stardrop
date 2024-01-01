@@ -947,6 +947,11 @@ namespace Stardrop.Views
         private async Task SaveChanges()
         {
             UpdateProfile(GetCurrentProfile());
+        }
+
+        private async Task StartSMAPI()
+        {
+            await SaveChanges();
 
             Program.helper.Log($"Starting SMAPI at path: {Program.settings.SMAPIFolderPath}", Helper.Status.Debug);
             if (await ValidateSMAPIPath() is false)
@@ -981,11 +986,6 @@ namespace Stardrop.Views
                 // Write the settings cache
                 File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, new JsonSerializerOptions() { WriteIndented = true }));
             }
-        }
-
-        private async Task StartSMAPI()
-        {
-            await SaveChanges();
 
             using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
             {
