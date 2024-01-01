@@ -1968,7 +1968,6 @@ namespace Stardrop.Views
                                 SetLockState(true, String.Format(isUpdate ? Program.translation.Get("ui.warning.mod_updating") : Program.translation.Get("ui.warning.mod_installing"), manifest.Name));
 
                                 Program.helper.Log($"Install path for mod {manifest.UniqueID}:{installPath}");
-                                string outputPath;
                                 var manifestFolderPath = manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase);
                                 foreach (var entry in archive.Entries.Where(e => e.Key.StartsWith(manifestFolderPath)))
                                 {
@@ -1976,7 +1975,7 @@ namespace Stardrop.Views
                                     {
                                         continue;
                                     }
-                                    outputPath = Path.Combine(installPath, manifestFolderPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+                                    var outputPath = Path.Combine(installPath, manifestFolderPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
 
                                     if (String.IsNullOrEmpty(manifestFolderPath) is false)
                                     {
