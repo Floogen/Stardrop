@@ -845,16 +845,6 @@ namespace Stardrop.Views
             await HandleModUpdateCheck();
         }
 
-        private async void UpdateProfile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            UpdateProfile(GetCurrentProfile());
-        }
-
-        private async void UpdateProfile_Click(object? sender, EventArgs e)
-        {
-            UpdateProfile(GetCurrentProfile());
-        }
-
         private async void StardropUpdate_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             await HandleStardropUpdateCheck(true);
