@@ -68,6 +68,7 @@
   "ui.main_window.buttons.save_configs": "Save Configs",
   "ui.main_window.buttons.hide_disabled_mods": "Hide Disabled Mods",
   "ui.main_window.buttons.show_updatable_mods": "Show Updatable Mods",
+  "ui.main_window.buttons.column_search_filters": "Column Search Filters",
 
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "Click To Check For Mod Updates",
@@ -78,10 +79,12 @@
   // Main Window - ComboBox
   "ui.main_window.combobox.show_all_mods": "Show All Mods",
   "ui.main_window.combobox.hide_enabled_mods": "Hide Enabled Mods",
-  "ui.main_window.combobox.mod_name": "Mod Name",
-  "ui.main_window.combobox.author": "Author",
-  "ui.main_window.combobox.requirements": "Requirements",
-  "ui.main_window.combobox.group": "Mod Group",
+
+  // Main Window - search filter ListBox
+  "ui.main_window.filter_listbox.mod_name": "Mod Name",
+  "ui.main_window.filter_listbox.author": "Author",
+  "ui.main_window.filter_listbox.requirements": "Requirements",
+  "ui.main_window.filter_listbox.group": "Mod Group",
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Path",
