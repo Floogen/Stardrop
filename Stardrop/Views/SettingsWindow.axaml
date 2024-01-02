@@ -215,6 +215,7 @@
 			<CheckBox Name="enableProfileSpecificModConfigsCheckbox" IsChecked="{Binding EnableProfileSpecificModConfigs}" Content="{i18n:Translate ui.settings_window.buttons.enable_profile_specific_mod_configs}" ToolTip.Tip="{Binding ToolTip_EnableProfileSpecificModConfigs}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 			<CheckBox Name="enableModsOnAdd" IsChecked="{Binding EnableModsOnAdd}" Content="{i18n:Translate ui.settings_window.buttons.enable_mods_on_add}" ToolTip.Tip="{Binding ToolTip_EnableModsOnAdd}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 			<CheckBox Name="alwaysAskToDelete" IsChecked="{Binding AlwaysAskToDelete}" Content="{i18n:Translate ui.settings_window.buttons.always_ask_to_delete}" ToolTip.Tip="{Binding ToolTip_AlwaysAskToDelete}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<CheckBox Name="automaticallySaveProfileChanges" IsChecked="{Binding ShouldAutomaticallySaveProfileChanges}" Content="{i18n:Translate ui.settings_window.buttons.automatically_save_profile_changes}" ToolTip.Tip="{Binding ToolTip_ShouldAutomaticallySaveProfileChanges}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 		</StackPanel>
 
 		<DockPanel Grid.Row="5" Grid.Column="1" Margin="0 0 0 0">

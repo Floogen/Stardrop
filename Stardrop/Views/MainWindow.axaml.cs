@@ -727,6 +727,15 @@ namespace Stardrop.Views
                     }
                 }
             }
+
+            if (Program.settings.ShouldAutomaticallySaveProfileChanges)
+            {
+                UpdateProfile(GetCurrentProfile());
+            }
+            else
+            {
+                _viewModel.ShowSaveProfileChanges = true;
+            }
         }
 
         private async void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -947,6 +956,8 @@ namespace Stardrop.Views
         private async Task SaveChanges()
         {
             UpdateProfile(GetCurrentProfile());
+
+            _viewModel.ShowSaveProfileChanges = false;
         }
 
         private async Task StartSMAPI()
@@ -1030,6 +1041,8 @@ namespace Stardrop.Views
             if (await editorWindow.ShowDialog<bool>(this))
             {
                 await HandleModListRefresh();
+
+                _viewModel.ShowSaveProfileChanges = !Program.settings.ShouldAutomaticallySaveProfileChanges;
             }
         }
 

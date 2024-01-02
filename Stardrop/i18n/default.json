@@ -93,6 +93,7 @@
   "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Enable Profile Specific Mod Configs",
   "ui.settings_window.buttons.enable_mods_on_add": "Automatically Enable Mods On Install",
   "ui.settings_window.buttons.always_ask_to_delete": "Always Ask To Delete Mod Files On Update",
+  "ui.settings_window.buttons.automatically_save_profile_changes": "Automatically Save Profile Changes",
   "ui.settings_window.buttons.always_ask_for_NXM_installs": "Always Ask Before Installing NXM Files",
   "ui.settings_window.buttons.register_nxm_association": "Register NXM Association",
 
@@ -108,6 +109,7 @@
   "ui.settings_window.tooltips.enable_profile_specific_configs": "If checked, Stardrop will save and restore config.json files from mods when swapping profiles",
   "ui.settings_window.tooltips.enable_mods_on_add": "If checked, Stardrop will automatically enable newly added or updated mods",
   "ui.settings_window.tooltips.always_ask_to_delete": "If checked, Stardrop will always ask whether to delete mod files when updating the mod",
+  "ui.settings_window.tooltips.automatically_save_profile_changes": "If checked, Stardrop will automatically save changes made to the profile",
   "ui.settings_window.tooltips.preferred_server": "Sets your preferred server to use when downloading from Nexus Mods",
   "ui.settings_window.tooltips.save_changes": "Save Changes",
   "ui.settings_window.tooltips.cancel_changes": "Cancel",
