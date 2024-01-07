@@ -22,6 +22,7 @@ namespace Stardrop.Models
         /// Whether to always ask before deleting a previous version of a mod when updating the mod.
         /// </summary>
         public bool AlwaysAskToDelete { get; set; } = true;
+        public bool ShouldAutomaticallySaveProfileChanges { get; set; } = true;
         public NexusServers PreferredNexusServer { get; set; } = NexusServers.NexusCDN;
         public bool IsAskingBeforeAcceptingNXM { get; set; } = true;
         public GameDetails GameDetails { get; set; }

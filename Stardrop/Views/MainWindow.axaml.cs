@@ -128,6 +128,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("exitButton").Click += Exit_Click;
             this.FindControl<Button>("editProfilesButton").Click += EditProfilesButton_Click;
             this.FindControl<Button>("saveConfigsToProfile").Click += SaveConfigButton_Click;
+            this.FindControl<Button>("saveProfileChanges").Click += SaveProfileChanges_Click;
             this.FindControl<Button>("smapiButton").Click += Smapi_Click;
             this.FindControl<CheckBox>("showUpdatableMods").Click += ShowUpdatableModsButton_Click;
             this.FindControl<Button>("nexusModsButton").Click += NexusModsButton_Click;
@@ -769,7 +770,14 @@ namespace Stardrop.Views
                 }
             }
 
-            UpdateProfile(GetCurrentProfile());
+            if (Program.settings.ShouldAutomaticallySaveProfileChanges)
+            {
+                UpdateProfile(GetCurrentProfile());
+            }
+            else
+            {
+                _viewModel.ShowSaveProfileChanges = true;
+            }
         }
 
         private async void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -818,14 +826,24 @@ namespace Stardrop.Views
         }
 
         // Menu related click events
-        private void Smapi_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void SaveProfileChanges_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            StartSMAPI();
+            await SaveChanges();
         }
 
-        private void Smapi_Click(object? sender, EventArgs e)
+        private async void SaveProfileChanges_Click(object? sender, EventArgs e)
         {
-            StartSMAPI();
+            await SaveChanges();
+        }
+
+        private async void Smapi_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            await StartSMAPI();
+        }
+
+        private async void Smapi_Click(object? sender, EventArgs e)
+        {
+            await StartSMAPI();
         }
 
         private async void AddMod_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -977,8 +995,17 @@ namespace Stardrop.Views
         }
 
         // End of events
+        private async Task SaveChanges()
+        {
+            UpdateProfile(GetCurrentProfile());
+
+            _viewModel.ShowSaveProfileChanges = false;
+        }
+
         private async Task StartSMAPI()
         {
+            await SaveChanges();
+
             Program.helper.Log($"Starting SMAPI at path: {Program.settings.SMAPIFolderPath}", Helper.Status.Debug);
             if (await ValidateSMAPIPath() is false)
             {
@@ -993,7 +1020,7 @@ namespace Stardrop.Views
             var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
             if (profile is null)
             {
-                CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_determine_profile"), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_determine_profile"), Program.translation.Get("internal.ok"));
                 Program.helper.Log($"Unable to determine selected profile, SMAPI will not be started!", Helper.Status.Alert);
                 return;
             }
@@ -1056,6 +1083,8 @@ namespace Stardrop.Views
             if (await editorWindow.ShowDialog<bool>(this))
             {
                 await HandleModListRefresh();
+
+                _viewModel.ShowSaveProfileChanges = !Program.settings.ShouldAutomaticallySaveProfileChanges;
             }
         }
 
@@ -1903,6 +1932,8 @@ namespace Stardrop.Views
 
         private async Task<List<Mod>> AddMods(string[]? filePaths)
         {
+            await HandleModListRefresh();
+
             var addedMods = new List<Mod>();
             if (filePaths is null)
             {
@@ -1940,7 +1971,7 @@ namespace Stardrop.Views
                             bool isUpdate = false;
                             if (manifest is not null)
                             {
-                                string installPath = Program.settings.ModInstallPath;
+                                var installPath = Program.settings.ModInstallPath;
                                 if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null && mod.ModFileInfo.Directory is not null)
                                 {
                                     if (manifest.DeleteOldVersion is false && alwaysAskToDelete is true)
@@ -2031,9 +2062,8 @@ namespace Stardrop.Views
                                         await Task.Run(() => entry.WriteToFile(outputPath, new ExtractionOptions() { ExtractFullPath = false, Overwrite = true }));
                                     }
                                 }
-
                                 SetLockState(false);
-                                addedMods.Add(new Mod(manifest, null, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
+                                addedMods.Add(new Mod(manifest, new FileInfo(Path.Join(installPath, manifestFolderPath)), manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
                             }
                             else
                             {

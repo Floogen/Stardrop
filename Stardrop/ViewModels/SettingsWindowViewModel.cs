@@ -15,6 +15,7 @@ namespace Stardrop.ViewModels
         public bool EnableProfileSpecificModConfigs { get { return Program.settings.EnableProfileSpecificModConfigs; } set { Program.settings.EnableProfileSpecificModConfigs = value; } }
         public bool EnableModsOnAdd { get { return Program.settings.EnableModsOnAdd; } set { Program.settings.EnableModsOnAdd = value; } }
         public bool AlwaysAskToDelete { get { return Program.settings.AlwaysAskToDelete; } set { Program.settings.AlwaysAskToDelete = value; } }
+        public bool ShouldAutomaticallySaveProfileChanges { get { return Program.settings.ShouldAutomaticallySaveProfileChanges; } set { Program.settings.ShouldAutomaticallySaveProfileChanges = value; } }
 
         // Tooltips
         public string ToolTip_SMAPI { get; set; }
@@ -29,6 +30,7 @@ namespace Stardrop.ViewModels
         public string ToolTip_AlwaysAskNXMFiles { get; set; }
         public string ToolTip_EnableProfileSpecificModConfigs { get; set; }
         public string ToolTip_EnableModsOnAdd { get; set; }
+        public string ToolTip_ShouldAutomaticallySaveProfileChanges { get; set; }
         public string ToolTip_Save { get; set; }
         public string ToolTip_Cancel { get; set; }
 
