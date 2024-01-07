@@ -41,7 +41,7 @@ namespace Stardrop.Utilities
                 }
 
                 var baseKeyTest = Registry.CurrentUser.OpenSubKey("Software", true).OpenSubKey("Classes", true).OpenSubKey("nxm", true);
-                if (baseKeyTest.GetValue("URL Protocol").ToString() != "nxm")
+                if (baseKeyTest is null || baseKeyTest.GetValue("URL Protocol").ToString() != "nxm")
                 {
                     return false;
                 }
