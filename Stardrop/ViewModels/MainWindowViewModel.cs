@@ -81,10 +81,8 @@ namespace Stardrop.ViewModels
             SmapiVersion = Program.settings.GameDetails?.SmapiVersion;
 
             // Create data view
-            var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending);
-
-            DataView = new DataGridCollectionView(Mods);
-            DataView.SortDescriptions.Add(dataGridSortDescription);
+            DataView = new DataGridCollectionView(Mods, isDataSorted: false, isDataInGroupOrder: false);
+            DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending));
             UpdateFilter();
 
             // Do OS specific setup
@@ -550,6 +548,16 @@ namespace Stardrop.ViewModels
         {
             if (DataView is not null)
             {
+                DataView.GroupDescriptions.Clear();
+                switch (Program.settings.ModGroupingMethod)
+                {
+                    case ModGrouping.None:
+                        break;
+                    case ModGrouping.Folder:
+                        DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.Path)));
+                        break;
+                }
+
                 DataView.Filter = null;
                 DataView.Filter = ModFilter;
             }
@@ -558,6 +566,10 @@ namespace Stardrop.ViewModels
         private bool ModFilter(object item)
         {
             var mod = item as Mod;
+            if (mod is null)
+            {
+                return false;
+            }
 
             if (mod.IsHidden)
             {
@@ -577,17 +589,32 @@ namespace Stardrop.ViewModels
             {
                 return false;
             }
+
             if (!String.IsNullOrEmpty(_filterText) && !String.IsNullOrEmpty(_columnFilter))
             {
-                if (_columnFilter == Program.translation.Get("ui.main_window.combobox.mod_name") && !mod.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                var filterTextNoWhitespace = _filterText.Replace(" ", String.Empty);
+                if (_columnFilter == Program.translation.Get("ui.main_window.combobox.mod_name") && !mod.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
-                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.author") && !mod.Author.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.group"))
+                {
+                    ModGrouping modGroupingMethod = Program.settings.ModGroupingMethod;
+                    switch (Program.settings.ModGroupingMethod)
+                    {
+                        case ModGrouping.Folder:
+                            if (mod.Path.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is false)
+                            {
+                                return false;
+                            }
+                            break;
+                    }
+                }
+                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.author") && !mod.Author.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
-                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.requirements") && !mod.HardRequirements.Any(r => r.Name is null || r.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)) && !mod.MissingRequirements.Any(r => r.Name is null || r.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)))
+                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.requirements") && !mod.HardRequirements.Any(r => r.Name is null || r.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase)) && !mod.MissingRequirements.Any(r => r.Name is null || r.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }

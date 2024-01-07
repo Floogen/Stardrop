@@ -244,6 +244,11 @@
 			<Setter Property="TextBlock.HorizontalAlignment" Value="Center"/>
 			<Setter Property="TextBlock.VerticalAlignment" Value="Center"/>
 		</Style>
+		<Style Selector="DataGridRowGroupHeader">
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
+		</Style>
 		<Style Selector="DataGridColumnHeader">
 			<Setter Property="FontWeight" Value="Bold"/>
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
@@ -284,7 +289,7 @@
 		<NativeMenu>
 			<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_headers.file}">
 				<NativeMenu>
-					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mod}" Click="AddMod_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mods}" Click="AddMod_Click" />
 					<NativeMenuItemSeparator/>
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.start_smapi}" Click="Smapi_Click" />
 					<NativeMenuItemSeparator/>
@@ -341,7 +346,7 @@
 			<Menu Name="mainMenu" IsVisible="{Binding ShowMainMenu}" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
 				<Image Name="menuIcon" Source="/Assets/icon.ico" Stretch="None"/>
 				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.file}" Margin="-10 0 0 0" Classes="Bar">
-					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mod}" Click="AddMod_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.add_mods}" Click="AddMod_Click" Classes="Bar"/>
 					<Separator/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.start_smapi}" Click="Smapi_Click" Classes="Bar"/>
 					<Separator/>
@@ -434,6 +439,11 @@
 					<ContextMenu x:Key="GridRowContextMenu">
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.open_containing_folder}" Click="ModGridMenuRow_OpenFolderPath" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.open_mod_page}" Click="ModGridMenuRow_OpenModPage" IsVisible="{Binding ModPageUri, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.filters}">
+							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.show_whole_mod_group}" Click="ModGridMenuRow_ShowWholeModGroup" />
+							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.show_authors_mods}" Click="ModGridMenuRow_ShowAuthorsMods" />
+							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.clear_filter}" Click="ModGridMenuRow_ClearFilter" />
+						</MenuItem>
 						<MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.delete}" Click="ModGridMenuRow_Delete" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
@@ -445,7 +455,7 @@
 					</Style>
 					<Style Selector="DataGridRow">
 						<Setter Property="ContextMenu" Value="{StaticResource GridRowContextMenu}" />
-						<Setter Property="ToolTip.Tip" Value="{Binding GetDescriptionToolTip}" />
+						<Setter Property="ToolTip.Tip" Value="{Binding Description}" />
 					</Style>
 				</DataGrid.Styles>
 				<DataGrid.Columns>
@@ -559,8 +569,9 @@
 		<DockPanel Name="filterBar" Grid.Row="4" Grid.Column="0" Margin="7 0 0 5">
 			<TextBox Name="searchBox" Watermark="{i18n:Translate ui.main_window.labels.filter}" Height="10" Width="250" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
 			<ComboBox x:Name="searchFilterColumnBox" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="150">
-				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.mod_name}" />
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.author}" />
+				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.mod_name}" />
+				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.group}" />
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.requirements}" />
 			</ComboBox>
 			<StackPanel Orientation="Horizontal" Margin="10 0 10 0">

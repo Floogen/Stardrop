@@ -1,6 +1,7 @@
 {
   // Main Window - Menu Items
   "ui.main_window.menu_items.add_mod": "Add Mod",
+  "ui.main_window.menu_items.add_mods": "Add Mods",
   "ui.main_window.menu_items.start_smapi": "Start SMAPI",
   "ui.main_window.menu_items.exit": "Exit",
   "ui.main_window.menu_items.settings": "Settings",
@@ -22,6 +23,10 @@
   "ui.main_window.menu_items.context.cancel": "Cancel",
   "ui.main_window.menu_items.context.open_containing_folder": "Open Containing Folder",
   "ui.main_window.menu_items.context.open_mod_page": "Open Mod Page",
+  "ui.main_window.menu_items.context.show_whole_mod_group": "Show Whole Mod Group",
+  "ui.main_window.menu_items.context.show_authors_mods": "Show Author's Mods",
+  "ui.main_window.menu_items.context.filters": "Filters",
+  "ui.main_window.menu_items.context.clear_filter": "Clear",
   "ui.main_window.menu_items.context.delete": "Delete",
 
   // Main Window - Menu Headers
@@ -77,6 +82,7 @@
   "ui.main_window.combobox.mod_name": "Mod Name",
   "ui.main_window.combobox.author": "Author",
   "ui.main_window.combobox.requirements": "Requirements",
+  "ui.main_window.combobox.group": "Mod Group",
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Path",
@@ -84,6 +90,7 @@
   "ui.settings_window.labels.mod_install": "Stardrop Installed Mods Path",
   "ui.settings_window.labels.themes": "Themes",
   "ui.settings_window.labels.languages": "Languages",
+  "ui.settings_window.labels.grouping": "Mod Grouping",
   "ui.settings_window.labels.miscellaneous": "Miscellaneous",
   "ui.settings_window.labels.nexus": "Nexus Mods",
   "ui.settings_window.labels.preferred_server": "Preferred Server:",
@@ -103,6 +110,7 @@
   "ui.settings_window.tooltips.mod_install_path": "The folder path which Stardrop will place newly installed mods. Must be under the folder given in \"Mod Folder Path\"",
   "ui.settings_window.tooltips.theme": "The current theme of Stardrop",
   "ui.settings_window.tooltips.language": "The current language of Stardrop",
+  "ui.settings_window.tooltips.grouping": "The current method for grouping mods.",
   "ui.settings_window.tooltips.ignore_hidden_folders": "If checked, Stardrop will ignore any mods which have a parent folder that start with \".\"",
   "ui.settings_window.tooltips.nxm_file_association": "Registers NXM protocol to be associated with Stardrop, allowing for direct installs from www.nexusmods.com",
   "ui.settings_window.tooltips.always_ask_nxm_files": "If checked, Stardrop will always ask before installing a mod from www.nexusmods.com via NXM",
