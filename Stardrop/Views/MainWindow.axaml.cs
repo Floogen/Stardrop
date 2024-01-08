@@ -1410,7 +1410,14 @@ namespace Stardrop.Views
                     mod.IsEnabled = enableState;
                 }
 
-                UpdateProfile(GetCurrentProfile());
+                if (Program.settings.ShouldAutomaticallySaveProfileChanges)
+                {
+                    UpdateProfile(GetCurrentProfile());
+                }
+                else
+                {
+                    _viewModel.ShowSaveProfileChanges = true;
+                }
             }
         }
 
