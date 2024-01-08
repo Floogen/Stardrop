@@ -39,7 +39,17 @@ namespace Stardrop.Models
         public string ModPageUri { get { return _modPageUri; } set { _modPageUri = value; NotifyPropertyChanged("ModPageUri"); } }
         public int? NexusModId { get { return GetNexusId(); } }
         private bool _isEnabled { get; set; }
-        public bool IsEnabled { get { return _isEnabled; } set { _isEnabled = value; NotifyPropertyChanged("IsEnabled"); NotifyPropertyChanged("ChangeStateText"); } }
+        public bool IsEnabled
+        {
+            get { return _isEnabled; }
+            set
+            {
+                _isEnabled = value;
+                NotifyPropertyChanged("IsEnabled");
+                NotifyPropertyChanged("ChangeStateText");
+                NotifyPropertyChanged("ChangeWholeModGroupStateText");
+            }
+        }
         private bool _isHidden { get; set; }
         public bool IsHidden { get { return _isHidden; } set { _isHidden = value; NotifyPropertyChanged("IsHidden"); } }
         private bool _isEndorsement { get; set; }
