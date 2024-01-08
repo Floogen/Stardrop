@@ -71,8 +71,10 @@ namespace Stardrop.ViewModels
         public string NexusLimits { get { return _nexusLimits; } set { this.RaiseAndSetIfChanged(ref _nexusLimits, value); } }
         private string _smapiVersion;
         public string SmapiVersion { get { return String.IsNullOrEmpty(_smapiVersion) ? Program.translation.Get("ui.main_window.labels.unknown_SMAPI") : $"v{_smapiVersion}"; } set { this.RaiseAndSetIfChanged(ref _smapiVersion, value); } }
+
         public bool ShowSaveProfileChanges { get { return _showSaveProfileChanges; } set { this.RaiseAndSetIfChanged(ref _showSaveProfileChanges, value); } }
         private bool _showSaveProfileChanges;
+        public bool AreModGroupsEnabled { get { return Program.settings.ModGroupingMethod != ModGrouping.None; } }
 
         public MainWindowViewModel(string modsFilePath, string version)
         {
