@@ -444,8 +444,10 @@
 							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.show_authors_mods}" Click="ModGridMenuRow_ShowAuthorsMods" />
 							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.clear_filter}" Click="ModGridMenuRow_ClearFilter" />
 						</MenuItem>
-						<MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" />
-						<MenuItem Header="{Binding ChangeWholeModGroupStateText}" Click="ModGridMenuRow_ChangeWholeModGroupState" />
+						<MenuItem Header="{Binding ChangeStateText}">
+							<MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" />
+							<MenuItem Header="{Binding ChangeWholeModGroupStateText}" Click="ModGridMenuRow_ChangeWholeModGroupState" />
+						</MenuItem>
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.delete}" Click="ModGridMenuRow_Delete" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
 					</ContextMenu>
