@@ -483,6 +483,15 @@ namespace Stardrop.Views
                     DisableRequirements(mod);
                 }
             }
+
+            if (Program.settings.ShouldAutomaticallySaveProfileChanges)
+            {
+                UpdateProfile(GetCurrentProfile());
+            }
+            else
+            {
+                _viewModel.ShowSaveProfileChanges = true;
+            }
         }
 
         private void ModGridMenuRow_OpenFolderPath(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
