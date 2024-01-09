@@ -397,40 +397,101 @@ namespace Stardrop.Views
             {
                 return;
             }
-
             var selectedMod = (sender as MenuItem).DataContext as Mod;
-            if (selectedMod is not null)
+            if (selectedMod is null)
             {
-                // Add the selected mod into the selection list if shift or ctrl is held, otherwise clear the current selection
-                if (!modGrid.SelectedItems.Contains(selectedMod))
+                return;
+            }
+            // Add the selected mod into the selection list if shift or ctrl is held, otherwise clear the current
+            //  selection.
+            if (!modGrid.SelectedItems.Contains(selectedMod))
+            {
+                if (!(_ctrlPressed || _shiftPressed))
                 {
-                    if (!(_ctrlPressed || _shiftPressed))
-                    {
-                        modGrid.SelectedItems.Clear();
-                    }
-                    modGrid.SelectedItems.Add(selectedMod);
+                    modGrid.SelectedItems.Clear();
                 }
+                modGrid.SelectedItems.Add(selectedMod);
+            }
 
-                // Enable / disable all selected mods based on the clicked mod
-                selectedMod.IsEnabled = !selectedMod.IsEnabled;
-                foreach (Mod mod in modGrid.SelectedItems)
+            EnableDisableSelectedMods(modGrid, selectedMod);
+        }
+
+        /// <summary>
+        /// Enable/Disable all mods for the mod group(s) of the selected mod(s).
+        /// </summary>
+        ///
+        /// <param name="sender">
+        /// The currently selected mod of the whole mod group whose mods to enable/disable.
+        /// </param>
+        private void ModGridMenuRow_ChangeWholeModGroupState(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var modGrid = this.FindControl<DataGrid>("modGrid");
+            if (modGrid is null)
+            {
+                return;
+            }
+            var selectedMod = (sender as MenuItem)?.DataContext as Mod;
+            if (selectedMod is null)
+            {
+                return;
+            }
+
+            // Select all mods of the mod group(s) whose mod 'selectedMod' is currently selected or whose mods have 
+            //  been already selected previously.
+            var originallySelectedModPaths = new List<string>();
+            foreach (Mod mod in modGrid.SelectedItems)
+            {
+                originallySelectedModPaths.Add(mod.Path);
+            }
+            if (originallySelectedModPaths.Count is 0)
+            {
+                originallySelectedModPaths.Add(selectedMod.Path);
+            }
+            foreach (Mod mod in modGrid.Items)
+            {
+                if (originallySelectedModPaths.Contains(mod.Path))
                 {
-                    mod.IsEnabled = selectedMod.IsEnabled;
-
-                    if (selectedMod.IsEnabled)
-                    {
-                        // Enable any existing requirements
-                        EnableRequirements(mod);
-                    }
-                    else
-                    {
-                        // Disable any mods that require it requirements
-                        DisableRequirements(mod);
-                    }
+                    modGrid.SelectedItems.Add(mod);
                 }
             }
 
-            UpdateProfile(GetCurrentProfile());
+            EnableDisableSelectedMods(modGrid, selectedMod);
+        }
+
+        /// <summary>
+        /// Enable/Disable selected mods.
+        /// </summary>
+        ///
+        /// <param name="selectedMod">The currently selected which the enabling/disabling is performed on.</param>
+        private void EnableDisableSelectedMods(DataGrid? modGrid, Mod? selectedMod)
+        {
+            if (selectedMod is null || modGrid is null)
+            {
+                return;
+            }
+            // Enable / disable all selected mods based on the currently selected mod.
+            selectedMod.IsEnabled = !selectedMod.IsEnabled;
+            foreach (Mod mod in modGrid.SelectedItems)
+            {
+                mod.IsEnabled = selectedMod.IsEnabled;
+                if (selectedMod.IsEnabled)
+                {
+                    EnableRequirements(mod);
+                }
+                else
+                {
+                    DisableRequirements(mod);
+                }
+            }
+
+            if (Program.settings.ShouldAutomaticallySaveProfileChanges)
+            {
+                UpdateProfile(GetCurrentProfile());
+            }
+            else
+            {
+                _viewModel.ShowSaveProfileChanges = true;
+            }
         }
 
         private void ModGridMenuRow_OpenFolderPath(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -1349,7 +1410,14 @@ namespace Stardrop.Views
                     mod.IsEnabled = enableState;
                 }
 
-                UpdateProfile(GetCurrentProfile());
+                if (Program.settings.ShouldAutomaticallySaveProfileChanges)
+                {
+                    UpdateProfile(GetCurrentProfile());
+                }
+                else
+                {
+                    _viewModel.ShowSaveProfileChanges = true;
+                }
             }
         }
 
@@ -1832,6 +1900,10 @@ namespace Stardrop.Views
             this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
         }
 
+        /// <summary>
+        /// Enable all existing requirements for <paramref name="mod" />.
+        /// </summary>
+        /// <param name="mod">The mod whose requirements to enable.</param>
         private void EnableRequirements(Mod mod)
         {
             foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
@@ -1847,6 +1919,10 @@ namespace Stardrop.Views
             }
         }
 
+        /// <summary>
+        /// Disable all mods that require the mod <paramref name="mod" />.
+        /// </summary>
+        /// <param name="mod">The mod to look for in requirements.</param>
         private void DisableRequirements(Mod mod)
         {
             foreach (var childMod in _viewModel.Mods.Where(m => m.Requirements.Any(r => r.IsRequired && r.UniqueID.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase))))
