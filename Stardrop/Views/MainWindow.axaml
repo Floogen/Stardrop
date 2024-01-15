@@ -570,9 +570,12 @@
 			<Button Name="searchFilterColumn" Content="{i18n:Translate ui.main_window.buttons.column_search_filters}" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}">
 				<Button.Flyout>
 	        <Flyout>
-						<ListBox x:Name="searchFilterColumnBox"
-							SelectionMode="Multiple,Toggle" SelectedIndex="0"
-							Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" Width="150" />
+				<ListBox x:Name="searchFilterColumnBox" SelectionMode="Multiple,Toggle" SelectedIndex="0" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" Width="150">
+					<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.author}" />
+					<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.mod_name}" />
+					<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.group}" />
+					<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.requirements}" />
+				</ListBox>
 	        </Flyout>
 		    </Button.Flyout>
 			</Button>

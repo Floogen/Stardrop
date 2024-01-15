@@ -80,11 +80,11 @@
   "ui.main_window.combobox.show_all_mods": "Show All Mods",
   "ui.main_window.combobox.hide_enabled_mods": "Hide Enabled Mods",
 
-  // Main Window - search filter ListBox
-  "ui.main_window.filter_listbox.mod_name": "Mod Name",
-  "ui.main_window.filter_listbox.author": "Author",
-  "ui.main_window.filter_listbox.requirements": "Requirements",
-  "ui.main_window.filter_listbox.group": "Mod Group",
+  // Main Window - ComboBox (ListBox)
+  "ui.main_window.combobox.mod_name": "Mod Name",
+  "ui.main_window.combobox.author": "Author",
+  "ui.main_window.combobox.requirements": "Requirements",
+  "ui.main_window.combobox.group": "Mod Group",
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Path",

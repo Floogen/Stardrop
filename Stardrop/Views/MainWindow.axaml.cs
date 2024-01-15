@@ -137,15 +137,7 @@ namespace Stardrop.Views
 
             // Handle filtering by searchFilterColumnBox
             var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
-            searchFilterColumnBox.Items = new string[] {
-                Program.translation.Get("ui.main_window.filter_listbox.author"),
-                Program.translation.Get("ui.main_window.filter_listbox.mod_name"),
-                Program.translation.Get("ui.main_window.filter_listbox.group"),
-                Program.translation.Get("ui.main_window.filter_listbox.requirements")
-            };
-            var searchFilterSelectedItems = new List<string>();
-            searchFilterSelectedItems.Add(Program.translation.Get("ui.main_window.filter_listbox.mod_name"));
-            searchFilterColumnBox.SelectedItems = searchFilterSelectedItems;
+            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.mod_name"));
             searchFilterColumnBox.SelectionChanged += FilterListBox_SelectionChanged;
 
             var disabledModFilterColumnBox = this.FindControl<ComboBox>("disabledModFilterColumnBox");
@@ -580,14 +572,14 @@ namespace Stardrop.Views
             if (_viewModel.ColumnFilter is null || _viewModel.ColumnFilter.Any() is false)
             {
                 var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
-                _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<string>().ToList();
+                _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<ListBoxItem>().Select(i => i.Content.ToString()).ToList();
             }
         }
 
         private void FilterListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             var searchFilterColumnBox = (e.Source as ListBox);
-            _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<string>().ToList();
+            _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<ListBoxItem>().Select(i => i.Content.ToString()).ToList();
         }
 
         private void DisabledModComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
