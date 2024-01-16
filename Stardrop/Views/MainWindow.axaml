@@ -30,6 +30,10 @@
 	</Window.Resources>
 
 	<Window.Styles>
+		<Style Selector="FlyoutPresenter.FilterBoxFlyout">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+		</Style>
 		<Style Selector="MenuItem.Bar Separator">
 			<Setter Property="Border.Background" Value="{DynamicResource HighlightForegroundBrush}"/>
 		</Style>
@@ -262,6 +266,10 @@
 		<Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
 			<Setter Property="Fill" Value="{DynamicResource HighlightForegroundBrush}"/>
 		</Style>
+		<Style Selector="ListBox#FilterBox">
+			<Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+		</Style>
 		<Style Selector="ListBoxItem">
 			<Setter Property="HorizontalContentAlignment" Value="Center" />
 		</Style>
@@ -271,6 +279,14 @@
 		</Style>
 		<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
 			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+		<Style Selector="ListBoxItem.FilterItemBox:not(:selected) /template/ ContentPresenter">
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+			<Setter Property="TextBlock.Opacity" Value="0.25"/>
+		</Style>
+		<Style Selector="ListBoxItem.FilterItemBox:selected /template/ ContentPresenter">
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+			<Setter Property="TextBlock.Opacity" Value="1"/>
 		</Style>
 		<Style Selector="TextBox:focus">
 			<Setter Property="Foreground" Value="White"/>
@@ -569,14 +585,14 @@
 			<TextBox Name="searchBox" Watermark="{i18n:Translate ui.main_window.labels.filter}" Height="10" Width="250" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
 			<Button Name="searchFilterColumn" Content="{i18n:Translate ui.main_window.buttons.column_search_filters}" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}">
 				<Button.Flyout>
-	        <Flyout>
-				<ListBox x:Name="searchFilterColumnBox" SelectionMode="Multiple,Toggle" SelectedIndex="0" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" Width="150">
-					<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.author}" />
-					<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.mod_name}" />
-					<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.group}" />
-					<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.requirements}" />
-				</ListBox>
-	        </Flyout>
+					<Flyout FlyoutPresenterClasses="FilterBoxFlyout">
+						<ListBox x:Name="searchFilterColumnBox" Name="FilterBox" SelectionMode="Multiple,Toggle" SelectedIndex="0" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" Width="150">
+							<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.author}" Classes="FilterItemBox" />
+							<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.mod_name}" Classes="FilterItemBox" />
+							<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.group}" Classes="FilterItemBox" />
+							<ListBoxItem Content="{i18n:Translate ui.main_window.combobox.requirements}" Classes="FilterItemBox" />
+						</ListBox>
+					</Flyout>
 		    </Button.Flyout>
 			</Button>
 			<StackPanel Orientation="Horizontal" Margin="10 0 10 0">
