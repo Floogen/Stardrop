@@ -137,8 +137,8 @@ namespace Stardrop.Views
 
             // Handle filtering by searchFilterColumnBox
             var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
-            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.mod_name"));
             searchFilterColumnBox.SelectionChanged += FilterListBox_SelectionChanged;
+            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.mod_name"));
 
             var disabledModFilterColumnBox = this.FindControl<ComboBox>("disabledModFilterColumnBox");
             disabledModFilterColumnBox.SelectedIndex = 0;
