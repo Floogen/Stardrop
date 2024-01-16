@@ -583,7 +583,7 @@
 		</Border>
 		<DockPanel Name="filterBar" Grid.Row="4" Grid.Column="0" Margin="7 0 0 5">
 			<TextBox Name="searchBox" Watermark="{i18n:Translate ui.main_window.labels.filter}" Height="10" Width="250" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
-			<Button Name="searchFilterColumn" Content="{i18n:Translate ui.main_window.buttons.column_search_filters}" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}">
+			<Button Name="searchFilterColumnButton" Content="{i18n:Translate ui.main_window.buttons.no_search_filters}" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}">
 				<Button.Flyout>
 					<Flyout FlyoutPresenterClasses="FilterBoxFlyout">
 						<ListBox x:Name="searchFilterColumnBox" Name="FilterBox" SelectionMode="Multiple,Toggle" SelectedIndex="0" Margin="5 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" Width="150">

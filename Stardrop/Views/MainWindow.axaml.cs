@@ -580,6 +580,9 @@ namespace Stardrop.Views
         {
             var searchFilterColumnBox = (e.Source as ListBox);
             _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<ListBoxItem>().Select(i => i.Content.ToString()).ToList();
+
+            int selectedItemCount = searchFilterColumnBox.SelectedItems.Count;
+            this.FindControl<Button>("searchFilterColumnButton").Content = selectedItemCount > 0 ? String.Format(Program.translation.Get("ui.main_window.buttons.active_search_filters"), selectedItemCount) : Program.translation.Get("ui.main_window.buttons.no_search_filters");
         }
 
         private void DisabledModComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)

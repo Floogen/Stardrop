@@ -68,7 +68,8 @@
   "ui.main_window.buttons.save_configs": "Save Configs",
   "ui.main_window.buttons.hide_disabled_mods": "Hide Disabled Mods",
   "ui.main_window.buttons.show_updatable_mods": "Show Updatable Mods",
-  "ui.main_window.buttons.column_search_filters": "Column Search Filters",
+  "ui.main_window.buttons.active_search_filters": "{0} Filter(s) Active",
+  "ui.main_window.buttons.no_search_filters": "No Filters Active",
 
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "Click To Check For Mod Updates",
