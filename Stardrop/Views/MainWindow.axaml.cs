@@ -137,9 +137,9 @@ namespace Stardrop.Views
             this.FindControl<TextBox>("searchBox").AddHandler(KeyUpEvent, SearchBox_KeyUp);
 
             // Handle filtering by searchFilterColumnBox
-            var searchFilterColumnBox = this.FindControl<ComboBox>("searchFilterColumnBox");
-            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ComboBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.mod_name"));
-            searchFilterColumnBox.SelectionChanged += FilterComboBox_SelectionChanged;
+            var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
+            searchFilterColumnBox.SelectionChanged += FilterListBox_SelectionChanged;
+            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.mod_name"));
 
             var disabledModFilterColumnBox = this.FindControl<ComboBox>("disabledModFilterColumnBox");
             disabledModFilterColumnBox.SelectedIndex = 0;
@@ -526,7 +526,7 @@ namespace Stardrop.Views
 
             var searchFilterColumnBox = this.FindControl<ComboBox>("searchFilterColumnBox");
             searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ComboBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.group"));
-            
+
             this.FindControl<TextBox>("searchBox").Text = selectedMod.Path;
             _viewModel.FilterText = selectedMod.Path;
         }
@@ -544,7 +544,7 @@ namespace Stardrop.Views
 
             this.FindControl<TextBox>("searchBox").Text = selectedMod.Author;
             _viewModel.FilterText = selectedMod.Author;
-        }        
+        }
 
         private void ModGridMenuRow_ClearFilter(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
@@ -631,17 +631,20 @@ namespace Stardrop.Views
             _viewModel.FilterText = filterText;
 
             // Ensure the ColumnFilter is set
-            if (String.IsNullOrEmpty(_viewModel.ColumnFilter))
+            if (_viewModel.ColumnFilter is null || _viewModel.ColumnFilter.Any() is false)
             {
-                var searchFilterColumnBox = this.FindControl<ComboBox>("searchFilterColumnBox");
-                _viewModel.ColumnFilter = (searchFilterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
+                var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
+                _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<ListBoxItem>().Select(i => i.Content.ToString()).ToList();
             }
         }
 
-        private void FilterComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        private void FilterListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var searchFilterColumnBox = (e.Source as ComboBox);
-            _viewModel.ColumnFilter = (searchFilterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
+            var searchFilterColumnBox = (e.Source as ListBox);
+            _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<ListBoxItem>().Select(i => i.Content.ToString()).ToList();
+
+            int selectedItemCount = searchFilterColumnBox.SelectedItems.Count;
+            this.FindControl<Button>("searchFilterColumnButton").Content = selectedItemCount > 0 ? String.Format(Program.translation.Get("ui.main_window.buttons.active_search_filters"), selectedItemCount) : Program.translation.Get("ui.main_window.buttons.no_search_filters");
         }
 
         private void DisabledModComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)

@@ -56,8 +56,8 @@ namespace Stardrop.ViewModels
         public string RequirementColumnState { get { return ShowRequirements ? Program.translation.Get("ui.main_window.menu_items.context.hide_requirements") : Program.translation.Get("ui.main_window.menu_items.context.show_requirements"); } }
         private string _filterText;
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }
-        private string _columnFilter;
-        public string ColumnFilter { get { return _columnFilter; } set { _columnFilter = value; UpdateFilter(); } }
+        private List<string> _columnFilter;
+        public List<string> ColumnFilter { get { return _columnFilter; } set { _columnFilter = value; UpdateFilter(); } }
         private string _updateStatusText = Program.translation.Get("ui.main_window.button.update_status.generic");
         public string UpdateStatusText { get { return _updateStatusText; } set { this.RaiseAndSetIfChanged(ref _updateStatusText, value); } }
         private int _modsWithCachedUpdates;
@@ -592,37 +592,42 @@ namespace Stardrop.ViewModels
                 return false;
             }
 
-            if (!String.IsNullOrEmpty(_filterText) && !String.IsNullOrEmpty(_columnFilter))
+            if (String.IsNullOrEmpty(_filterText) || _columnFilter is null || !_columnFilter.Any())
+            {
+                return true;
+            }
+
+            if (!String.IsNullOrEmpty(_filterText) && _columnFilter.Any())
             {
                 var filterTextNoWhitespace = _filterText.Replace(" ", String.Empty);
-                if (_columnFilter == Program.translation.Get("ui.main_window.combobox.mod_name") && !mod.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))
+                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.mod_name")) && mod.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))
                 {
-                    return false;
+                    return true;
                 }
-                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.group"))
+                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.group")))
                 {
                     ModGrouping modGroupingMethod = Program.settings.ModGroupingMethod;
                     switch (Program.settings.ModGroupingMethod)
                     {
                         case ModGrouping.Folder:
-                            if (mod.Path.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is false)
+                            if (mod.Path.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
                             {
-                                return false;
+                                return true;
                             }
                             break;
                     }
                 }
-                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.author") && !mod.Author.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))
+                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.author")) && mod.Author.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))
                 {
-                    return false;
+                    return true;
                 }
-                else if (_columnFilter == Program.translation.Get("ui.main_window.combobox.requirements") && !mod.HardRequirements.Any(r => r.Name is null || r.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase)) && !mod.MissingRequirements.Any(r => r.Name is null || r.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase)))
+                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.requirements")) && ((mod.HardRequirements is not null && mod.HardRequirements.Any(r => r.Name is null || r.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))) || (mod.MissingRequirements is not null && mod.MissingRequirements.Any(r => r.Name is null || r.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase)))))
                 {
-                    return false;
+                    return true;
                 }
             }
 
-            return true;
+            return false;
         }
     }
 }
