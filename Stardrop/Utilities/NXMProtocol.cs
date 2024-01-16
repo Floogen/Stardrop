@@ -34,7 +34,6 @@ namespace Stardrop.Utilities
         {
             try
             {
-                return false;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false)
                 {
                     Program.helper.Log($"Attempted to modify registery keys for NXM protocol on a non-Windows system!");
