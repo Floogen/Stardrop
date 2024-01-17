@@ -197,6 +197,13 @@ namespace Stardrop.ViewModels
                 modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
             }
 
+            // Get the local data
+            ClientData localDataCache = new ClientData();
+            if (File.Exists(Pathing.GetDataCachePath()))
+            {
+                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            }
+
             foreach (var fileInfo in GetManifestFiles(new DirectoryInfo(modsFilePath)))
             {
                 if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(modsFilePath, fileInfo.Directory)))
@@ -236,6 +243,11 @@ namespace Stardrop.ViewModels
                     {
                         mod.ModPageUri = modKeysCache.First(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).PageUrl;
                     }
+                    
+                    if (localDataCache is not null && localDataCache.ModInstallData is not null && localDataCache.ModInstallData.Any(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        mod.InstallTimestamp = localDataCache.ModInstallData.First(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).InstallTimestamp;
+                    }
 
                     // Check if any config file exists
                     var configPath = Path.Combine(fileInfo.DirectoryName, "config.json");
@@ -261,6 +273,22 @@ namespace Stardrop.ViewModels
                     Program.helper.Log($"Unable to load the manifest.json from {fileInfo.DirectoryName}: {ex}", Helper.Status.Alert);
                 }
             }
+
+            // Update the local data
+            var modInstallData = new List<ModInstallData>();
+            foreach (var mod in Mods.Where(m => m is not null))
+            {
+                if (mod.InstallTimestamp is null)
+                {
+                    mod.InstallTimestamp = DateTime.Now;
+                }
+
+                modInstallData.Add(new ModInstallData() { UniqueId = mod.UniqueId, InstallTimestamp = mod.InstallTimestamp.Value });
+            }
+            localDataCache.ModInstallData = modInstallData;
+
+            // Cache the local data
+            File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
 
             EvaluateRequirements();
             DiscoverConfigs(modsFilePath, useArchive: true);

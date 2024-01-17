@@ -26,6 +26,7 @@ namespace Stardrop.Models
         public string Path { get; set; } // Whole mod path inside installed mods path for grouping mod components in the same mod
         public string Description { get; set; }
         public string Author { get; set; }
+        public DateTime? InstallTimestamp { get; set; }
         public Config? _config { get; set; }
         public Config? Config { get { return _config; } set { _config = value; NotifyPropertyChanged("Config"); NotifyPropertyChanged("HasConfig"); } }
         public bool HasConfig { get { return Config is not null; } }
