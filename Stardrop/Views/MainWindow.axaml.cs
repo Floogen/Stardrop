@@ -1835,7 +1835,7 @@ namespace Stardrop.Views
                 // Update the cached key data
                 foreach (var modEntry in modUpdateData.Where(m => m.Metadata is not null))
                 {
-                    var modUrl = String.IsNullOrEmpty(modEntry.Metadata.CustomUrl) && modEntry.Metadata.Main is not null ? modEntry.Metadata.Main.Url : modEntry.Metadata.CustomUrl; ;
+                    var modUrl = String.IsNullOrEmpty(modEntry.Metadata.CustomUrl) && modEntry.Metadata.Main is not null ? modEntry.Metadata.Main.Url : modEntry.Metadata.CustomUrl;
                     if (modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(modEntry.Id)) is ModKeyInfo keyInfo && keyInfo is not null)
                     {
                         keyInfo.Name = modEntry.Metadata.Name;
