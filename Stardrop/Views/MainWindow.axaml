@@ -517,6 +517,12 @@
 						</DataGridTextColumn.Header>
 					</DataGridTextColumn>
 					<DataGridTemplateColumn IsVisible="{Binding ShowRequirements}" SortMemberPath="HardRequirements.Count" CellStyleClasses="centered">
+					<DataGridTextColumn Binding="{Binding InstallTimestamp}" IsVisible="False">
+						<DataGridTextColumn.Header>
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.install_timestamp}" TextAlignment="Center" />
+						</DataGridTextColumn.Header>
+					</DataGridTextColumn>
+					<DataGridTemplateColumn IsVisible="False" SortMemberPath="HardRequirements.Count" CellStyleClasses="centered">
 						<DataGridTemplateColumn.Header>
 							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.requirements}" TextAlignment="Center" />
 						</DataGridTemplateColumn.Header>
