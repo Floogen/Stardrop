@@ -68,6 +68,34 @@ namespace Stardrop.Views
                 _viewModel.DragOverColor = "#ff9f2a";
             });
 
+            // Get the local data
+            ClientData localDataCache = new ClientData();
+            if (File.Exists(Pathing.GetDataCachePath()))
+            {
+                try
+                {
+                    localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                }
+                catch
+                {
+                    localDataCache = new ClientData();
+                }
+            }
+
+            // Sets the grid's column visibility, based on previous session
+            if (localDataCache.ColumnActiveStates is not null)
+            {
+                var gridColumnContextMenu = this.FindControl<ContextMenu>("gridColumnContextMenu");
+                foreach (MenuItem column in gridColumnContextMenu.Items)
+                {
+                    string columnName = (string)column.Header;
+                    if (localDataCache.ColumnActiveStates.ContainsKey(columnName))
+                    {
+                        _viewModel.SetColumnVisibility(column, modGrid, localDataCache.ColumnActiveStates[columnName]);
+                    }
+                }
+            }
+
             // Handle the mainMenu bar for drag and related events
             var menuBorder = this.FindControl<Border>("menuBorder");
             menuBorder.PointerPressed += MainBar_PointerPressed;

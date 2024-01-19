@@ -1,4 +1,5 @@
 using Avalonia.Collections;
+using Avalonia.Controls;
 using Json.More;
 using ReactiveUI;
 using Stardrop.Models;
@@ -121,6 +122,65 @@ namespace Stardrop.ViewModels
             {
                 Program.helper.Log($"Failed to utilize OpenBrowser with the url ({url}): {ex}");
             }
+        }
+
+        public void ChangeColumnVisibility(MenuItem column)
+        {
+            if (column is null)
+            {
+                return;
+            }
+
+            var modGrid = column.FindControl<DataGrid>("modGrid");
+            if (modGrid is null)
+            {
+                return;
+            }
+
+            if (column.Classes.Contains("ColumnInactive"))
+            {
+                SetColumnVisibility(column, modGrid, true);
+            }
+            else
+            {
+                SetColumnVisibility(column, modGrid, false);
+            }
+        }
+
+        public void SetColumnVisibility(MenuItem column, DataGrid modGrid, bool isActive)
+        {
+            // Get the local data
+            ClientData localDataCache = new ClientData();
+            if (File.Exists(Pathing.GetDataCachePath()))
+            {
+                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            }
+
+            if (isActive)
+            {
+                if (modGrid.Columns.Any(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header))
+                {
+                    column.Classes.Remove("ColumnInactive");
+                    column.Classes.Add("ColumnActive");
+
+                    modGrid.Columns.First(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header).IsVisible = true;
+                    localDataCache.ColumnActiveStates[(string)column.Header] = true;
+                }
+            }
+            else
+            {
+                if (modGrid.Columns.Any(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header))
+                {
+                    column.Classes.Remove("ColumnActive");
+                    column.Classes.Add("ColumnInactive");
+
+                    modGrid.Columns.First(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header).IsVisible = false;
+                    localDataCache.ColumnActiveStates[(string)column.Header] = false;
+                }
+            }
+
+            // Cache the local data
+            File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
         public bool ParentFolderContainsPeriod(string oldestAncestorPath, DirectoryInfo? directoryInfo)

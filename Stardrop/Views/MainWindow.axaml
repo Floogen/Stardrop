@@ -34,6 +34,12 @@
 			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="BorderThickness" Value="0"/>
 		</Style>
+		<Style Selector="MenuItem.ColumnActive">
+			<Setter Property="i:MenuItem.Icon" Value="mdi-check-outline" />
+		</Style>
+		<Style Selector="MenuItem.ColumnInactive">
+			<Setter Property="i:MenuItem.Icon" Value="" />
+		</Style>
 		<Style Selector="MenuItem.Bar Separator">
 			<Setter Property="Border.Background" Value="{DynamicResource HighlightForegroundBrush}"/>
 		</Style>
@@ -446,9 +452,13 @@
 		<Border Name="dragOverBorder" Margin="10" DragDrop.AllowDrop="True" Grid.Row="3" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
 			<DataGrid Name="modGrid" Foreground="{DynamicResource DataGridRowForeground}" Background="{DynamicResource DataGridRowBackground}" AlternatingRowBackground="{DynamicResource AlternativeDataGridRowBackground}" CanUserSortColumns="True" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 				<DataGrid.Resources>
-					<ContextMenu x:Key="GridColumnContextMenu" DataContext="{Binding $parent[DataGrid].DataContext}">
-						<!-- <MenuItem Header="{Binding SortText}" Click="ModGridMenuColumn_ChangeSort" />-->
-						<!-- <MenuItem Header="Hide" Click="ModGridColumnMenu_ChangeVisibility" />-->
+					<ContextMenu x:Key="GridColumnContextMenu" Name="gridColumnContextMenu" DataContext="{Binding $parent[DataGrid].DataContext}">
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.columns.show_hide}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.requirements}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.author}" Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.install_timestamp}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.version}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.configuration}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
 					</ContextMenu>
 					<ContextMenu x:Key="GridRowContextMenu">
