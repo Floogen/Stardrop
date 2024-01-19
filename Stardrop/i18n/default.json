@@ -18,7 +18,6 @@
   "ui.main_window.menu_items.check_for_SMAPI_update": "Check for SMAPI Update",
 
   // Main Window - Menu Items - Context
-  "ui.main_window.menu_items.context.show_requirements": "Show Requirements",
   "ui.main_window.menu_items.context.hide_requirements": "Hide Requirements",
   "ui.main_window.menu_items.context.cancel": "Cancel",
   "ui.main_window.menu_items.context.open_containing_folder": "Open Containing Folder",

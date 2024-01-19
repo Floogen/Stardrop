@@ -449,7 +449,6 @@
 					<ContextMenu x:Key="GridColumnContextMenu" DataContext="{Binding $parent[DataGrid].DataContext}">
 						<!-- <MenuItem Header="{Binding SortText}" Click="ModGridMenuColumn_ChangeSort" />-->
 						<!-- <MenuItem Header="Hide" Click="ModGridColumnMenu_ChangeVisibility" />-->
-						<MenuItem Header="{Binding RequirementColumnState}" Click="ModGridMenuColumn_ChangeRequirementVisibility"/>
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
 					</ContextMenu>
 					<ContextMenu x:Key="GridRowContextMenu">
@@ -516,7 +515,6 @@
 							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.author}" TextAlignment="Center" />
 						</DataGridTextColumn.Header>
 					</DataGridTextColumn>
-					<DataGridTemplateColumn IsVisible="{Binding ShowRequirements}" SortMemberPath="HardRequirements.Count" CellStyleClasses="centered">
 					<DataGridTextColumn Binding="{Binding InstallTimestamp}" IsVisible="False">
 						<DataGridTextColumn.Header>
 							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.install_timestamp}" TextAlignment="Center" />
