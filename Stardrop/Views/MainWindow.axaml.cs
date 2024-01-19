@@ -2042,6 +2042,13 @@ namespace Stardrop.Views
                 return addedMods;
             }
 
+            // Get the local data
+            ClientData localDataCache = new ClientData();
+            if (File.Exists(Pathing.GetDataCachePath()))
+            {
+                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            }
+
             // Export zip to the default mods folder
             foreach (string fileFullName in filePaths)
             {
@@ -2109,6 +2116,14 @@ namespace Stardrop.Views
 
                                     isUpdate = true;
                                     installPath = mod.ModFileInfo.Directory.FullName;
+
+                                    // Set the LastUpdateTimestamp
+                                    if (localDataCache.ModInstallData is not null && localDataCache.ModInstallData.Any(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)))
+                                    {
+                                        var updatedTimestamp = DateTime.Now;
+                                        mod.LastUpdateTimestamp = updatedTimestamp;
+                                        localDataCache.ModInstallData.First(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)).LastUpdateTimestamp = updatedTimestamp;
+                                    }
                                 }
                                 else if (String.IsNullOrEmpty(manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase)))
                                 {
@@ -2182,6 +2197,9 @@ namespace Stardrop.Views
                     await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_load_mod"), fileFullName), Program.translation.Get("internal.ok"));
                 }
             }
+
+            // Cache the local data
+            File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
 
             // Refresh mod list
             _viewModel.DiscoverMods(Pathing.defaultModPath);

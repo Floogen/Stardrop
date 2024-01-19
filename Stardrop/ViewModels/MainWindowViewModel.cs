@@ -304,6 +304,7 @@ namespace Stardrop.ViewModels
                     if (localDataCache is not null && localDataCache.ModInstallData is not null && localDataCache.ModInstallData.Any(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)))
                     {
                         mod.InstallTimestamp = localDataCache.ModInstallData.First(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).InstallTimestamp;
+                        mod.LastUpdateTimestamp = localDataCache.ModInstallData.First(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).LastUpdateTimestamp;
                     }
 
                     // Check if any config file exists
@@ -340,7 +341,7 @@ namespace Stardrop.ViewModels
                     mod.InstallTimestamp = DateTime.Now;
                 }
 
-                modInstallData.Add(new ModInstallData() { UniqueId = mod.UniqueId, InstallTimestamp = mod.InstallTimestamp.Value });
+                modInstallData.Add(new ModInstallData() { UniqueId = mod.UniqueId, InstallTimestamp = mod.InstallTimestamp.Value, LastUpdateTimestamp = mod.LastUpdateTimestamp });
             }
             localDataCache.ModInstallData = modInstallData;
 

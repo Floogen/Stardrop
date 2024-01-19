@@ -47,6 +47,7 @@
   "ui.main_window.menu_headers.endorsement": "Endorsement",
   "ui.main_window.menu_headers.nexus_install": "Nexus Mods Updates",
   "ui.main_window.menu_headers.install_timestamp": "Install Timestamp",
+  "ui.main_window.menu_headers.last_updated": "Last Updated",
 
   // Main Window - Labels
   "ui.main_window.labels.profile": "Profile",

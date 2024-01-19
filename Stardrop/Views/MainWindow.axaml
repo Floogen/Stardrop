@@ -457,6 +457,7 @@
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.requirements}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.author}" Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.install_timestamp}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.last_updated}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.version}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.configuration}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
@@ -528,6 +529,11 @@
 					<DataGridTextColumn Binding="{Binding InstallTimestamp}" IsVisible="False">
 						<DataGridTextColumn.Header>
 							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.install_timestamp}" TextAlignment="Center" />
+						</DataGridTextColumn.Header>
+					</DataGridTextColumn>
+					<DataGridTextColumn Binding="{Binding LastUpdateTimestamp}" IsVisible="False">
+						<DataGridTextColumn.Header>
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.last_updated}" TextAlignment="Center" />
 						</DataGridTextColumn.Header>
 					</DataGridTextColumn>
 					<DataGridTemplateColumn IsVisible="False" SortMemberPath="HardRequirements.Count" CellStyleClasses="centered">
