@@ -102,13 +102,21 @@ namespace Stardrop.Views
             };
 
             // Handle adding the mod grouping methods
+            var descriptionToModGroupingEnum = new Dictionary<string, ModGrouping>();
+            foreach (ModGrouping modGrouping in Enum.GetValues(typeof(ModGrouping)))
+            {
+                if (EnumParser.GetDescription(modGrouping) is not null)
+                {
+                    descriptionToModGroupingEnum[EnumParser.GetDescription(modGrouping)] = modGrouping;
+                }
+            }
+
             var groupingComboBox = this.FindControl<ComboBox>("groupingComboBox");
-            groupingComboBox.Items = Enum.GetValues(typeof(ModGrouping)).Cast<ModGrouping>();
-            groupingComboBox.SelectedItem = Program.settings.ModGroupingMethod;
+            groupingComboBox.Items = descriptionToModGroupingEnum.Keys;
+            groupingComboBox.SelectedItem = EnumParser.GetDescription(Program.settings.ModGroupingMethod);
             groupingComboBox.SelectionChanged += (sender, e) =>
             {
-                var modGroupingMethod = (ModGrouping)groupingComboBox.SelectedItem;
-                Program.settings.ModGroupingMethod = modGroupingMethod;
+                Program.settings.ModGroupingMethod = descriptionToModGroupingEnum[groupingComboBox.SelectedItem.ToString()];
             };
 
             this.FontFamily = new Avalonia.Media.FontFamily("Segoe UI Symbol");
