@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.OpenGL;
 using Avalonia.ReactiveUI;
 using CommandLine;
 using Projektanker.Icons.Avalonia;
