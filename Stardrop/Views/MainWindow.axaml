@@ -458,7 +458,7 @@
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.author}" Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.install_timestamp}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.last_updated}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
-						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.version}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.version}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.configuration}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
 					</ContextMenu>
@@ -573,7 +573,7 @@
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTextColumn Binding="{Binding ParsedVersion}" CellStyleClasses="centered" IsVisible="False">
+					<DataGridTextColumn Binding="{Binding ParsedVersion}" CellStyleClasses="centered" IsVisible="True">
 						<DataGridTextColumn.Header>
 							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.version}" TextAlignment="Center" />
 						</DataGridTextColumn.Header>
