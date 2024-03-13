@@ -5,5 +5,6 @@
         None,
         ShowEnabled,
         ShowDisabled,
+        RequireConfig
     }
 }

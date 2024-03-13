@@ -676,6 +676,10 @@ namespace Stardrop.ViewModels
             {
                 return false;
             }
+            else if (_disabledModFilter == DisplayFilter.RequireConfig && !mod.HasConfig)
+            {
+                return false;
+            }
 
             if (_showUpdatableMods && String.IsNullOrEmpty(mod.ParsedStatus))
             {

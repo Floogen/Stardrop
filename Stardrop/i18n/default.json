@@ -84,6 +84,7 @@
 
   // Main Window - ComboBox
   "ui.main_window.combobox.show_all_mods": "Show All Mods",
+  "ui.main_window.combobox.show_mods_with_configs": "Show Configurable Mods",
   "ui.main_window.combobox.show_disabled_mods": "Show Disabled Mods",
   "ui.main_window.combobox.show_enabled_mods": "Show Enabled Mods",
 

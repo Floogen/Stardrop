@@ -630,6 +630,7 @@
 			</StackPanel>
 			<ComboBox x:Name="disabledModFilterColumnBox" Margin="0 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="200">
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.show_all_mods}" />
+				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.show_mods_with_configs}" />
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.show_disabled_mods}" />
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.show_enabled_mods}" />
 			</ComboBox>
