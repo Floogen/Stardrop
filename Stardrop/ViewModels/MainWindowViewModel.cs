@@ -281,6 +281,7 @@ namespace Stardrop.ViewModels
                     if (manifest.ContentPackFor is not null && modKeysCache is not null)
                     {
                         var dependencyKey = modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(manifest.ContentPackFor.UniqueID, StringComparison.OrdinalIgnoreCase));
+                        mod.FrameworkID = manifest.ContentPackFor.UniqueID;
                         mod.Requirements.Add(new ManifestDependency(manifest.ContentPackFor.UniqueID, manifest.ContentPackFor.MinimumVersion, true) { Name = dependencyKey is null ? manifest.ContentPackFor.UniqueID : dependencyKey.Name });
                     }
                     if (manifest.Dependencies is not null && modKeysCache is not null)
@@ -644,6 +645,9 @@ namespace Stardrop.ViewModels
                     case ModGrouping.Folder:
                         DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.Path)));
                         break;
+                    case ModGrouping.ContentPack:
+                        DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.FrameworkID)));
+                        break;
                 }
 
                 DataView.Filter = null;
@@ -697,6 +701,12 @@ namespace Stardrop.ViewModels
                     {
                         case ModGrouping.Folder:
                             if (mod.Path.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            {
+                                return true;
+                            }
+                            break;
+                        case ModGrouping.ContentPack:
+                            if (mod.FrameworkID is not null && mod.FrameworkID.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
                             {
                                 return true;
                             }

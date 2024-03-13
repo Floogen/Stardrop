@@ -3,6 +3,7 @@
     public enum ModGrouping
     {
         None,
-        Folder
+        Folder,
+        ContentPack
     }
 }
