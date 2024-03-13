@@ -683,9 +683,13 @@ namespace Stardrop.Views
             {
                 _viewModel.DisabledModFilter = Models.Data.Enums.DisplayFilter.Show;
             }
-            else if (filterText == Program.translation.Get("ui.main_window.buttons.hide_disabled_mods"))
+            else if (filterText == Program.translation.Get("ui.main_window.combobox.show_enabled_mods"))
             {
-                _viewModel.DisabledModFilter = Models.Data.Enums.DisplayFilter.Hide;
+                _viewModel.DisabledModFilter = Models.Data.Enums.DisplayFilter.ShowEnabled;
+            }
+            else if (filterText == Program.translation.Get("ui.main_window.combobox.show_disabled_mods"))
+            {
+                _viewModel.DisabledModFilter = Models.Data.Enums.DisplayFilter.ShowDisabled;
             }
         }
 

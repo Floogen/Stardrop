@@ -668,11 +668,11 @@ namespace Stardrop.ViewModels
                 return false;
             }
 
-            if (_disabledModFilter == DisplayFilter.Show && mod.IsEnabled)
+            if (_disabledModFilter == DisplayFilter.ShowEnabled && !mod.IsEnabled)
             {
                 return false;
             }
-            else if (_disabledModFilter == DisplayFilter.Hide && !mod.IsEnabled)
+            else if (_disabledModFilter == DisplayFilter.ShowDisabled && mod.IsEnabled)
             {
                 return false;
             }

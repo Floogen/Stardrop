@@ -3,7 +3,7 @@
     public enum DisplayFilter
     {
         None,
-        Show,
-        Hide
+        ShowEnabled,
+        ShowDisabled,
     }
 }

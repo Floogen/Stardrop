@@ -72,7 +72,6 @@
   // Main Window - Buttons
   "ui.main_window.buttons.save_configs": "Save Configs",
   "ui.main_window.buttons.save_profile": "Save Profile",
-  "ui.main_window.buttons.hide_disabled_mods": "Hide Disabled Mods",
   "ui.main_window.buttons.show_updatable_mods": "Show Updatable Mods",
   "ui.main_window.buttons.active_search_filters": "{0} Filter(s) Active",
   "ui.main_window.buttons.no_search_filters": "No Filters Active",
@@ -85,7 +84,8 @@
 
   // Main Window - ComboBox
   "ui.main_window.combobox.show_all_mods": "Show All Mods",
-  "ui.main_window.combobox.hide_enabled_mods": "Hide Enabled Mods",
+  "ui.main_window.combobox.show_disabled_mods": "Show Disabled Mods",
+  "ui.main_window.combobox.show_enabled_mods": "Show Enabled Mods",
 
   // Main Window - ComboBox (ListBox)
   "ui.main_window.combobox.mod_name": "Mod Name",
