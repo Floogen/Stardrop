@@ -490,7 +490,7 @@
 					</Style>
 					<Style Selector="DataGridRow">
 						<Setter Property="ContextMenu" Value="{StaticResource GridRowContextMenu}" />
-						<Setter Property="ToolTip.Tip" Value="{Binding Description}" />
+						<Setter Property="ToolTip.Tip" Value="{Binding Summary}" />
 					</Style>
 				</DataGrid.Styles>
 				<DataGrid.Columns>

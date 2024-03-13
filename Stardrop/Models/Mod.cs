@@ -25,6 +25,7 @@ namespace Stardrop.Models
         public string Name { get; set; }        
         public string Path { get; set; } // Whole mod path inside installed mods path for grouping mod components in the same mod
         public string Description { get; set; }
+        public string Summary { get { return $"Author: {Author}\nVersion: {ParsedVersion}\nHas Config: {HasConfig}\n\n{Description}"; } }
         public string Author { get; set; }
         public DateTime? InstallTimestamp { get; set; }
         public DateTime? LastUpdateTimestamp { get; set; }
