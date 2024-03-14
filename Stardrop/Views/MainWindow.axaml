@@ -543,7 +543,7 @@
 					</DataGridTextColumn>
 					<DataGridTemplateColumn IsVisible="False" SortMemberPath="HardRequirements.Count" CellStyleClasses="centered">
 						<DataGridTemplateColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.requirements}" TextAlignment="Center" IsVisible="False" />
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.requirements}" TextAlignment="Center" />
 						</DataGridTemplateColumn.Header>
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
