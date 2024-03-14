@@ -547,8 +547,8 @@ namespace Stardrop.Views
                 return;
             }
 
-            var searchFilterColumnBox = this.FindControl<ComboBox>("searchFilterColumnBox");
-            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ComboBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.group"));
+            var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
+            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.group"));
 
             this.FindControl<TextBox>("searchBox").Text = selectedMod.Path;
             _viewModel.FilterText = selectedMod.Path;
@@ -562,8 +562,8 @@ namespace Stardrop.Views
                 return;
             }
 
-            var searchFilterColumnBox = this.FindControl<ComboBox>("searchFilterColumnBox");
-            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ComboBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.author"));
+            var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
+            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.author"));
 
             this.FindControl<TextBox>("searchBox").Text = selectedMod.Author;
             _viewModel.FilterText = selectedMod.Author;
