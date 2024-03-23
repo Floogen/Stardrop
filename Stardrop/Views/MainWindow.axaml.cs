@@ -2228,49 +2228,6 @@ namespace Stardrop.Views
             return addedMods;
         }
 
-        private void CreateDirectoryJunctions(List<string> arguments)
-        {
-            // Prepare the process
-            var processInfo = new ProcessStartInfo
-            {
-                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash",
-                Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C {string.Join(" & ", arguments)}" : $"-c \"{string.Join(" ; ", arguments)}\"",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                UseShellExecute = false
-            };
-
-            try
-            {
-                Program.helper.Log($"Starting process to link folders via terminal using {processInfo.FileName} and an argument length of {processInfo.Arguments.Length}");
-
-                using (var process = Process.Start(processInfo))
-                {
-                    // Synchronously read the standard output / error of the spawned process.
-                    var standardOutput = process.StandardOutput.ReadToEnd();
-                    var errorOutput = process.StandardError.ReadToEnd();
-
-                    Program.helper.Log($"Standard Output: {(String.IsNullOrWhiteSpace(standardOutput) ? "Empty" : String.Concat(Environment.NewLine, standardOutput))}");
-                    Program.helper.Log($"Error Output: {(String.IsNullOrWhiteSpace(errorOutput) ? "Empty" : String.Concat(Environment.NewLine, errorOutput))}");
-
-                    if (!String.IsNullOrWhiteSpace(errorOutput))
-                    {
-                        Program.helper.Log($"Printing full argument chain due to error output being detected: {Environment.NewLine}{processInfo.Arguments}");
-                    }
-
-                    process.WaitForExit();
-                }
-
-                Program.helper.Log($"Link process completed");
-            }
-            catch (Exception ex)
-            {
-                Program.helper.Log($"Process failed for creating mod folder links using {processInfo.FileName} with arguments: {processInfo.Arguments}");
-                Program.helper.Log($"Exception for failed mod folder link creation: {ex}");
-            }
-        }
-
         private void UpdateEnabledModsFolder(Profile profile, string enabledModsPath)
         {
             // Clear any previous linked mods
@@ -2283,7 +2240,7 @@ namespace Stardrop.Views
             Program.helper.Log($"Creating links for the following enabled mods from profile {profile.Name}:{spacing}{String.Join(spacing, profile.EnabledModIds)}");
 
             // Link the enabled mods via a chained command
-            List<string> arguments = new List<string>();
+            var linkPathList = new List<ModToLinkPath>();
             foreach (string modId in _viewModel.Mods.Where(m => m.IsEnabled).Select(m => m.UniqueId))
             {
                 var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId == modId);
@@ -2292,61 +2249,21 @@ namespace Stardrop.Views
                     continue;
                 }
 
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                var linkPath = Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name);
+                var modDirectoryName = mod.ModFileInfo.DirectoryName;
+                linkPathList.Add(new ModToLinkPath
                 {
-                    var longPathPrefix = @"\\?\";
-
-                    var linkPath = Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name);
-                    if (linkPath.Length >= 260)
-                    {
-                        linkPath = longPathPrefix + linkPath;
-                    }
-
-                    var modDirectoryName = mod.ModFileInfo.DirectoryName;
-                    if (Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name).Length >= 260)
-                    {
-                        modDirectoryName = longPathPrefix + modDirectoryName;
-                    }
-
-                    arguments.Add($"mklink /J \"{linkPath}\" \"{modDirectoryName}\"");
-                }
-                else
-                {
-                    var edq = "\\\""; // Escaped double quotes, to prevent issues with paths that contain single quotes
-                    arguments.Add($"ln -sf {edq}{mod.ModFileInfo.DirectoryName}{edq} {edq}{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}{edq}");
-                }
+                    ModPath = modDirectoryName,
+                    LinkPath = linkPath
+                });
             }
 
             // Attempt to create the directory junction
             try
             {
-                int maxArgumentLength = 8000;
-                if (arguments.Sum(a => a.Length) + (arguments.Count * 3) >= maxArgumentLength)
-                {
-                    int argumentIndex = 0;
-                    var segmentedArguments = new List<string>();
-                    while (arguments.ElementAtOrDefault(argumentIndex) is not null)
-                    {
-                        if (arguments[argumentIndex].Length + segmentedArguments.Sum(a => a.Length) + (segmentedArguments.Count * 3) >= maxArgumentLength)
-                        {
-                            // Create the process and clear segmentedArguments
-                            CreateDirectoryJunctions(segmentedArguments);
-                            segmentedArguments.Clear();
-                        }
-                        segmentedArguments.Add(arguments[argumentIndex]);
-                        argumentIndex++;
+                CreateSymlinkDirectories(linkPathList);
 
-                        // Check if the next index is null, if so then push the changes
-                        if (arguments.ElementAtOrDefault(argumentIndex) is null && segmentedArguments.Count > 0)
-                        {
-                            CreateDirectoryJunctions(segmentedArguments);
-                        }
-                    }
-                }
-                else
-                {
-                    CreateDirectoryJunctions(arguments);
-                }
+
             }
             catch (Exception ex)
             {
@@ -2354,6 +2271,14 @@ namespace Stardrop.Views
             }
 
             Program.helper.Log($"Finished creating all linked mod folders");
+        }
+
+        private void CreateSymlinkDirectories(List<ModToLinkPath> modToLinkPaths)
+        {
+            modToLinkPaths.ForEach(modToLinkPath =>
+            {
+                Directory.CreateSymbolicLink(modToLinkPath.LinkPath, modToLinkPath.ModPath);
+            });
         }
 
         private void OpenNativeExplorer(string folderPath)
