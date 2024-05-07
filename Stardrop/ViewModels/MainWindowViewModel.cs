@@ -253,14 +253,28 @@ namespace Stardrop.ViewModels
             List<ModKeyInfo> modKeysCache = new List<ModKeyInfo>();
             if (File.Exists(Pathing.GetKeyCachePath()))
             {
-                modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                try
+                {
+                    modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Failed to parse cached mod keys: {ex}", Helper.Status.Alert);
+                }
             }
 
             // Get the local data
             ClientData localDataCache = new ClientData();
             if (File.Exists(Pathing.GetDataCachePath()))
             {
-                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                try
+                {
+                    localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Failed to parse client data: {ex}", Helper.Status.Alert);
+                }
             }
 
             foreach (var fileInfo in GetManifestFiles(new DirectoryInfo(modsFilePath)))

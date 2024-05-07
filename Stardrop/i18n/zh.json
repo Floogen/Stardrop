@@ -82,6 +82,9 @@
   "ui.main_window.button.update_status.list_available_updates": "可更新模组：{0}",
   "ui.main_window.button.update_status.failed": "模组更新检查失败",
 
+  // Main Window - Buttons - Downloads
+  "ui.main_window.buttons.downloads.label": "下载 ({0})",
+
   // Main Window - ComboBox
   "ui.main_window.combobox.show_all_mods": "显示所有模组",
   "ui.main_window.combobox.show_mods_with_configs": "显示可配置模组",
@@ -150,6 +153,16 @@
   "ui.nexus_login.labels.nexus_disconnect_actual": "点击下方按钮，让Stardrop忘记您的Stardrop API密钥并断开与Nexus Mods的连接。",
   "ui.nexus_login.labels.username": "用户名: {0}",
   "ui.nexus_login.labels.is_premium": "是否为高级会员: {0}",
+
+  // Downloads Panel - Labels
+  "ui.downloads_panel.download_canceled": "取消",
+  "ui.downloads_panel.download_failed": "失败",
+  "ui_downloads_panel.download_success": "完成!",
+  "ui.downloads_panel.no_downloads_label":  "没有正在进行的下载",
+
+  // Downloads Panel - Tooltips
+  "ui.downloads_panel.tooltips.cancel_button": "取消",  
+  "ui.downloads_panel.tooltips.remove_button": "移除", // Tooltip for the button that clears out a completed or failed download
 
   // Warnings
   "ui.warning.unable_to_add_profile": "无法添加 {0}，已经存在同名配置文件！",
@@ -233,5 +246,13 @@
   "internal.no": "否",
   "internal.no_all": "全否",
   "internal.ok": "确定",
-  "internal.unlock": "解除锁定"
+  "internal.unlock": "解除锁定",
+
+  // Internals - Measurements
+  "internal.measurements.bytes_size": "B",
+  "internal.measurements.bytes_per_second": "B/s",
+  "internal.measurements.kilobytes_size": "KB",
+  "internal.measurements.kilobytes_per_second": "KB/s",
+  "internal.measurements.megabytes_size": "MB",
+  "internal.measurements.megabytes_per_second": "MB/s"
 }
