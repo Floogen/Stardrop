@@ -101,7 +101,9 @@ for ARCH in "${ARCHS[@]}"; do
     ditto -c -k --sequesterRsrc --keepParent "$APP_BUNDLE" "$ZIP_FILE"
     xcrun notarytool submit "$ZIP_FILE" --wait --keychain-profile Stardrop || exit 1
     xcrun stapler staple "$APP_BUNDLE"
-
+    # Cleanup
+    rm "$ZIP_FILE"
+    
     # Step 5: Create a DMG file
     echo "[INFO] Creating a DMG file for $ARCH..."
     DMG_FILE="$OUTPUT_DIR/$ARCH/$APP_NAME.dmg"
@@ -123,9 +125,6 @@ for ARCH in "${ARCHS[@]}"; do
     echo "[INFO] Notarizing the DMG file for $ARCH..."
     xcrun notarytool submit "$DMG_FILE" --wait --keychain-profile Stardrop || exit 1
     xcrun stapler staple "$DMG_FILE"
-
-    # Cleanup
-    rm "$ZIP_FILE"
 done
 
 echo "[INFO] Build and packaging complete. Output: $OUTPUT_DIR"
