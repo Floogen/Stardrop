@@ -79,11 +79,12 @@ namespace Stardrop.Utilities
                 while (_socket.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
                 {
                     var recv = await _socket.ReceiveAsync(
-                        new ArraySegment<byte>(buffer), cancellationToken);
+                        new ArraySegment<byte>(buffer), cancellationToken
+                    );
                     if (recv.MessageType == WebSocketMessageType.Close) break;
 
                     var msg = Encoding.UTF8.GetString(buffer, 0, recv.Count);
-                    Console.WriteLine($"[nexus websocket] received data {msg}");
+                    Program.helper.Log($"[nexus websocket] received data {msg}", Helper.Status.Debug);
 
                     var response = JsonSerializer.Deserialize<WebsocketResponse>(msg);
                     if (response != null && response.success && response.data != null)
