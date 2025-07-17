@@ -13,11 +13,6 @@ namespace Stardrop.Utilities
 {
     internal class NexusWebsocket
     {
-        //#if DEBUG
-        //        private readonly Uri ssoWebsocketURI = new("ws://127.0.0.1");
-        //#else
-
-        //#endif
         private readonly Uri ssoWebsocketURI = new("wss://sso.nexusmods.com");
         private readonly string connectionUUID = Guid.NewGuid().ToString();
         private readonly string connectionSlug = "stardrop";
@@ -51,10 +46,7 @@ namespace Stardrop.Utilities
                 string json = JsonSerializer.Serialize(initialData);
                 var bytes = Encoding.UTF8.GetBytes(json);
                 await _socket.SendAsync(
-                    new ArraySegment<byte>(bytes),
-                    WebSocketMessageType.Text,
-                    true,
-                    cancellationToken
+                    new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, cancellationToken
                 );
 
                 // ping every 30 seconds as requested by docs
@@ -66,10 +58,7 @@ namespace Stardrop.Utilities
                         try
                         {
                             await _socket.SendAsync(
-                                new ArraySegment<byte>(Array.Empty<byte>()),
-                                WebSocketMessageType.Text,
-                                true,
-                                CancellationToken.None
+                                new ArraySegment<byte>(Array.Empty<byte>()), WebSocketMessageType.Text, true, CancellationToken.None
                             );
                         }
                         catch
@@ -100,8 +89,7 @@ namespace Stardrop.Utilities
                     if (response != null && response.success && response.data != null)
                     {
                         // ignore connection_token
-                        if (response.data.connection_token != null
-                            && response.data.api_key == null)
+                        if (response.data.connection_token != null && response.data.api_key == null)
                         {
                             continue;
                         }
@@ -110,9 +98,7 @@ namespace Stardrop.Utilities
                         result.ApiKey = response.data.api_key;
                         _hasResolved = true;
                         await _socket.CloseAsync(
-                            WebSocketCloseStatus.NormalClosure,
-                            "got key",
-                            CancellationToken.None
+                            WebSocketCloseStatus.NormalClosure, "got key", CancellationToken.None
                         );
                         break;
                     }
@@ -144,9 +130,7 @@ namespace Stardrop.Utilities
                 if (_socket?.State == WebSocketState.Open)
                 {
                     await _socket.CloseAsync(
-                        WebSocketCloseStatus.NormalClosure,
-                        "shutdown",
-                        CancellationToken.None
+                        WebSocketCloseStatus.NormalClosure, "shutdown", CancellationToken.None
                     );
                 }
                 _socket?.Dispose();
