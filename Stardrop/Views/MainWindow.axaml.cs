@@ -29,6 +29,9 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
+using SharpCompress.Archives;
+using SharpCompress.Archives.SevenZip;
+using SharpCompress.Common;
 
 namespace Stardrop.Views
 {
@@ -335,7 +338,10 @@ namespace Stardrop.Views
 
             if (String.IsNullOrEmpty(Program.nxmLink) is false)
             {
-                await ProcessNXMLink(new NXM() { Link = Program.nxmLink, Timestamp = DateTime.Now });
+                NXM nxm = new() { Link = Program.nxmLink, Timestamp = DateTime.Now };
+                nxm.Purpose = NXM.CalculatePurpose(nxm);
+                await ProcessNXMLink(nxm);
+                
                 Program.nxmLink = null;
             }
 
@@ -1629,7 +1635,6 @@ namespace Stardrop.Views
 
         internal async Task<bool> ProcessNXMLink(NXM nxmLink)
         {
-
             if (Nexus.Client is null)
             {
                 await CreateWarningWindow(Program.translation.Get("ui.message.require_nexus_login"), Program.translation.Get("internal.ok"));
@@ -1642,59 +1647,136 @@ namespace Stardrop.Views
                 return false;
             }
 
-            Program.helper.Log($"Processing NXM link: {nxmLink.Link}");
-            var processedDownloadLink = await Nexus.Client.GetFileDownloadLink(nxmLink, EnumParser.GetDescription(Program.settings.PreferredNexusServer));
-            Program.helper.Log($"Processed link: {processedDownloadLink}");
-
-            if (String.IsNullOrEmpty(processedDownloadLink))
+            if (nxmLink.Purpose is null || nxmLink.Purpose is NXM.NXMPurpose.Unknown)
             {
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_get_download_link"), nxmLink.Link), Program.translation.Get("internal.ok"));
                 return false;
             }
 
-            // Get the mod details
-            var modDetails = await Nexus.Client.GetModDetailsViaNXM(nxmLink);
-            if (modDetails is null || String.IsNullOrEmpty(modDetails.Name))
+            if (nxmLink.Purpose is NXM.NXMPurpose.Mod)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_get_mod_details"), nxmLink.Link), Program.translation.Get("internal.ok"));
-                return false;
-            }
+                Program.helper.Log($"Processing NXM link: {nxmLink.Link} as type: mod");
+                var processedDownloadLink = await Nexus.Client.GetFileDownloadLink(nxmLink, EnumParser.GetDescription(Program.settings.PreferredNexusServer));
+                Program.helper.Log($"Processed link: {processedDownloadLink}");
 
-            var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
-            if (Program.settings.IsAskingBeforeAcceptingNXM is false || await requestWindow.ShowDialog<bool>(this))
-            {
-                var downloadResult = await Nexus.Client.DownloadFileAndGetPath(processedDownloadLink, modDetails.Name);
-                if (downloadResult.ResultKind is DownloadResultKind.Failed)
+                if (String.IsNullOrEmpty(processedDownloadLink))
                 {
-                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
+                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_get_download_link"), nxmLink.Link), Program.translation.Get("internal.ok"));
                     return false;
                 }
-                if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
+
+                // Get the mod details
+                var modDetails = await Nexus.Client.GetModDetailsViaNXM(nxmLink);
+                if (modDetails is null || String.IsNullOrEmpty(modDetails.Name))
                 {
-                    // No need for a warning, this is something the user chose intentionally
+                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_get_mod_details"), nxmLink.Link), Program.translation.Get("internal.ok"));
                     return false;
                 }
-                string downloadedFilePath = downloadResult.DownloadedModFilePath!;
 
-                var addedMods = await AddMods(new string[] { downloadedFilePath });
-                await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
-                await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
-
-                // Delete the downloaded archived mod
-                if (File.Exists(downloadedFilePath))
+                var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
+                if (Program.settings.IsAskingBeforeAcceptingNXM is false || await requestWindow.ShowDialog<bool>(this))
                 {
-                    File.Delete(downloadedFilePath);
+                    var downloadResult = await Nexus.Client.DownloadFileAndGetPath(processedDownloadLink, modDetails.Name);
+                    if (downloadResult.ResultKind is DownloadResultKind.Failed)
+                    {
+                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
+                        return false;
+                    }
+                    if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
+                    {
+                        // No need for a warning, this is something the user chose intentionally
+                        return false;
+                    }
+                    string downloadedFilePath = downloadResult.DownloadedModFilePath!;
+
+                    var addedMods = await AddMods(new string[] { downloadedFilePath });
+                    await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
+                    await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+
+                    // Delete the downloaded archived mod
+                    if (File.Exists(downloadedFilePath))
+                    {
+                        File.Delete(downloadedFilePath);
+                    }
+
+                    _viewModel.EvaluateRequirements();
+                    _viewModel.UpdateEndorsements();
+                    _viewModel.UpdateFilter();
+
+                    // Let the user know that the mod was installed via NXM
+                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.succeeded_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
                 }
 
-                _viewModel.EvaluateRequirements();
-                _viewModel.UpdateEndorsements();
-                _viewModel.UpdateFilter();
+                return true;
+            }
+            else if (nxmLink.Purpose is NXM.NXMPurpose.Collection)
+            {
+                Program.helper.Log($"Processing NXM link: {nxmLink.Link} as type: collection");
 
-                // Let the user know that the mod was installed via NXM
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.succeeded_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
+                CollectionResult? collection = await Nexus.Client.GetCollectionDetailsViaNXM(nxmLink);
+
+                // Failed to get it for whatever reason
+                if (collection is null)
+                {
+                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_get"), nxmLink.Link), Program.translation.Get("internal.ok"));
+
+                    return false;
+                }
+
+                Program.helper.Log("Got collection download URL: " + collection.Collection.LatestPublishedRevision.DownloadLink);
+
+                var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_collection_install"), collection.Collection.Name));
+                if (Program.settings.IsAskingBeforeAcceptingNXM is false || await requestWindow.ShowDialog<bool>(this))
+                {
+                    string? archiveDownloadUri = await Nexus.Client.GetCollectionArchiveLink(collection.Collection.LatestPublishedRevision.DownloadLink);
+                    if (archiveDownloadUri is null)
+                    {
+                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_get_archive"), collection.Collection.LatestPublishedRevision.DownloadLink), Program.translation.Get("internal.ok"));
+                        return false;
+                    }
+
+                    string collectionFilename = $"{collection.Collection.Name} - {collection.Collection.Id}.7z";
+                    string collectionFolderName = $"{collection.Collection.Name} - {collection.Collection.Id}";
+                    string collectionFolderPath = Path.Combine(Pathing.GetNexusPath(), collectionFolderName);
+
+                    if (!Directory.Exists(collectionFolderPath)) Directory.CreateDirectory(collectionFolderPath);
+
+                    NexusDownloadResult mainDownloadResult = await Nexus.Client.DownloadFileAndGetPath(
+                        archiveDownloadUri,
+                        collectionFilename
+                    );
+
+                    if (mainDownloadResult.DownloadedModFilePath is null)
+                    {
+                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_download_archive"), archiveDownloadUri), Program.translation.Get("internal.ok"));
+                        return false;
+                    }
+
+                    Program.helper.Log($"Downloaded collection to {mainDownloadResult.DownloadedModFilePath}");
+
+                    using (var archive = SevenZipArchive.Open(mainDownloadResult.DownloadedModFilePath))
+                    {
+                        foreach (var entry in archive.Entries)
+                        {
+                            if (!entry.IsDirectory)
+                            {
+                                entry.WriteToDirectory(
+                                    collectionFolderPath,
+                                    new ExtractionOptions()
+                                    {
+                                        ExtractFullPath = true,
+                                        Overwrite = true
+                                    }
+                                );
+                            }
+                        }
+                    }
+                }
+
+                return true;
             }
 
-            return true;
+            return false;
         }
 
         private void SetLockState(bool isWindowLocked, string? lockReason = null)

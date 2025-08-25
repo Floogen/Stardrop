@@ -227,6 +227,11 @@
   "ui.message.confirm_nxm_install": "Would you like to install the following mod:\n\n{0}\n\nYou can disable this confirmation in the settings menu.",
   "ui.message.require_nexus_login": "This action requires being signed into the Nexus Mods API.",
   "ui.message.succeeded_nexus_install": "Successfully installed the following mod via Nexus Mods:\n\n{0}",
+  
+  "ui.message.failed_collection_get": "Failed to get collection download for:\n\n{0}",
+  "ui.message.confirm_nxm_collection_install": "Would you like to install the following collection:\n\n{0}\n\nYou can disable this confirmation in the settings menu.",
+  "ui.message.failed_collection_get_archive": "Failed to get collection archive download for:\n\n{0}",
+  "ui.message.failed_collection_download_archive": "Failed to download collection archive for:\n\n{0}",
 
   // Window Names
   "ui.window.settings.name": "Settings",

@@ -38,12 +38,16 @@
 		<PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.17" />
 		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.17" />
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
+		<PackageReference Include="GraphQL" Version="8.5.0" />
+		<PackageReference Include="GraphQL.Client" Version="6.1.0" />
+		<PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="6.1.0" />
+		<PackageReference Include="GraphQL.NewtonsoftJson" Version="8.5.0" />
 		<PackageReference Include="Json.More.Net" Version="2.0.1" />
 		<PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
 		<PackageReference Include="Projektanker.Icons.Avalonia" Version="5.13.0" />
 		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="5.13.0" />
 		<PackageReference Include="semver" Version="2.3.0" />
-		<PackageReference Include="SharpCompress" Version="0.32.1" />
+		<PackageReference Include="SharpCompress" Version="0.40.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Update="Views\FlexibleOptionWindow.axaml.cs">

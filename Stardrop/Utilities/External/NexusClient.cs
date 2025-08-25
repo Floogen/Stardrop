@@ -5,6 +5,7 @@ using Stardrop.Models.Nexus;
 using Stardrop.Models.Nexus.Web;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -22,6 +23,7 @@ namespace Stardrop.Utilities.External
         private static readonly Uri _baseUrl = new Uri("https://api.nexusmods.com/v1/");
 
         public static NexusClient? Client { get; private set; }
+        public static NexusGraphQLClient? GraphQLClient { get; private set; }
 
         public delegate void NexusClientChangedHandler(NexusClient? oldClient, NexusClient? newClient);
         public static event NexusClientChangedHandler? ClientChanged = null;
@@ -83,6 +85,9 @@ namespace Stardrop.Utilities.External
 
             ClientChanged?.Invoke(oldClient: Client, newClient: nexusClient);
             Client = nexusClient;
+
+            GraphQLClient = new NexusGraphQLClient(client);
+
             return Client;
         }
 
@@ -99,7 +104,8 @@ namespace Stardrop.Utilities.External
 
     public class NexusClient
     {
-        private const string _nxmPattern = @"nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>.*)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)";
+        public static string _nxmModPattern = @"nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>.*)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)";
+        public static string _nxmCollectionPattern = @"nxm:\/\/(?<domain>stardewvalley)\/collections\/(?<collection>[a-z0-9]+)\/revisions\/(?<revision>[0-9]+)";
 
         private readonly HttpClient _client;
         private NexusUser _settings = null!;
@@ -180,7 +186,7 @@ namespace Stardrop.Utilities.External
                 return null;
             }
 
-            var match = Regex.Match(Regex.Unescape(nxmData.Link), _nxmPattern);
+            var match = Regex.Match(Regex.Unescape(nxmData.Link), _nxmModPattern);
             if (match.Success is false || match.Groups["domain"].ToString().ToLower() != "stardewvalley" || Int32.TryParse(match.Groups["mod"].ToString(), out int modId) is false)
             {
                 return null;
@@ -228,6 +234,19 @@ namespace Stardrop.Utilities.External
             }
 
             return null;
+        }
+
+        public async Task<CollectionResult?> GetCollectionDetailsViaNXM(NXM nxmData)
+        {
+            if (nxmData.Link is null) return null;
+
+            var match = Regex.Match(Regex.Unescape(nxmData.Link), _nxmCollectionPattern);
+            if (match.Success is false || match.Groups["domain"].ToString().ToLower() != "stardewvalley" || Int32.TryParse(match.Groups["revision"].ToString(), out int modId) is false)
+            {
+                return null;
+            }
+
+            return await Nexus.GraphQLClient!.GetCollection(match.Groups["collection"].ToString());;
         }
 
         public async Task<ModFile?> GetFileByVersion(int modId, string version, string? modFlag = null)
@@ -309,7 +328,7 @@ namespace Stardrop.Utilities.External
                 return null;
             }
 
-            var match = Regex.Match(Regex.Unescape(nxmData.Link), _nxmPattern);
+            var match = Regex.Match(Regex.Unescape(nxmData.Link), _nxmModPattern);
             if (match.Success is false || match.Groups["domain"].ToString().ToLower() != "stardewvalley" || Int32.TryParse(match.Groups["mod"].ToString(), out int modId) is false || Int32.TryParse(match.Groups["file"].ToString(), out int fileId) is false)
             {
                 return null;
@@ -380,6 +399,54 @@ namespace Stardrop.Utilities.External
             return null;
         }
 
+        public async Task<string?> GetCollectionArchiveLink(string revisionDownloadLink)
+        {
+            try
+            {
+                var response = await _client.GetAsync(revisionDownloadLink);
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
+                {
+                        string content = (await response.Content.ReadAsStringAsync()).Trim();
+                        Program.helper.Log($"Response from Nexus Mods:\n{content}");
+                        CollectionRevisionDownloadResult downloadLinks = JsonSerializer.Deserialize<CollectionRevisionDownloadResult>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                        if (downloadLinks is null || downloadLinks.DownloadLinks is null || downloadLinks.DownloadLinks.Count == 0)
+                        {
+                            Program.helper.Log($"Unable to get the download link for Nexus Mods");
+                            Program.helper.Log($"Response from Nexus Mods:\n{content}");
+                        }
+                        else
+                        {
+                        UpdateRequestCounts(response.Headers);
+
+                        return downloadLinks.DownloadLinks.First().Uri;
+                    }
+                }
+                else
+                {
+                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    {
+                        Program.helper.Log($"Bad status given from Nexus Mods collection: {response.StatusCode}");
+                        if (response.Content is not null)
+                        {
+                            Program.helper.Log($"Response from Nexus Mods collection:\n{await response.Content.ReadAsStringAsync()}");
+                        }
+                    }
+                    else if (response.Content is null)
+                    {
+                        Program.helper.Log($"No response from Nexus Mods on collection!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to get the archive download link for Nexus Mods collection: {ex}", Helper.Status.Alert);
+            }
+
+            return null;
+        }
+
         public async Task<NexusDownloadResult> DownloadFileAndGetPath(string uri, string fileName)
         {
             var requestUri = new Uri(uri);
@@ -400,7 +467,7 @@ namespace Stardrop.Utilities.External
 
                 long? contentLength = response.Content.Headers.ContentLength;
                 DownloadStarted?.Invoke(this, new ModDownloadStartedEventArgs(requestUri, fileName, contentLength, downloadCancellationSource));
-                    
+
                 var buffer = new byte[81920];
                 long totalBytesRead = 0;
                 int bytesRead;
@@ -409,7 +476,7 @@ namespace Stardrop.Utilities.External
                     await fileStream.WriteAsync(buffer, 0, bytesRead, downloadCancellationSource.Token);
                     totalBytesRead += bytesRead;
                     DownloadProgressChanged?.Invoke(this, new ModDownloadProgressEventArgs(requestUri, totalBytesRead));
-                }                
+                }
 
                 DownloadCompleted?.Invoke(this, new ModDownloadCompletedEventArgs(requestUri));
                 return new(DownloadResultKind.Success, Path.Combine(Pathing.GetNexusPath(), fileName));
