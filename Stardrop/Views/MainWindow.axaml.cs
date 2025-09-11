@@ -32,6 +32,7 @@ using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 using SharpCompress.Archives;
 using SharpCompress.Archives.SevenZip;
 using SharpCompress.Common;
+using Stardrop.Models.Nexus;
 
 namespace Stardrop.Views
 {
@@ -1738,6 +1739,7 @@ namespace Stardrop.Views
                     string collectionFilename = $"{collection.Collection.Name} - {collection.Collection.Id}.7z";
                     string collectionFolderName = $"{collection.Collection.Name} - {collection.Collection.Id}";
                     string collectionFolderPath = Path.Combine(Pathing.GetNexusPath(), collectionFolderName);
+                    string collectionJsonPath = Path.Combine(collectionFolderPath, "collection.json");
 
                     if (!Directory.Exists(collectionFolderPath)) Directory.CreateDirectory(collectionFolderPath);
 
@@ -1754,6 +1756,7 @@ namespace Stardrop.Views
 
                     Program.helper.Log($"Downloaded collection to {mainDownloadResult.DownloadedModFilePath}");
 
+                    // unarchive the 7z, the collection.json will be in Nexus/Name - ID/collection.json
                     using (var archive = SevenZipArchive.Open(mainDownloadResult.DownloadedModFilePath))
                     {
                         foreach (var entry in archive.Entries)
@@ -1771,6 +1774,27 @@ namespace Stardrop.Views
                             }
                         }
                     }
+
+                    string collectionJsonString = await File.ReadAllTextAsync(collectionJsonPath);
+
+                    CollectionIndex? index = JsonSerializer.Deserialize<CollectionIndex>(collectionJsonString);
+
+                    if (index is null) {
+                        await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
+                        return false;
+                    }
+
+                    foreach (CollectionMods mod in index.Mods)
+                    {
+                        string? installPath = await InstallModViaCollectionEntry(mod);
+                        if (installPath is null)
+                        {
+                            Program.helper.Log($"Failed to install {mod.Name}, skipping.");
+                            continue;
+                        }
+                    }
+
+                    
                 }
 
                 return true;
@@ -2251,6 +2275,52 @@ namespace Stardrop.Views
             }
 
             mod.InstallState = InstallState.Installing;
+
+            return downloadResult.DownloadedModFilePath;
+        }
+
+        private async Task<string?> InstallModViaCollectionEntry(CollectionMods mod)
+        {
+
+            if (mod.Source.Type == CollectionModSourceType.Browse
+                || mod.Source.Type == CollectionModSourceType.Direct
+            )
+            {
+                Program.helper.Log($"mod {mod.Name} comes from an unsupported source: {mod.Source.Type}");
+            }
+
+            var modId = mod.Source.FileId;
+            if (modId is null || Nexus.Client is null)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                return null;
+            }
+
+            var modFile = await Nexus.Client.GetFileByVersion(modId.Value, mod.Version);
+            if (modFile is null)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                return null;
+            }
+
+            var modDownloadLink = await Nexus.Client.GetFileDownloadLink(modId.Value, modFile.Id, serverName: EnumParser.GetDescription(Program.settings.PreferredNexusServer));
+            if (modDownloadLink is null)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                return null;
+            }
+
+            var downloadResult = await Nexus.Client.DownloadFileAndGetPath(modDownloadLink, modFile.Name);
+            if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
+            {
+                // No warning, as the user triggered this intentionally
+                return null;
+            }
+            if (downloadResult.ResultKind is DownloadResultKind.Failed)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                return null;
+            }
 
             return downloadResult.DownloadedModFilePath;
         }
