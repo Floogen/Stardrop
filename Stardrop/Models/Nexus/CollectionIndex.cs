@@ -29,6 +29,7 @@ namespace Stardrop.Models.Nexus
     }
 
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum CollectionModRuleType
     {
         Before,
@@ -93,29 +94,41 @@ namespace Stardrop.Models.Nexus
     {
         Nexus,
         Direct,
-        Browse // manual download via web browser, picky suggested ignoring this one.
+        Browse, // manual download via web browser, picky suggested ignoring this one.
+        Bundle
     }
 
     public class CollectionModSource
     {
-        [JsonPropertyName("type")]
-        public CollectionModSourceType Type { get; set; }
-        [JsonPropertyName("md5")]
-        public string MD5Checksum { get; set; }
-        [JsonPropertyName("fileSize")]
-        public int Size { get; set; }
-        [JsonPropertyName("logicalFilename")]
-        public string LogicalFilename { get; set; }
         [JsonPropertyName("updatePolicy")]
         public string UpdatePolicy { get; set; }
+        [JsonPropertyName("type")]
+        public CollectionModSourceType Type { get; set; }
+        [JsonPropertyName("fileSize")]
+        public int Size { get; set; }
+
+        // "bundle" type only
+        [JsonPropertyName("adultContent")]
+        public bool? AdultContent { get; set; }
+        [JsonPropertyName("fileExpression")]
+        public string? FileExpression { get; set; }
+
+        // "bundle" or "nexus" type only
+        [JsonPropertyName("tag")]
+        public string? Tag { get; set; }
+
+        // everything except bundle only
+        [JsonPropertyName("md5")]
+        public string? MD5Checksum { get; set; }
+        [JsonPropertyName("logicalFilename")]
+        public string? LogicalFilename { get; set; }
+        
 
         // "nexus" type only
         [JsonPropertyName("modId")]
         public int? ModId { get; set; }
         [JsonPropertyName("fileId")]
         public int? FileId { get; set; }
-        [JsonPropertyName("tag")]
-        public string? Tag { get; set; }
 
         // "browse" and "direct" type only
         [JsonPropertyName("url")]

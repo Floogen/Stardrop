@@ -1784,15 +1784,20 @@ namespace Stardrop.Views
                         return false;
                     }
 
+                    List<string> updateFilePaths = new List<string>();
                     foreach (CollectionMods mod in index.Mods)
                     {
-                        string? installPath = await InstallModViaCollectionEntry(mod);
-                        if (installPath is null)
+                        string? downloadFilePath = await InstallModViaCollectionEntry(mod);
+                        if (String.IsNullOrEmpty(downloadFilePath))
                         {
                             Program.helper.Log($"Failed to install {mod.Name}, skipping.");
                             continue;
                         }
+                        Program.helper.Log($"Downloaded {mod.Name} to {downloadFilePath}");
+                        updateFilePaths.Add(downloadFilePath);
                     }
+
+                    var addedMods = await AddMods(updateFilePaths.ToArray());
 
                     
                 }
@@ -2289,21 +2294,29 @@ namespace Stardrop.Views
                 Program.helper.Log($"mod {mod.Name} comes from an unsupported source: {mod.Source.Type}");
             }
 
-            var modId = mod.Source.FileId;
-            if (modId is null || Nexus.Client is null)
+            var modId = mod.Source.ModId;
+            var fileId = mod.Source.FileId;
+
+            if (modId == 2400)
+            {
+                Program.helper.Log("Collection won't install SMAPI.");
+                return null;
+            }
+
+            if (modId is null || fileId is null || Nexus.Client is null)
             {
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
                 return null;
             }
 
-            var modFile = await Nexus.Client.GetFileByVersion(modId.Value, mod.Version);
+            var modFile = await Nexus.Client.GetFileByVersion(modId.Value, mod.Version, ignoreCategory: true);
             if (modFile is null)
             {
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
                 return null;
             }
 
-            var modDownloadLink = await Nexus.Client.GetFileDownloadLink(modId.Value, modFile.Id, serverName: EnumParser.GetDescription(Program.settings.PreferredNexusServer));
+            var modDownloadLink = await Nexus.Client.GetFileDownloadLink(modId.Value, fileId.Value, serverName: EnumParser.GetDescription(Program.settings.PreferredNexusServer));
             if (modDownloadLink is null)
             {
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));

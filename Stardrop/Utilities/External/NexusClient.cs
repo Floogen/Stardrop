@@ -249,7 +249,7 @@ namespace Stardrop.Utilities.External
             return await Nexus.GraphQLClient!.GetCollection(match.Groups["collection"].ToString());;
         }
 
-        public async Task<ModFile?> GetFileByVersion(int modId, string version, string? modFlag = null)
+        public async Task<ModFile?> GetFileByVersion(int modId, string version, string? modFlag = null, bool? ignoreCategory = false)
         {
             if (SemVersion.TryParse(version.Replace("v", String.Empty), SemVersionStyles.Any, out var targetVersion) is false)
             {
@@ -257,7 +257,7 @@ namespace Stardrop.Utilities.External
                 return null;
             }
 
-            Program.helper.Log($"Requesting version {version} of mod {modId}{(String.IsNullOrEmpty(modFlag) is false ? $" with flag {modFlag}" : String.Empty)}");
+            Program.helper.Log($"Requesting version {version} of mod {modId}{(String.IsNullOrEmpty(modFlag) is false ? $" with flag {modFlag}" : String.Empty)} {(ignoreCategory == true ? $" ignoring categories" : " respecting categories")}");
 
             try
             {
@@ -281,7 +281,7 @@ namespace Stardrop.Utilities.External
                             {
                                 selectedFile = file;
                             }
-                            else if (String.IsNullOrEmpty(modFlag) is true && String.IsNullOrEmpty(file.Category) is false && file.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase))
+                            else if (String.IsNullOrEmpty(modFlag) is true && String.IsNullOrEmpty(file.Category) is false && (ignoreCategory == true ? true : file.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase)))
                             {
                                 selectedFile = file;
                             }
