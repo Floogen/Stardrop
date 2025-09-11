@@ -2291,7 +2291,8 @@ namespace Stardrop.Views
                 || mod.Source.Type == CollectionModSourceType.Direct
             )
             {
-                Program.helper.Log($"mod {mod.Name} comes from an unsupported source: {mod.Source.Type}");
+                Program.helper.Log($"mod {mod.Name} comes from an unsupported source type: {mod.Source.Type}");
+                return null;
             }
 
             var modId = mod.Source.ModId;
