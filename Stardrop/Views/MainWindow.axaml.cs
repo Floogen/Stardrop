@@ -1328,8 +1328,8 @@ namespace Stardrop.Views
                             string[] arguments = new string[] { $"chmod +x {scriptPath}", $"{scriptPath}" };
                             var processInfo = new ProcessStartInfo
                             {
-                                FileName = "/usr/bin/env bash",
-                                Arguments = $"-c \"{string.Join(" ; ", arguments)}\"",
+                                FileName = "/usr/bin/env",
+                                Arguments = $"bash -c \"{string.Join(" ; ", arguments)}\"",
                                 CreateNoWindow = true,
                                 UseShellExecute = false
                             };

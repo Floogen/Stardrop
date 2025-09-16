@@ -27,17 +27,17 @@ namespace Stardrop.Utilities.External
             var smapiInfo = new FileInfo(Pathing.GetSmapiPath());
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) is true)
             {
-                arguments = $"-c \"SMAPI_MODS_PATH='{Pathing.GetSelectedModsFolderPath()}' '{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewValley")}'\"";
+                arguments = $"bash -c \"SMAPI_MODS_PATH='{Pathing.GetSelectedModsFolderPath()}' '{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewValley")}'\"";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) is true)
             {
-                arguments = $"-c \"'{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewModdingAPI")}' --mods-path '{Pathing.GetSelectedModsFolderPath()}'\"";
+                arguments = $"bash -c \"'{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewModdingAPI")}' --mods-path '{Pathing.GetSelectedModsFolderPath()}'\"";
             }
 
             Program.helper.Log($"Starting SMAPI with the following arguments: {arguments}");
             var processInfo = new ProcessStartInfo
             {
-                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? smapiInfo.FullName : "/usr/bin/env bash",
+                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? smapiInfo.FullName : "/usr/bin/env",
                 Arguments = arguments,
                 WorkingDirectory = smapiInfo.DirectoryName,
                 RedirectStandardOutput = false,
