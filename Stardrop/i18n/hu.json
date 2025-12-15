@@ -82,6 +82,9 @@
   "ui.main_window.button.update_status.list_available_updates": "Frissítendő modok: {0}",
   "ui.main_window.button.update_status.failed": "Sikertelen mod frissítés ellenőrzés",
 
+  // Főablak - Gombok - Letöltések
+  "ui.main_window.buttons.downloads.label": "Letöltés(ek) ({0})",
+
   // Főablak - Kombinációs mező
   "ui.main_window.combobox.show_all_mods": "Összes mod megjelenítése",
   "ui.main_window.combobox.show_mods_with_configs": "Konfigurálható modok megjelenítése",
@@ -93,7 +96,7 @@
   "ui.main_window.combobox.author": "Szerző",
   "ui.main_window.combobox.requirements": "Követelmények",
   "ui.main_window.combobox.group": "Mod csoport",
-  
+
   // Beállítások ablak - Címkék
   "ui.settings_window.labels.smapi_path": "SMAPI elérési útvonal",
   "ui.settings_window.labels.mod_path": "Mod mappa elérési útvonal",
@@ -151,6 +154,16 @@
   "ui.nexus_login.labels.username": "Felhasználónév: {0}",
   "ui.nexus_login.labels.is_premium": "Prémium tagság: {0}",
 
+  // Letöltések panel - Feliratok
+  "ui.downloads_panel.download_canceled": "Megszakítva",
+  "ui.downloads_panel.download_failed": "Sikertelen",
+  "ui_downloads_panel.download_success": "Kész!",
+  "ui.downloads_panel.no_downloads_label": "Nincs folyamatban lévő letöltés",
+
+  // Letöltések panel - Eszköztipp
+  "ui.downloads_panel.tooltips.cancel_button": "Mégsem",
+  "ui.downloads_panel.tooltips.remove_button": "Eltávolítva", // Eszköztipp a befejezett vagy sikertelen letöltés törlő gombhoz
+
   // Figyelmeztetések
   "ui.warning.unable_to_add_profile": "Nem lehet hozzáadni a(z) {0}, ezen a néven már létezik egy profil!",
   "ui.warning.given_mod_folder_does_not_exist": "A megadott mod mappa elérési útvonala nem létezik.\n\nElőző útvonal visszaállítása.",
@@ -169,7 +182,6 @@
   "ui.warning.mod_deleting": "A(z) {0} régi példányának törlése",
   "ui.warning.failed_to_delete": "A(z) {0} törlése nem sikerült.\n\nA mod fájlai zárolva lehetnek, a részletekért lásd a naplót.",
   "ui.warning.failed_to_delete_during_update": "Nem sikerült törölni a(z) {0} régi példányát.\n\nElőfordulhat, hogy a mod hibásan települ.",
-
   "ui.warning.unable_to_locate_smapi": "Nem található a StardewModdingAPI.exe fájl.\n\nKérjük, állítsd be a fájl helyes elérési útvonalát a Nézet -> Beállítások menüpont alatt.",
   "ui.warning.mod_config_saved_but_not_enabled": "A mod config beállítások elmentve a(z) {0} profilba, azonban a profilon a specifikus mod konfigurációk nincsenek engedélyezve.\n\nVálaszd a Nézet -> Beállítások menüpontot, és ellenőrizd a \"Profil specifikus mod konfigurációk engedélyezése\" menüpontot hogy a Stardrop automatikusan mentse és alkalmazza a mod konfigurációs módosításokat.",
   "ui.warning.unable_to_determine_profile": "Nem sikerült meghatározni a kiválasztott profilt.\n\nA SMAPI nem fog elindulni.",
@@ -237,5 +249,13 @@
   "internal.no": "Nem",
   "internal.no_all": "Nem mindenre",
   "internal.ok": "OKÉ",
-  "internal.unlock": "Feloldás"
+  "internal.unlock": "Feloldás",
+
+  // Belső részek - Mérések
+  "internal.measurements.bytes_size": "B",
+  "internal.measurements.bytes_per_second": "B/s",
+  "internal.measurements.kilobytes_size": "KB",
+  "internal.measurements.kilobytes_per_second": "KB/s",
+  "internal.measurements.megabytes_size": "MB",
+  "internal.measurements.megabytes_per_second": "MB/s"
 }
