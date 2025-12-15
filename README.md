@@ -28,7 +28,7 @@ Stardrop has been generously translated into several languages by the following 
 * **Spanish** - Evexyron, Gaelhaine
 * **Thai** - ellipszist
 * **Turkish** - KediDili
-* **Ukrainian** - burunduk, ChulkyBow
+* **Ukrainian** - burunduk, ChulkyBow, DanielleTlumach
 
 # Gallery
 
