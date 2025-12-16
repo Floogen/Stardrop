@@ -68,13 +68,6 @@ namespace Stardrop.Views
             }
         }
 
-        private void KeyBox_KeyUp(object? sender, KeyEventArgs e)
-        {
-            var apiKeyBox = sender as TextBox;
-            var applyButton = this.FindControl<Button>("applyButton");
-            applyButton.IsEnabled = string.IsNullOrEmpty(apiKeyBox.Text) is false;
-        }
-
         private void ApplyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             ApplyChanges();
