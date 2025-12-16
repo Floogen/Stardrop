@@ -1,0 +1,16 @@
+name: Package Nightly Build
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+    package-and-release:
+      uses: ./.github/workflows/package-and-release.yml
+      with:
+        tag: nightly
+        is-prerelease: 'true'
