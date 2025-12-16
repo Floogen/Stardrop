@@ -1,0 +1,132 @@
+name: Package and Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_call:
+    inputs:
+      tag:
+        required: false
+        type: string
+        default: ''
+      is-prerelease:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        required: true
+        type: string
+      is-prerelease:
+        required: true
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+
+env:
+  OUTPUT_PATH_WINDOWS: published/windows
+  OUTPUT_PATH_LINUX: published/linux
+  OUTPUT_PATH_MAC: published/mac
+  CONFIGURATION: Release
+  WORKING_DIRECTORY: "Stardrop"
+  TAG: ${{ inputs.tag == '' && github.ref_name || inputs.tag }}
+  
+permissions:
+  contents: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "releasing"
+  cancel-in-progress: false
+
+run-name: "[${{ inputs.is-prerelease == 'true' && 'Pre-release' || 'Release' }}] Package and Release (${{ inputs.tag == '' && github.ref_name || inputs.tag }})"
+
+jobs:
+  verify-build:
+    uses: ./.github/workflows/build.yml
+  package:
+    runs-on: ubuntu-latest
+    needs: [ verify-build ]
+
+    steps:
+    - uses: actions/checkout@v4
+    - run: mkdir -p path/to/release-artifacts
+    - name: Publish (MacOS - Creating)
+      run:  |
+          mkdir -p "${{ env.OUTPUT_PATH_MAC }}/Stardrop.app/Contents/MacOS"
+          mkdir -p "${{ env.OUTPUT_PATH_MAC }}/Stardrop.app/Contents/Resources"
+          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_MAC }}/Stardrop.app/Contents/MacOS" --configuration "${{ env.CONFIGURATION }}" --runtime "osx-x64" --framework "net7.0" --self-contained
+    - name: Publish (MacOS - Packaging)
+      working-directory: "${{ env.OUTPUT_PATH_MAC }}/Stardrop.app"
+      run:  |
+          cp ${GITHUB_WORKSPACE}/Stardrop/Assets/Info.plist "Contents/Info.plist"
+          cp ${GITHUB_WORKSPACE}/Stardrop/Assets/Stardrop.icns "Contents/Resources/Stardrop.icns"
+
+          chmod +x "Contents/MacOS/Stardrop"
+          
+          (cd ../ && zip -r ${GITHUB_WORKSPACE}/Stardrop-osx-x64.zip "Stardrop.app")
+    - name: Publish (Linux - Creating)
+      run:  |
+          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_LINUX }}/Stardrop" --configuration "${{ env.CONFIGURATION }}" --runtime "linux-x64" --framework "net7.0" --self-contained
+    - name: Publish (Linux - Packaging)
+      working-directory: "${{ env.OUTPUT_PATH_LINUX }}/Stardrop"
+      run:  |
+          mv Stardrop Internal
+          mv Stardrop.pdb Internal.pdb
+
+          cp ${GITHUB_WORKSPACE}/Stardrop/Assets/Stardrop.sh Stardrop.sh
+
+          chmod 755 ../Stardrop
+          chmod +x Stardrop.sh
+          chmod 644 Internal
+          chmod 644 Internal.pdb
+          
+          (cd ../ && zip -r ${GITHUB_WORKSPACE}/Stardrop-linux-x64.zip "Stardrop")
+    - name: Publish (Windows - Creating & Packaging)
+      run:  |
+          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_WINDOWS }}/Stardrop" --configuration "${{ env.CONFIGURATION }}" --runtime "win-x64" --framework "net7.0" --self-contained
+          (cd "${{ env.OUTPUT_PATH_WINDOWS }}" && zip -r ${GITHUB_WORKSPACE}/Stardrop-win-x64.zip "Stardrop")
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-artifacts
+        path: |
+          Stardrop-win-x64.zip
+          Stardrop-linux-x64.zip
+          Stardrop-osx-x64.zip
+        
+  release:
+    runs-on: ubuntu-latest
+    needs: [ verify-build, package ]
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v4
+      with:
+        name: release-artifacts
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ env.TAG }}
+        prerelease: ${{ inputs.is-prerelease }}
+        name: "Stardrop ${{ env.TAG }}"
+        append_body: false
+        body: |
+          ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-linux-x64.zip?label=Linux+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-osx-x64.zip?label=macOS+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-win-x64.zip?label=Windows+Downloads)
+          
+          Documentation can be [found here](https://floogen.gitbook.io/stardrop/).
+          
+          **User Note:**
+          Download the respective ZIP file relating to the host's operating system (Stardrop-win-x64 if using a Window x64 OS and so on).
+                
+          <br/>
+        generate_release_notes: true
+        make_latest: true
+        fail_on_unmatched_files: true
+        files: |
+          Stardrop-win-x64.zip
+          Stardrop-linux-x64.zip
+          Stardrop-osx-x64.zip
