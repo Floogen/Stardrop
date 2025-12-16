@@ -44,7 +44,6 @@ namespace Stardrop.Views
             }
             else
             {
-                Program.helper.Log($"Got API key: {result.ApiKey}", Helper.Status.Info);
                 var apiKeyBox = this.FindControl<TextBox>("apiBox");
                 apiKeyBox.Text = result.ApiKey ?? string.Empty;
 
