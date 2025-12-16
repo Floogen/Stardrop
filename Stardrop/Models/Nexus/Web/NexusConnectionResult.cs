@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Stardrop.Utilities
+namespace Stardrop.Models.Nexus.Web
 {
-    internal class NexusConnectionResult
+    public class NexusConnectionResult
     {
         public string? Error { get; set; }
         public string? Message { get; set; }
