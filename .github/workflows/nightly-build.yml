@@ -14,8 +14,6 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-      with:
-        ref: development
     - uses: ./.github/workflows/package-and-release.yml
       with:
         tag: nightly
