@@ -84,7 +84,7 @@ namespace Stardrop.Utilities
                     if (recv.MessageType == WebSocketMessageType.Close) break;
 
                     var msg = Encoding.UTF8.GetString(buffer, 0, recv.Count);
-                    Program.helper.Log($"[nexus websocket] received data {msg}", Helper.Status.Debug);
+                    Program.helper.Log($"[Nexus SSO] Received data: {msg}", Helper.Status.Debug);
 
                     var response = JsonSerializer.Deserialize<WebsocketResponse>(msg);
                     if (response != null && response.Success && response.Data != null)
@@ -95,7 +95,7 @@ namespace Stardrop.Utilities
                             continue;
                         }
 
-                        result.Message = "successfully obtained api key";
+                        result.Message = "Successfully obtained API key";
                         result.ApiKey = response.Data.ApiKey;
                         _hasResolved = true;
                         await _socket.CloseAsync(
@@ -105,7 +105,7 @@ namespace Stardrop.Utilities
                     }
                     else
                     {
-                        result.Error = "received invalid message";
+                        result.Error = "Received invalid message";
                         _hasResolved = true;
                         await _socket.CloseAsync(
                             WebSocketCloseStatus.NormalClosure,
@@ -118,7 +118,7 @@ namespace Stardrop.Utilities
             }
             catch (Exception ex)
             {
-                Program.helper.Log($"[nexus websocket] exception: {ex}", Helper.Status.Debug);
+                Program.helper.Log($"[Nexus SSO] Exception: {ex}", Helper.Status.Debug);
                 if (!_hasResolved)
                 {
                     result.Error = ex.Message;
