@@ -61,7 +61,8 @@ namespace Stardrop.Views
 
         private void KeyBox_KeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            var apiKeyBox = sender as TextBox;
+            if (e.Key == Key.Enter && string.IsNullOrEmpty(apiKeyBox.Text) is false)
             {
                 ApplyChanges();
             }
