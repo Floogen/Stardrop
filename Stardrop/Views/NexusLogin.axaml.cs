@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using DynamicData.Binding;
 using Stardrop.Utilities;
 using Stardrop.ViewModels;
 using System;
@@ -16,6 +17,7 @@ namespace Stardrop.Views
         {
             InitializeComponent();
             _nexusWebsocket = new NexusWebsocket();
+
 #if DEBUG
             this.AttachDevTools();
 #endif
@@ -24,6 +26,7 @@ namespace Stardrop.Views
         public NexusLogin(MainWindowViewModel viewModel) : this()
         {
             HandleNexusFlow();
+
             // Handle buttons
             this.FindControl<Button>("cancelButton").Click += delegate { this.Close(null); };
             this.FindControl<Button>("exitButton").Click += delegate { this.Close(null); };
@@ -32,6 +35,13 @@ namespace Stardrop.Views
             var applyButton = this.FindControl<Button>("applyButton");
             applyButton.Click += ApplyButton_Click;
             applyButton.IsEnabled = false;
+
+            var apiKeyBox = this.FindControl<TextBox>("apiBox");
+            apiKeyBox.WhenValueChanged(textbox => textbox.Text).Subscribe(text =>
+            {
+                applyButton.IsEnabled = string.IsNullOrEmpty(text) is false;
+            });
+            apiKeyBox.KeyDown += KeyBox_KeyDown;
         }
 
         private async void HandleNexusFlow()
