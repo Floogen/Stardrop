@@ -50,7 +50,7 @@ namespace Stardrop.Utilities
                 );
 
                 // ping every 30 seconds as requested by docs
-                _pingTimer = new System.Timers.Timer(30_000);
+                _pingTimer = new System.Timers.Timer(30000);
                 _pingTimer.Elapsed += async (_, __) =>
                 {
                     if (_socket?.State == WebSocketState.Open)

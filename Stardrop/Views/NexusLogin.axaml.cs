@@ -25,12 +25,13 @@ namespace Stardrop.Views
 
         public NexusLogin(MainWindowViewModel viewModel) : this()
         {
-            HandleNexusFlow();
-
             // Handle buttons
             this.FindControl<Button>("cancelButton").Click += delegate { this.Close(null); };
             this.FindControl<Button>("exitButton").Click += delegate { this.Close(null); };
-            this.FindControl<Button>("goToNexusButton").Click += delegate { viewModel.OpenBrowser(_nexusWebsocket.ssoUrl); };
+            this.FindControl<Button>("goToNexusButton").Click += delegate {
+                viewModel.OpenBrowser(_nexusWebsocket.ssoUrl);
+                HandleNexusFlow();
+            };
 
             var applyButton = this.FindControl<Button>("applyButton");
             applyButton.Click += ApplyButton_Click;
