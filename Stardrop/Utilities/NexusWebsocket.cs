@@ -87,16 +87,16 @@ namespace Stardrop.Utilities
                     Program.helper.Log($"[nexus websocket] received data {msg}", Helper.Status.Debug);
 
                     var response = JsonSerializer.Deserialize<WebsocketResponse>(msg);
-                    if (response != null && response.success && response.data != null)
+                    if (response != null && response.Success && response.Data != null)
                     {
-                        // ignore connection_token
-                        if (response.data.connection_token != null && response.data.api_key == null)
+                        // ignore ConnectionToken
+                        if (response.Data.ConnectionToken != null && response.Data.ApiKey == null)
                         {
                             continue;
                         }
 
                         result.Message = "successfully obtained api key";
-                        result.ApiKey = response.data.api_key;
+                        result.ApiKey = response.Data.ApiKey;
                         _hasResolved = true;
                         await _socket.CloseAsync(
                             WebSocketCloseStatus.NormalClosure, "got key", CancellationToken.None

@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Stardrop.Models.Nexus.Web
 {
-    internal class WebsocketResponse
+    public class WebsocketResponse
     {
-        public bool success { get; set; }
-        public WebsocketResponseData? data { get; set; }
+        [JsonPropertyName("success")]
+        public bool Success { get; set; }
 
-
+        [JsonPropertyName("data")]
+        public WebsocketResponseData? Data { get; set; }
     }
 }
