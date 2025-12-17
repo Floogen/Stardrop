@@ -1,0 +1,143 @@
+﻿using Stardrop.Models.Nexus.Web;
+using Stardrop.ViewModels;
+using System;
+using System.Diagnostics;
+using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Timers;
+
+namespace Stardrop.Utilities
+{
+    internal class NexusWebsocket
+    {
+        private readonly Uri ssoWebsocketURI = new("wss://sso.nexusmods.com");
+        private readonly string connectionUUID = Guid.NewGuid().ToString();
+        private readonly string connectionSlug = "stardrop";
+
+        internal readonly string ssoUrl;
+
+        private ClientWebSocket? _socket;
+        private System.Timers.Timer? _pingTimer;
+        private bool _hasResolved;
+
+        public NexusWebsocket()
+        {
+            this.ssoUrl = $"https://www.nexusmods.com/sso?id={connectionUUID}&application={connectionSlug}";
+        }
+
+        public async Task<NexusConnectionResult> ConnectAsync(CancellationToken cancellationToken = default)
+        {
+            var result = new NexusConnectionResult();
+            _socket = new ClientWebSocket();
+
+            try
+            {
+                await _socket.ConnectAsync(ssoWebsocketURI, cancellationToken);
+
+                var initialData = new
+                {
+                    id = connectionUUID,
+                    token = (string?)null,
+                    protocol = 2
+                };
+                string json = JsonSerializer.Serialize(initialData);
+                var bytes = Encoding.UTF8.GetBytes(json);
+                await _socket.SendAsync(
+                    new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, cancellationToken
+                );
+
+                // ping every 30 seconds as requested by docs
+                _pingTimer = new System.Timers.Timer(30000);
+                _pingTimer.Elapsed += async (_, __) =>
+                {
+                    if (_socket?.State == WebSocketState.Open)
+                    {
+                        try
+                        {
+                            await _socket.SendAsync(
+                                new ArraySegment<byte>(Array.Empty<byte>()), WebSocketMessageType.Text, true, CancellationToken.None
+                            );
+                        }
+                        catch
+                        {
+                            _pingTimer?.Stop();
+                        }
+                    }
+                    else
+                    {
+                        _pingTimer?.Stop();
+                    }
+                };
+                _pingTimer.AutoReset = true;
+                _pingTimer.Start();
+
+                // Receive data
+                var buffer = new byte[4096];
+                while (_socket.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
+                {
+                    var recv = await _socket.ReceiveAsync(
+                        new ArraySegment<byte>(buffer), cancellationToken
+                    );
+                    if (recv.MessageType == WebSocketMessageType.Close) break;
+
+                    var msg = Encoding.UTF8.GetString(buffer, 0, recv.Count);
+                    Program.helper.Log($"[Nexus SSO] Received data: {msg}", Helper.Status.Debug);
+
+                    var response = JsonSerializer.Deserialize<WebsocketResponse>(msg);
+                    if (response != null && response.Success && response.Data != null)
+                    {
+                        // ignore ConnectionToken
+                        if (response.Data.ConnectionToken != null && response.Data.ApiKey == null)
+                        {
+                            continue;
+                        }
+
+                        result.Message = "Successfully obtained API key";
+                        result.ApiKey = response.Data.ApiKey;
+                        _hasResolved = true;
+                        await _socket.CloseAsync(
+                            WebSocketCloseStatus.NormalClosure, "got key", CancellationToken.None
+                        );
+                        break;
+                    }
+                    else
+                    {
+                        result.Error = "Received invalid message";
+                        _hasResolved = true;
+                        await _socket.CloseAsync(
+                            WebSocketCloseStatus.NormalClosure,
+                            "invalid",
+                            CancellationToken.None
+                        );
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"[Nexus SSO] Exception: {ex}", Helper.Status.Debug);
+                if (!_hasResolved)
+                {
+                    result.Error = ex.Message;
+                    _hasResolved = true;
+                }
+            }
+            finally
+            {
+                _pingTimer?.Stop();
+                if (_socket?.State == WebSocketState.Open)
+                {
+                    await _socket.CloseAsync(
+                        WebSocketCloseStatus.NormalClosure, "shutdown", CancellationToken.None
+                    );
+                }
+                _socket?.Dispose();
+            }
+
+            return result;
+        }
+    }
+}

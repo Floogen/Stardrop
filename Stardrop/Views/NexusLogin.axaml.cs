@@ -2,15 +2,22 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using DynamicData.Binding;
+using Stardrop.Utilities;
 using Stardrop.ViewModels;
+using System;
+using System.Net.WebSockets;
 
 namespace Stardrop.Views
 {
     public partial class NexusLogin : Window
     {
+        private NexusWebsocket? _nexusWebsocket;
         public NexusLogin()
         {
             InitializeComponent();
+            _nexusWebsocket = new NexusWebsocket();
+
 #if DEBUG
             this.AttachDevTools();
 #endif
@@ -21,17 +28,39 @@ namespace Stardrop.Views
             // Handle buttons
             this.FindControl<Button>("cancelButton").Click += delegate { this.Close(null); };
             this.FindControl<Button>("exitButton").Click += delegate { this.Close(null); };
-            this.FindControl<Button>("goToNexusButton").Click += delegate { viewModel.OpenBrowser("https://www.nexusmods.com/users/myaccount?tab=api"); };
+            this.FindControl<Button>("goToNexusButton").Click += delegate {
+                viewModel.OpenBrowser(_nexusWebsocket.ssoUrl);
+                HandleNexusFlow();
+            };
 
             var applyButton = this.FindControl<Button>("applyButton");
             applyButton.Click += ApplyButton_Click;
             applyButton.IsEnabled = false;
 
-            // Give focus to textbox
             var apiKeyBox = this.FindControl<TextBox>("apiBox");
-            apiKeyBox.AttachedToVisualTree += (s, e) => apiKeyBox.Focus();
+            apiKeyBox.WhenValueChanged(textbox => textbox.Text).Subscribe(text =>
+            {
+                applyButton.IsEnabled = string.IsNullOrEmpty(text) is false;
+            });
             apiKeyBox.KeyDown += KeyBox_KeyDown;
-            apiKeyBox.KeyUp += KeyBox_KeyUp;
+        }
+
+        private async void HandleNexusFlow()
+        {
+            var result = await _nexusWebsocket.ConnectAsync();
+
+            if (result.Error is not null)
+            {
+                Program.helper.Log($"Error getting API key: {result.Error}", Helper.Status.Warning);
+            }
+            else
+            {
+                var apiKeyBox = this.FindControl<TextBox>("apiBox");
+                apiKeyBox.Text = result.ApiKey ?? string.Empty;
+
+                var applyButton = this.FindControl<Button>("applyButton");
+                applyButton.IsEnabled = true;
+            }
         }
 
         private void ApplyChanges()
@@ -43,17 +72,11 @@ namespace Stardrop.Views
 
         private void KeyBox_KeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            var apiKeyBox = sender as TextBox;
+            if (e.Key == Key.Enter && string.IsNullOrEmpty(apiKeyBox.Text) is false)
             {
                 ApplyChanges();
             }
-        }
-
-        private void KeyBox_KeyUp(object? sender, KeyEventArgs e)
-        {
-            var apiKeyBox = sender as TextBox;
-            var applyButton = this.FindControl<Button>("applyButton");
-            applyButton.IsEnabled = string.IsNullOrEmpty(apiKeyBox.Text) is false;
         }
 
         private void ApplyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
