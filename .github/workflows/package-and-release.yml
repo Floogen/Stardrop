@@ -1,9 +1,6 @@
 name: Package and Release
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
   workflow_call:
     inputs:
       tag:
