@@ -1,0 +1,17 @@
+name: Package Version Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+    package-and-release:
+      uses: ./.github/workflows/package-and-release.yml
+      with:
+        tag: ${{ github.ref_name }}
+        is-prerelease: 'false'
+        generate-release-notes: true
