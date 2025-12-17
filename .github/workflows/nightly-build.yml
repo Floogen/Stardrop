@@ -14,4 +14,4 @@ jobs:
       with:
         tag: nightly
         is-prerelease: 'true'
-        generate-release-notes: true
+        generate-release-notes: false
