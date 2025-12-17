@@ -13,6 +13,10 @@ on:
       is-prerelease:
         required: true
         type: string
+      generate-release-notes:
+        required: true
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       tag:
@@ -24,6 +28,10 @@ on:
         options:
         - 'true'
         - 'false'
+      generate-release-notes:
+        required: true
+        type: boolean
+        default: true
 
 env:
   OUTPUT_PATH_WINDOWS: published/windows
@@ -123,7 +131,7 @@ jobs:
           Download the respective ZIP file relating to the host's operating system (Stardrop-win-x64 if using a Window x64 OS and so on).
                 
           <br/>
-        generate_release_notes: true
+        generate_release_notes: ${{ inputs.generate-release-notes }}
         make_latest: true
         fail_on_unmatched_files: true
         files: |

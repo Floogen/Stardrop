@@ -1328,8 +1328,8 @@ namespace Stardrop.Views
                             string[] arguments = new string[] { $"chmod +x {scriptPath}", $"{scriptPath}" };
                             var processInfo = new ProcessStartInfo
                             {
-                                FileName = "/bin/bash",
-                                Arguments = $"-c \"{string.Join(" ; ", arguments)}\"",
+                                FileName = "/usr/bin/env",
+                                Arguments = $"bash -c \"{string.Join(" ; ", arguments)}\"",
                                 CreateNoWindow = true,
                                 UseShellExecute = false
                             };
@@ -2442,7 +2442,7 @@ namespace Stardrop.Views
             // Prepare the process
             var processInfo = new ProcessStartInfo
             {
-                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash",
+                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/usr/bin/env bash",
                 Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C {string.Join(" & ", arguments)}" : $"-c \"{string.Join(" ; ", arguments)}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

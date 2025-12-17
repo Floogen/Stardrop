@@ -2,21 +2,16 @@ name: Package Nightly Build
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 10 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  package-and-release:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        ref: development
-    - uses: ./.github/workflows/package-and-release.yml
+    package-and-release:
+      uses: ./.github/workflows/package-and-release.yml
       with:
         tag: nightly
         is-prerelease: 'true'
+        generate-release-notes: false
