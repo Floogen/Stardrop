@@ -2442,8 +2442,8 @@ namespace Stardrop.Views
             // Prepare the process
             var processInfo = new ProcessStartInfo
             {
-                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/usr/bin/env bash",
-                Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C {string.Join(" & ", arguments)}" : $"-c \"{string.Join(" ; ", arguments)}\"",
+                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/usr/bin/env",
+                Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"/C {string.Join(" & ", arguments)}" : $"bash -c \"{string.Join(" ; ", arguments)}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true,
