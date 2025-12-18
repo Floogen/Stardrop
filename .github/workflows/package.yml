@@ -45,6 +45,7 @@ jobs:
           cp ${GITHUB_WORKSPACE}/Stardrop/Assets/Stardrop.icns "Contents/Resources/Stardrop.icns"
 
           chmod +x "Contents/MacOS/Stardrop"
+          (cd ../ && codesign --force --deep -s - Stardrop.app)
           
           (cd ../ && zip -r ${GITHUB_WORKSPACE}/Stardrop-osx-x64.zip "Stardrop.app")
     - name: Upload artifacts
