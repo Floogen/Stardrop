@@ -8,7 +8,8 @@
 		<string>APPL</string>
 		<key>CFBundleIconFile</key>
 		<string>Stardrop</string>
-
+		<key>CFBundleSignature</key>
+		<string>com.Floogen.Stardrop</string>
 		<key>CFBundleName</key>
 		<string>Stardrop</string>
 		<key>CFBundleExecutable</key>

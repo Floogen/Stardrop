@@ -1,60 +1,34 @@
-name: Package and Release
+name: Package
 
 on:
   workflow_call:
     inputs:
-      tag:
-        required: false
-        type: string
-        default: ''
-      is-prerelease:
+      os:
         required: true
         type: string
-      generate-release-notes:
-        required: true
-        type: boolean
-        default: true
   workflow_dispatch:
     inputs:
-      tag:
+      os:
         required: true
         type: string
-      is-prerelease:
-        required: true
-        type: choice
-        options:
-        - 'true'
-        - 'false'
-      generate-release-notes:
-        required: true
-        type: boolean
-        default: true
 
 env:
   OUTPUT_PATH_WINDOWS: published/windows
   OUTPUT_PATH_LINUX: published/linux
   OUTPUT_PATH_MAC: published/mac
-  CONFIGURATION: Release
-  WORKING_DIRECTORY: "Stardrop"
-  TAG: ${{ inputs.tag == '' && github.ref_name || inputs.tag }}
-  
-permissions:
-  contents: write
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "releasing"
+  group: "packaging"
   cancel-in-progress: false
 
-run-name: "[${{ inputs.is-prerelease == 'true' && 'Pre-release' || 'Release' }}] Package and Release (${{ inputs.tag == '' && github.ref_name || inputs.tag }})"
+run-name: "[${{ inputs.os }}] Package"
 
 jobs:
-  verify-build:
-    uses: ./.github/workflows/build.yml
   package-macos:
+    if: ${{ inputs.os == 'macos' }}
     runs-on: macos-latest
-    needs: [ verify-build ]
 
     steps:
     - uses: actions/checkout@v4
@@ -77,12 +51,12 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts-macos
+        name: release-artifacts
         path: |
           Stardrop-osx-x64.zip
   package-linux:
+    if: ${{ inputs.os == 'linux' }}
     runs-on: ubuntu-latest
-    needs: [ verify-build ]
     
     steps:
     - uses: actions/checkout@v4
@@ -107,12 +81,12 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts-linux
+        name: release-artifacts
         path: |
           Stardrop-linux-x64.zip
   package-windows:
+    if: ${{ inputs.os == 'windows' }}
     runs-on: ubuntu-latest
-    needs: [ verify-build ]
     
     steps:
     - uses: actions/checkout@v4
@@ -124,38 +98,6 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts-windows
+        name: release-artifacts
         path: |
           Stardrop-win-x64.zip
-  release:
-    runs-on: ubuntu-latest
-    needs: [ verify-build, package-macos, package-linux, package-windows ]
-
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4    
-      with:
-        merge-multiple: true
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ env.TAG }}
-        prerelease: ${{ inputs.is-prerelease }}
-        name: "Stardrop ${{ env.TAG }}"
-        append_body: false
-        body: |
-          ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-linux-x64.zip?label=Linux+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-osx-x64.zip?label=macOS+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-win-x64.zip?label=Windows+Downloads)
-          
-          Documentation can be [found here](https://floogen.gitbook.io/stardrop/).
-          
-          **User Note:**
-          Download the respective ZIP file relating to the host's operating system (Stardrop-win-x64 if using a Window x64 OS and so on).
-                
-          <br/>
-        generate_release_notes: ${{ inputs.generate-release-notes }}
-        make_latest: true
-        fail_on_unmatched_files: true
-        files: |
-          Stardrop-win-x64.zip
-          Stardrop-linux-x64.zip
-          Stardrop-osx-x64.zip
