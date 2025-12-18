@@ -57,6 +57,7 @@ jobs:
     needs: [ verify-build ]
 
     steps:
+    - uses: actions/checkout@v4
     # Get macOS package
     - uses: ./.github/workflows/package.yml
       with:
