@@ -53,11 +53,12 @@ jobs:
   verify-build:
     uses: ./.github/workflows/build.yml
   package:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: [ verify-build ]
 
     steps:
     - uses: actions/checkout@v4
+    - run: mkdir -p path/to/release-artifacts
     - name: Publish (MacOS - Creating)
       run:  |
           mkdir -p "${{ env.OUTPUT_PATH_MAC }}/Stardrop.app/Contents/MacOS"
@@ -70,29 +71,25 @@ jobs:
           cp ${GITHUB_WORKSPACE}/Stardrop/Assets/Stardrop.icns "Contents/Resources/Stardrop.icns"
 
           chmod +x "Contents/MacOS/Stardrop"
+          (cd ../ && codesign --force --deep -s - Stardrop.app)
           
           (cd ../ && zip -r ${GITHUB_WORKSPACE}/Stardrop-osx-x64.zip "Stardrop.app")
-    - name: Publish (Linux - Creating)
-      run:  |
-          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_LINUX }}/Stardrop" --configuration "${{ env.CONFIGURATION }}" --runtime "linux-x64" --framework "net7.0" --self-contained
-    - name: Publish (Linux - Packaging)
-      working-directory: "${{ env.OUTPUT_PATH_LINUX }}/Stardrop"
-      run:  |
-          mv Stardrop Internal
-          mv Stardrop.pdb Internal.pdb
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-artifacts
+        path: |
+          Stardrop-osx-x64.zip
+        
+  release:
+    runs-on: ubuntu-latest
+    needs: [ verify-build, package ]
 
-          cp ${GITHUB_WORKSPACE}/Stardrop/Assets/Stardrop.sh Stardrop.sh
-
-          chmod 755 ../Stardrop
-          chmod +x Stardrop.sh
-          chmod 644 Internal
-          chmod 644 Internal.pdb
-          
-          (cd ../ && zip -r ${GITHUB_WORKSPACE}/Stardrop-linux-x64.zip "Stardrop")
-    - name: Publish (Windows - Creating & Packaging)
-      run:  |
-          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_WINDOWS }}/Stardrop" --configuration "${{ env.CONFIGURATION }}" --runtime "win-x64" --framework "net7.0" --self-contained
-          (cd "${{ env.OUTPUT_PATH_WINDOWS }}" && zip -r ${GITHUB_WORKSPACE}/Stardrop-win-x64.zip "Stardrop")
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v4
+      with:
+        name: release-artifacts
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
@@ -113,6 +110,4 @@ jobs:
         make_latest: true
         fail_on_unmatched_files: true
         files: |
-          Stardrop-win-x64.zip
-          Stardrop-linux-x64.zip
           Stardrop-osx-x64.zip
