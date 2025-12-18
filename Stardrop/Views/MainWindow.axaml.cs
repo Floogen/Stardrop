@@ -1326,10 +1326,6 @@ namespace Stardrop.Views
                             // Restart the application
                             string scriptPath = $"'{Path.Combine(Directory.GetCurrentDirectory(), RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Stardrop.sh" : "Stardrop")}'";
                             string[] arguments = new string[] { $"chmod +x {scriptPath}", $"{scriptPath}" };
-                            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                            {
-                                arguments = new string[] { $"chmod +x {scriptPath}", "sudo xattr -cr /Applications/Stardrop.app", $"{scriptPath}" };
-                            }
                             var processInfo = new ProcessStartInfo
                             {
                                 FileName = "/usr/bin/env",
