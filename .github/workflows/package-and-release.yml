@@ -58,6 +58,7 @@ jobs:
 
     steps:
     # Get macOS package
+    - uses: actions/checkout@v4
     - uses: ./.github/workflows/package.yml
       with:
         os: 'macos'
