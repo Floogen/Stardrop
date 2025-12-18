@@ -81,13 +81,13 @@ namespace Stardrop.Utilities.External
 
             try
             {
-                var response = await client.GetAsync("https://api.github.com/repos/Floogen/Stardrop/releases");
+                var response = await client.GetAsync("https://api.github.com/repos/Floogen/Stardrop/releases/latest");
 
                 if (response.Content is not null)
                 {
                     JsonDocument parsedContent = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-                    string tagName = parsedContent.RootElement.EnumerateArray().First().GetProperty("tag_name").ToString();
-                    string downloadUri = parsedContent.RootElement.EnumerateArray().First().GetProperty("html_url").ToString();
+                    string tagName = parsedContent.RootElement.GetProperty("tag_name").ToString();
+                    string downloadUri = parsedContent.RootElement.GetProperty("html_url").ToString();
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                     {
                         downloadUri = String.Concat(downloadUri, "/", "Stardrop-osx-x64.zip");
