@@ -49,7 +49,8 @@ run-name: "[${{ inputs.is-prerelease == 'true' && 'Pre-release' || 'Release' }}]
 jobs:
   verify-build:
     uses: ./.github/workflows/build.yml
-  package:
+  package:  
+    needs: [ verify-build ]
     uses: ./.github/workflows/package.yml
     with:
         branch-name: ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
