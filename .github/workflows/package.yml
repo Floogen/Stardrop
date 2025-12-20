@@ -24,7 +24,7 @@ env:
   OUTPUT_PATH_WINDOWS: published/windows
   OUTPUT_PATH_LINUX: published/linux
   OUTPUT_PATH_MAC: published/mac  
-  BRANCH: ${{ github.event_name == '' && inputs.branch-name || github.event.pull_request.head.ref }}
+  BRANCH: ${{ github.event_name != 'pull_request' && inputs.branch-name || github.event.pull_request.head.ref }}
 
 run-name: "Packaging"
 
