@@ -6,10 +6,6 @@ on:
       - opened
       - edited
       - reopened
-
-concurrency:
-  group: "pr-target-check"
-  cancel-in-progress: false
   
 jobs:
   is-using-correct-target:
