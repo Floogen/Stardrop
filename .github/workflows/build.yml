@@ -11,6 +11,7 @@ on:
       - opened
       - edited
       - reopened
+      - synchronize
   workflow_call:
   workflow_dispatch:
 
