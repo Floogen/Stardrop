@@ -24,6 +24,8 @@ env:
   OUTPUT_PATH_WINDOWS: published/windows
   OUTPUT_PATH_LINUX: published/linux
   OUTPUT_PATH_MAC: published/mac  
+  CONFIGURATION: Release
+  WORKING_DIRECTORY: "Stardrop"
   BRANCH: ${{ github.event_name != 'pull_request' && inputs.branch-name || github.event.pull_request.head.ref }}
 
 run-name: "Packaging"
@@ -35,6 +37,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+          ref: ${{ env.BRANCH }}
     - run: mkdir -p path/to/release-artifacts
     - name: Publish (MacOS - Creating)
       run:  |
