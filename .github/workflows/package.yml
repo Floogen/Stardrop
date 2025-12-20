@@ -35,8 +35,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-          ref: ${{ env.BRANCH }}
     - run: mkdir -p path/to/release-artifacts
     - name: Publish (MacOS - Creating)
       run:  |
