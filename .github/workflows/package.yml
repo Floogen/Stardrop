@@ -28,7 +28,7 @@ env:
   WORKING_DIRECTORY: "Stardrop"
   BRANCH: ${{ github.event_name != 'pull_request' && inputs.branch-name || github.event.pull_request.head.ref }}
 
-run-name: "Packaging"
+run-name: "[${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'Default Branch' }}] Packaging"
 
 jobs:  
   package-macos:  
