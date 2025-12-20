@@ -31,8 +31,6 @@ on:
         default: true
 
 env:
-  CONFIGURATION: Release
-  WORKING_DIRECTORY: "Stardrop"
   TAG: ${{ inputs.tag == '' && github.ref_name || inputs.tag }}
   
 permissions:
