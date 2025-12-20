@@ -1,37 +1,42 @@
 name: Package
 
 on:
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+      - opened
+      - edited
+      - reopened
+      - synchronize
   workflow_call:
     inputs:
-      os:
+      branch-name:
         required: true
         type: string
   workflow_dispatch:
     inputs:
-      os:
+      branch-name:
         required: true
         type: string
 
 env:
   OUTPUT_PATH_WINDOWS: published/windows
   OUTPUT_PATH_LINUX: published/linux
-  OUTPUT_PATH_MAC: published/mac
+  OUTPUT_PATH_MAC: published/mac  
+  BRANCH: ${{ inputs.branch-name == '' && github.event.pull_request.head.ref || inputs.branch-name }}
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "packaging"
-  cancel-in-progress: false
+run-name: "Packaging"
 
-run-name: "[${{ inputs.os }}] Package"
-
-jobs:
-  package-macos:
-    if: ${{ inputs.os == 'macos' }}
+jobs:  
+  package-macos:  
+    if: contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v4
+      with:
+          ref: ${{ env.BRANCH }}
     - run: mkdir -p path/to/release-artifacts
     - name: Publish (MacOS - Creating)
       run:  |
@@ -51,15 +56,17 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts
+        name: release-artifacts-macos
         path: |
           Stardrop-osx-x64.zip
-  package-linux:
-    if: ${{ inputs.os == 'linux' }}
+  package-linux:  
+    if: contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
+      with:
+          ref: ${{ env.BRANCH }}
     - run: mkdir -p path/to/release-artifacts
     - name: Publish (Linux - Creating)
       run:  |
@@ -81,15 +88,17 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts
+        name: release-artifacts-linux
         path: |
           Stardrop-linux-x64.zip
   package-windows:
-    if: ${{ inputs.os == 'windows' }}
+    if: contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
+      with:
+          ref: ${{ env.BRANCH }}
     - run: mkdir -p path/to/release-artifacts
     - name: Publish (Windows - Creating & Packaging)
       run:  |
@@ -98,6 +107,6 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts
+        name: release-artifacts-windows
         path: |
           Stardrop-win-x64.zip
