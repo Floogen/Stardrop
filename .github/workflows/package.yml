@@ -30,7 +30,7 @@ run-name: "Packaging"
 
 jobs:  
   package-macos:  
-    if: contains(github.event.pull_request.labels.*.name, 'generate packages')
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: macos-latest
 
     steps:
@@ -60,7 +60,7 @@ jobs:
         path: |
           Stardrop-osx-x64.zip
   package-linux:  
-    if: contains(github.event.pull_request.labels.*.name, 'generate packages')
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: ubuntu-latest
     
     steps:
@@ -92,7 +92,7 @@ jobs:
         path: |
           Stardrop-linux-x64.zip
   package-windows:
-    if: contains(github.event.pull_request.labels.*.name, 'generate packages')
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: ubuntu-latest
     
     steps:
