@@ -6,6 +6,7 @@ on:
       - opened
       - edited
       - reopened
+  
 jobs:
   is-using-correct-target:
     runs-on: ubuntu-latest
