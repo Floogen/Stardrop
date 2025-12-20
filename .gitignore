@@ -332,7 +332,4 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
-# Direnv
-.direnv/
 
-Stardrop/out
