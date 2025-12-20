@@ -6,6 +6,7 @@ on:
       - opened
       - edited
       - reopened
+      - synchronize
   
 jobs:
   is-using-correct-target:
