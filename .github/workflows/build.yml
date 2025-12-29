@@ -11,6 +11,7 @@ on:
       - opened
       - edited
       - reopened
+      - synchronize
   workflow_call:
   workflow_dispatch:
 
@@ -26,7 +27,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 8.0.x
     - name: Restore dependencies
       run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
     - name: Build

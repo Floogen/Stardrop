@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
-		<Version>1.3.4</Version>
+		<Version>1.4.0</Version>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 		<ApplicationIcon>Assets\icon.ico</ApplicationIcon>
@@ -34,13 +34,13 @@
 		<None Remove="Themes\Solarized-Lite.xaml" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Avalonia" Version="0.10.17" />
-		<PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.17" />
-		<PackageReference Include="Avalonia.Desktop" Version="0.10.17" />
+		<PackageReference Include="Avalonia" Version="0.10.22" />
+		<PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.22" />
+		<PackageReference Include="Avalonia.Desktop" Version="0.10.22" />
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.17" />
-		<PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.17" />
-		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.17" />
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.22" />
+		<PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.22" />
+		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.22" />
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 		<PackageReference Include="Json.More.Net" Version="2.0.1" />
 		<PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />

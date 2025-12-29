@@ -1,43 +1,51 @@
 name: Package
 
 on:
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+      - opened
+      - edited
+      - reopened
+      - synchronize
   workflow_call:
     inputs:
-      os:
+      branch-name:
         required: true
         type: string
   workflow_dispatch:
     inputs:
-      os:
+      branch-name:
         required: true
         type: string
 
 env:
   OUTPUT_PATH_WINDOWS: published/windows
   OUTPUT_PATH_LINUX: published/linux
-  OUTPUT_PATH_MAC: published/mac
+  OUTPUT_PATH_MAC: published/mac  
+  CONFIGURATION: Release
+  WORKING_DIRECTORY: "Stardrop"
+  BRANCH: ${{ github.event_name != 'pull_request' && inputs.branch-name || github.event.pull_request.head.ref }}
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "packaging"
-  cancel-in-progress: false
+run-name: "[${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'Default Branch' }}] Packaging"
 
-run-name: "[${{ inputs.os }}] Package"
-
-jobs:
-  package-macos:
-    if: ${{ inputs.os == 'macos' }}
+jobs:  
+  package-macos:  
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v4
+      with:
+          ref: ${{ env.BRANCH }}
+          repository: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
     - run: mkdir -p path/to/release-artifacts
     - name: Publish (MacOS - Creating)
       run:  |
           mkdir -p "${{ env.OUTPUT_PATH_MAC }}/Stardrop.app/Contents/MacOS"
           mkdir -p "${{ env.OUTPUT_PATH_MAC }}/Stardrop.app/Contents/Resources"
-          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_MAC }}/Stardrop.app/Contents/MacOS" --configuration "${{ env.CONFIGURATION }}" --runtime "osx-x64" --framework "net7.0" --self-contained
+          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_MAC }}/Stardrop.app/Contents/MacOS" --configuration "${{ env.CONFIGURATION }}" --runtime "osx-x64" --framework "net8.0" --self-contained
     - name: Publish (MacOS - Packaging)
       working-directory: "${{ env.OUTPUT_PATH_MAC }}/Stardrop.app"
       run:  |
@@ -51,19 +59,22 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts
+        name: release-artifacts-macos
         path: |
           Stardrop-osx-x64.zip
-  package-linux:
-    if: ${{ inputs.os == 'linux' }}
+  package-linux:  
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
+      with:
+          ref: ${{ env.BRANCH }}
+          repository: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
     - run: mkdir -p path/to/release-artifacts
     - name: Publish (Linux - Creating)
       run:  |
-          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_LINUX }}/Stardrop" --configuration "${{ env.CONFIGURATION }}" --runtime "linux-x64" --framework "net7.0" --self-contained
+          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_LINUX }}/Stardrop" --configuration "${{ env.CONFIGURATION }}" --runtime "linux-x64" --framework "net8.0" --self-contained
     - name: Publish (Linux - Packaging)
       working-directory: "${{ env.OUTPUT_PATH_LINUX }}/Stardrop"
       run:  |
@@ -81,23 +92,26 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts
+        name: release-artifacts-linux
         path: |
           Stardrop-linux-x64.zip
   package-windows:
-    if: ${{ inputs.os == 'windows' }}
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
+      with:
+          ref: ${{ env.BRANCH }}
+          repository: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
     - run: mkdir -p path/to/release-artifacts
     - name: Publish (Windows - Creating & Packaging)
       run:  |
-          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_WINDOWS }}/Stardrop" --configuration "${{ env.CONFIGURATION }}" --runtime "win-x64" --framework "net7.0" --self-contained
+          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_WINDOWS }}/Stardrop" --configuration "${{ env.CONFIGURATION }}" --runtime "win-x64" --framework "net8.0" --self-contained
           (cd "${{ env.OUTPUT_PATH_WINDOWS }}" && zip -r ${GITHUB_WORKSPACE}/Stardrop-win-x64.zip "Stardrop")
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts
+        name: release-artifacts-windows
         path: |
           Stardrop-win-x64.zip
