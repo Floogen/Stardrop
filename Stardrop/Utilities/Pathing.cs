@@ -63,6 +63,11 @@ namespace Stardrop.Utilities
 
         internal static string GetSmapiLogFolderPath()
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return Path.Combine("~", ".config", "StardewValley", "ErrorLogs");
+            }
+
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StardewValley", "ErrorLogs");
         }
 
