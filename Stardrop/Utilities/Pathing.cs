@@ -65,7 +65,7 @@ namespace Stardrop.Utilities
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return Path.Combine("~", ".config", "StardewValley", "ErrorLogs");
+                return Path.Combine("$HOME", ".config", "StardewValley", "ErrorLogs");
             }
 
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StardewValley", "ErrorLogs");
