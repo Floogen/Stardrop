@@ -24,6 +24,7 @@ Stardrop has been generously translated into several languages by the following 
 * **Hungarian** - martin66789
 * **Italian** - S-zombie
 * **Korean** - buriburishoebill
+* **Polish** - Naciux
 * **Portuguese** - aracnus
 * **Russian** - Rongarah
 * **Spanish** - Evexyron, Gaelhaine
