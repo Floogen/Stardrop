@@ -1801,6 +1801,7 @@ namespace Stardrop.Views
                 if (Program.settings.GameDetails is null || String.IsNullOrEmpty(Program.settings.GameDetails.SmapiVersion) || Program.settings.GameDetails.HasBadGameVersion() || Program.settings.GameDetails.HasSMAPIUpdated(SMAPI.GetVersion()))
                 {
                     var smapiLogPath = Path.Combine(Pathing.GetSmapiLogFolderPath(), "SMAPI-latest.txt");
+                    Program.helper.Log($"Checking for SMAPI-latest.txt at path: {Pathing.GetSmapiLogFolderPath()}");
                     if (File.Exists(smapiLogPath))
                     {
                         // Parse SMAPI's log
