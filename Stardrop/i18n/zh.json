@@ -35,7 +35,7 @@
 
   // Main Window - Menu Headers
   "ui.main_window.menu_headers.file": "文件",
-  "ui.main_window.menu_headers.view": "视图",
+  "ui.main_window.menu_headers.view": "系统",
   "ui.main_window.menu_headers.tools": "工具",
   "ui.main_window.menu_headers.nexus": "Nexus Mods",
 
@@ -58,7 +58,7 @@
   "ui.main_window.labels.enabled_mods": "已启用模组：",
   "ui.main_window.labels.total_mods": "总模组数：",
   "ui.main_window.labels.updatable_mods": "准备更新的模组: ",
-  "ui.main_window.labels.filter": "筛选",
+  "ui.main_window.labels.filter": "搜索",
   "ui.main_window.labels.unknown_SMAPI": "未知的 SMAPI 版本",
 
   // Main Window - Hyperlinks
@@ -74,8 +74,8 @@
   "ui.main_window.buttons.save_configs": "保存系统设置",
   "ui.main_window.buttons.save_profile": "保存个性化设置",
   "ui.main_window.buttons.show_updatable_mods": "显示可更新模组",
-  "ui.main_window.buttons.active_search_filters": "筛选条件: {0}个",
-  "ui.main_window.buttons.no_search_filters": "筛选条件: 0个",
+  "ui.main_window.buttons.active_search_filters": "已启用搜索范围: {0}个",
+  "ui.main_window.buttons.no_search_filters": "未选择搜索范围",
 
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "可更新模组：点击刷新",
@@ -115,7 +115,7 @@
   "ui.settings_window.buttons.enable_mods_on_add": "添加后自动启用模组",
   "ui.settings_window.buttons.always_ask_to_delete": "更新时总是询问是否替换原模组文件",
   "ui.settings_window.buttons.automatically_save_profile_changes": "自动保存个性化设置",
-  "ui.settings_window.buttons.always_ask_for_NXM_installs": "安装 NXM 文件前总是询问",
+  "ui.settings_window.buttons.always_ask_for_NXM_installs": "从 NXM 安装前总是询问",
   "ui.settings_window.buttons.register_nxm_association": "关联 NXM",
 
   // Settings Window - Tooltips
@@ -260,3 +260,4 @@
   "internal.measurements.megabytes_size": "MB",
   "internal.measurements.megabytes_per_second": "MB/s"
 }
+
