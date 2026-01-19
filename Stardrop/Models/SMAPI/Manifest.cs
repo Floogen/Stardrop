@@ -34,7 +34,10 @@ namespace Stardrop.Models.SMAPI
         //[JsonConverter(typeof(ManifestDependencyArrayConverter))]
         public ManifestDependency[] Dependencies { get; set; }
 
-        // <summary>Custom property for Stardrop.</summary>
+        /// <summary>Custom property for Stardrop.</summary>
         public bool DeleteOldVersion { get; set; }
+
+        /// <summary>Custom property for Stardrop.</summary>
+        public string? UpdateCautionMessage { get; set; }
     }
 }
