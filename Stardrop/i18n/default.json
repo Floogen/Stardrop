@@ -228,6 +228,7 @@
   "ui.message.confirm_nxm_install": "Would you like to install the following mod:\n\n{0}\n\nYou can disable this confirmation in the settings menu.",
   "ui.message.require_nexus_login": "This action requires being signed into the Nexus Mods API.",
   "ui.message.succeeded_nexus_install": "Successfully installed the following mod via Nexus Mods:\n\n{0}",
+  "ui.message.confirm_mod_update_caution": "{0}\nUpdate Caution Message:\n\n{1}\n\nProceed with the mod update?",
 
   // Window Names
   "ui.window.settings.name": "Settings",

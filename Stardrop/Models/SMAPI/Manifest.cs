@@ -36,5 +36,8 @@ namespace Stardrop.Models.SMAPI
 
         /// <summary>Custom property for Stardrop.</summary>
         public bool DeleteOldVersion { get; set; }
+
+        /// <summary>Custom property for Stardrop.</summary>
+        public string? UpdateCautionMessage { get; set; }
     }
 }

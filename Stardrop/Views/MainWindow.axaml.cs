@@ -2260,6 +2260,25 @@ namespace Stardrop.Views
                             continue;
                         }
 
+                        // If this is a mod update and if the Manifest.UpdateCautionMessage has a value, display message (and confirm if user wants to continue with mod update)
+                        bool shouldProceedWithUpdate = true;
+                        foreach (var manifest in pathToManifests.Values.Where(m => m is not null && HasModInstalled(m.UniqueID) is true && string.IsNullOrEmpty(m.UpdateCautionMessage) is false))
+                        {
+                            var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_mod_update_caution"), manifest!.Name, manifest!.UpdateCautionMessage)) { Topmost = true };
+                            if (await requestWindow.ShowDialog<bool>(this) is false)
+                            {
+                                Program.helper.Log($"User elected to skip mod update due to given Manifest.UpdateCautionMessage message for mod {manifest!.UniqueID}:{manifest!.UpdateCautionMessage}");
+                                shouldProceedWithUpdate = false;
+                                break;
+                            }
+                        }
+
+                        // Skip updating if user elected to skip any of the bundled mods due to Manifest.UpdateCautionMessage
+                        if (shouldProceedWithUpdate is false)
+                        {
+                            continue;
+                        }
+
                         int currentManifestIndex = 1;
                         bool alwaysAskToDelete = Program.settings.AlwaysAskToDelete;
                         foreach (var manifestPath in pathToManifests.Keys)
@@ -2436,6 +2455,11 @@ namespace Stardrop.Views
 
             Program.helper.Log($"Add mods request received ({request}): Processed");
             return addedMods;
+        }
+
+        private bool HasModInstalled(string uniqueID)
+        {
+            return _viewModel.Mods.Any(m => m.UniqueId.Equals(uniqueID, StringComparison.OrdinalIgnoreCase));
         }
 
         private void CreateDirectoryJunctions(List<string> arguments)
