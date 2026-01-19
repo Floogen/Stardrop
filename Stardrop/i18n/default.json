@@ -159,10 +159,10 @@
   "ui.downloads_panel.download_canceled": "Canceled",
   "ui.downloads_panel.download_failed": "Failed",
   "ui_downloads_panel.download_success": "Complete!",
-  "ui.downloads_panel.no_downloads_label":  "No downloads in progress",
+  "ui.downloads_panel.no_downloads_label": "No downloads in progress",
 
   // Downloads Panel - Tooltips
-  "ui.downloads_panel.tooltips.cancel_button": "Cancel",  
+  "ui.downloads_panel.tooltips.cancel_button": "Cancel",
   "ui.downloads_panel.tooltips.remove_button": "Remove", // Tooltip for the button that clears out a completed or failed download
 
   // Warnings
