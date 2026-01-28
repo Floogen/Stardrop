@@ -23,21 +23,25 @@ namespace Stardrop.Utilities.External
 
         public static ProcessStartInfo GetPrepareProcess(bool hideConsole)
         {
-            var arguments = String.Empty;
             var smapiInfo = new FileInfo(Pathing.GetSmapiPath());
+
+            var fileName = smapiInfo.FullName;
+            var arguments = String.Empty;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) is true)
             {
+                fileName = "/usr/bin/env";
                 arguments = $"bash -c \"SMAPI_MODS_PATH='{Pathing.GetSelectedModsFolderPath()}' '{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewValley")}'\"";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) is true)
             {
-                arguments = $"bash -c \"'{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewModdingAPI")}' --mods-path '{Pathing.GetSelectedModsFolderPath()}'\"";
+                fileName = "./StardewModdingAPI";
+                arguments = $"--mods-path '{Pathing.GetSelectedModsFolderPath()}'";
             }
 
             Program.helper.Log($"Starting SMAPI with the following arguments: {arguments}");
             var processInfo = new ProcessStartInfo
             {
-                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? smapiInfo.FullName : "/usr/bin/env",
+                FileName = fileName,
                 Arguments = arguments,
                 WorkingDirectory = smapiInfo.DirectoryName,
                 RedirectStandardOutput = false,
