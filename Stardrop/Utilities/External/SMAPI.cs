@@ -47,7 +47,7 @@ namespace Stardrop.Utilities.External
                 RedirectStandardOutput = false,
                 RedirectStandardError = false,
                 CreateNoWindow = hideConsole,
-                UseShellExecute = false
+                UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) is true
             };
             processInfo.EnvironmentVariables["SMAPI_MODS_PATH"] = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false ? $"'{Pathing.GetSelectedModsFolderPath()}'" : Pathing.GetSelectedModsFolderPath();
 
