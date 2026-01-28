@@ -35,7 +35,7 @@ namespace Stardrop.Utilities.External
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) is true)
             {
                 fileName = "./StardewModdingAPI";
-                arguments = $"--mods-path '{Pathing.GetSelectedModsFolderPath()}'";
+                arguments = $"--use-current-shell --mods-path '{Pathing.GetSelectedModsFolderPath()}'";
             }
 
             Program.helper.Log($"Starting SMAPI with the following arguments: {arguments}");
@@ -47,7 +47,7 @@ namespace Stardrop.Utilities.External
                 RedirectStandardOutput = false,
                 RedirectStandardError = false,
                 CreateNoWindow = hideConsole,
-                UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) is true
+                UseShellExecute = false
             };
             processInfo.EnvironmentVariables["SMAPI_MODS_PATH"] = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false ? $"'{Pathing.GetSelectedModsFolderPath()}'" : Pathing.GetSelectedModsFolderPath();
 
