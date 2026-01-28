@@ -34,8 +34,8 @@ namespace Stardrop.Utilities.External
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) is true)
             {
-                fileName = "./StardewModdingAPI";
-                arguments = $"--use-current-shell --mods-path '{Pathing.GetSelectedModsFolderPath()}'";
+                fileName = "/usr/bin/open";
+                arguments = $"bash -c \"'{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewModdingAPI")}' --mods-path '{Pathing.GetSelectedModsFolderPath()}'\"";
             }
 
             Program.helper.Log($"Starting SMAPI with the following arguments: {arguments}");
