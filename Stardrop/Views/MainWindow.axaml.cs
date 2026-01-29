@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -20,6 +21,7 @@ using Stardrop.Utilities.Internal;
 using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -601,8 +603,21 @@ namespace Stardrop.Views
             var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
             searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.group"));
 
-            this.FindControl<TextBox>("searchBox").Text = selectedMod.Path;
-            _viewModel.FilterText = selectedMod.Path;
+            var filterText = string.Empty;
+            switch (Program.settings.ModGroupingMethod)
+            {
+                case ModGrouping.None:
+                    break;
+                case ModGrouping.Folder:
+                    filterText = selectedMod.Path;
+                    break;
+                case ModGrouping.ContentPack:
+                    filterText = selectedMod.FrameworkID;
+                    break;
+            }
+
+            this.FindControl<TextBox>("searchBox").Text = filterText;
+            _viewModel.FilterText = filterText;
         }
 
         private void ModGridMenuRow_ShowAuthorsMods(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
