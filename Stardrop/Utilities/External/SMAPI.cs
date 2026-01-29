@@ -26,16 +26,35 @@ namespace Stardrop.Utilities.External
             var smapiInfo = new FileInfo(Pathing.GetSmapiPath());
 
             var fileName = smapiInfo.FullName;
-            var arguments = String.Empty;
+            var arguments = string.Empty;
+            var parsedModPath = string.Empty;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) is true)
             {
                 fileName = "/usr/bin/env";
                 arguments = $"bash -c \"SMAPI_MODS_PATH='{Pathing.GetSelectedModsFolderPath()}' '{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewValley")}'\"";
+                parsedModPath = $"'{Pathing.GetSelectedModsFolderPath()}'";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) is true)
             {
-                fileName = "bin/zsh";
-                arguments = $" -c \"'{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewModdingAPI")}' --mods-path '{Pathing.GetSelectedModsFolderPath()}'\"";
+                fileName = "/usr/bin/open";
+                arguments = $"-a \"Terminal\" \"{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewModdingAPI")}\" --args --mods-path \"{Pathing.GetSelectedModsFolderPath()}\"";
+
+                //Skip setting parsedModPath for macOS due to --mods-path usage
+                //parsedModPath = $"\"{Pathing.GetSelectedModsFolderPath()}\"";
+
+                /* Alternative route (using AppleScript) of activating Terminal + SMAPI
+                fileName = "/usr/bin/env";
+                arguments = $@"osascript -e ""tell application \""Terminal\""
+                set smapi_path to \""{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewModdingAPI")}\""
+                set mods_path to \""{Pathing.GetSelectedModsFolderPath()}\""
+                activate
+                do script \""\"" & quoted form of the POSIX path of smapi_path & \"" --mods-path \"" & quoted form of the POSIX path of mods_path
+                end tell""";
+                */
+            }
+            else
+            {
+                parsedModPath = Pathing.GetSelectedModsFolderPath();
             }
 
             Program.helper.Log($"Starting SMAPI with the following arguments: {arguments}");
@@ -49,7 +68,12 @@ namespace Stardrop.Utilities.External
                 CreateNoWindow = hideConsole,
                 UseShellExecute = false
             };
-            processInfo.EnvironmentVariables["SMAPI_MODS_PATH"] = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false ? $"'{Pathing.GetSelectedModsFolderPath()}'" : Pathing.GetSelectedModsFolderPath();
+
+            // Set SMAPI_MODS_PATH EnvironmentVariable if required
+            if (string.IsNullOrEmpty(parsedModPath) is false)
+            {
+                processInfo.EnvironmentVariables["SMAPI_MODS_PATH"] = parsedModPath;
+            }
 
             return processInfo;
         }
