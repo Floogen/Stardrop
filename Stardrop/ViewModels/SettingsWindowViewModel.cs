@@ -53,6 +53,7 @@ namespace Stardrop.ViewModels
             ToolTip_AlwaysAskNXMFiles = Program.translation.Get("ui.settings_window.tooltips.always_ask_nxm_files");
             ToolTip_EnableProfileSpecificModConfigs = Program.translation.Get("ui.settings_window.tooltips.enable_profile_specific_configs");
             ToolTip_EnableModsOnAdd = Program.translation.Get("ui.settings_window.tooltips.enable_mods_on_add");
+            ToolTip_ShouldAutomaticallySaveProfileChanges = Program.translation.Get("ui.settings_window.tooltips.automatically_save_profile_changes");
             ToolTip_Save = Program.translation.Get("ui.settings_window.tooltips.save_changes");
             ToolTip_Cancel = Program.translation.Get("ui.settings_window.tooltips.cancel_changes");
 
