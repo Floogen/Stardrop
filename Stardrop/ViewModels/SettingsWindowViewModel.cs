@@ -16,6 +16,7 @@ namespace Stardrop.ViewModels
         public bool EnableModsOnAdd { get { return Program.settings.EnableModsOnAdd; } set { Program.settings.EnableModsOnAdd = value; } }
         public bool AlwaysAskToDelete { get { return Program.settings.AlwaysAskToDelete; } set { Program.settings.AlwaysAskToDelete = value; } }
         public bool ShouldAutomaticallySaveProfileChanges { get { return Program.settings.ShouldAutomaticallySaveProfileChanges; } set { Program.settings.ShouldAutomaticallySaveProfileChanges = value; } }
+        public bool ShowModThumbnails { get { return Program.settings.ShowModThumbnails; } set { Program.settings.ShowModThumbnails = value; } }
 
         // Tooltips
         public string ToolTip_SMAPI { get; set; }
@@ -31,6 +32,7 @@ namespace Stardrop.ViewModels
         public string ToolTip_EnableProfileSpecificModConfigs { get; set; }
         public string ToolTip_EnableModsOnAdd { get; set; }
         public string ToolTip_ShouldAutomaticallySaveProfileChanges { get; set; }
+        public string ToolTip_ShowModThumbnails { get; set; }
         public string ToolTip_Save { get; set; }
         public string ToolTip_Cancel { get; set; }
 
@@ -53,6 +55,8 @@ namespace Stardrop.ViewModels
             ToolTip_AlwaysAskNXMFiles = Program.translation.Get("ui.settings_window.tooltips.always_ask_nxm_files");
             ToolTip_EnableProfileSpecificModConfigs = Program.translation.Get("ui.settings_window.tooltips.enable_profile_specific_configs");
             ToolTip_EnableModsOnAdd = Program.translation.Get("ui.settings_window.tooltips.enable_mods_on_add");
+            ToolTip_ShouldAutomaticallySaveProfileChanges = Program.translation.Get("ui.settings_window.tooltips.automatically_save_profile_changes");
+            ToolTip_ShowModThumbnails = Program.translation.Get("ui.settings_window.tooltips.show_mod_thumbnails");
             ToolTip_Save = Program.translation.Get("ui.settings_window.tooltips.save_changes");
             ToolTip_Cancel = Program.translation.Get("ui.settings_window.tooltips.cancel_changes");
 

@@ -480,7 +480,6 @@ namespace Stardrop.Utilities.External
             return new List<Endorsement>();
         }
 
-
         public async Task<EndorsementResponse> SetModEndorsement(int modId, bool isEndorsed)
         {
             try
@@ -540,6 +539,67 @@ namespace Stardrop.Utilities.External
             }
 
             return EndorsementResponse.Unknown;
+        }
+
+        public async Task<string?> DownloadThumbnail(int modId)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"games/stardewvalley/mods/{modId}.json");
+                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+                    ModDetails modDetails = JsonSerializer.Deserialize<ModDetails>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    if (modDetails is null)
+                    {
+                        Program.helper.Log($"Unable to get mod thumbnail for the mod {modId} on Nexus Mods");
+                        Program.helper.Log($"Response from Nexus Mods:\n{content}");
+
+                        return null;
+                    }
+
+                    UpdateRequestCounts(response.Headers);
+
+                    if (string.IsNullOrEmpty(modDetails.ThumbnailUrl))
+                    {
+                        Program.helper.Log($"The mod {modId} does not have a valid thumbnail image available on Nexus Mods");
+                        Program.helper.Log($"Response from Nexus Mods:\n{content}");
+                        return null;
+                    }
+
+                    // Download the thumbnail
+                    var thumbnailPath = Path.Combine(Pathing.GetThumbnailsPath(), $"{modId}{Path.GetExtension(modDetails.ThumbnailUrl)}");
+                    using var fileStream = new FileStream(thumbnailPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 8192, useAsync: true);
+                    using var downloadStream = await _client.GetStreamAsync(modDetails.ThumbnailUrl);
+
+                    await downloadStream.CopyToAsync(fileStream);
+                    await fileStream.FlushAsync();
+
+                    return thumbnailPath;
+                }
+                else
+                {
+                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    {
+                        Program.helper.Log($"Bad status given from Nexus Mods: {response.StatusCode}");
+                        if (response.Content is not null)
+                        {
+                            Program.helper.Log($"Response from Nexus Mods:\n{await response.Content.ReadAsStringAsync()}");
+                        }
+                    }
+                    else if (response.Content is null)
+                    {
+                        Program.helper.Log($"No response from Nexus Mods!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to get mod thumbnail for the mod {modId} on Nexus Mods: {ex}", Helper.Status.Alert);
+            }
+
+            return null;
         }
 
         private void UpdateRequestCounts(HttpResponseHeaders headers)

@@ -1,6 +1,10 @@
-﻿using Semver;
+﻿using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using Avalonia.Shared.PlatformSupport;
+using Semver;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
+using Stardrop.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -42,6 +46,9 @@ namespace Stardrop.Models
         private string _modPageUri { get; set; }
         public string ModPageUri { get { return _modPageUri; } set { _modPageUri = value; NotifyPropertyChanged("ModPageUri"); } }
         public int? NexusModId { get { return GetNexusId(); } }
+        private string? _nexusModThumbnailPath { get; set; }
+        public string? NexusModThumbnailPath { get { return _nexusModThumbnailPath; } set { _nexusModThumbnailPath = value; NexusModThumbnailFile = string.IsNullOrEmpty(value) ? null : new Bitmap(value); NotifyPropertyChanged("NexusModThumbnailFile"); } }
+        public Bitmap? NexusModThumbnailFile { get; set; }
         private bool _isEnabled { get; set; }
         public bool IsEnabled
         {

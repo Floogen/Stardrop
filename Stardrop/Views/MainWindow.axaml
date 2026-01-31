@@ -502,6 +502,13 @@
 					</Style>
 				</DataGrid.Styles>
 				<DataGrid.Columns>
+					<DataGridTemplateColumn IsVisible="{Binding ShowModThumbnails}" Header="" Width="150" CanUserResize="False" CanUserSort="False">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<Image Height="125" Width="125" Source="{Binding NexusModThumbnailFile}" Stretch="Uniform" />
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
 					<DataGridTemplateColumn Header="{i18n:Translate ui.main_window.menu_headers.enabled}" Width="25" CanUserResize="False" CanUserSort="True" SortMemberPath="IsEnabled">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>

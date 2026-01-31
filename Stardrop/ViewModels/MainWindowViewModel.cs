@@ -75,6 +75,8 @@ namespace Stardrop.ViewModels
         public bool ShowSaveProfileChanges { get { return _showSaveProfileChanges; } set { this.RaiseAndSetIfChanged(ref _showSaveProfileChanges, value); } }
         private bool _showSaveProfileChanges;
         public bool AreModGroupsEnabled { get { return Program.settings.ModGroupingMethod != ModGrouping.None; } }
+        public bool ShowModThumbnails { get { return _showModThumbnails; } set { this.RaiseAndSetIfChanged(ref _showModThumbnails, value); } }
+        private bool _showModThumbnails = Program.settings.ShowModThumbnails;
 
         public MainWindowViewModel(string modsFilePath, string version)
         {
@@ -349,6 +351,11 @@ namespace Stardrop.ViewModels
                 }
             }
 
+            if (Program.settings.ShowModThumbnails)
+            {
+                UpdateThumbnails();
+            }
+
             // Update the local data
             var modInstallData = new List<ModInstallData>();
             foreach (var mod in Mods.Where(m => m is not null))
@@ -560,6 +567,30 @@ namespace Stardrop.ViewModels
             foreach (var mod in Mods.Where(m => m.HasUpdateKeys() && endorsements.Any(e => e.Id == m.NexusModId)))
             {
                 mod.IsEndorsed = endorsements.First(e => e.Id == mod.NexusModId).IsEndorsed();
+            }
+        }
+
+        internal async void UpdateThumbnails()
+        {
+            // Get all existing thumbnails
+            IEnumerable<FileInfo> nexusModThumbnails = new List<FileInfo>();
+            var thumbnailDirectory = new DirectoryInfo(Pathing.GetThumbnailsPath());
+            if (thumbnailDirectory.Exists)
+            {
+                nexusModThumbnails = thumbnailDirectory.EnumerateFiles();
+            }
+
+            foreach (var mod in Mods.Where(m => m.NexusModId is not null))
+            {
+                var thumbnail = nexusModThumbnails.FirstOrDefault(t => mod.NexusModId is not null && Path.GetFileNameWithoutExtension(t.Name).Equals(mod.NexusModId.ToString(), StringComparison.OrdinalIgnoreCase));
+                if (thumbnail is not null)
+                {
+                    mod.NexusModThumbnailPath = thumbnail.FullName;
+                }
+                else if (Nexus.Client is not null && mod.NexusModThumbnailPath is null)
+                {
+                    mod.NexusModThumbnailPath = await Nexus.Client.DownloadThumbnail((int)mod.NexusModId);
+                }
             }
         }
 
