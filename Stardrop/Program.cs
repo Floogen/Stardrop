@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
+using Avalonia.Shared.PlatformSupport;
 using CommandLine;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.MaterialDesign;
@@ -27,6 +28,7 @@ namespace Stardrop
         internal static Helper helper;
         internal static Settings settings = new Settings();
         internal static Translation translation = new Translation();
+        internal static AssetLoader assetLoader = new AssetLoader();
 
         internal static bool onBootStartSMAPI = false;
         internal static string? nxmLink = null;
@@ -88,6 +90,7 @@ namespace Stardrop
                 Directory.CreateDirectory(Pathing.GetProfilesFolderPath());
                 Directory.CreateDirectory(Pathing.GetSelectedModsFolderPath());
                 Directory.CreateDirectory(Pathing.GetNexusPath());
+                Directory.CreateDirectory(Pathing.GetThumbnailsPath());
                 Directory.CreateDirectory(Pathing.GetSmapiUpgradeFolderPath());
 
                 // Verify the settings folder path is created
