@@ -47,7 +47,7 @@ namespace Stardrop.Models
         public string ModPageUri { get { return _modPageUri; } set { _modPageUri = value; NotifyPropertyChanged("ModPageUri"); } }
         public int? NexusModId { get { return GetNexusId(); } }
         private string? _nexusModThumbnailPath { get; set; }
-        public string? NexusModThumbnailPath { get { return _nexusModThumbnailPath; } set { _nexusModThumbnailPath = value; NexusModThumbnailFile = string.IsNullOrEmpty(value) ? null : new Bitmap(value); NotifyPropertyChanged("NexusModThumbnailFile"); } }
+        public string? NexusModThumbnailPath { get { return _nexusModThumbnailPath; } set { _nexusModThumbnailPath = value; NexusModThumbnailFile = TryLoadThumbnail(value); NotifyPropertyChanged("NexusModThumbnailFile"); } }
         public Bitmap? NexusModThumbnailFile { get; set; }
         private bool _isEnabled { get; set; }
         public bool IsEnabled
@@ -246,6 +246,25 @@ namespace Stardrop.Models
             }
 
             return null;
+        }
+        
+        private Bitmap? TryLoadThumbnail(string? filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return null;
+            }
+
+            try
+            {
+                var thumbnail = new Bitmap(filePath);
+                return thumbnail;
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to load thumbnail for mod {UniqueId} using following path {filePath}");
+                return null;
+            }
         }
 
         internal void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
