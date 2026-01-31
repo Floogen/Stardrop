@@ -23,6 +23,7 @@ namespace Stardrop.Models
         /// </summary>
         public bool AlwaysAskToDelete { get; set; } = true;
         public bool ShouldAutomaticallySaveProfileChanges { get; set; } = true;
+        public bool ShowModThumbnails { get; set; }
         public NexusServers PreferredNexusServer { get; set; } = NexusServers.NexusCDN;
         public bool IsAskingBeforeAcceptingNXM { get; set; } = true;
         public GameDetails GameDetails { get; set; }

@@ -6,5 +6,8 @@ namespace Stardrop.Models.Nexus.Web
     {
         [JsonPropertyName("name")]
         public string? Name { get; set; }
+
+        [JsonPropertyName("picture_url")]
+        public string? ThumbnailUrl { get; set; }
     }
 }

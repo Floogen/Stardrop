@@ -1247,6 +1247,7 @@ namespace Stardrop.Views
                 await HandleModListRefresh();
 
                 _viewModel.ShowSaveProfileChanges = !Program.settings.ShouldAutomaticallySaveProfileChanges;
+                _viewModel.ShowModThumbnails = Program.settings.ShowModThumbnails;
             }
         }
 
@@ -2011,6 +2012,12 @@ namespace Stardrop.Views
 
                 // Show endorsements
                 _viewModel.ShowEndorsements = true;
+
+                // Show thumbnails
+                if (Program.settings.ShowModThumbnails)
+                {
+                    _viewModel.UpdateThumbnails();
+                }
 
                 // Show Nexus mod download column, if user is premium
                 _viewModel.ShowInstalls = Program.settings.NexusDetails.IsPremium;
