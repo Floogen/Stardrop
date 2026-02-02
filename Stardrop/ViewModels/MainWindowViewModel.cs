@@ -1,5 +1,6 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
+using DynamicData;
 using Json.More;
 using ReactiveUI;
 using Stardrop.Models;
@@ -86,8 +87,11 @@ namespace Stardrop.ViewModels
 
             // Create data view
             DataView = new DataGridCollectionView(Mods, isDataSorted: false, isDataInGroupOrder: false);
-            DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending));
+            DataView.SortDescriptions.CollectionChanged += DataViewSortDescription_CollectionChanged;
+
             UpdateFilter();
+
+            DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending));
 
             // Do OS specific setup
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -685,6 +689,7 @@ namespace Stardrop.ViewModels
             if (DataView is not null)
             {
                 DataView.GroupDescriptions.Clear();
+
                 switch (Program.settings.ModGroupingMethod)
                 {
                     case ModGrouping.None:
@@ -696,6 +701,8 @@ namespace Stardrop.ViewModels
                         DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.FrameworkID)));
                         break;
                 }
+
+                HandleModGroupingSorting();
 
                 DataView.Filter = null;
                 DataView.Filter = ModFilter;
@@ -775,6 +782,32 @@ namespace Stardrop.ViewModels
             }
 
             return false;
+        }
+
+        private void DataViewSortDescription_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            HandleModGroupingSorting();
+        }
+
+        private void HandleModGroupingSorting()
+        {
+            switch (Program.settings.ModGroupingMethod)
+            {
+                case ModGrouping.None:
+                    break;
+                case ModGrouping.Folder:
+                    if (DataView.SortDescriptions.Any(d => d.PropertyPath == nameof(Mod.Path)) is false)
+                    {
+                        DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.Path), ListSortDirection.Ascending));
+                    }
+                    break;
+                case ModGrouping.ContentPack:
+                    if (DataView.SortDescriptions.Any(d => d.PropertyPath == nameof(Mod.FrameworkID)) is false)
+                    {
+                        DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.FrameworkID), ListSortDirection.Ascending));
+                    }
+                    break;
+            }
         }
     }
 }
