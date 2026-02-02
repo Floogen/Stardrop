@@ -101,10 +101,14 @@ namespace Stardrop.Views
             };
 
             // Handle adding the mod grouping methods
-            var descriptionToModGroupingEnum = new Dictionary<string, ModGrouping>();
-            foreach (ModGrouping modGrouping in Enum.GetValues(typeof(ModGrouping)))
+            var descriptionToModGroupingEnum = new Dictionary<string, ModGrouping>()
             {
-                if (EnumParser.GetDescription(modGrouping) is not null)
+                { "None", ModGrouping.None }
+            };
+
+            foreach (ModGrouping modGrouping in Enum.GetValues(typeof(ModGrouping)).Cast<ModGrouping>().OrderBy(g => EnumParser.GetDescription(g)))
+            {
+                if (modGrouping != ModGrouping.None && EnumParser.GetDescription(modGrouping) is not null)
                 {
                     descriptionToModGroupingEnum[EnumParser.GetDescription(modGrouping)] = modGrouping;
                 }
