@@ -38,9 +38,7 @@ namespace Stardrop.Utilities.External
             {
                 fileName = "/usr/bin/open";
                 arguments = $"-a \"Terminal\" \"{Pathing.GetSmapiPath().Replace("StardewModdingAPI.dll", "StardewModdingAPI")}\" --args --mods-path \"{Pathing.GetSelectedModsFolderPath()}\"";
-
-                //Skip setting parsedModPath for macOS due to --mods-path usage
-                //parsedModPath = $"\"{Pathing.GetSelectedModsFolderPath()}\"";
+                parsedModPath = $"{Pathing.GetSelectedModsFolderPath()}";
 
                 /* Alternative route (using AppleScript) of activating Terminal + SMAPI
                 fileName = "/usr/bin/env";
