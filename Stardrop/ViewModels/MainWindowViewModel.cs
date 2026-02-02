@@ -774,6 +774,25 @@ namespace Stardrop.ViewModels
                             break;
                     }
                 }
+                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.top_level_group")))
+                {
+                    ModGrouping modGroupingMethod = Program.settings.ModGroupingMethod;
+                    switch (Program.settings.ModGroupingMethod)
+                    {
+                        case ModGrouping.Folder:
+                            if (mod.RootPath is not null && mod.RootPath.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            {
+                                return true;
+                            }
+                            break;
+                        case ModGrouping.ContentPack:
+                            if (mod.FrameworkID is not null && mod.FrameworkID.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            {
+                                return true;
+                            }
+                            break;
+                    }
+                }
                 if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.author")) && mod.Author.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
