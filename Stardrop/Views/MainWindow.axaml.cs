@@ -1328,7 +1328,7 @@ namespace Stardrop.Views
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
                         // Prepare the process
-                        string[] arguments = new string[] { "timeout 1", $"move \"{Path.Combine(extractedLatestReleasePath, "*")}\" .", $"move \"{Path.Combine(extractedLatestReleasePath, "Themes", "*")}\" .\\Themes", $"move \"{Path.Combine(extractedLatestReleasePath, "i18n", "*")}\" .\\i18n", $"rmdir /s /q \"{extractedLatestReleasePath}\"", $"\"{Path.Combine(Directory.GetCurrentDirectory(), "Stardrop.exe")}\"" };
+                        string[] arguments = new string[] { "timeout 1", $"move \"{Path.Combine(extractedLatestReleasePath, "*")}\" .", $"robocopy \"{Path.Combine(extractedLatestReleasePath, "Themes", "*")}\" .\\Themes /E /MOVE", $"move \"{Path.Combine(extractedLatestReleasePath, "i18n", "*")}\" .\\i18n", $"rmdir /s /q \"{extractedLatestReleasePath}\"", $"\"{Path.Combine(Directory.GetCurrentDirectory(), "Stardrop.exe")}\"" };
                         var processInfo = new ProcessStartInfo
                         {
                             FileName = "cmd",

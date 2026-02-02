@@ -21,7 +21,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
-		<Content Include="Themes\*" CopyToOutputDirectory="PreserveNewest" />
+		<Content Include="Themes\**" CopyToOutputDirectory="PreserveNewest" />
 		<Content Include="i18n\*" CopyToOutputDirectory="PreserveNewest" />
 		<None Remove=".gitignore" />
 		<None Remove="Assets\icon.ico" />

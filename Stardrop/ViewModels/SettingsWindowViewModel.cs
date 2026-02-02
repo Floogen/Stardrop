@@ -1,5 +1,7 @@
+using Stardrop.Models;
 using Stardrop.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Stardrop.ViewModels
@@ -17,6 +19,7 @@ namespace Stardrop.ViewModels
         public bool AlwaysAskToDelete { get { return Program.settings.AlwaysAskToDelete; } set { Program.settings.AlwaysAskToDelete = value; } }
         public bool ShouldAutomaticallySaveProfileChanges { get { return Program.settings.ShouldAutomaticallySaveProfileChanges; } set { Program.settings.ShouldAutomaticallySaveProfileChanges = value; } }
         public bool ShowModThumbnails { get { return Program.settings.ShowModThumbnails; } set { Program.settings.ShowModThumbnails = value; } }
+        public List<Theme> Themes { get; set; } = new List<Theme>();
 
         // Tooltips
         public string ToolTip_SMAPI { get; set; }

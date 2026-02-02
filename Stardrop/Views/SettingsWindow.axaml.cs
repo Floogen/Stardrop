@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using SharpCompress.Common;
 using Stardrop.Models;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Utilities;
@@ -20,14 +21,15 @@ namespace Stardrop.Views
     public partial class SettingsWindow : Window
     {
         private Settings _oldSettings;
-        private Dictionary<string, IStyle> _themes = new Dictionary<string, IStyle>();
+        private SettingsWindowViewModel _viewModel;
 
         public SettingsWindow()
         {
             InitializeComponent();
 
             // Set the datacontext
-            DataContext = new SettingsWindowViewModel();
+            _viewModel = new SettingsWindowViewModel();
+            DataContext = _viewModel;
 
             // Handle buttons
             this.FindControl<Button>("exitButton").Click += Exit_Click;
@@ -47,12 +49,39 @@ namespace Stardrop.Views
             SetTextboxTextFocusToEnd(modInstallTextBox, modInstallTextBox.Text);
 
             // Handle adding the themes
-            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Themes"), "*.xaml"))
+            string? lastContributorName = null;
+            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Themes"), "*.xaml", SearchOption.AllDirectories))
             {
                 try
                 {
+                    var contributorName = new DirectoryInfo(Path.GetDirectoryName(fileFullName)).Name;
+                    if (contributorName is not null && contributorName.Equals("Themes", StringComparison.OrdinalIgnoreCase))
+                    {
+                        contributorName = null;
+                    }
+
+                    if (lastContributorName != contributorName)
+                    {
+                        // Add separator
+                        _viewModel.Themes.Add(new Theme()
+                        {
+                            Name = "------------",
+                            IsEnabled = false
+                        });
+                    }
+                    lastContributorName = contributorName;
+
                     var themeName = Path.GetFileNameWithoutExtension(fileFullName);
-                    _themes[themeName] = AvaloniaRuntimeXamlLoader.Parse<Styles>(File.ReadAllText(fileFullName));
+                    var style = AvaloniaRuntimeXamlLoader.Parse<Styles>(File.ReadAllText(fileFullName));
+
+                    _viewModel.Themes.Add(new Theme()
+                    {
+                        Author = contributorName is not null ? $"by {contributorName}" : "",
+                        Name = themeName,
+                        Style = style,
+                        IsEnabled = true
+                    });
+
                     Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
                 }
                 catch (Exception ex)
@@ -62,13 +91,20 @@ namespace Stardrop.Views
             }
 
             var themeComboBox = this.FindControl<ComboBox>("themeComboBox");
-            themeComboBox.Items = _themes.Keys;
-            themeComboBox.SelectedItem = !_themes.ContainsKey(Program.settings.Theme) ? _themes.Keys.First() : Program.settings.Theme;
+            themeComboBox.Items = _viewModel.Themes;
+            var currentTheme = _viewModel.Themes.FirstOrDefault(t => t.Name.Equals(Program.settings.Theme, StringComparison.OrdinalIgnoreCase));
+            if (currentTheme is not null)
+            {
+                themeComboBox.SelectedItem = currentTheme;
+            }
             themeComboBox.SelectionChanged += (sender, e) =>
             {
-                var themeName = themeComboBox.SelectedItem.ToString();
-                Application.Current.Styles[0] = _themes[themeName];
-                Program.settings.Theme = themeName;
+                Theme? theme = themeComboBox.SelectedItem as Theme;
+                if (theme is not null && theme.Style is not null)
+                {
+                    Application.Current.Styles[0] = theme.Style;
+                    Program.settings.Theme = theme.Name;
+                }
             };
 
             // Handle Nexus Mods preferred server
@@ -159,7 +195,12 @@ namespace Stardrop.Views
 
         private void Exit_Click(object? sender, RoutedEventArgs e)
         {
-            Application.Current.Styles[0] = _themes[_oldSettings.Theme];
+            var oldTheme = _viewModel.Themes.FirstOrDefault(t => t.Name.Equals(_oldSettings.Theme));
+            if (oldTheme is not null && oldTheme.Style is not null)
+            {
+                Application.Current.Styles[0] = oldTheme.Style;
+            }
+
             Program.settings = _oldSettings;
             Program.translation.SetLanguage(String.IsNullOrEmpty(Program.settings.Language) ? Program.translation.GetAvailableTranslations().First() : Program.translation.GetLanguage(Program.settings.Language));
 
