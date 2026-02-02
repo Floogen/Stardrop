@@ -76,6 +76,8 @@
   "ui.main_window.buttons.show_updatable_mods": "Show Updatable Mods",
   "ui.main_window.buttons.active_search_filters": "{0} Filter(s) Active",
   "ui.main_window.buttons.no_search_filters": "No Filters Active",
+  "ui.main_window.buttons.mod_groups_state.expand": "Expand Mod Groups",
+  "ui.main_window.buttons.mod_groups_state.collapse": "Collapse Mod Groups",
 
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "Click To Check For Mod Updates",

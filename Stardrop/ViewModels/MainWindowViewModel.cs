@@ -75,9 +75,12 @@ namespace Stardrop.ViewModels
 
         public bool ShowSaveProfileChanges { get { return _showSaveProfileChanges; } set { this.RaiseAndSetIfChanged(ref _showSaveProfileChanges, value); } }
         private bool _showSaveProfileChanges;
-        public bool AreModGroupsEnabled { get { return Program.settings.ModGroupingMethod != ModGrouping.None; } }
+        public bool AreModGroupsEnabled { get { return _areModGroupsEnabled; } set { this.RaiseAndSetIfChanged(ref _areModGroupsEnabled, value); } }
+        private bool _areModGroupsEnabled = Program.settings.ModGroupingMethod != ModGrouping.None;
         public bool ShowModThumbnails { get { return _showModThumbnails; } set { this.RaiseAndSetIfChanged(ref _showModThumbnails, value); } }
         private bool _showModThumbnails = Program.settings.ShowModThumbnails;
+        public string ModGroupsStateButtonText { get { return _modGroupsStateButtonText; } set { this.RaiseAndSetIfChanged(ref _modGroupsStateButtonText, value); } }
+        private string _modGroupsStateButtonText = Program.settings.ModGroupingMethod != ModGrouping.None ? Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse") : Program.translation.Get("ui.main_window.buttons.mod_groups_state.expand");
 
         public MainWindowViewModel(string modsFilePath, string version)
         {

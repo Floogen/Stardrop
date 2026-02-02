@@ -640,6 +640,10 @@
 					</Flyout>
 		    </Button.Flyout>
 			</Button>
+			<StackPanel IsVisible="{Binding AreModGroupsEnabled}" Orientation="Horizontal" Margin="10 0 10 0">
+				<Separator Width="1" Height="15" Background="{DynamicResource HighlightBrush}" />
+			</StackPanel>
+			<Button Name="modGroupStateButton" IsVisible="{Binding AreModGroupsEnabled}" Content="{Binding ModGroupsStateButtonText}" VerticalAlignment="Center" Margin="0 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
 			<StackPanel Orientation="Horizontal" Margin="10 0 10 0">
 				<Separator Width="1" Height="15" Background="{DynamicResource HighlightBrush}" />
 			</StackPanel>

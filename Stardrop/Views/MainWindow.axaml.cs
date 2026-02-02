@@ -170,6 +170,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("smapiButton").Click += Smapi_Click;
             this.FindControl<CheckBox>("showUpdatableMods").Click += ShowUpdatableModsButton_Click;
             this.FindControl<Button>("nexusModsButton").Click += NexusModsButton_Click;
+            this.FindControl<Button>("modGroupStateButton").Click += ModGroupStateButton;
 
             // Handle filtering via textbox
             this.FindControl<TextBox>("searchBox").AddHandler(KeyUpEvent, SearchBox_KeyUp);
@@ -980,6 +981,26 @@ namespace Stardrop.Views
             }
         }
 
+        private void ModGroupStateButton(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            bool areModGroupsExpanded = _viewModel.ModGroupsStateButtonText == Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
+
+            var modGrid = this.FindControl<DataGrid>("modGrid");
+            foreach (DataGridCollectionViewGroup group in _viewModel.DataView.Groups.Where(g => g is DataGridCollectionViewGroup))
+            {
+                if (areModGroupsExpanded)
+                {
+                    modGrid.CollapseRowGroup(group, true);
+                }
+                else
+                {
+                    modGrid.ExpandRowGroup(group, true);
+                }
+            }
+
+            _viewModel.ModGroupsStateButtonText = !areModGroupsExpanded ? Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse") : Program.translation.Get("ui.main_window.buttons.mod_groups_state.expand");
+        }
+
         private async void NexusModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             await HandleNexusConnection();
@@ -1247,6 +1268,7 @@ namespace Stardrop.Views
                 await HandleModListRefresh();
 
                 _viewModel.ShowSaveProfileChanges = !Program.settings.ShouldAutomaticallySaveProfileChanges;
+                _viewModel.AreModGroupsEnabled = Program.settings.ModGroupingMethod != ModGrouping.None;
                 _viewModel.ShowModThumbnails = Program.settings.ShowModThumbnails;
             }
         }
