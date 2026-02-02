@@ -988,6 +988,11 @@ namespace Stardrop.Views
             var modGrid = this.FindControl<DataGrid>("modGrid");
             foreach (DataGridCollectionViewGroup group in _viewModel.DataView.Groups.Where(g => g is DataGridCollectionViewGroup))
             {
+                if (group is null)
+                {
+                    continue;
+                }
+
                 if (areModGroupsExpanded)
                 {
                     modGrid.CollapseRowGroup(group, true);
