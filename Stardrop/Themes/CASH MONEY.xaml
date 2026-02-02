@@ -1,0 +1,66 @@
+﻿<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Styles.Resources>
+
+        <!-- Base Colors -->
+        <Color x:Key="GreenBg">#4FA57E</Color>
+        <Color x:Key="GreenRow">#6AB892</Color>
+        <Color x:Key="GreenRowAlt">#74C29B</Color>
+        <Color x:Key="GreenText">#0F241C</Color>
+
+        <!-- Accent / UI Colors -->
+        <Color x:Key="SelectedGreen">#C6E0D3</Color>
+        <Color x:Key="MintHover">#8AD3AF</Color>
+        <Color x:Key="StemBorder">#3E7F62</Color>
+        <Color x:Key="DeepGreen">#2E5F4B</Color>
+
+        <Color x:Key="SystemAccentColor">#6AB892</Color>
+
+        <!-- Avalonia Brushes -->
+        <SolidColorBrush x:Key="ThemeBackgroundBrush"
+                         Color="{DynamicResource GreenBg}" />
+        <SolidColorBrush x:Key="ThemeForegroundBrush"
+                         Color="{DynamicResource GreenText}" />
+        <SolidColorBrush x:Key="ThemeControlMidBrush"
+                         Color="{DynamicResource GreenRowAlt}" />
+        <SolidColorBrush x:Key="ThemeControlHighBrush"
+                         Color="{DynamicResource GreenText}"
+                         Opacity="0.65" />
+        <SolidColorBrush x:Key="ThemeForegroundLowBrush"
+                         Color="{DynamicResource GreenText}"
+                         Opacity="0.6" />
+        <SolidColorBrush x:Key="HighlightBrush"
+                         Color="{DynamicResource StemBorder}" />
+        <SolidColorBrush x:Key="HighlightForegroundBrush"
+                         Color="{DynamicResource GreenText}" />
+
+    </Styles.Resources>
+
+    <!-- DataGrid -->
+    <Style Selector="DataGrid">
+        <Setter Property="Background" Value="{DynamicResource GreenBg}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource StemBorder}" />
+        <Setter Property="Foreground" Value="{DynamicResource GreenText}" />
+    </Style>
+
+    <Style Selector="DataGridRow">
+        <Setter Property="Background" Value="{DynamicResource GreenRow}" />
+        <Setter Property="Foreground" Value="{DynamicResource GreenText}" />
+    </Style>
+
+    <Style Selector="DataGridRow:nth-child(even)">
+        <Setter Property="Background" Value="{DynamicResource GreenRowAlt}" />
+    </Style>
+
+    <Style Selector="DataGridRow:selected">
+        <Setter Property="Background" Value="{DynamicResource SelectedGreen}" />
+        <Setter Property="Foreground" Value="{DynamicResource GreenText}" />
+    </Style>
+
+    <Style Selector="DataGridRow:pointerover">
+        <Setter Property="Background" Value="{DynamicResource MintHover}" />
+    </Style>
+
+</Styles>
