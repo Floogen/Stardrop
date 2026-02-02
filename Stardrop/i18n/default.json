@@ -14,6 +14,7 @@
   "ui.main_window.menu_items.check_for_stardrop_update": "Check for Stardrop Update",
   "ui.main_window.menu_items.stardrop_repository": "Stardrop Repository",
   "ui.main_window.menu_items.nexus_install_all": "Install All Updates",
+  "ui.main_window.menu_items.nexus_install_enabled": "Install Updates for Enabled Mods",
   "ui.main_window.menu_items.nexus_connection": "API Connection",
   "ui.main_window.menu_items.check_for_SMAPI_update": "Check for SMAPI Update",
 

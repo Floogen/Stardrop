@@ -1117,6 +1117,16 @@ namespace Stardrop.Views
             await HandleBulkModInstall();
         }
 
+        private async void NexusModBulkInstallEnabledOnly_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            await HandleBulkModInstall(enabledModsOnly: true);
+        }
+
+        private async void NexusModBulkInstallEnabledOnly_Click(object? sender, EventArgs e)
+        {
+            await HandleBulkModInstall(enabledModsOnly: true);
+        }
+
         private async void NexusConnection_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             await HandleNexusConnection();
@@ -1545,7 +1555,7 @@ namespace Stardrop.Views
             }
         }
 
-        private async Task HandleBulkModInstall()
+        private async Task HandleBulkModInstall(bool enabledModsOnly = false)
         {
             if (Nexus.Client is null)
             {
@@ -1566,6 +1576,12 @@ namespace Stardrop.Views
             List<string> updateFilePaths = new List<string>();
             foreach (var mod in _viewModel.Mods.Where(m => String.IsNullOrEmpty(m.InstallStatus) is false))
             {
+                if (enabledModsOnly is true && mod.IsEnabled is false)
+                {
+                    Program.helper.Log($"Skipping mod update install for {mod.Name}: Mod was not enabled when using the \"Install Updates (Enabled Mods Only)\" option");
+                    continue;
+                }
+
                 var downloadFilePath = await InstallModViaNexus(mod);
 
                 if (String.IsNullOrEmpty(downloadFilePath))
