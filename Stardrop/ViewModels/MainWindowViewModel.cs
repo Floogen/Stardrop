@@ -700,6 +700,9 @@ namespace Stardrop.ViewModels
                     case ModGrouping.Folder:
                         DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.Path)));
                         break;
+                    case ModGrouping.FolderCondensed:
+                        DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.RootPath)));
+                        break;
                     case ModGrouping.ContentPack:
                         DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.FrameworkID)));
                         break;
@@ -766,6 +769,12 @@ namespace Stardrop.ViewModels
                                 return true;
                             }
                             break;
+                        case ModGrouping.FolderCondensed:
+                            if (mod.RootPath.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            {
+                                return true;
+                            }
+                            break;
                         case ModGrouping.ContentPack:
                             if (mod.FrameworkID is not null && mod.FrameworkID.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
                             {
@@ -780,6 +789,7 @@ namespace Stardrop.ViewModels
                     switch (Program.settings.ModGroupingMethod)
                     {
                         case ModGrouping.Folder:
+                        case ModGrouping.FolderCondensed:
                             if (mod.RootPath is not null && mod.RootPath.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
                             {
                                 return true;
@@ -821,6 +831,12 @@ namespace Stardrop.ViewModels
                     if (DataView.SortDescriptions.Any(d => d.PropertyPath == nameof(Mod.Path)) is false)
                     {
                         DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.Path), ListSortDirection.Ascending));
+                    }
+                    break;
+                case ModGrouping.FolderCondensed:
+                    if (DataView.SortDescriptions.Any(d => d.PropertyPath == nameof(Mod.RootPath)) is false)
+                    {
+                        DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.RootPath), ListSortDirection.Ascending));
                     }
                     break;
                 case ModGrouping.ContentPack:

@@ -612,6 +612,9 @@ namespace Stardrop.Views
                 case ModGrouping.Folder:
                     filterText = selectedMod.Path;
                     break;
+                case ModGrouping.FolderCondensed:
+                    filterText = selectedMod.RootPath;
+                    break;
                 case ModGrouping.ContentPack:
                     filterText = selectedMod.FrameworkID;
                     break;
