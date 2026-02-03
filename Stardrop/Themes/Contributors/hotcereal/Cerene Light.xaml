@@ -25,7 +25,9 @@
         <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource IceRowAlt}" />
         <SolidColorBrush x:Key="ThemeControlHighBrush" Color="{DynamicResource IceText}" Opacity="0.65" />
         <SolidColorBrush x:Key="ThemeForegroundLowBrush" Color="{DynamicResource IceText}" Opacity="0.6" />
-
+        
+        <!-- Need to look into why missing a SolidColorBrush causes Stardrop to not display them in styles -->
+        <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource LightGray}" />
     </Styles.Resources>
 
     <!-- DataGrid -->
