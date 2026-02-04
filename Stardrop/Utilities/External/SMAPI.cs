@@ -71,7 +71,9 @@ namespace Stardrop.Utilities.External
             if (string.IsNullOrEmpty(parsedModPath) is false)
             {
                 Program.helper.Log($"Setting SMAPI_MODS_PATH to: {parsedModPath}");
+
                 processInfo.EnvironmentVariables["SMAPI_MODS_PATH"] = parsedModPath;
+                Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", parsedModPath);
 
                 Program.helper.Log($"Process SMAPI_MODS_PATH: {processInfo.EnvironmentVariables["SMAPI_MODS_PATH"]}");
                 Program.helper.Log($"System SMAPI_MODS_PATH: {Environment.GetEnvironmentVariable("SMAPI_MODS_PATH")}");
