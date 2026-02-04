@@ -147,7 +147,12 @@ namespace Stardrop.Models
             if (modFileInfo.DirectoryName.Contains(commonNameInstalledFolder))
             {
                 // Mod inside Stardrop installed folder.
-                modNamePath = modFileInfo.DirectoryName.Substring(commonNameInstalledFolder.Length + 1);
+                var stardropInstallFolder = System.IO.Path.GetFileName(commonNameInstalledFolder);
+                if (string.IsNullOrEmpty(stardropInstallFolder))
+                {
+                    stardropInstallFolder = "Stardrop Installed Mods";
+                }
+                modNamePath = System.IO.Path.Combine(stardropInstallFolder, modFileInfo.DirectoryName.Substring(commonNameInstalledFolder.Length + 1));
             }
             else if (modFileInfo.DirectoryName.Contains(commonNameModsFolder))
             {
