@@ -170,6 +170,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("smapiButton").Click += Smapi_Click;
             this.FindControl<CheckBox>("showUpdatableMods").Click += ShowUpdatableModsButton_Click;
             this.FindControl<Button>("nexusModsButton").Click += NexusModsButton_Click;
+            this.FindControl<Button>("modGroupStateButton").Click += ModGroupStateButton;
 
             // Handle filtering via textbox
             this.FindControl<TextBox>("searchBox").AddHandler(KeyUpEvent, SearchBox_KeyUp);
@@ -611,6 +612,9 @@ namespace Stardrop.Views
                 case ModGrouping.Folder:
                     filterText = selectedMod.Path;
                     break;
+                case ModGrouping.FolderCondensed:
+                    filterText = selectedMod.RootPath;
+                    break;
                 case ModGrouping.ContentPack:
                     filterText = selectedMod.FrameworkID;
                     break;
@@ -730,6 +734,9 @@ namespace Stardrop.Views
                 var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
                 _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<ListBoxItem>().Select(i => i.Content.ToString()).ToList();
             }
+
+            // Ensure mod group button is set to collapse
+            _viewModel.ModGroupsStateButtonText = Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
         }
 
         private void FilterListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -739,6 +746,9 @@ namespace Stardrop.Views
 
             int selectedItemCount = searchFilterColumnBox.SelectedItems.Count;
             this.FindControl<Button>("searchFilterColumnButton").Content = selectedItemCount > 0 ? String.Format(Program.translation.Get("ui.main_window.buttons.active_search_filters"), selectedItemCount) : Program.translation.Get("ui.main_window.buttons.no_search_filters");
+
+            // Ensure mod group button is set to collapse
+            _viewModel.ModGroupsStateButtonText = Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
         }
 
         private void DisabledModComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -980,6 +990,31 @@ namespace Stardrop.Views
             }
         }
 
+        private void ModGroupStateButton(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            bool areModGroupsExpanded = _viewModel.ModGroupsStateButtonText == Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
+
+            var modGrid = this.FindControl<DataGrid>("modGrid");
+            foreach (DataGridCollectionViewGroup group in _viewModel.DataView.Groups.Where(g => g is DataGridCollectionViewGroup))
+            {
+                if (group is null)
+                {
+                    continue;
+                }
+
+                if (areModGroupsExpanded)
+                {
+                    modGrid.CollapseRowGroup(group, true);
+                }
+                else
+                {
+                    modGrid.ExpandRowGroup(group, true);
+                }
+            }
+
+            _viewModel.ModGroupsStateButtonText = !areModGroupsExpanded ? Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse") : Program.translation.Get("ui.main_window.buttons.mod_groups_state.expand");
+        }
+
         private async void NexusModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             await HandleNexusConnection();
@@ -1094,6 +1129,16 @@ namespace Stardrop.Views
         private async void NexusModBulkInstall_Click(object? sender, EventArgs e)
         {
             await HandleBulkModInstall();
+        }
+
+        private async void NexusModBulkInstallEnabledOnly_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            await HandleBulkModInstall(enabledModsOnly: true);
+        }
+
+        private async void NexusModBulkInstallEnabledOnly_Click(object? sender, EventArgs e)
+        {
+            await HandleBulkModInstall(enabledModsOnly: true);
         }
 
         private async void NexusConnection_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -1247,6 +1292,7 @@ namespace Stardrop.Views
                 await HandleModListRefresh();
 
                 _viewModel.ShowSaveProfileChanges = !Program.settings.ShouldAutomaticallySaveProfileChanges;
+                _viewModel.AreModGroupsEnabled = Program.settings.ModGroupingMethod != ModGrouping.None;
                 _viewModel.ShowModThumbnails = Program.settings.ShowModThumbnails;
             }
         }
@@ -1288,7 +1334,7 @@ namespace Stardrop.Views
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
                         // Prepare the process
-                        string[] arguments = new string[] { "timeout 1", $"move \"{Path.Combine(extractedLatestReleasePath, "*")}\" .", $"move \"{Path.Combine(extractedLatestReleasePath, "Themes", "*")}\" .\\Themes", $"move \"{Path.Combine(extractedLatestReleasePath, "i18n", "*")}\" .\\i18n", $"rmdir /s /q \"{extractedLatestReleasePath}\"", $"\"{Path.Combine(Directory.GetCurrentDirectory(), "Stardrop.exe")}\"" };
+                        string[] arguments = new string[] { "timeout 1", $"move \"{Path.Combine(extractedLatestReleasePath, "*")}\" .", $"robocopy \"{Path.Combine(extractedLatestReleasePath, "Themes")}\" Themes /E /MOVE", $"move \"{Path.Combine(extractedLatestReleasePath, "i18n", "*")}\" .\\i18n", $"rmdir /s /q \"{extractedLatestReleasePath}\"", $"\"{Path.Combine(Directory.GetCurrentDirectory(), "Stardrop.exe")}\"" };
                         var processInfo = new ProcessStartInfo
                         {
                             FileName = "cmd",
@@ -1523,7 +1569,7 @@ namespace Stardrop.Views
             }
         }
 
-        private async Task HandleBulkModInstall()
+        private async Task HandleBulkModInstall(bool enabledModsOnly = false)
         {
             if (Nexus.Client is null)
             {
@@ -1544,6 +1590,12 @@ namespace Stardrop.Views
             List<string> updateFilePaths = new List<string>();
             foreach (var mod in _viewModel.Mods.Where(m => String.IsNullOrEmpty(m.InstallStatus) is false))
             {
+                if (enabledModsOnly is true && mod.IsEnabled is false)
+                {
+                    Program.helper.Log($"Skipping mod update install for {mod.Name}: Mod was not enabled when using the \"Install Updates (Enabled Mods Only)\" option");
+                    continue;
+                }
+
                 var downloadFilePath = await InstallModViaNexus(mod);
 
                 if (String.IsNullOrEmpty(downloadFilePath))

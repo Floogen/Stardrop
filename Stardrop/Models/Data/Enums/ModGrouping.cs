@@ -7,6 +7,8 @@ namespace Stardrop.Models.Data.Enums
         None,
         Folder,
         [Description("Content Pack")]
-        ContentPack
+        ContentPack,
+        [Description("Folder (Condensed)")]
+        FolderCondensed
     }
 }

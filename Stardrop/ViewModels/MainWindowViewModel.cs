@@ -1,5 +1,6 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
+using DynamicData;
 using Json.More;
 using ReactiveUI;
 using Stardrop.Models;
@@ -74,9 +75,12 @@ namespace Stardrop.ViewModels
 
         public bool ShowSaveProfileChanges { get { return _showSaveProfileChanges; } set { this.RaiseAndSetIfChanged(ref _showSaveProfileChanges, value); } }
         private bool _showSaveProfileChanges;
-        public bool AreModGroupsEnabled { get { return Program.settings.ModGroupingMethod != ModGrouping.None; } }
+        public bool AreModGroupsEnabled { get { return _areModGroupsEnabled; } set { this.RaiseAndSetIfChanged(ref _areModGroupsEnabled, value); } }
+        private bool _areModGroupsEnabled = Program.settings.ModGroupingMethod != ModGrouping.None;
         public bool ShowModThumbnails { get { return _showModThumbnails; } set { this.RaiseAndSetIfChanged(ref _showModThumbnails, value); } }
         private bool _showModThumbnails = Program.settings.ShowModThumbnails;
+        public string ModGroupsStateButtonText { get { return _modGroupsStateButtonText; } set { this.RaiseAndSetIfChanged(ref _modGroupsStateButtonText, value); } }
+        private string _modGroupsStateButtonText = Program.settings.ModGroupingMethod != ModGrouping.None ? Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse") : Program.translation.Get("ui.main_window.buttons.mod_groups_state.expand");
 
         public MainWindowViewModel(string modsFilePath, string version)
         {
@@ -86,8 +90,11 @@ namespace Stardrop.ViewModels
 
             // Create data view
             DataView = new DataGridCollectionView(Mods, isDataSorted: false, isDataInGroupOrder: false);
-            DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending));
+            DataView.SortDescriptions.CollectionChanged += DataViewSortDescription_CollectionChanged;
+
             UpdateFilter();
+
+            DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.Name), ListSortDirection.Ascending));
 
             // Do OS specific setup
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -685,6 +692,7 @@ namespace Stardrop.ViewModels
             if (DataView is not null)
             {
                 DataView.GroupDescriptions.Clear();
+
                 switch (Program.settings.ModGroupingMethod)
                 {
                     case ModGrouping.None:
@@ -692,10 +700,15 @@ namespace Stardrop.ViewModels
                     case ModGrouping.Folder:
                         DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.Path)));
                         break;
+                    case ModGrouping.FolderCondensed:
+                        DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.RootPath)));
+                        break;
                     case ModGrouping.ContentPack:
                         DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.FrameworkID)));
                         break;
                 }
+
+                HandleModGroupingSorting();
 
                 DataView.Filter = null;
                 DataView.Filter = ModFilter;
@@ -756,6 +769,32 @@ namespace Stardrop.ViewModels
                                 return true;
                             }
                             break;
+                        case ModGrouping.FolderCondensed:
+                            if (mod.RootPath.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            {
+                                return true;
+                            }
+                            break;
+                        case ModGrouping.ContentPack:
+                            if (mod.FrameworkID is not null && mod.FrameworkID.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            {
+                                return true;
+                            }
+                            break;
+                    }
+                }
+                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.top_level_group")))
+                {
+                    ModGrouping modGroupingMethod = Program.settings.ModGroupingMethod;
+                    switch (Program.settings.ModGroupingMethod)
+                    {
+                        case ModGrouping.Folder:
+                        case ModGrouping.FolderCondensed:
+                            if (mod.RootPath is not null && mod.RootPath.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            {
+                                return true;
+                            }
+                            break;
                         case ModGrouping.ContentPack:
                             if (mod.FrameworkID is not null && mod.FrameworkID.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
                             {
@@ -775,6 +814,38 @@ namespace Stardrop.ViewModels
             }
 
             return false;
+        }
+
+        private void DataViewSortDescription_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            HandleModGroupingSorting();
+        }
+
+        private void HandleModGroupingSorting()
+        {
+            switch (Program.settings.ModGroupingMethod)
+            {
+                case ModGrouping.None:
+                    break;
+                case ModGrouping.Folder:
+                    if (DataView.SortDescriptions.Any(d => d.PropertyPath == nameof(Mod.Path)) is false)
+                    {
+                        DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.Path), ListSortDirection.Ascending));
+                    }
+                    break;
+                case ModGrouping.FolderCondensed:
+                    if (DataView.SortDescriptions.Any(d => d.PropertyPath == nameof(Mod.RootPath)) is false)
+                    {
+                        DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.RootPath), ListSortDirection.Ascending));
+                    }
+                    break;
+                case ModGrouping.ContentPack:
+                    if (DataView.SortDescriptions.Any(d => d.PropertyPath == nameof(Mod.FrameworkID)) is false)
+                    {
+                        DataView.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(Mod.FrameworkID), ListSortDirection.Ascending));
+                    }
+                    break;
+            }
         }
     }
 }

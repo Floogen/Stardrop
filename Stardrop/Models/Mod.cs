@@ -26,7 +26,9 @@ namespace Stardrop.Models
         public string ParsedVersion { get { return Version.ToString(); } }
         public string SuggestedVersion { get; set; }
         public string Name { get; set; }
-        public string Path { get; set; } // Whole mod path inside installed mods path for grouping mod components in the same mod
+        public string Path { get { return _path; } set { _path = value; RootPath = GetRootPath(value); } } // Whole mod path inside installed mods path for grouping mod components in the same mod
+        private string _path { get; set; }
+        public string RootPath { get; private set; } // Root mod path inside installed mods path for grouping mod components in the same mod
         public string ManifestFilePath { get { return ModFileInfo.FullName; } }
         public string Description { get; set; }
         public string Summary { get { return $"Author: {Author}\nVersion: {ParsedVersion}\nHas Config: {HasConfig}\n\n{Description}"; } }
@@ -145,7 +147,12 @@ namespace Stardrop.Models
             if (modFileInfo.DirectoryName.Contains(commonNameInstalledFolder))
             {
                 // Mod inside Stardrop installed folder.
-                modNamePath = modFileInfo.DirectoryName.Substring(commonNameInstalledFolder.Length + 1);
+                var stardropInstallFolder = System.IO.Path.GetFileName(commonNameInstalledFolder);
+                if (string.IsNullOrEmpty(stardropInstallFolder))
+                {
+                    stardropInstallFolder = "Stardrop Installed Mods";
+                }
+                modNamePath = System.IO.Path.Combine(stardropInstallFolder, modFileInfo.DirectoryName.Substring(commonNameInstalledFolder.Length + 1));
             }
             else if (modFileInfo.DirectoryName.Contains(commonNameModsFolder))
             {
@@ -170,6 +177,17 @@ namespace Stardrop.Models
             var nameLength = foundIndex == -1 ? modNamePath.Length : foundIndex;
             var finalPath = modNamePath.Substring(0, nameLength);
             return String.IsNullOrEmpty(finalPath) ? Program.translation.Get("internal.unknown") : finalPath;
+        }
+
+        private string GetRootPath(string path)
+        {
+            var foundIndex = path.IndexOf(System.IO.Path.DirectorySeparatorChar);
+            if (foundIndex == -1)
+            {
+                return path;
+            }
+
+            return path.Substring(0, foundIndex);
         }
 
         public bool IsModOutdated(string version)

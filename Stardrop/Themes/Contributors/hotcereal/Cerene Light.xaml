@@ -1,0 +1,73 @@
+﻿<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Styles.Resources>
+
+        <!-- Base Colors -->
+        <Color x:Key="IceBg">#F6FAFF</Color>
+        <Color x:Key="IceRow">#EEF3FF</Color>
+        <Color x:Key="IceRowAlt">#E6EDFF</Color>
+        <Color x:Key="IceText">#1E2433</Color>
+
+        <!-- Accent / UI Colors -->
+        <Color x:Key="RRed">#FF5F5F</Color>
+        <Color x:Key="ROrange">#FF9F43</Color>
+        <Color x:Key="RYellow">#FFD93D</Color>
+        <Color x:Key="RGreen">#4EDEA3</Color>
+        <Color x:Key="RCyan">#3FD9FF</Color>
+        <Color x:Key="RBlue">#5C7CFA</Color>
+        <Color x:Key="RPurple">#B197FC</Color>
+
+        <!-- Avalonia Brushes -->
+        <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource IceBg}" />
+        <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource IceText}" />
+        <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource IceRowAlt}" />
+        <SolidColorBrush x:Key="ThemeControlHighBrush" Color="{DynamicResource IceText}" Opacity="0.65" />
+        <SolidColorBrush x:Key="ThemeForegroundLowBrush" Color="{DynamicResource IceText}" Opacity="0.6" />
+        
+        <!-- Need to look into why missing a SolidColorBrush causes Stardrop to not display them in styles -->
+        <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource LightGray}" />
+    </Styles.Resources>
+
+    <!-- DataGrid -->
+    <Style Selector="DataGrid">
+        <Setter Property="Background" Value="{DynamicResource IceBg}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource RCyan}" />
+        <Setter Property="Foreground" Value="{DynamicResource IceText}" />
+    </Style>
+
+    <Style Selector="DataGridRow">
+        <Setter Property="Background" Value="{DynamicResource IceRow}" />
+        <Setter Property="Foreground" Value="{DynamicResource IceText}" />
+    </Style>
+
+    <Style Selector="DataGridRow:nth-child(even)">
+        <Setter Property="Background" Value="{DynamicResource IceRowAlt}" />
+    </Style>
+
+    <Style Selector="DataGridRow:selected">
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                <GradientStop Color="{DynamicResource RRed}" Offset="0.0" />
+                <GradientStop Color="{DynamicResource ROrange}" Offset="0.16" />
+                <GradientStop Color="{DynamicResource RYellow}" Offset="0.33" />
+                <GradientStop Color="{DynamicResource RGreen}" Offset="0.5" />
+                <GradientStop Color="{DynamicResource RCyan}" Offset="0.66" />
+                <GradientStop Color="{DynamicResource RBlue}" Offset="0.83" />
+                <GradientStop Color="{DynamicResource RPurple}" Offset="1.0" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Foreground" Value="{DynamicResource IceText}" />
+    </Style>
+
+    <Style Selector="DataGridRow:pointerover">
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0" Opacity="0.4">
+                <GradientStop Color="{DynamicResource RCyan}" Offset="0.0" />
+                <GradientStop Color="{DynamicResource RBlue}" Offset="1.0" />
+            </LinearGradientBrush>
+        </Setter>
+    </Style>
+
+</Styles>

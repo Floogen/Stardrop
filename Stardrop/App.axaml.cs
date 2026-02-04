@@ -30,7 +30,7 @@ namespace Stardrop
 
             // Handle adding the themes
             Dictionary<string, IStyle> themes = new Dictionary<string, IStyle>();
-            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Themes"), "*.xaml"))
+            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Themes"), "*.xaml", SearchOption.AllDirectories))
             {
                 try
                 {

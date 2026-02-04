@@ -3,7 +3,7 @@
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
-		<Version>1.7.1</Version>
+		<Version>1.8.2</Version>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 		<ApplicationIcon>Assets\icon.ico</ApplicationIcon>
@@ -21,7 +21,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
-		<Content Include="Themes\*" CopyToOutputDirectory="PreserveNewest" />
+		<Content Include="Themes\**" CopyToOutputDirectory="PreserveNewest" />
 		<Content Include="i18n\*" CopyToOutputDirectory="PreserveNewest" />
 		<None Remove=".gitignore" />
 		<None Remove="Assets\icon.ico" />
@@ -32,6 +32,16 @@
 		<None Remove="Themes\Dark.xaml" />
 		<None Remove="Themes\Light.xaml" />
 		<None Remove="Themes\Solarized-Lite.xaml" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Content Include="Themes\Contributors\hotcereal\CASH MONEY.xaml" />
+	  <Content Include="Themes\Contributors\hotcereal\Cerene Dark.xaml" />
+	  <Content Include="Themes\Contributors\hotcereal\Cerene Light.xaml" />
+	  <Content Include="Themes\Contributors\hotcereal\Dark Cherry Chocolate.xaml" />
+	  <Content Include="Themes\Contributors\hotcereal\Fairy.xaml" />
+	  <Content Include="Themes\Contributors\hotcereal\Forest.xaml" />
+	  <Content Include="Themes\Contributors\hotcereal\Light %28Pink%29.xaml" />
+	  <Content Include="Themes\Contributors\hotcereal\Light Cherry Chocolate.xaml" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Avalonia" Version="0.10.22" />
