@@ -507,7 +507,9 @@
 					<DataGridTemplateColumn IsVisible="{Binding ShowModThumbnails}" Header="" Width="150" CanUserResize="False" CanUserSort="False">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
-								<Image Height="125" Width="125" Source="{Binding NexusModThumbnailFile}" Stretch="Uniform" />
+								<VirtualizingStackPanel>
+									<Image Height="125" Width="125" Source="{Binding NexusModThumbnailFile}" Stretch="Uniform" />
+								</VirtualizingStackPanel>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
