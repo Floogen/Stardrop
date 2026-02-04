@@ -734,6 +734,9 @@ namespace Stardrop.Views
                 var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
                 _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<ListBoxItem>().Select(i => i.Content.ToString()).ToList();
             }
+
+            // Ensure mod group button is set to collapse
+            _viewModel.ModGroupsStateButtonText = Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
         }
 
         private void FilterListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -743,6 +746,9 @@ namespace Stardrop.Views
 
             int selectedItemCount = searchFilterColumnBox.SelectedItems.Count;
             this.FindControl<Button>("searchFilterColumnButton").Content = selectedItemCount > 0 ? String.Format(Program.translation.Get("ui.main_window.buttons.active_search_filters"), selectedItemCount) : Program.translation.Get("ui.main_window.buttons.no_search_filters");
+
+            // Ensure mod group button is set to collapse
+            _viewModel.ModGroupsStateButtonText = Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
         }
 
         private void DisabledModComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
