@@ -1003,13 +1003,20 @@ namespace Stardrop.Views
                     continue;
                 }
 
-                if (areModGroupsExpanded)
+                try
                 {
-                    modGrid.CollapseRowGroup(group, true);
+                    if (areModGroupsExpanded)
+                    {
+                        modGrid.CollapseRowGroup(group, true);
+                    }
+                    else
+                    {
+                        modGrid.ExpandRowGroup(group, true);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    modGrid.ExpandRowGroup(group, true);
+                    Program.helper.Log($"Failed to change group collapse / expand state: {ex}");
                 }
             }
 
