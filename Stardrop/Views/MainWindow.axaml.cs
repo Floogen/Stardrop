@@ -66,6 +66,8 @@ namespace Stardrop.Views
             modGrid.IsReadOnly = true;
             modGrid.LoadingRow += (sender, e) => { e.Row.Header = e.Row.GetIndex() + 1; };
             modGrid.Items = _viewModel.DataView;
+            modGrid.LoadingRowGroup += ModGrid_LoadingRowGroup;
+
             AddHandler(DragDrop.DropEvent, Drop);
             AddHandler(DragDrop.DragOverEvent, (sender, e) =>
             {
@@ -202,6 +204,11 @@ namespace Stardrop.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void ModGrid_LoadingRowGroup(object? sender, DataGridRowGroupHeaderEventArgs e)
+        {
+            _viewModel.ModGroupsStateButtonText = Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
         }
 
         private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
@@ -734,9 +741,6 @@ namespace Stardrop.Views
                 var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
                 _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<ListBoxItem>().Select(i => i.Content.ToString()).ToList();
             }
-
-            // Ensure mod group button is set to collapse
-            _viewModel.ModGroupsStateButtonText = Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
         }
 
         private void FilterListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -746,9 +750,6 @@ namespace Stardrop.Views
 
             int selectedItemCount = searchFilterColumnBox.SelectedItems.Count;
             this.FindControl<Button>("searchFilterColumnButton").Content = selectedItemCount > 0 ? String.Format(Program.translation.Get("ui.main_window.buttons.active_search_filters"), selectedItemCount) : Program.translation.Get("ui.main_window.buttons.no_search_filters");
-
-            // Ensure mod group button is set to collapse
-            _viewModel.ModGroupsStateButtonText = Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
         }
 
         private void DisabledModComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -1002,13 +1003,20 @@ namespace Stardrop.Views
                     continue;
                 }
 
-                if (areModGroupsExpanded)
+                try
                 {
-                    modGrid.CollapseRowGroup(group, true);
+                    if (areModGroupsExpanded)
+                    {
+                        modGrid.CollapseRowGroup(group, true);
+                    }
+                    else
+                    {
+                        modGrid.ExpandRowGroup(group, true);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    modGrid.ExpandRowGroup(group, true);
+                    Program.helper.Log($"Failed to change group collapse / expand state: {ex}");
                 }
             }
 

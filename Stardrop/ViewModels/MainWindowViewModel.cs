@@ -587,7 +587,8 @@ namespace Stardrop.ViewModels
                 nexusModThumbnails = thumbnailDirectory.EnumerateFiles();
             }
 
-            foreach (var mod in Mods.Where(m => m.NexusModId is not null))
+            var modsWithWebpages = Mods.Where(m => m.NexusModId is not null).ToList();
+            foreach (var mod in modsWithWebpages)
             {
                 var thumbnail = nexusModThumbnails.FirstOrDefault(t => mod.NexusModId is not null && Path.GetFileNameWithoutExtension(t.Name).Equals(mod.NexusModId.ToString(), StringComparison.OrdinalIgnoreCase));
                 if (thumbnail is not null)
