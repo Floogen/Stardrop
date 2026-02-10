@@ -66,6 +66,8 @@ namespace Stardrop.Views
             modGrid.IsReadOnly = true;
             modGrid.LoadingRow += (sender, e) => { e.Row.Header = e.Row.GetIndex() + 1; };
             modGrid.Items = _viewModel.DataView;
+            modGrid.LoadingRowGroup += ModGrid_LoadingRowGroup;
+
             AddHandler(DragDrop.DropEvent, Drop);
             AddHandler(DragDrop.DragOverEvent, (sender, e) =>
             {
@@ -202,6 +204,11 @@ namespace Stardrop.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+        }
+
+        private void ModGrid_LoadingRowGroup(object? sender, DataGridRowGroupHeaderEventArgs e)
+        {
+            _viewModel.ModGroupsStateButtonText = Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
         }
 
         private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
