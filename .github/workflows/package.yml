@@ -61,7 +61,7 @@ jobs:
       with:
         name: release-artifacts-macos
         path: |
-          Stardrop-osx-x64.zip
+          Stardrop-osx-arm64.zip
   package-macos-x64:  
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: macos-latest
