@@ -84,3 +84,4 @@ jobs:
           Stardrop-win-x64.zip
           Stardrop-linux-x64.zip
           Stardrop-osx-x64.zip
+          Stardrop-osx-arm64.zip
