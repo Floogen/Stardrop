@@ -59,7 +59,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts-macos
+        name: release-artifacts-macos-arm64
         path: |
           Stardrop-osx-arm64.zip
   package-macos-x64:  
@@ -90,7 +90,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts-macos
+        name: release-artifacts-macos-x64
         path: |
           Stardrop-osx-x64.zip
   package-linux:  
