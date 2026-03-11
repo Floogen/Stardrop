@@ -217,6 +217,7 @@
   "ui.warning.failed_to_get_download_link": "Failed to get the download url from Nexus Mods via the NXM link: {0}",
   "ui.warning.failed_to_set_association": "Failed to register the NXM protocol with Stardrop.\n\nSee log for details.",
   "ui.warning.already_associated": "Stardrop is already associated with the NXM protocol.",
+  "ui.warning.unsupported_platform": "NXM Connection is currently only supported on Windows",
 
   // Messages
   "ui.message.confirm_mod_deletion": "Are you sure you'd like to delete {0}? This cannot be undone.",

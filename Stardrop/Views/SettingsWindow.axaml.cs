@@ -176,6 +176,15 @@ namespace Stardrop.Views
 
         private async void RegisterNXMButton_Click(object? sender, RoutedEventArgs e)
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                await new WarningWindow(
+                        Program.translation.Get("ui.warning.unsupported_platform"),
+                        Program.translation.Get("internal.ok"))
+                    .ShowDialog(this);
+                return;
+            }
+
             if (NXMProtocol.Validate(Program.executablePath) is false)
             {
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
