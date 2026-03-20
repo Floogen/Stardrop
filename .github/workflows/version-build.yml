@@ -13,5 +13,5 @@ jobs:
       uses: ./.github/workflows/package-and-release.yml
       with:
         tag: ${{ github.ref_name }}
-        is-prerelease: 'false'
+        is-prerelease: ${{ contains(github.ref_name, '-beta') && 'true' || 'false' }}
         generate-release-notes: true
