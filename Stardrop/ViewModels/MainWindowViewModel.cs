@@ -397,6 +397,9 @@ namespace Stardrop.ViewModels
 
             // Update the EnabledModCount
             EnabledModCount = Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
+
+            // Update filter
+            UpdateFilter();
         }
 
         public void EvaluateRequirements()
