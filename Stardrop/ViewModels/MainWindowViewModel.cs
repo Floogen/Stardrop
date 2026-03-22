@@ -384,14 +384,6 @@ namespace Stardrop.ViewModels
             HideRequiredMods();
 
             ActualModCount = Mods.Count(m => !m.IsHidden);
-
-            // TODO: Delete this debug block
-            Program.helper.Log($"Dumping loaded mod info ({System.IO.Path.DirectorySeparatorChar})...");
-            foreach (var mod in Mods)
-            {
-                Program.helper.Log($"\nMod Name: {mod.Name}\nMod Path: {mod.Path}\nMod Root Path: {mod.RootPath}");
-            }
-            // End of debug block
         }
 
         public void HideRequiredMods()
