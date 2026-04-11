@@ -30,6 +30,9 @@ namespace Stardrop.ViewModels
         private bool ShowMainMenu { get; set; } = true;
         private bool ShowWindowMenu { get; set; } = true;
 
+        private DataGridPathGroupDescription _modPathGrouping = new DataGridPathGroupDescription(nameof(Mod.Path));
+        private DataGridPathGroupDescription _rootPathGrouping = new DataGridPathGroupDescription(nameof(Mod.RootPath));
+        private DataGridPathGroupDescription _frameworkGrouping = new DataGridPathGroupDescription(nameof(Mod.FrameworkID));
 
         private string _dragOverColor = "#ff9f2a";
         public string DragOverColor { get { return _dragOverColor; } set { this.RaiseAndSetIfChanged(ref _dragOverColor, value); } }
@@ -398,8 +401,8 @@ namespace Stardrop.ViewModels
             // Update the EnabledModCount
             EnabledModCount = Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
 
-            // Update filter
-            UpdateFilter();
+            // Update data grid grouping
+            UpdateDataGridGrouping();
         }
 
         public void EvaluateRequirements()
@@ -688,28 +691,48 @@ namespace Stardrop.ViewModels
             EnabledModCount = Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
         }
 
+        internal void UpdateDataGridGrouping()
+        {
+            if (DataView is not null)
+            {
+                DataGridPathGroupDescription? currentGroupingMethod = null;
+                switch (Program.settings.ModGroupingMethod)
+                {
+                    case ModGrouping.Folder:
+                        currentGroupingMethod = _modPathGrouping;
+                        break;
+                    case ModGrouping.FolderCondensed:
+                        currentGroupingMethod = _rootPathGrouping;
+                        break;
+                    case ModGrouping.ContentPack:
+                        currentGroupingMethod = _frameworkGrouping;
+                        break;
+                }
+
+                foreach (var grouping in DataView.GroupDescriptions.ToList())
+                {
+                    if (grouping == currentGroupingMethod)
+                    {
+                        continue;
+                    }
+
+                    DataView.GroupDescriptions.Remove(grouping);
+                }
+
+                if (currentGroupingMethod is not null && DataView.GroupDescriptions.Contains(currentGroupingMethod) is false)
+                {
+                    DataView.GroupDescriptions.Add(currentGroupingMethod);
+                }
+
+                HandleModGroupingSorting();
+            }
+        }
+
         internal void UpdateFilter()
         {
             if (DataView is not null)
             {
-                DataView.GroupDescriptions.Clear();
-
-                switch (Program.settings.ModGroupingMethod)
-                {
-                    case ModGrouping.None:
-                        break;
-                    case ModGrouping.Folder:
-                        DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.Path)));
-                        break;
-                    case ModGrouping.FolderCondensed:
-                        DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.RootPath)));
-                        break;
-                    case ModGrouping.ContentPack:
-                        DataView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(Mod.FrameworkID)));
-                        break;
-                }
-
-                HandleModGroupingSorting();
+                UpdateDataGridGrouping();
 
                 DataView.Filter = null;
                 DataView.Filter = ModFilter;
