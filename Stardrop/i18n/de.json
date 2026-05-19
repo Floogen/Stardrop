@@ -107,6 +107,7 @@
   "ui.warning.unable_to_read_log": "Die SMAPI-Logdatei konnte nicht gelesen werden, um die Spielversion zu ermitteln.\n\nMods werden nicht auf Updates geprüft.",
   "ui.warning.no_manifest": "Keine manifest.json in \"{0}\" gefunden.",
   "ui.warning.unable_to_load_mod": "Die Datei unter \"{0}\" konnte nicht geladen werden.\n\n Weitere Informationen findest du in der Logdatei.",
+  "ui.warning.unsupported_platform": "NXM Verknüpfung ist nur auf Windows supported",
 
   // Messages
   "ui.message.confirm_mod_deletion": "Bist du sicher, dass du {0} löschen möchtest? Dies kann nicht rückgängig gemacht werden.",

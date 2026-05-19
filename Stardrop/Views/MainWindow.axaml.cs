@@ -1736,6 +1736,22 @@ namespace Stardrop.Views
                 return false;
             }
 
+            bool? fileSafetyResults = await Nexus.Client.ValidateFileSafety(nxmLink);
+            if (fileSafetyResults is null)
+            {
+                // Unable to verify mod scan status on Nexus Mods, ask user if they want to continue
+                if (await new MessageWindow(Program.translation.Get("ui.warning.failed_to_verify_mod_file")).ShowDialog<bool>(this) is false)
+                {
+                    return false;
+                }
+            }
+            else if (fileSafetyResults is false)
+            {
+                // Reject downloading any quarantined mods on Nexus Mods
+                await CreateWarningWindow(Program.translation.Get("ui.warning.file_quarantined"), Program.translation.Get("internal.ok"));
+                return false;
+            }
+
             var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
             if (Program.settings.IsAskingBeforeAcceptingNXM is false || await requestWindow.ShowDialog<bool>(this))
             {
@@ -2233,6 +2249,24 @@ namespace Stardrop.Views
             if (modDownloadLink is null)
             {
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                mod.InstallState = InstallState.Unknown;
+                return null;
+            }
+
+            bool? fileSafetyResults = await Nexus.Client.ValidateFileSafety(modId.Value, modFile.Id);
+            if (fileSafetyResults is null)
+            {
+                // Unable to verify mod scan status on Nexus Mods, ask user if they want to continue
+                if (await new MessageWindow(Program.translation.Get("ui.warning.failed_to_verify_mod_file")).ShowDialog<bool>(this) is false)
+                {
+                    mod.InstallState = InstallState.Unknown;
+                    return null;
+                }
+            }
+            else if (fileSafetyResults is false)
+            {
+                // Reject downloading any quarantined mods on Nexus Mods
+                await CreateWarningWindow(Program.translation.Get("ui.warning.file_quarantined"), Program.translation.Get("internal.ok"));
                 mod.InstallState = InstallState.Unknown;
                 return null;
             }
