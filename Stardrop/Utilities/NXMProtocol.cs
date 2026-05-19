@@ -15,6 +15,7 @@ namespace Stardrop.Utilities
                 Program.helper.Log($"Attempted to modify registery keys for NXM protocol on a non-Windows system!");
                 return false;
             }
+
             try
             {
                 using var software = Registry.CurrentUser.OpenSubKey("Software", writable: true);
@@ -36,6 +37,7 @@ namespace Stardrop.Utilities
 
             return true;
         }
+
         [SupportedOSPlatform("windows")]
         public static bool Validate(string applicationPath)
         {
@@ -44,6 +46,7 @@ namespace Stardrop.Utilities
                 Program.helper.Log($"Attempted to modify registery keys for NXM protocol on a non-Windows system!");
                 return false;
             }
+
             try
             {
 
@@ -51,11 +54,15 @@ namespace Stardrop.Utilities
                 using var classes = software?.OpenSubKey("Classes", writable: true);
                 using var baseKey = classes?.OpenSubKey("nxm", writable: true);
                 
-                if(baseKey is null)
+                if (baseKey is null)
+                {
                     return false;
+                }
                 
                 if (!string.Equals(baseKey.GetValue("URL Protocol")?.ToString(), "nxm", StringComparison.Ordinal))
+                {
                     return false;
+                }
 
                 using var commandKey = classes?.OpenSubKey(@"nxm\shell\open\command", writable: true);
                 

@@ -176,7 +176,7 @@ namespace Stardrop.Views
 
         private async void RegisterNXMButton_Click(object? sender, RoutedEventArgs e)
         {
-            if (!OperatingSystem.IsWindows())
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false)
             {
                 await new WarningWindow(
                         Program.translation.Get("ui.warning.unsupported_platform"),
