@@ -22,7 +22,7 @@ env:
 
 run-name: "Uploading to Nexus Mods"
 
-jobs: 
+jobs:
   upload-windows:
     runs-on: ubuntu-latest
     steps:
@@ -48,6 +48,7 @@ jobs:
           description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop."
           version: ${{ env.CLEANED_VERSION }}
   upload-macos:
+    needs: [ upload-windows ]
     runs-on: ubuntu-latest
     steps:
       - name: Clean version
@@ -72,6 +73,7 @@ jobs:
           description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop. A temporary workaround is required to getting it running on macOS by going to Security & Privacy settings and click Open Anyway."
           version: ${{ env.CLEANED_VERSION }}
   upload-linux:
+    needs: [ upload-windows, upload-macos ]
     runs-on: ubuntu-latest
     steps:
       - name: Clean version
