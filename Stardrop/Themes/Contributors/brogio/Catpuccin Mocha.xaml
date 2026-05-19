@@ -1,0 +1,80 @@
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+    <Style>
+        <Style.Resources>
+
+            <!-- Catppuccin Mocha palette -->
+            <Color x:Key="Rosewater">#F5E0DC</Color>
+            <Color x:Key="Flamingo">#F2CDCD</Color>
+            <Color x:Key="Pink">#F5C2E7</Color>
+            <Color x:Key="Mauve">#CBA6F7</Color>
+            <Color x:Key="Red">#F38BA8</Color>
+            <Color x:Key="Maroon">#EBA0AC</Color>
+            <Color x:Key="Peach">#FAB387</Color>
+            <Color x:Key="Yellow">#F9E2AF</Color>
+            <Color x:Key="Green">#A6E3A1</Color>
+            <Color x:Key="Teal">#94E2D5</Color>
+            <Color x:Key="Sky">#89DCEB</Color>
+            <Color x:Key="Sapphire">#74C7EC</Color>
+            <Color x:Key="Blue">#89B4FA</Color>
+            <Color x:Key="Lavender">#B4BEFE</Color>
+            <Color x:Key="Text">#CDD6F4</Color>
+            <Color x:Key="Subtext1">#BAC2DE</Color>
+            <Color x:Key="Subtext0">#A6ADC8</Color>
+            <Color x:Key="Overlay2">#9399B2</Color>
+            <Color x:Key="Overlay1">#7F849C</Color>
+            <Color x:Key="Overlay0">#6C7086</Color>
+            <Color x:Key="Surface2">#585B70</Color>
+            <Color x:Key="Surface1">#45475A</Color>
+            <Color x:Key="Surface0">#313244</Color>
+            <Color x:Key="Base">#1E1E2E</Color>
+            <Color x:Key="Mantle">#181825</Color>
+            <Color x:Key="Crust">#11111B</Color>
+
+            <!-- Compatibility aliases for existing theme keys -->
+            <Color x:Key="White">#CDD6F4</Color>
+            <Color x:Key="BlackColor">#11111B</Color>
+            <Color x:Key="ErrorColor">#F38BA8</Color>
+            <Color x:Key="OrangeColor">#FAB387</Color>
+            <Color x:Key="BrightOrangeColor">#F9E2AF</Color>
+
+            <!-- Avalonia brushes -->
+            <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource Base}" />
+            <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource Text}" />
+            <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource Surface0}" />
+            <SolidColorBrush x:Key="HighlightForegroundBrush" Color="{DynamicResource Mauve}" />
+            <SolidColorBrush x:Key="ThemeAccentBrush4" Color="{DynamicResource OrangeColor}" />
+            <SolidColorBrush x:Key="ThemeAccentBrush3" Color="{DynamicResource BrightOrangeColor}" />
+            <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource Surface1}" />
+            <SolidColorBrush x:Key="ThemeControlMidHighBrush" Color="{DynamicResource Text}"
+                             Opacity="0.3" />
+            <SolidColorBrush x:Key="ThemeForegroundHighBrush" Color="{DynamicResource Text}" />
+            <SolidColorBrush x:Key="ThemeControlHighBrush" Color="{DynamicResource Text}"
+                             Opacity="0.7" />
+            <SolidColorBrush x:Key="ThemeControlVeryHighBrush" Color="{DynamicResource Lavender}"
+                             Opacity="0.7" />
+            <SolidColorBrush x:Key="ThemeBorderMidBrush" Color="{DynamicResource BlackColor}"
+                             Opacity="0.4" />
+            <SolidColorBrush x:Key="ThemeAccentBrush" Color="{DynamicResource Mauve}"
+                             Opacity="0.3" />
+            <SolidColorBrush x:Key="ThemeForegroundLowBrush" Color="{DynamicResource Subtext1}"
+                             Opacity="0.3" />
+            <SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource ErrorColor}" />
+
+            <!-- Custom brushes -->
+            <SolidColorBrush x:Key="DataGridHeaderBrush" Color="{DynamicResource Surface0}" />
+            <SolidColorBrush x:Key="DataGridRowBackground" Color="{DynamicResource Surface1}" />
+            <SolidColorBrush x:Key="DataGridRowForeground" Color="{DynamicResource Text}" />
+            <SolidColorBrush x:Key="AlternativeDataGridRowBackground" Color="{DynamicResource Surface0}" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundBrush" Color="{DynamicResource Surface0}" />
+            <SolidColorBrush x:Key="ComboBoxItemSelectedBackgroundBrush" Color="{DynamicResource Mauve}" />
+            <SolidColorBrush x:Key="UpdateAvailableBrush" Color="{DynamicResource Green}" />
+            <SolidColorBrush x:Key="UpdateBrokenBrush" Color="{DynamicResource Red}" />
+            <SolidColorBrush x:Key="UpdateUnofficialBrush" Color="{DynamicResource Yellow}" />
+
+        </Style.Resources>
+    </Style>
+
+</Styles>
