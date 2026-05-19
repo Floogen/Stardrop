@@ -20,17 +20,13 @@ env:
 run-name: "Uploading to Nexus Mods"
 
 jobs: 
-  clean-version:
+  upload-windows:
     runs-on: ubuntu-latest
     steps:
-      - name: Update value
+      - name: Clean version
         run: |
           TAG=${{ env.CLEANED_VERSION }}
           echo "CLEANED_VERSION=${TAG#v}" >> $GITHUB_ENV
-  upload-windows:
-    needs: [ clean-version ]
-    runs-on: ubuntu-latest
-    steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4    
         with:
@@ -49,9 +45,12 @@ jobs:
           description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop."
           version: ${{ env.CLEANED_VERSION }}
   upload-macos:
-    needs: [ clean-version ]
     runs-on: ubuntu-latest
     steps:
+      - name: Clean version
+        run: |
+          TAG=${{ env.CLEANED_VERSION }}
+          echo "CLEANED_VERSION=${TAG#v}" >> $GITHUB_ENV
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4    
         with:
@@ -70,9 +69,12 @@ jobs:
           description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop. A temporary workaround is required to getting it running on macOS by going to Security & Privacy settings and click Open Anyway."
           version: ${{ env.CLEANED_VERSION }}
   upload-linux:
-    needs: [ clean-version ]
     runs-on: ubuntu-latest
     steps:
+      - name: Clean version
+        run: |
+          TAG=${{ env.CLEANED_VERSION }}
+          echo "CLEANED_VERSION=${TAG#v}" >> $GITHUB_ENV
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4    
         with:
