@@ -38,5 +38,7 @@ jobs:
   upload-to-nexusmods:
     needs: [ verify-build, package ]
     uses: ./.github/workflows/nexus-mods-upload.yml
+    secrets:
+      NEXUS_API_KEY: ${{ secrets.NEXUS_API_KEY }}
     with:
         tag: ${{ inputs.tag == '' && github.ref_name || inputs.tag }}
