@@ -3,12 +3,14 @@ using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus;
 using Stardrop.Models.Nexus.Web;
+using Stardrop.Models.Nexus.GraphQL;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -99,6 +101,7 @@ namespace Stardrop.Utilities.External
 
     public class NexusClient
     {
+        private static readonly Uri _graphQLBaseUrl = new Uri("https://api.nexusmods.com/v2/graphql");
         private const string _nxmPattern = @"nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>.*)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)";
 
         private readonly HttpClient _client;
@@ -615,6 +618,76 @@ namespace Stardrop.Utilities.External
             }
 
             DailyRequestLimitsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Returns true if file is not VirusScanStatus.QUARANTINED on Nexus, false if it is VirusScanStatus.QUARANTINED and null if unable to verify.
+        /// </summary>
+        /// <param name="nxmData"></param>
+        /// <returns></returns>
+        public async Task<bool?> ValidateFileSafety(NXM nxmData)
+        {
+            if (nxmData.Link is null)
+            {
+                return null;
+            }
+
+            var match = Regex.Match(Regex.Unescape(nxmData.Link), _nxmPattern);
+            if (match.Success is false || match.Groups["domain"].ToString().ToLower() != "stardewvalley" || Int32.TryParse(match.Groups["mod"].ToString(), out int modId) is false || Int32.TryParse(match.Groups["file"].ToString(), out int fileId) is false)
+            {
+                return null;
+            }
+
+            return await ValidateFileSafety(modId, fileId);
+        }
+
+        /// <summary>
+        /// Returns true if file is not VirusScanStatus.QUARANTINED on Nexus, false if it is VirusScanStatus.QUARANTINED and null if unable to verify.
+        /// </summary>
+        /// <param name="modId"></param>
+        /// <param name="fileId"></param>
+        /// <returns></returns>
+        public async Task<bool?> ValidateFileSafety(int modId, int fileId)
+        {
+            // TODO: May want to rewrite this to just use a dedicated library for GraphQL handling
+            try
+            {
+                // Override Client.BaseAddress by using full URL
+                var request = new
+                {
+                    query = $@"query GetModFiles
+                    {{
+                        modFiles(gameId: 1303, modId: {modId})
+                        {{
+                            fileId, scannedV2
+                        }}
+                    }}",
+                };
+
+                var response = await _client.PostAsJsonAsync(_graphQLBaseUrl, request);
+                var result = JsonSerializer.Deserialize<QueryResponse<ModFileData>>(await response.Content.ReadAsStringAsync());
+
+                if (result is null)
+                {
+                    Program.helper.Log($"Unable to verify file scan results: {(response is null ? "No response" : response.Content)}");
+                    return null;
+                }
+
+                // Find the matching fileId
+                var matchedScannedFile = result.Data.ModFiles.FirstOrDefault(f => f.Id == fileId);
+                if (matchedScannedFile is null)
+                {
+                    Program.helper.Log($"Unable to verify file scan results: No file match with Id {fileId}");
+                    return null;
+                }
+
+                return matchedScannedFile.VirusScanResults != ScannedModFile.VirusScanStatus.QUARANTINED;
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to verify file scan results: {ex}");
+                return null;
+            }
         }
     }
 }
