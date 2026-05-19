@@ -2,6 +2,9 @@ name: Nexus Mods Upload
 
 on:
   workflow_call:
+    secrets:
+      NEXUS_API_KEY:
+        required: true
     inputs:
       tag:
         required: true
