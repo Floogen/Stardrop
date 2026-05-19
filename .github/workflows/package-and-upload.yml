@@ -1,4 +1,4 @@
-name: Package and Release
+name: Package and Upload (Nexus Mods)
 
 on:
   workflow_call:
