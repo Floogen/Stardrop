@@ -2323,7 +2323,7 @@ namespace Stardrop.Views
 
         private async Task<List<Mod>> AddMods(string[]? filePaths)
         {
-            Guid request = new Guid();
+            Guid request = Guid.NewGuid();
 
             // Wait until current lock is finished before doing further installs
             Program.helper.Log($"Add mods request received ({request}): Pending");
@@ -2360,13 +2360,17 @@ namespace Stardrop.Views
                 try
                 {
                     // Extract the archive data
-                    using (var archive = ArchiveFactory.Open(fileFullName))
+                    // TODO refactor this to use async
+                    using (var archive = ArchiveFactory.OpenArchive(fileFullName))
                     {
                         Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
-                        foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key).Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
+                        foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key)!.Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
                         {
-                            Program.helper.Log(manifest.Key);
-                            pathToManifests[manifest.Key] = await ManifestParser.GetDataAsync(manifest);
+                            if (manifest.Key != null)
+                            {
+                                Program.helper.Log(manifest.Key);
+                                pathToManifests[manifest.Key] = await ManifestParser.GetDataAsync(manifest);
+                            }
                         }
 
                         // Warn and skip the install logic if the given archive has no manifest.json
