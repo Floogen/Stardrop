@@ -217,6 +217,7 @@
   "ui.warning.failed_to_get_download_link": "Failed to get the download url from Nexus Mods via the NXM link: {0}",
   "ui.warning.failed_to_set_association": "Failed to register the NXM protocol with Stardrop.\n\nSee log for details.",
   "ui.warning.already_associated": "Stardrop is already associated with the NXM protocol.",
+  "ui.warning.unsupported_platform": "NXM protocol is currently only supported on Windows",
   "ui.warning.failed_to_verify_mod_file": "Failed to verify the Nexus Mods file scan results. Continue with download?",
   "ui.warning.file_quarantined": "Unable to download mod:\n\nFile is quarantined on Nexus Mods.",
 
