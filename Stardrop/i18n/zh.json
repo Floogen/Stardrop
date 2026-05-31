@@ -13,7 +13,8 @@
   "ui.main_window.menu_items.disable_all_mods": "禁用所有模组",
   "ui.main_window.menu_items.check_for_stardrop_update": "检查 Stardrop 更新",
   "ui.main_window.menu_items.stardrop_repository": "Stardrop 仓库",
-  "ui.main_window.menu_items.nexus_install_all": "安装所有更新",
+  "ui.main_window.menu_items.nexus_install_all": "更新所有模组",
+  "ui.main_window.menu_items.nexus_install_enabled": "更新已启用模组",
   "ui.main_window.menu_items.nexus_connection": "使用 API 密钥连接到 Nexus Mods",
   "ui.main_window.menu_items.check_for_SMAPI_update": "检查 SMAPI 更新",
 
@@ -76,6 +77,8 @@
   "ui.main_window.buttons.show_updatable_mods": "显示可更新模组",
   "ui.main_window.buttons.active_search_filters": "已启用搜索范围: {0}个",
   "ui.main_window.buttons.no_search_filters": "未选择搜索范围",
+  "ui.main_window.buttons.mod_groups_state.expand": "展开分类",
+  "ui.main_window.buttons.mod_groups_state.collapse": "折叠分类",
 
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "可更新模组：点击刷新",
@@ -92,11 +95,12 @@
   "ui.main_window.combobox.show_disabled_mods": "显示禁用模组",
   "ui.main_window.combobox.show_enabled_mods": "显示启用模组",
 
-    // Main Window - ComboBox (ListBox)
+  // Main Window - ComboBox (ListBox)
   "ui.main_window.combobox.mod_name": "模组名称",
   "ui.main_window.combobox.author": "作者",
   "ui.main_window.combobox.requirements": "依赖",
   "ui.main_window.combobox.group": "分类规则",
+  "ui.main_window.combobox.top_level_group": "根文件夹",
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI 路径",
@@ -115,6 +119,7 @@
   "ui.settings_window.buttons.enable_mods_on_add": "添加后自动启用模组",
   "ui.settings_window.buttons.always_ask_to_delete": "更新时总是询问是否替换原模组文件",
   "ui.settings_window.buttons.automatically_save_profile_changes": "自动保存个性化设置",
+  "ui.settings_window.buttons.show_mod_thumbnails": "显示模组缩略图",
   "ui.settings_window.buttons.always_ask_for_NXM_installs": "从 NXM 安装前总是询问",
   "ui.settings_window.buttons.register_nxm_association": "关联 NXM",
 
@@ -132,6 +137,7 @@
   "ui.settings_window.tooltips.enable_mods_on_add": "勾选后，Stardrop 将自动启用新添加或更新的模组",
   "ui.settings_window.tooltips.always_ask_to_delete": "勾选后，Stardrop 在更新模组时始终询问是否替换原模组文件",
   "ui.settings_window.tooltips.automatically_save_profile_changes": "勾选后，Stardrop 将自动保存对个性化设置所做的更改",
+  "ui.settings_window.tooltips.show_mod_thumbnails": "勾选后，显示 Nexus Mods 中的模组缩略图（若有）。\n\n需要填写从 Nexus Mods 获取的 Stardrop API 密钥。",
   "ui.settings_window.tooltips.preferred_server": "设置您在从 Nexus Mods 下载时首选使用的服务器",
   "ui.settings_window.tooltips.save_changes": "保存更改",
   "ui.settings_window.tooltips.cancel_changes": "取消",
@@ -211,6 +217,9 @@
   "ui.warning.failed_to_get_download_link": "无法从 Nexus Mods 获取下载链接: {0}",
   "ui.warning.failed_to_set_association": "Stardrop 与NXM 关联失败\n\n更多内容请查看日志",
   "ui.warning.already_associated": "Stardrop 已经与 NXM 协议关联",
+  "ui.warning.unsupported_platform": "NXM 协议暂时只支持 Windows",
+  "ui.warning.failed_to_verify_mod_file": "未能验证 Nexus Mods 文件扫描结果。是否继续下载？",
+  "ui.warning.file_quarantined": "无法下载模组：\n\n该文件已被隔离。",
 
   // Messages
   "ui.message.confirm_mod_deletion": "你确定要删除{0}？此操作无法撤销！",
@@ -228,6 +237,7 @@
   "ui.message.confirm_nxm_install": "您是否希望安装以下模组：\n\n{0}\n\n您可以在设置菜单中禁用此确认",
   "ui.message.require_nexus_login": "此操作需要填写 Nexus Mods API",
   "ui.message.succeeded_nexus_install": "成功通过 Nexus Mods 安装了以下模组：\n\n{0}",
+  "ui.message.confirm_mod_update_caution": "{0}\n更新警告：\n\n{1}\n\n是否继续进行更新？",
 
   // Window Names
   "ui.window.settings.name": "设置",
@@ -260,4 +270,3 @@
   "internal.measurements.megabytes_size": "MB",
   "internal.measurements.megabytes_per_second": "MB/s"
 }
-
