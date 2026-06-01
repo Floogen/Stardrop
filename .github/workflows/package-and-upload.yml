@@ -1,0 +1,44 @@
+name: Package and Upload (Nexus Mods)
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: false
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      tag:
+        required: true
+        type: string
+
+env:
+  TAG: ${{ inputs.tag == '' && github.ref_name || inputs.tag }}
+  
+permissions:
+  contents: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "uploading"
+  cancel-in-progress: false
+
+run-name: "Package and Upload (${{ inputs.tag == '' && github.ref_name || inputs.tag }})"
+
+jobs:
+  verify-build:
+    uses: ./.github/workflows/build.yml
+  package:  
+    needs: [ verify-build ]
+    uses: ./.github/workflows/package.yml
+    with:
+        branch-name: '' # Leaving blank to use default branch
+  upload-to-nexusmods:
+    needs: [ verify-build, package ]
+    uses: ./.github/workflows/nexus-mods-upload.yml
+    secrets:
+      NEXUS_API_KEY: ${{ secrets.NEXUS_API_KEY }}
+    with:
+        tag: ${{ inputs.tag == '' && github.ref_name || inputs.tag }}
