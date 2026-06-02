@@ -119,7 +119,7 @@ jobs:
           chmod 644 Internal
           chmod 644 Internal.pdb
           
-          (cd ../ && zip -r ${GITHUB_WORKSPACE}/Stardrop-linux-x64.zip "Stardrop")
+          (cd ../ && zip -r ${GITHUB_WORKSPACE}/Stardrop-linux-arm64.zip "Stardrop")
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -172,7 +172,7 @@ jobs:
     - name: Publish (Windows - Creating & Packaging)
       run:  |
           dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_WINDOWS }}/Stardrop" --configuration "${{ env.CONFIGURATION }}" --runtime "win-arm64" --framework "net8.0" --self-contained
-          (cd "${{ env.OUTPUT_PATH_WINDOWS }}" && zip -r ${GITHUB_WORKSPACE}/Stardrop-win-x64.zip "Stardrop")
+          (cd "${{ env.OUTPUT_PATH_WINDOWS }}" && zip -r ${GITHUB_WORKSPACE}/Stardrop-win-arm64.zip "Stardrop")
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
