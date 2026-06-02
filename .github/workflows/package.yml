@@ -178,7 +178,7 @@ jobs:
       with:
         name: release-artifacts-windows
         path: |
-          Stardrop-win-x64.zip
+          Stardrop-win-arm64.zip
   package-windows-x64:
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: ubuntu-latest
