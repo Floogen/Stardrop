@@ -93,7 +93,40 @@ jobs:
         name: release-artifacts-macos-x64
         path: |
           Stardrop-osx-x64.zip
-  package-linux:  
+  package-linux-arm64:  
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+          ref: ${{ env.BRANCH }}
+          repository: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+    - run: mkdir -p path/to/release-artifacts
+    - name: Publish (Linux - Creating)
+      run:  |
+          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_LINUX }}/Stardrop" --configuration "${{ env.CONFIGURATION }}" --runtime "linux-arm64" --framework "net8.0" --self-contained
+    - name: Publish (Linux - Packaging)
+      working-directory: "${{ env.OUTPUT_PATH_LINUX }}/Stardrop"
+      run:  |
+          mv Stardrop Internal
+          mv Stardrop.pdb Internal.pdb
+
+          cp ${GITHUB_WORKSPACE}/Stardrop/Assets/Stardrop.sh Stardrop.sh
+
+          chmod 755 ../Stardrop
+          chmod +x Stardrop.sh
+          chmod 644 Internal
+          chmod 644 Internal.pdb
+          
+          (cd ../ && zip -r ${GITHUB_WORKSPACE}/Stardrop-linux-x64.zip "Stardrop")
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-artifacts-linux
+        path: |
+          Stardrop-linux-arm64.zip
+  package-linux-x64:  
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: ubuntu-latest
     
@@ -126,7 +159,27 @@ jobs:
         name: release-artifacts-linux
         path: |
           Stardrop-linux-x64.zip
-  package-windows:
+  package-windows-arm64:
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+          ref: ${{ env.BRANCH }}
+          repository: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+    - run: mkdir -p path/to/release-artifacts
+    - name: Publish (Windows - Creating & Packaging)
+      run:  |
+          dotnet publish "${{ env.WORKING_DIRECTORY }}" --output "${{ env.OUTPUT_PATH_WINDOWS }}/Stardrop" --configuration "${{ env.CONFIGURATION }}" --runtime "win-arm64" --framework "net8.0" --self-contained
+          (cd "${{ env.OUTPUT_PATH_WINDOWS }}" && zip -r ${GITHUB_WORKSPACE}/Stardrop-win-x64.zip "Stardrop")
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-artifacts-windows
+        path: |
+          Stardrop-win-x64.zip
+  package-windows-x64:
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'generate packages')
     runs-on: ubuntu-latest
     
