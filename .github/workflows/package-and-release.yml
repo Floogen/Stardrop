@@ -82,7 +82,9 @@ jobs:
         fail_on_unmatched_files: true
         files: |
           Stardrop-win-x64.zip
+          Stardrop-win-arm64.zip
           Stardrop-linux-x64.zip
+          Stardrop-linux-arm64.zip
           Stardrop-osx-x64.zip
           Stardrop-osx-arm64.zip
   upload-to-nexusmods:
