@@ -20,6 +20,11 @@
 		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
 	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>Stardrop.Test</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
 		<Content Include="Themes\**" CopyToOutputDirectory="PreserveNewest" />
 		<Content Include="i18n\*" CopyToOutputDirectory="PreserveNewest" />
