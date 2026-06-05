@@ -270,6 +270,7 @@
 			<Setter Property="FontWeight" Value="Bold"/>
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
 			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
 		</Style>
 		<Style Selector="DataGridColumnHeader[Content=Enabled]">
 			<Setter Property="Margin" Value="-13 0 0 0"/>
@@ -527,50 +528,29 @@
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTemplateColumn SortMemberPath="Name">
-						<DataGridTemplateColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.mod_name}" TextAlignment="Center" />
-						</DataGridTemplateColumn.Header>
+					<DataGridTemplateColumn Header="{i18n:Translate ui.main_window.menu_headers.mod_name}" SortMemberPath="Name">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<TextBlock Text="{Binding Name}" TextAlignment="Left" VerticalAlignment="Center" Margin="7 0 0 0" />
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTemplateColumn CellStyleClasses="centered" IsVisible="{Binding ShowEndorsements}">
-						<DataGridTemplateColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.endorsement}" TextAlignment="Center" />
-						</DataGridTemplateColumn.Header>
+					<DataGridTemplateColumn Header="{i18n:Translate ui.main_window.menu_headers.endorsement}" CellStyleClasses="centered" IsVisible="{Binding ShowEndorsements}">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<Button Name="endorsementButton" Tag="{Binding UniqueId}" Classes="hyperlink status" Classes.endorsed="{Binding IsEndorsed}" Classes.abstained="{Binding !IsEndorsed}" Click="EndorsementButton_Click" IsVisible="{Binding NexusModId, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTextColumn Binding="{Binding UniqueId}" IsVisible="False">
-						<DataGridTextColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.unique_id}" TextAlignment="Center" />
-						</DataGridTextColumn.Header>
+					<DataGridTextColumn Header="{i18n:Translate ui.main_window.menu_headers.unique_id}" Binding="{Binding UniqueId}" IsVisible="False">
 					</DataGridTextColumn>
-					<DataGridTextColumn Binding="{Binding Author}" CellStyleClasses="centered" IsVisible="False">
-						<DataGridTextColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.author}" TextAlignment="Center" />
-						</DataGridTextColumn.Header>
+					<DataGridTextColumn Header="{i18n:Translate ui.main_window.menu_headers.author}" Binding="{Binding Author}" CellStyleClasses="centered" IsVisible="False">
 					</DataGridTextColumn>
-					<DataGridTextColumn Binding="{Binding InstallTimestamp}" IsVisible="False">
-						<DataGridTextColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.install_timestamp}" TextAlignment="Center" />
-						</DataGridTextColumn.Header>
+					<DataGridTextColumn Header="{i18n:Translate ui.main_window.menu_headers.install_timestamp}" Binding="{Binding InstallTimestamp}" IsVisible="False">
 					</DataGridTextColumn>
-					<DataGridTextColumn Binding="{Binding LastUpdateTimestamp}" IsVisible="True">
-						<DataGridTextColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.last_updated}" TextAlignment="Center" />
-						</DataGridTextColumn.Header>
+					<DataGridTextColumn Header="{i18n:Translate ui.main_window.menu_headers.last_updated}" Binding="{Binding LastUpdateTimestamp}" IsVisible="True">
 					</DataGridTextColumn>
-					<DataGridTemplateColumn IsVisible="False" SortMemberPath="HardRequirements.Count" CellStyleClasses="centered">
-						<DataGridTemplateColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.requirements}" TextAlignment="Center" />
-						</DataGridTemplateColumn.Header>
+					<DataGridTemplateColumn Header="{i18n:Translate ui.main_window.menu_headers.requirements}" IsVisible="False" SortMemberPath="HardRequirements.Count" CellStyleClasses="centered">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<ListBox Items="{Binding HardRequirements}" Background="Transparent">
@@ -583,10 +563,7 @@
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTemplateColumn SortMemberPath="MissingRequirements.Count" CellStyleClasses="centered">
-						<DataGridTemplateColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.missing_requirements}" TextAlignment="Center" />
-						</DataGridTemplateColumn.Header>
+					<DataGridTemplateColumn Header="{i18n:Translate ui.main_window.menu_headers.missing_requirements}" SortMemberPath="MissingRequirements.Count" CellStyleClasses="centered">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<ListBox Items="{Binding MissingRequirements}" Background="Transparent">
@@ -599,45 +576,30 @@
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTextColumn Binding="{Binding ParsedVersion}" CellStyleClasses="centered" IsVisible="True">
-						<DataGridTextColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.version}" TextAlignment="Center" />
-						</DataGridTextColumn.Header>
+					<DataGridTextColumn Header="{i18n:Translate ui.main_window.menu_headers.version}" Binding="{Binding ParsedVersion}" CellStyleClasses="centered" IsVisible="True">
 					</DataGridTextColumn>
-					<DataGridTemplateColumn SortMemberPath="HasConfig" CellStyleClasses="centered" IsVisible="False" >
-						<DataGridTemplateColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.configuration}" TextAlignment="Center" />
-						</DataGridTemplateColumn.Header>
+					<DataGridTemplateColumn Header="{i18n:Translate ui.main_window.menu_headers.configuration}" SortMemberPath="HasConfig" CellStyleClasses="centered" IsVisible="False" >
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<Button Content="{i18n:Translate ui.main_window.hyperlinks.click_to_open}" Classes="hyperlink" IsVisible="{Binding HasConfig}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Config.FilePath}" Foreground="{DynamicResource HighlightForegroundBrush}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTemplateColumn SortMemberPath="ParsedStatus" CellStyleClasses="centered" >
-						<DataGridTemplateColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.status}" TextAlignment="Center" />
-						</DataGridTemplateColumn.Header>
+					<DataGridTemplateColumn Header="{i18n:Translate ui.main_window.menu_headers.status}" SortMemberPath="ParsedStatus" CellStyleClasses="centered" >
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<Button Name="statusButton" Tag="{Binding Status, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding UpdateUri}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTemplateColumn SortMemberPath="InstallStatus" CellStyleClasses="centered" IsVisible="{Binding ShowInstalls}" >
-						<DataGridTemplateColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.nexus_install}" TextAlignment="Center"/>
-						</DataGridTemplateColumn.Header>
+					<DataGridTemplateColumn Header="{i18n:Translate ui.main_window.menu_headers.nexus_install}" SortMemberPath="InstallStatus" CellStyleClasses="centered" IsVisible="{Binding ShowInstalls}" >
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<Button Name="installButton" Classes="hyperlink status" Content="{Binding InstallStatus}" Click="InstallButton_Click" Tag="{Binding UniqueId}" Foreground="{DynamicResource HighlightForegroundBrush}" />
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTemplateColumn SortMemberPath="Notes" CellStyleClasses="centered" Width="150" IsVisible="True" >
-						<DataGridTemplateColumn.Header>
-							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.notes}" TextAlignment="Center" />
-						</DataGridTemplateColumn.Header>
+					<DataGridTemplateColumn Header="{i18n:Translate ui.main_window.menu_headers.notes}" SortMemberPath="Notes" CellStyleClasses="centered" Width="150" IsVisible="True" >
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<TextBox Classes="notes" Text="{Binding Note, Mode=TwoWay}" TextWrapping="Wrap" AcceptsReturn="True" Background="Transparent" BorderThickness="0"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="0 0 0 0" />
