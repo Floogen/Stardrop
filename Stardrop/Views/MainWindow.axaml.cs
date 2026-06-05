@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using DynamicData;
@@ -67,6 +68,10 @@ namespace Stardrop.Views
             modGrid.LoadingRow += (sender, e) => { e.Row.Header = e.Row.GetIndex() + 1; };
             modGrid.Items = _viewModel.DataView;
             modGrid.LoadingRowGroup += ModGrid_LoadingRowGroup;
+            modGrid.AddHandler(InputElement.LostFocusEvent, OnGridLostFocus, RoutingStrategies.Bubble);
+
+            var dragOverBorder = this.FindControl<Border>("dragOverBorder");
+            dragOverBorder.AddHandler(InputElement.PointerPressedEvent, OnGridBackgroundPressed, RoutingStrategies.Tunnel);
 
             AddHandler(DragDrop.DropEvent, Drop);
             AddHandler(DragDrop.DragOverEvent, (sender, e) =>
@@ -204,6 +209,31 @@ namespace Stardrop.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+
+            if (Design.IsDesignMode)
+            {
+                var testManifest = new Manifest() { Author = "Author", Name = "Test Mod", UniqueID = "Stardrop.TestMod", Version = "1.0.0" };
+                _viewModel.Mods.Add(new Mod(testManifest));
+            }
+        }
+
+        private void OnGridBackgroundPressed(object? sender, PointerPressedEventArgs e)
+        {
+            // Doing this to force the Note textbox to lose focus (and therefore save) when clicking elsewhere
+            if (e.Source is not TextBox textBox || !textBox.Classes.Contains("notes"))
+            {
+                // Move focus to the grid itself, pulling it off the TextBox
+                this.FindControl<DataGrid>("modGrid").Focus();
+            }
+        }
+
+        private void OnGridLostFocus(object? sender, RoutedEventArgs e)
+        {
+            // Save Note when textbox loses focus
+            if (Program.settings.ShouldAutomaticallySaveProfileChanges && e.Source is TextBox textBox && textBox.Classes.Contains("notes"))
+            {
+                UpdateProfile(GetCurrentProfile());
+            }
         }
 
         private void ModGrid_LoadingRowGroup(object? sender, DataGridRowGroupHeaderEventArgs e)
@@ -223,9 +253,14 @@ namespace Stardrop.Views
             }
             else
             {
-                var searchBox = this.FindControl<TextBox>("searchBox");
-                searchBox.Focus();
-                SearchBox_KeyUp(sender, e);
+                // Only grab search box if not currently typing in notes
+                var focusedElement = FocusManager.Instance?.Current;
+                if (focusedElement is not null && (focusedElement is not TextBox textBox || !textBox.Classes.Contains("notes")))
+                {
+                    var searchBox = this.FindControl<TextBox>("searchBox");
+                    searchBox.Focus();
+                    SearchBox_KeyUp(sender, e);
+                }
             }
         }
 
@@ -2216,7 +2251,7 @@ namespace Stardrop.Views
             _viewModel.HideRequiredMods();
 
             // Update the profile's enabled mods
-            _editorView.UpdateProfile(profile, _viewModel.Mods.Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList());
+            _editorView.UpdateProfile(profile, _viewModel.Mods);
 
             // Update the EnabledModCount
             _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();

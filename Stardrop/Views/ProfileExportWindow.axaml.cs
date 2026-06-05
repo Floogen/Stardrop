@@ -53,7 +53,7 @@ namespace Stardrop.Views
                 var externalProfile = new ProfileExternal() { Name = _exportProfile.Name, EnabledModIds = _exportProfile.EnabledModIds };
                 if (viewModel.IncludeModNotes)
                 {
-                    // TODO: Add Mod Notes
+                    externalProfile.Notes = _exportProfile.Notes;
                 }
                 
                 // Optionally include mod configs

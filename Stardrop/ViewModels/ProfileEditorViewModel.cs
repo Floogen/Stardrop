@@ -102,7 +102,7 @@ namespace Stardrop.ViewModels
             File.Delete(fileFullName);
         }
 
-        internal void UpdateProfile(Profile profile, List<string> enabledModIds)
+        internal void UpdateProfile(Profile profile, ObservableCollection<Mod> mods)
         {
             int profileIndex = Profiles.IndexOf(profile);
             if (profileIndex == -1)
@@ -110,7 +110,8 @@ namespace Stardrop.ViewModels
                 return;
             }
 
-            Profiles[profileIndex].EnabledModIds = enabledModIds;
+            Profiles[profileIndex].EnabledModIds = mods.Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList();
+            Profiles[profileIndex].Notes = mods.Where(m => string.IsNullOrEmpty(m.Note) is false).Select(m => new ModNote(m.UniqueId, m.Note)).ToList();
             CreateProfile(profile, true);
         }
 

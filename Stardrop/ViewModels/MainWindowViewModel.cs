@@ -780,6 +780,13 @@ namespace Stardrop.ViewModels
                 {
                     mod.IsEnabled = true;
                 }
+
+                // Set any mod notes
+                mod.Note = string.Empty;
+                if (profile.Notes.FirstOrDefault(data => data.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)) is var noteData && noteData is not null)
+                {
+                    mod.Note = noteData.Note;
+                }
             }
             HideRequiredMods();
 

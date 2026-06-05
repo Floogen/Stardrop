@@ -1,4 +1,7 @@
-﻿using Avalonia.Media.Imaging;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media.Imaging;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
 using Semver;
@@ -12,6 +15,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Linq;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 
 namespace Stardrop.Models
@@ -93,7 +98,7 @@ namespace Stardrop.Models
             }
         }
         private InstallState _installState { get; set; }
-        public InstallState InstallState { get { return _installState; } set { _installState = value; NotifyPropertyChanged("InstallState"); NotifyPropertyChanged("InstallStatus"); } }
+        public InstallState InstallState { get { return _installState; } set { _installState = value; NotifyPropertyChanged("InstallState"); } }
         public string InstallStatus
         {
             get
@@ -117,7 +122,11 @@ namespace Stardrop.Models
             }
         }
 
+        private string _note { get; set; }
+        public string Note { get { return _note; } set { _note = value; NotifyPropertyChanged("Note"); } }
+
         public event PropertyChangedEventHandler? PropertyChanged;
+
         public Mod(Manifest manifest, FileInfo modFileInfo, string uniqueId, string version, string? name = null, string? description = null, string? author = null)
         {
             Manifest = manifest;
@@ -130,6 +139,27 @@ namespace Stardrop.Models
             Author = String.IsNullOrEmpty(author) ? Program.translation.Get("internal.unknown") : author;
             Requirements = new List<ManifestDependency>();
         }
+
+        /// <summary>
+        /// For designer view use only. Use the primary Mod constructor instead
+        /// </summary>
+        /// <param name="manifest"></param>
+        public Mod(Manifest manifest)
+        {
+            if (Design.IsDesignMode is false)
+            {
+                throw new Exception("Using design-mode only Mod constructor. Use the primary Mod constructor instead.");
+            }
+
+            Manifest = manifest;
+            UniqueId = manifest.UniqueID;
+            Version = SemVersion.TryParse(manifest.Version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : SemVersion.ParsedFrom(0, 0, 0, "bad-version");
+            Name = String.IsNullOrEmpty(manifest.Name) ? manifest.UniqueID : manifest.Name;
+            Description = String.IsNullOrEmpty(manifest.Description) ? String.Empty : manifest.Description;
+            Author = String.IsNullOrEmpty(manifest.Author) ? Program.translation.Get("internal.unknown") : manifest.Author;
+            Requirements = new List<ManifestDependency>();
+        }
+
 
         /// <summary>
         /// Compute relative path to a mod from the installed mods path or default Stardew Valley mods path.
