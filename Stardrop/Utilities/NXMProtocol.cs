@@ -24,7 +24,7 @@ namespace Stardrop.Utilities
                 {
                     return false;
                 }
-                    
+
                 using RegistryKey key = classes.CreateSubKey("nxm");
                 key.SetValue("URL Protocol", "nxm");
                 key.CreateSubKey(@"shell\open\command").SetValue("", "\"" + applicationPath + "\" --nxm \"%1\"");
@@ -53,24 +53,24 @@ namespace Stardrop.Utilities
                 using var software = Registry.CurrentUser.OpenSubKey("Software", writable: true);
                 using var classes = software?.OpenSubKey("Classes", writable: true);
                 using var baseKey = classes?.OpenSubKey("nxm", writable: true);
-                
+
                 if (baseKey is null)
                 {
                     return false;
                 }
-                
+
                 if (!string.Equals(baseKey.GetValue("URL Protocol")?.ToString(), "nxm", StringComparison.Ordinal))
                 {
                     return false;
                 }
 
                 using var commandKey = classes?.OpenSubKey(@"nxm\shell\open\command", writable: true);
-                
+
                 return string.Equals(
                     commandKey?.GetValue(string.Empty)?.ToString(),
                     $"\"{applicationPath}\" --nxm \"%1\"",
                     StringComparison.Ordinal);
-                
+
             }
             catch (Exception ex)
             {

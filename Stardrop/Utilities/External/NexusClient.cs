@@ -2,8 +2,8 @@
 using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus;
-using Stardrop.Models.Nexus.Web;
 using Stardrop.Models.Nexus.GraphQL;
+using Stardrop.Models.Nexus.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -403,7 +403,7 @@ namespace Stardrop.Utilities.External
 
                 long? contentLength = response.Content.Headers.ContentLength;
                 DownloadStarted?.Invoke(this, new ModDownloadStartedEventArgs(requestUri, fileName, contentLength, downloadCancellationSource));
-                    
+
                 var buffer = new byte[81920];
                 long totalBytesRead = 0;
                 int bytesRead;
@@ -412,7 +412,7 @@ namespace Stardrop.Utilities.External
                     await fileStream.WriteAsync(buffer, 0, bytesRead, downloadCancellationSource.Token);
                     totalBytesRead += bytesRead;
                     DownloadProgressChanged?.Invoke(this, new ModDownloadProgressEventArgs(requestUri, totalBytesRead));
-                }                
+                }
 
                 DownloadCompleted?.Invoke(this, new ModDownloadCompletedEventArgs(requestUri));
                 return new(DownloadResultKind.Success, Path.Combine(Pathing.GetNexusPath(), fileName));

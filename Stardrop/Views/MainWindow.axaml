@@ -302,7 +302,7 @@
 			<Setter Property="TextBlock.Opacity" Value="1"/>
 		</Style>
 		<Style Selector="TextBox:focus">
-			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundHighBrush}"/>
 		</Style>
 		<Style Selector="TextBox:focus /template/ Border">
 			<Setter Property="BorderBrush" Value="{DynamicResource ThemeForegroundBrush}"/>
@@ -311,6 +311,12 @@
 		<Style Selector="TextBox:not(:focus)">
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
 			<Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
+		</Style>
+		<Style Selector="TextBox.notes:focus /template/ Border">
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+		<Style Selector="TextBox.notes:not(:focus)">
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundHighBrush}"/>
 		</Style>
 	</Window.Styles>
 
@@ -469,6 +475,7 @@
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.last_updated}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.version}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.configuration}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.notes}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
 					</ContextMenu>
 					<ContextMenu x:Key="GridRowContextMenu">
@@ -624,6 +631,16 @@
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<Button Name="installButton" Classes="hyperlink status" Content="{Binding InstallStatus}" Click="InstallButton_Click" Tag="{Binding UniqueId}" Foreground="{DynamicResource HighlightForegroundBrush}" />
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+					<DataGridTemplateColumn SortMemberPath="Notes" CellStyleClasses="centered" Width="150" IsVisible="True" >
+						<DataGridTemplateColumn.Header>
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.notes}" TextAlignment="Center" />
+						</DataGridTemplateColumn.Header>
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBox Classes="notes" Text="{Binding Note, Mode=TwoWay}" TextWrapping="Wrap" AcceptsReturn="True" Background="Transparent" BorderThickness="0"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="0 0 0 0" />
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>

@@ -1,0 +1,121 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Stardrop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
+        x:Class="Stardrop.Views.MissingModsWindow"
+        Title="{i18n:Translate ui.window.missing_mods.name}"
+        MinWidth="800"
+        MinHeight="500"
+        Width="800"
+        Height="500"
+        Background="{DynamicResource ThemeBackgroundBrush}"
+        HasSystemDecorations="true"
+        ExtendClientAreaToDecorationsHint="true"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        CanResize="True"
+        Icon="/Assets/icon.ico">
+	
+	<Window.DataContext>
+		<vm:MissingModsWindowViewModel />
+	</Window.DataContext>
+
+	<Window.Styles>
+		<Style Selector="Button:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="LightGray"/>
+		</Style>
+		<Style Selector="Button:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="White"/>
+		</Style>
+		<Style Selector="Button[IsEnabled=False] /template/ ContentPresenter">
+			<Setter Property="Background" Value="Gray"/>
+		</Style>
+		<Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="Red"/>
+		</Style>
+		<Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="Pink"/>
+		</Style>
+		<Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}"/>
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+		</Style>
+		<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
+		</Style>
+		<Style Selector="TextBlock.row">
+			<Setter Property="Foreground" Value="{DynamicResource DataGridRowForeground}" />
+		</Style>
+		<Style Selector="TextBlock.header">
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}" />
+		</Style>
+		<Style Selector="ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}" />
+		</Style>
+		<Style Selector="ListBoxItem:nth-child(even)">
+			<Setter Property="Background" Value="{DynamicResource DataGridRowBackground}" />
+		</Style>
+		<Style Selector="ListBoxItem:pointerover">
+			<Setter Property="Background" Value="Red" />
+		</Style>
+		<Style Selector="ListBoxItem:pointerover TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+		</Style>
+	</Window.Styles>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="50" />
+		</Grid.RowDefinitions>
+
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+		<Border Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
+			<Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
+				<Image Source="/Assets/icon.ico" Stretch="None"/>
+				<TextBlock Text="{i18n:Translate ui.window.missing_mods.name}" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left"  Foreground="{DynamicResource ThemeForegroundBrush}" />
+			</Menu>
+		</Border>
+		<Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
+			<Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+		</Menu>
+
+		<Border Name="dragOverBorder" DragDrop.AllowDrop="True" Grid.Row="1" Margin="20" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
+			<DockPanel Margin="10">
+				<Grid DockPanel.Dock="Top" ColumnDefinitions="1.25* 0.5* 2*" Height="22" Margin="0 0 0 0">
+					<TextBlock Classes="header" Grid.Column="0" Text="{i18n:Translate ui.main_window.menu_headers.mod_name}" FontWeight="Bold" />
+					<TextBlock Classes="header" Grid.Column="1" Text="{i18n:Translate ui.main_window.menu_headers.version}" FontWeight="Bold" />
+					<TextBlock Classes="header" Grid.Column="2" Text="{i18n:Translate ui.main_window.menu_headers.link}" FontWeight="Bold" />
+				</Grid>
+
+				<Border DockPanel.Dock="Top" BorderBrush="Gray" BorderThickness="0 0 0 0" Margin="0 0 0 0" />
+
+				<ListBox Items="{Binding MissingMods}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid ColumnDefinitions="1.25* 0.5* 2*" Background="Transparent" Tapped="OnGridTapped">
+								<TextBlock Classes="row" Grid.Column="0" Text="{Binding Name}" />
+								<TextBlock Classes="row" Grid.Column="1" Text="{Binding Version}" />
+								<TextBlock Classes="row" Grid.Column="2" Text="{Binding ModPageUri}" />
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</DockPanel>
+		</Border>
+		<TextBlock Classes="row" Grid.Row="2" Text="{i18n:Translate ui.missing_mods_window.textblock.drag_and_drop}" HorizontalAlignment="Center" Margin="0 -15 0 0" />
+
+		<DockPanel Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" Margin="0 0 0 0">
+			<Button Name="continueButton" Content="{i18n:Translate ui.missing_mods_window.button.continue}" Margin="0 0 0 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+		</DockPanel>
+	</Grid>
+</Window>
