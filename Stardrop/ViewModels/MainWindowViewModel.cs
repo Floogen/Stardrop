@@ -9,6 +9,7 @@ using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
 using Stardrop.Utilities;
+using Stardrop.Utilities.Extension;
 using Stardrop.Utilities.External;
 using Stardrop.Utilities.Internal;
 using System;
@@ -155,29 +156,57 @@ namespace Stardrop.ViewModels
 
             if (isActive)
             {
-                if (modGrid.Columns.Any(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header))
+                if (modGrid.Columns.Any(c => c.Header is string text && text == (string)column.Header))
                 {
                     column.Classes.Remove("ColumnInactive");
                     column.Classes.Add("ColumnActive");
 
-                    modGrid.Columns.First(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header).IsVisible = true;
+                    modGrid.Columns.First(c => c.Header is string text && text == (string)column.Header).IsVisible = true;
                     localDataCache.ColumnActiveStates[(string)column.Header] = true;
                 }
             }
             else
             {
-                if (modGrid.Columns.Any(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header))
+                if (modGrid.Columns.Any(c => c.Header is string text && text == (string)column.Header))
                 {
                     column.Classes.Remove("ColumnActive");
                     column.Classes.Add("ColumnInactive");
 
-                    modGrid.Columns.First(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header).IsVisible = false;
+                    modGrid.Columns.First(c => c.Header is string text && text == (string)column.Header).IsVisible = false;
                     localDataCache.ColumnActiveStates[(string)column.Header] = false;
                 }
             }
 
             // Cache the local data
             File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+        }
+
+        public void SetColumnOrder(DataGrid modGrid)
+        {
+            // Get the local data
+            ClientData localDataCache = new ClientData();
+            if (File.Exists(Pathing.GetDataCachePath()))
+            {
+                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            }
+
+            if (localDataCache is not null && modGrid is not null && modGrid.Columns is not null)
+            {
+                localDataCache.ColumnOrder.Clear();
+                foreach (var column in modGrid.Columns)
+                {
+                    var columnKey = ColumnExtensions.GetKey(column);
+                    if (string.IsNullOrEmpty(columnKey))
+                    {
+                        Program.helper.Log($"Failed to reorder column {column.Header.ToString()}: it lacks an ext:ColumnExtensions.Key value in the XAML.");
+                        continue;
+                    }
+                    localDataCache.ColumnOrder[columnKey] = column.DisplayIndex;
+                }
+
+                // Cache the local data
+                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+            }
         }
 
         public bool ParentFolderContainsPeriod(string oldestAncestorPath, DirectoryInfo? directoryInfo)
@@ -252,20 +281,23 @@ namespace Stardrop.ViewModels
             try
             {
                 // Extract the archive data
-                using (var archive = ArchiveFactory.Open(fileFullName))
+                using (var archive = ArchiveFactory.OpenArchive(fileFullName))
                 {
                     Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
-                    foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key).Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
+                    foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key)!.Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
                     {
-                        Program.helper.Log(manifest.Key);
-
-                        // Skip any mods that already are installed (don't handle updates)
-                        var parsedManifest = await ManifestParser.GetDataAsync(manifest);
-                        if (parsedManifest is null || HasModInstalled(parsedManifest.UniqueID) is true)
+                        if (manifest.Key is not null)
                         {
-                            continue;
+                            Program.helper.Log(manifest.Key);
+
+                            // Skip any mods that already are installed (don't handle updates)
+                            var parsedManifest = await ManifestParser.GetDataAsync(manifest);
+                            if (parsedManifest is null || HasModInstalled(parsedManifest.UniqueID) is true)
+                            {
+                                continue;
+                            }
+                            pathToManifests[manifest.Key] = parsedManifest;
                         }
-                        pathToManifests[manifest.Key] = parsedManifest;
                     }
 
                     // Warn and skip the install logic if the given archive has no manifest.json
