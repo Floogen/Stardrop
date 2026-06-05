@@ -122,7 +122,7 @@ namespace Stardrop.Views
                     // For any missing mods that exist on the profile but are not currently installed: ask if user wants to manually add them, skip the missing ones or cancel
                     if (missingMods.Count > 0)
                     {
-                        int displayOffsetCount = 2;
+                        int displayOffsetCount = 5;
                         var missingModParsed = string.Join(Environment.NewLine, missingMods.Select(m => m.UniqueId).Take(displayOffsetCount));
                         if (missingMods.Count > displayOffsetCount)
                         {
