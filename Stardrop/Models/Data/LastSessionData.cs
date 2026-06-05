@@ -1,7 +1,4 @@
-﻿using Avalonia;
-using System;
-
-namespace Stardrop.Models.Data
+﻿namespace Stardrop.Models.Data
 {
     public class LastSessionData
     {

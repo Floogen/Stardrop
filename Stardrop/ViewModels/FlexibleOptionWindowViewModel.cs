@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using ReactiveUI;
 
 namespace Stardrop.ViewModels
@@ -19,5 +20,21 @@ namespace Stardrop.ViewModels
         public bool IsSecondButtonVisible { get { return _isSecondButtonVisible; } set { this.RaiseAndSetIfChanged(ref _isSecondButtonVisible, value); } }
         private bool _isThirdButtonVisible;
         public bool IsThirdButtonVisible { get { return _isThirdButtonVisible; } set { this.RaiseAndSetIfChanged(ref _isThirdButtonVisible, value); } }
+
+        public FlexibleOptionWindowViewModel()
+        {
+            if (Design.IsDesignMode)
+            {
+                MessageText = "Example text";
+
+                FirstButtonText = "Yes";
+                SecondButtonText = "Maybe";
+                ThirdButtonText = "Cancel";
+
+                IsFirstButtonVisible = true;
+                IsSecondButtonVisible = true;
+                IsThirdButtonVisible = true;
+            }
+        }
     }
 }

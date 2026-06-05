@@ -3,7 +3,7 @@
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
-		<Version>1.8.4</Version>
+		<Version>1.9.0-beta.1</Version>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 		<ApplicationIcon>Assets\icon.ico</ApplicationIcon>
@@ -50,7 +50,7 @@
 		<PackageReference Include="Projektanker.Icons.Avalonia" Version="5.13.0" />
 		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="5.13.0" />
 		<PackageReference Include="semver" Version="2.3.0" />
-		<PackageReference Include="SharpCompress" Version="0.32.1" />
+		<PackageReference Include="SharpCompress" Version="0.48.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Update="Views\FlexibleOptionWindow.axaml.cs">

@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls;
 using DynamicData;
 using DynamicData.Aggregation;
-using DynamicData.Alias;
 using DynamicData.Binding;
 using ReactiveUI;
 using Stardrop.Models.Data;
@@ -15,7 +14,7 @@ namespace Stardrop.ViewModels
     public class DownloadPanelViewModel : ViewModelBase
     {
         private ObservableCollection<ModDownloadViewModel> _downloads = new();
-        public ObservableCollection<ModDownloadViewModel> Downloads { get => _downloads; set => this.RaiseAndSetIfChanged(ref _downloads, value); }        
+        public ObservableCollection<ModDownloadViewModel> Downloads { get => _downloads; set => this.RaiseAndSetIfChanged(ref _downloads, value); }
 
         public IObservable<int> InProgressDownloads { get; init; }
 

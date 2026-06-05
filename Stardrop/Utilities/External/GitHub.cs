@@ -53,12 +53,13 @@ namespace Stardrop.Utilities.External
             try
             {
                 var response = await client.GetAsync(uri);
-                using (var archive = ArchiveFactory.Open(await response.Content.ReadAsStreamAsync()))
+                // TODO refactor this to use async
+                using (var archive = ArchiveFactory.OpenArchive(await response.Content.ReadAsStreamAsync()))
                 {
                     downloadedArchivePath = Path.Combine(Pathing.GetSmapiUpgradeFolderPath(), Path.GetDirectoryName(archive.Entries.First().Key));
                     foreach (var entry in archive.Entries)
                     {
-                        entry.WriteToDirectory(Pathing.GetSmapiUpgradeFolderPath(), new SharpCompress.Common.ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
+                        await entry.WriteToDirectoryAsync(Pathing.GetSmapiUpgradeFolderPath(), new SharpCompress.Common.ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
                     }
                 }
             }
@@ -124,11 +125,12 @@ namespace Stardrop.Utilities.External
             try
             {
                 var response = await client.GetAsync(uri);
-                using (var archive = ArchiveFactory.Open(await response.Content.ReadAsStreamAsync()))
+                // TODO refactor this to use async
+                using (var archive = ArchiveFactory.OpenArchive(await response.Content.ReadAsStreamAsync()))
                 {
                     foreach (var entry in archive.Entries)
                     {
-                        entry.WriteToDirectory(Directory.GetCurrentDirectory(), new SharpCompress.Common.ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
+                        await entry.WriteToDirectoryAsync(Directory.GetCurrentDirectory(), new SharpCompress.Common.ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
                     }
                 }
 

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using DynamicData;
@@ -16,6 +17,7 @@ using Stardrop.Models.Nexus.Web;
 using Stardrop.Models.SMAPI;
 using Stardrop.Models.SMAPI.Web;
 using Stardrop.Utilities;
+using Stardrop.Utilities.Extension;
 using Stardrop.Utilities.External;
 using Stardrop.Utilities.Internal;
 using Stardrop.ViewModels;
@@ -67,6 +69,11 @@ namespace Stardrop.Views
             modGrid.LoadingRow += (sender, e) => { e.Row.Header = e.Row.GetIndex() + 1; };
             modGrid.Items = _viewModel.DataView;
             modGrid.LoadingRowGroup += ModGrid_LoadingRowGroup;
+            modGrid.ColumnReordered += (sender, e) => { _viewModel.SetColumnOrder(modGrid); };
+            modGrid.AddHandler(InputElement.LostFocusEvent, OnGridLostFocus, RoutingStrategies.Bubble);
+
+            var dragOverBorder = this.FindControl<Border>("dragOverBorder");
+            dragOverBorder.AddHandler(InputElement.PointerPressedEvent, OnGridBackgroundPressed, RoutingStrategies.Tunnel);
 
             AddHandler(DragDrop.DropEvent, Drop);
             AddHandler(DragDrop.DragOverEvent, (sender, e) =>
@@ -112,15 +119,32 @@ namespace Stardrop.Views
                 }
             }
 
+            // Sets the grid's column order, based on previous session
+            if (localDataCache.ColumnOrder is not null)
+            {
+                foreach (var column in modGrid.Columns)
+                {
+                    var columnKey = ColumnExtensions.GetKey(column);
+                    if (string.IsNullOrEmpty(columnKey))
+                    {
+                        Program.helper.Log($"Failed to reorder column {column.Header.ToString()}: it lacks an ext:ColumnExtensions.Key value in the XAML.");
+                        continue;
+                    }
+                    else if (localDataCache.ColumnOrder.ContainsKey(columnKey) is false)
+                    {
+                        continue;
+                    }
+
+                    column.DisplayIndex = localDataCache.ColumnOrder[columnKey];
+                }
+            }
             // Handle the mainMenu bar for drag and related events
             var menuBorder = this.FindControl<Border>("menuBorder");
             menuBorder.PointerPressed += MainBar_PointerPressed;
             menuBorder.DoubleTapped += MainBar_DoubleTapped;
 
-            // HEADER: "Value cannot be null. (Parameter 'path1')" error clears removing the below chunk
-
             // Set profile list
-            _editorView = new ProfileEditorViewModel(Pathing.GetProfilesFolderPath());
+            _editorView = new ProfileEditorViewModel(Pathing.GetProfilesFolderPath(), _viewModel.Mods.ToList());
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
             profileComboBox.Items = _editorView.Profiles;
             profileComboBox.SelectedIndex = 0;
@@ -204,6 +228,38 @@ namespace Stardrop.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+
+            if (Design.IsDesignMode)
+            {
+                var testManifest = new Manifest() { Author = "Author", Name = "Test Mod", UniqueID = "Stardrop.TestMod", Version = "1.0.0" };
+                _viewModel.Mods.Add(new Mod(testManifest));
+            }
+        }
+
+        private void OnGridBackgroundPressed(object? sender, PointerPressedEventArgs e)
+        {
+            // Doing this to force the Note textbox to lose focus (and therefore save) when clicking elsewhere
+            if (e.Source is not TextBox textBox || !textBox.Classes.Contains("notes"))
+            {
+                // Move focus to the grid itself, pulling it off the TextBox
+                this.FindControl<DataGrid>("modGrid").Focus();
+            }
+        }
+
+        private void OnGridLostFocus(object? sender, RoutedEventArgs e)
+        {
+            // Save Note when textbox loses focus
+            if (e.Source is TextBox textBox && textBox.Classes.Contains("notes"))
+            {
+                if (Program.settings.ShouldAutomaticallySaveProfileChanges)
+                {
+                    UpdateProfile(GetCurrentProfile());
+                }
+                else
+                {
+                    _viewModel.ShowSaveProfileChanges = true;
+                }
+            }
         }
 
         private void ModGrid_LoadingRowGroup(object? sender, DataGridRowGroupHeaderEventArgs e)
@@ -223,9 +279,14 @@ namespace Stardrop.Views
             }
             else
             {
-                var searchBox = this.FindControl<TextBox>("searchBox");
-                searchBox.Focus();
-                SearchBox_KeyUp(sender, e);
+                // Only grab search box if not currently typing in notes
+                var focusedElement = FocusManager.Instance?.Current;
+                if (focusedElement is not null && (focusedElement is not TextBox textBox || !textBox.Classes.Contains("notes")))
+                {
+                    var searchBox = this.FindControl<TextBox>("searchBox");
+                    searchBox.Focus();
+                    SearchBox_KeyUp(sender, e);
+                }
             }
         }
 
@@ -321,7 +382,7 @@ namespace Stardrop.Views
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.stardrop_update_complete"));
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
-                    _viewModel.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
+                    Toolkit.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
                 }
 
                 Program.settings.Version = _viewModel.Version.Replace("v", String.Empty);
@@ -335,7 +396,6 @@ namespace Stardrop.Views
             {
                 await HandleSMAPIUpdateCheck(false);
             }
-
 
             // Register a handler to watch whenever the Nexus client changes, so setpu and teardown get handled automatically
             Nexus.ClientChanged += NexusClientChanged;
@@ -597,7 +657,7 @@ namespace Stardrop.Views
                 return;
             }
 
-            _viewModel.OpenBrowser(selectedMod.ModPageUri);
+            Toolkit.OpenBrowser(selectedMod.ModPageUri);
         }
 
         private void ModGridMenuRow_ShowWholeModGroup(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -956,7 +1016,7 @@ namespace Stardrop.Views
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
             var oldProfile = profileComboBox.SelectedItem as Profile;
 
-            var editorWindow = new ProfileEditor(_editorView);
+            var editorWindow = new ProfileEditor(_editorView, _viewModel.DirectModInstallAsync, HandleModListRefresh);
             editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             await editorWindow.ShowDialog(this);
 
@@ -1533,7 +1593,7 @@ namespace Stardrop.Views
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.SMAPI_update_complete"));
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
-                    _viewModel.OpenBrowser($"https://smapi.io/release/{latestSmapiToUri?.Key.Replace(".", String.Empty)}");
+                    Toolkit.OpenBrowser($"https://smapi.io/release/{latestSmapiToUri?.Key.Replace(".", String.Empty)}");
                 }
             }
             else if (manualCheck is true)
@@ -2216,7 +2276,7 @@ namespace Stardrop.Views
             _viewModel.HideRequiredMods();
 
             // Update the profile's enabled mods
-            _editorView.UpdateProfile(profile, _viewModel.Mods.Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList());
+            _editorView.UpdateProfile(profile, _viewModel.Mods);
 
             // Update the EnabledModCount
             _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
@@ -2323,7 +2383,7 @@ namespace Stardrop.Views
 
         private async Task<List<Mod>> AddMods(string[]? filePaths)
         {
-            Guid request = new Guid();
+            Guid request = Guid.NewGuid();
 
             // Wait until current lock is finished before doing further installs
             Program.helper.Log($"Add mods request received ({request}): Pending");
@@ -2360,13 +2420,17 @@ namespace Stardrop.Views
                 try
                 {
                     // Extract the archive data
-                    using (var archive = ArchiveFactory.Open(fileFullName))
+                    // TODO refactor this to use async
+                    using (var archive = ArchiveFactory.OpenArchive(fileFullName))
                     {
                         Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
-                        foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key).Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
+                        foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key)!.Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
                         {
-                            Program.helper.Log(manifest.Key);
-                            pathToManifests[manifest.Key] = await ManifestParser.GetDataAsync(manifest);
+                            if (manifest.Key is not null)
+                            {
+                                Program.helper.Log(manifest.Key);
+                                pathToManifests[manifest.Key] = await ManifestParser.GetDataAsync(manifest);
+                            }
                         }
 
                         // Warn and skip the install logic if the given archive has no manifest.json
@@ -2378,7 +2442,7 @@ namespace Stardrop.Views
 
                         // If this is a mod update and if the Manifest.UpdateCautionMessage has a value, display message (and confirm if user wants to continue with mod update)
                         bool shouldProceedWithUpdate = true;
-                        foreach (var manifest in pathToManifests.Values.Where(m => m is not null && HasModInstalled(m.UniqueID) is true && string.IsNullOrEmpty(m.UpdateCautionMessage) is false))
+                        foreach (var manifest in pathToManifests.Values.Where(m => m is not null && _viewModel.HasModInstalled(m.UniqueID) is true && string.IsNullOrEmpty(m.UpdateCautionMessage) is false))
                         {
                             var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_mod_update_caution"), manifest!.Name, manifest!.UpdateCautionMessage)) { Topmost = true };
                             if (await requestWindow.ShowDialog<bool>(this) is false)
@@ -2571,11 +2635,6 @@ namespace Stardrop.Views
 
             Program.helper.Log($"Add mods request received ({request}): Processed");
             return addedMods;
-        }
-
-        private bool HasModInstalled(string uniqueID)
-        {
-            return _viewModel.Mods.Any(m => m.UniqueId.Equals(uniqueID, StringComparison.OrdinalIgnoreCase));
         }
 
         private void CreateDirectoryJunctions(List<string> arguments)

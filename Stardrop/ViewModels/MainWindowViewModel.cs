@@ -1,24 +1,27 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
-using DynamicData;
 using Json.More;
 using ReactiveUI;
+using SharpCompress.Archives;
+using SharpCompress.Common;
 using Stardrop.Models;
 using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
 using Stardrop.Utilities;
+using Stardrop.Utilities.Extension;
 using Stardrop.Utilities.External;
 using Stardrop.Utilities.Internal;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Stardrop.ViewModels
 {
@@ -116,26 +119,7 @@ namespace Stardrop.ViewModels
 
         public void OpenBrowser(string url)
         {
-            if (String.IsNullOrEmpty(url))
-            {
-                return;
-            }
-
-            try
-            {
-                using Process process = Process.Start(new ProcessStartInfo
-                {
-                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url :
-                        RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" : "xdg-open",
-                    Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : $"\"{url}\"",
-                    CreateNoWindow = true,
-                    UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                });
-            }
-            catch (Exception ex)
-            {
-                Program.helper.Log($"Failed to utilize OpenBrowser with the url ({url}): {ex}");
-            }
+            Toolkit.OpenBrowser(url);
         }
 
         public void ChangeColumnVisibility(MenuItem column)
@@ -172,29 +156,57 @@ namespace Stardrop.ViewModels
 
             if (isActive)
             {
-                if (modGrid.Columns.Any(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header))
+                if (modGrid.Columns.Any(c => c.Header is string text && text == (string)column.Header))
                 {
                     column.Classes.Remove("ColumnInactive");
                     column.Classes.Add("ColumnActive");
 
-                    modGrid.Columns.First(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header).IsVisible = true;
+                    modGrid.Columns.First(c => c.Header is string text && text == (string)column.Header).IsVisible = true;
                     localDataCache.ColumnActiveStates[(string)column.Header] = true;
                 }
             }
             else
             {
-                if (modGrid.Columns.Any(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header))
+                if (modGrid.Columns.Any(c => c.Header is string text && text == (string)column.Header))
                 {
                     column.Classes.Remove("ColumnActive");
                     column.Classes.Add("ColumnInactive");
 
-                    modGrid.Columns.First(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header).IsVisible = false;
+                    modGrid.Columns.First(c => c.Header is string text && text == (string)column.Header).IsVisible = false;
                     localDataCache.ColumnActiveStates[(string)column.Header] = false;
                 }
             }
 
             // Cache the local data
             File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+        }
+
+        public void SetColumnOrder(DataGrid modGrid)
+        {
+            // Get the local data
+            ClientData localDataCache = new ClientData();
+            if (File.Exists(Pathing.GetDataCachePath()))
+            {
+                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            }
+
+            if (localDataCache is not null && modGrid is not null && modGrid.Columns is not null)
+            {
+                localDataCache.ColumnOrder.Clear();
+                foreach (var column in modGrid.Columns)
+                {
+                    var columnKey = ColumnExtensions.GetKey(column);
+                    if (string.IsNullOrEmpty(columnKey))
+                    {
+                        Program.helper.Log($"Failed to reorder column {column.Header.ToString()}: it lacks an ext:ColumnExtensions.Key value in the XAML.");
+                        continue;
+                    }
+                    localDataCache.ColumnOrder[columnKey] = column.DisplayIndex;
+                }
+
+                // Cache the local data
+                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+            }
         }
 
         public bool ParentFolderContainsPeriod(string oldestAncestorPath, DirectoryInfo? directoryInfo)
@@ -246,6 +258,134 @@ namespace Stardrop.ViewModels
             }
 
             return manifests;
+        }
+
+        public bool HasModInstalled(string uniqueID)
+        {
+            return Mods.Any(m => m.UniqueId.Equals(uniqueID, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Only use to install new mods that don't currently exist within manager. Use MainWindow.AddMods for the safer method (update handling, various safety checks, etc.)
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public async Task<List<Mod>> DirectModInstallAsync(string? fileFullName)
+        {
+            List<Mod> addedMods = new List<Mod>();
+            if (string.IsNullOrEmpty(fileFullName))
+            {
+                return addedMods;
+            }
+
+            try
+            {
+                // Extract the archive data
+                using (var archive = ArchiveFactory.OpenArchive(fileFullName))
+                {
+                    Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
+                    foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key)!.Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        if (manifest.Key is not null)
+                        {
+                            Program.helper.Log(manifest.Key);
+
+                            // Skip any mods that already are installed (don't handle updates)
+                            var parsedManifest = await ManifestParser.GetDataAsync(manifest);
+                            if (parsedManifest is null || HasModInstalled(parsedManifest.UniqueID) is true)
+                            {
+                                continue;
+                            }
+                            pathToManifests[manifest.Key] = parsedManifest;
+                        }
+                    }
+
+                    // Warn and skip the install logic if the given archive has no manifest.json
+                    if (pathToManifests.Count == 0)
+                    {
+                        Program.helper.Log(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
+                        return addedMods;
+                    }
+
+                    int currentManifestIndex = 1;
+                    bool alwaysAskToDelete = Program.settings.AlwaysAskToDelete;
+                    foreach (var manifestPath in pathToManifests.Keys)
+                    {
+                        var manifest = pathToManifests[manifestPath];
+
+                        // If the archive doesn't have a manifest, warn the user
+                        if (manifest is not null)
+                        {
+                            var installPath = Program.settings.ModInstallPath;
+                            if (String.IsNullOrEmpty(manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                installPath = Path.Combine(installPath, manifest.UniqueID);
+                            }
+
+                            // Create the base directory, if needed
+                            if (Directory.Exists(installPath) is false)
+                            {
+                                Directory.CreateDirectory(installPath);
+                            }
+
+                            Program.helper.Log($"Install path for mod {manifest.UniqueID}:{installPath}");
+                            var manifestFolderPath = manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase);
+                            foreach (var entry in archive.Entries.Where(e => e.Key.StartsWith(manifestFolderPath)))
+                            {
+                                if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) || entry.Key.Contains(".DS_Store", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+                                var outputPath = Path.Combine(installPath, manifestFolderPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+
+                                if (String.IsNullOrEmpty(manifestFolderPath) is false)
+                                {
+                                    var installDirectory = new DirectoryInfo(installPath);
+                                    var manifestDirectory = new DirectoryInfo(manifestFolderPath);
+                                    if (installDirectory.Exists && (installDirectory.Name.Equals(manifestDirectory.Name, StringComparison.OrdinalIgnoreCase) || installDirectory.Name.Equals(manifest.UniqueID)))
+                                    {
+                                        outputPath = Path.Combine(installPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+
+                                        Program.helper.Log(outputPath);
+                                    }
+                                }
+                                outputPath = Regex.Replace(outputPath, @"\s+\/", "/");
+
+                                // Create the default location if it doesn't existe
+                                var outputFolder = Path.GetDirectoryName(outputPath);
+                                if (String.IsNullOrEmpty(outputFolder))
+                                {
+                                    continue;
+                                }
+                                else if (Directory.Exists(outputFolder) is false)
+                                {
+                                    Directory.CreateDirectory(outputFolder);
+                                }
+
+                                if (entry.IsDirectory is false)
+                                {
+                                    Program.helper.Log($"Writing mod file to {outputPath}");
+                                    await Task.Run(() => entry.WriteToFile(outputPath, new ExtractionOptions() { ExtractFullPath = false, Overwrite = true }));
+                                }
+                            }
+
+                            addedMods.Add(new Mod(manifest, new FileInfo(Path.Join(installPath, manifestFolderPath)), manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
+                        }
+                        else
+                        {
+                            Program.helper.Log(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
+                        }
+
+                        currentManifestIndex += 1;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
+            }
+
+            return addedMods;
         }
 
         public void DiscoverMods(string modsFilePath)
@@ -668,6 +808,13 @@ namespace Stardrop.ViewModels
                 if (profile.EnabledModIds.Any(id => id.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)))
                 {
                     mod.IsEnabled = true;
+                }
+
+                // Set any mod notes
+                mod.Note = string.Empty;
+                if (profile.Notes.FirstOrDefault(data => data.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)) is var noteData && noteData is not null)
+                {
+                    mod.Note = noteData.Note;
                 }
             }
             HideRequiredMods();
