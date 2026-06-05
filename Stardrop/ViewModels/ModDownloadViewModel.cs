@@ -138,7 +138,7 @@ namespace Stardrop.ViewModels
                 this.WhenAnyValue(x => x.DownloadedBytes)
                     .Sample(TimeSpan.FromMilliseconds(500), RxApp.MainThreadScheduler)
                     .Select(x => (DownloadedBytes / (double)SizeBytes) * 100)
-                    .ToProperty(this, x => x.Completion, out _completion);                
+                    .ToProperty(this, x => x.Completion, out _completion);
             }
         }
 
