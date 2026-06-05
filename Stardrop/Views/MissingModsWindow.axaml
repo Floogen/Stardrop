@@ -7,7 +7,7 @@
 		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
         x:Class="Stardrop.Views.MissingModsWindow"
-        Title="{i18n:Translate ui.window.profiles.name}"
+        Title="{i18n:Translate ui.window.missing_mods.name}"
         MinWidth="800"
         MinHeight="500"
         Width="800"
@@ -82,7 +82,7 @@
 		<Border Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
 			<Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
 				<Image Source="/Assets/icon.ico" Stretch="None"/>
-				<TextBlock Text="Missing Mods" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left"  Foreground="{DynamicResource ThemeForegroundBrush}" />
+				<TextBlock Text="{i18n:Translate ui.window.missing_mods.name}" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left"  Foreground="{DynamicResource ThemeForegroundBrush}" />
 			</Menu>
 		</Border>
 		<Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
@@ -92,9 +92,9 @@
 		<Border Name="dragOverBorder" DragDrop.AllowDrop="True" Grid.Row="1" Margin="20" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
 			<DockPanel Margin="10">
 				<Grid DockPanel.Dock="Top" ColumnDefinitions="1.25* 0.5* 2*" Height="22" Margin="0 0 0 0">
-					<TextBlock Classes="header" Grid.Column="0" Text="Name" FontWeight="Bold" />
-					<TextBlock Classes="header" Grid.Column="1" Text="Version" FontWeight="Bold" />
-					<TextBlock Classes="header" Grid.Column="2" Text="Link" FontWeight="Bold" />
+					<TextBlock Classes="header" Grid.Column="0" Text="{i18n:Translate ui.main_window.menu_headers.mod_name}" FontWeight="Bold" />
+					<TextBlock Classes="header" Grid.Column="1" Text="{i18n:Translate ui.main_window.menu_headers.version}" FontWeight="Bold" />
+					<TextBlock Classes="header" Grid.Column="2" Text="{i18n:Translate ui.main_window.menu_headers.link}" FontWeight="Bold" />
 				</Grid>
 
 				<Border DockPanel.Dock="Top" BorderBrush="Gray" BorderThickness="0 0 0 0" Margin="0 0 0 0" />
@@ -112,10 +112,10 @@
 				</ListBox>
 			</DockPanel>
 		</Border>
-		<TextBlock Classes="row" Grid.Row="2" Text="Drag and drop the missing mods above" HorizontalAlignment="Center" Margin="0 -15 0 0" />
+		<TextBlock Classes="row" Grid.Row="2" Text="{i18n:Translate ui.missing_mods_window.textblock.drag_and_drop}" HorizontalAlignment="Center" Margin="0 -15 0 0" />
 
 		<DockPanel Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" Margin="0 0 0 0">
-			<Button Name="continueButton" Content="Continue" Margin="0 0 0 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+			<Button Name="continueButton" Content="{i18n:Translate ui.missing_mods_window.button.continue}" Margin="0 0 0 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
 		</DockPanel>
 	</Grid>
 </Window>

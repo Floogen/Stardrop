@@ -475,6 +475,7 @@
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.last_updated}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.version}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.configuration}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.notes}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
 					</ContextMenu>
 					<ContextMenu x:Key="GridRowContextMenu">
@@ -635,7 +636,7 @@
 					</DataGridTemplateColumn>
 					<DataGridTemplateColumn SortMemberPath="Notes" CellStyleClasses="centered" Width="150" IsVisible="True" >
 						<DataGridTemplateColumn.Header>
-							<TextBlock Text="Notes" TextAlignment="Center" />
+							<TextBlock Text="{i18n:Translate ui.main_window.menu_headers.notes}" TextAlignment="Center" />
 						</DataGridTemplateColumn.Header>
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>

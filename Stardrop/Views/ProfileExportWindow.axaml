@@ -7,7 +7,7 @@
 		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
         x:Class="Stardrop.Views.ProfileExportWindow"
-        Title="Export Profile"
+        Title="{i18n:Translate ui.window.profiles_export.name}"
         MinWidth="400"
         MinHeight="200"
         Width="400"
@@ -98,14 +98,14 @@
 		<Border Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
 			<Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
 				<Image Source="/Assets/icon.ico" Stretch="None"/>
-				<TextBlock Text="Export Profile" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left"  Foreground="{DynamicResource ThemeForegroundBrush}" />
+				<TextBlock Text="{i18n:Translate ui.window.profiles_export.name}" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left"  Foreground="{DynamicResource ThemeForegroundBrush}" />
 			</Menu>
 		</Border>
 		<StackPanel Grid.Row="1" Margin="10 10 0 0">
-			<TextBlock Text="Options" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 0 0 5" />
-			<CheckBox Name="includeModConfigs" IsChecked="{Binding IncludeModConfigs}" Content="Include Mod Configs" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
-			<CheckBox Name="includeDisabledMods" IsChecked="{Binding IncludeDisabledMods}" Content="Include Disabled Mods" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
-			<CheckBox Name="includeModNotes" IsChecked="{Binding IncludeModNotes}" Content="Include Mod Notes" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<TextBlock Text="{i18n:Translate ui.profile_export_window.text.options}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="0 0 0 5" />
+			<CheckBox Name="includeModConfigs" IsChecked="{Binding IncludeModConfigs}" Content="{i18n:Translate ui.profile_export_window.checkbox.include_mod_configs}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<CheckBox Name="includeDisabledMods" IsChecked="{Binding IncludeDisabledMods}" Content="{i18n:Translate ui.profile_export_window.checkbox.include_disabled_mods}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			<CheckBox Name="includeModNotes" IsChecked="{Binding IncludeModNotes}" Content="{i18n:Translate ui.profile_export_window.checkbox.include_mod_notes}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 		</StackPanel>
 		
 		<DockPanel Grid.Row="2" Grid.Column="0" Margin="0 0 10 10" HorizontalAlignment="Right">

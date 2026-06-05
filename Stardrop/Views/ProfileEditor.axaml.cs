@@ -126,10 +126,11 @@ namespace Stardrop.Views
                         var missingModParsed = string.Join(Environment.NewLine, missingMods.Select(m => m.UniqueId).Take(displayOffsetCount));
                         if (missingMods.Count > displayOffsetCount)
                         {
-                            missingModParsed += $"\n+ {missingMods.Count - displayOffsetCount} other mod(s)";
+                            missingModParsed += String.Format(Program.translation.Get("ui.message.missing_mod_extra_count"), missingMods.Count - displayOffsetCount);
                         }
 
-                        var requestWindow = new FlexibleOptionWindow($"The following mods exist in the [{externalProfile.Name}] profile but are currently not installed:\n\n{missingModParsed}\n\nWould you like to manually install the missing mod(s)?", Program.translation.Get("internal.yes"), "Ignore", "Cancel")
+                        //String.Format(Program.translation.Get("ui.message.confirm_mod_deletion"), mod.Name))
+                        var requestWindow = new FlexibleOptionWindow(String.Format(Program.translation.Get("ui.message.confirm_missing_mod_handling"), externalProfile.Name, missingModParsed), Program.translation.Get("internal.yes"), Program.translation.Get("internal.ignore"), Program.translation.Get("internal.cancel"))
                         {
                             Topmost = true
                         };

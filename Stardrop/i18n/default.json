@@ -53,6 +53,8 @@
   "ui.main_window.menu_headers.nexus_install": "Nexus Mods Updates",
   "ui.main_window.menu_headers.install_timestamp": "Install Timestamp",
   "ui.main_window.menu_headers.last_updated": "Last Updated",
+  "ui.main_window.menu_headers.notes": "Notes",
+  "ui.main_window.menu_headers.link": "Link",
 
   // Main Window - Labels
   "ui.main_window.labels.profile": "Profile",
@@ -101,6 +103,16 @@
   "ui.main_window.combobox.requirements": "Requirements",
   "ui.main_window.combobox.group": "Mod Group",
   "ui.main_window.combobox.top_level_group": "Root Folder",
+
+  // Missing Mods Window
+  "ui.missing_mods_window.textblock.drag_and_drop": "Drag and drop the missing mods above",
+  "ui.missing_mods_window.button.continue": "Continue",
+
+  // Profile Export Window
+  "ui.profile_export_window.text.options": "Options",
+  "ui.profile_export_window.checkbox.include_mod_configs": "Include Mod Configs",
+  "ui.profile_export_window.checkbox.include_disabled_mods": "Include Disabled Mods",
+  "ui.profile_export_window.checkbox.include_mod_notes": "Include Mod Notes",
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Path",
@@ -238,14 +250,18 @@
   "ui.message.require_nexus_login": "This action requires being signed into the Nexus Mods API.",
   "ui.message.succeeded_nexus_install": "Successfully installed the following mod via Nexus Mods:\n\n{0}",
   "ui.message.confirm_mod_update_caution": "{0}\nUpdate Caution Message:\n\n{1}\n\nProceed with the mod update?",
+  "ui.message.confirm_missing_mod_handling": "The following mods exist in the [{0}] profile but are currently not installed:\n\n{1}\n\nWould you like to manually install the missing mod(s)?",
+  "ui.message.missing_mod_extra_count": "\n+ {0} other mod(s)",
 
   // Window Names
   "ui.window.settings.name": "Settings",
   "ui.window.profiles.name": "Profiles",
+  "ui.window.profiles_export.name": "Export Profile",
   "ui.window.profile_naming.name": "Profile Name",
   "ui.window.nexus_login.name": "Nexus Mods Personal API Key",
   "ui.window.nexus_login_actual.name": "Nexus Mods API Key",
   "ui.window.nexus_user.name": "Nexus Mods User Details",
+  "ui.window.missing_mods.name": "Missing Mods",
 
   // Internals
   "internal.connected": "Connected",
@@ -261,6 +277,8 @@
   "internal.no_all": "No to All",
   "internal.ok": "OK",
   "internal.unlock": "Unlock",
+  "internal.ignore": "Ignore",
+  "internal.cancel": "Cancel",
 
   // Internals - Measurements
   "internal.measurements.bytes_size": "B",
