@@ -122,8 +122,6 @@ namespace Stardrop.Views
             menuBorder.PointerPressed += MainBar_PointerPressed;
             menuBorder.DoubleTapped += MainBar_DoubleTapped;
 
-            // HEADER: "Value cannot be null. (Parameter 'path1')" error clears removing the below chunk
-
             // Set profile list
             _editorView = new ProfileEditorViewModel(Pathing.GetProfilesFolderPath(), _viewModel.Mods.ToList());
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");

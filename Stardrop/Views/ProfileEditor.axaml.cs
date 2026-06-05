@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models;
 using Stardrop.Models.Data.Enums;
-using Stardrop.Models.SMAPI;
 using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -8,7 +7,6 @@ using Stardrop.Utilities;
 using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -62,7 +60,7 @@ namespace Stardrop.Views
                 return;
             }
 
-            var files = e.Data.GetFileNames(); 
+            var files = e.Data.GetFileNames();
             if (files is not null && DataContext is MissingModsWindowViewModel viewModel)
             {
                 foreach (var path in files)

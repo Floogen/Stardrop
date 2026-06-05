@@ -1,7 +1,5 @@
 using Avalonia.Controls;
 using ReactiveUI;
-using Stardrop.Models;
-using System;
 
 namespace Stardrop.ViewModels
 {

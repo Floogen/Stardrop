@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models;
@@ -55,7 +54,7 @@ namespace Stardrop.Views
                 {
                     externalProfile.Notes = _exportProfile.Notes;
                 }
-                
+
                 // Optionally include mod configs
                 if (viewModel.IncludeModConfigs)
                 {

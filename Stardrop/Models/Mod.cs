@@ -1,13 +1,8 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Media.Imaging;
-using Avalonia.OpenGL;
-using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
 using Semver;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
-using Stardrop.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,8 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Linq;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 
 namespace Stardrop.Models
@@ -286,7 +279,7 @@ namespace Stardrop.Models
 
             return null;
         }
-        
+
         private Bitmap? TryLoadThumbnail(string? filePath)
         {
             if (string.IsNullOrEmpty(filePath))

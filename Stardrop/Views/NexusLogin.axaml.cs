@@ -6,7 +6,6 @@ using DynamicData.Binding;
 using Stardrop.Utilities;
 using Stardrop.ViewModels;
 using System;
-using System.Net.WebSockets;
 
 namespace Stardrop.Views
 {
@@ -28,7 +27,8 @@ namespace Stardrop.Views
             // Handle buttons
             this.FindControl<Button>("cancelButton").Click += delegate { this.Close(null); };
             this.FindControl<Button>("exitButton").Click += delegate { this.Close(null); };
-            this.FindControl<Button>("goToNexusButton").Click += delegate {
+            this.FindControl<Button>("goToNexusButton").Click += delegate
+            {
                 Toolkit.OpenBrowser(_nexusWebsocket.ssoUrl);
                 HandleNexusFlow();
             };

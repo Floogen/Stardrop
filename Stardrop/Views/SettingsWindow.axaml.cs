@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
-using SharpCompress.Common;
 using Stardrop.Models;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Utilities;
