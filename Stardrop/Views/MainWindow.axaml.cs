@@ -956,7 +956,7 @@ namespace Stardrop.Views
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
             var oldProfile = profileComboBox.SelectedItem as Profile;
 
-            var editorWindow = new ProfileEditor(_editorView);
+            var editorWindow = new ProfileEditor(_editorView, _viewModel.DirectModInstallAsync, HandleModListRefresh);
             editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             await editorWindow.ShowDialog(this);
 

@@ -2,18 +2,23 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models;
+using Stardrop.Models.Data.Enums;
+using Stardrop.Models.SMAPI;
 using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Stardrop.Views
 {
     public partial class ProfileEditor : Window
     {
         private readonly ProfileEditorViewModel _viewModel;
+        private readonly Func<string, Task<List<Mod>>>? _addModDirectly;
+        private readonly Func<Task>? _refreshModList;
 
         public ProfileEditor()
         {
@@ -24,9 +29,11 @@ namespace Stardrop.Views
 #endif
         }
 
-        public ProfileEditor(ProfileEditorViewModel viewModel) : this()
+        public ProfileEditor(ProfileEditorViewModel viewModel, Func<string, Task<List<Mod>>> addModDirectly, Func<Task>? refreshModList) : this()
         {
             _viewModel = viewModel;
+            _addModDirectly = addModDirectly;
+            _refreshModList = refreshModList;
 
             // Load the profiles
             var profileListBox = this.FindControl<ListBox>("profileList");
@@ -97,7 +104,7 @@ namespace Stardrop.Views
 
                     // Verify all mods exist, otherwise alert on the ones that don't
                     var activeMods = _viewModel.GetMods();
-                    var missingMods = new List<string>();
+                    var missingMods = new List<PortableModData>();
 
                     foreach (var modData in externalProfile.ModData)
                     {
@@ -108,16 +115,42 @@ namespace Stardrop.Views
 
                         if (activeMods.Any(m => m.UniqueId == modData.UniqueId) is false)
                         {
-                            missingMods.Add(modData.UniqueId);
+                            missingMods.Add(modData);
                         }
                     }
 
-                    // Display warning for any missing mods
+                    // For any missing mods that exist on the profile but are not currently installed: ask if user wants to manually add them, skip the missing ones or cancel
                     if (missingMods.Count > 0)
                     {
-                        var requestWindow = new MessageWindow($"The following mods exist in the [{externalProfile.Name}] profile but are currently not installed:\n{string.Join(Environment.NewLine, missingMods)}\n\nContinue with profile import?");
-                        if (await requestWindow.ShowDialog<bool>(this) is false)
+                        int displayOffsetCount = 2;
+                        var missingModParsed = string.Join(Environment.NewLine, missingMods.Select(m => m.UniqueId).Take(displayOffsetCount));
+                        if (missingMods.Count > displayOffsetCount)
                         {
+                            missingModParsed += $"\n+ {missingMods.Count - displayOffsetCount} other mod(s)";
+                        }
+
+                        var requestWindow = new FlexibleOptionWindow($"The following mods exist in the [{externalProfile.Name}] profile but are currently not installed:\n\n{missingModParsed}\n\nWould you like to manually install the missing mod(s)?", Program.translation.Get("internal.yes"), "Ignore", "Cancel")
+                        {
+                            Topmost = true
+                        };
+
+                        Choice response = await requestWindow.ShowDialog<Choice>(this);
+                        if (response == Choice.First)
+                        {
+                            // Open window for showing missing mods with their URI
+                            var missingModsWindow = new MissingModsWindow(missingMods, _addModDirectly);
+                            missingModsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                            await missingModsWindow.ShowDialog(this);
+
+                            // Handle refreshing mod list, to handle any new mod additions
+                            if (_refreshModList is not null)
+                            {
+                                await _refreshModList.Invoke();
+                            }
+                        }
+                        else if (response == Choice.Third)
+                        {
+                            // Cancel import
                             return;
                         }
                     }
