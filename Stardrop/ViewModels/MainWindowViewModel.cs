@@ -281,20 +281,23 @@ namespace Stardrop.ViewModels
             try
             {
                 // Extract the archive data
-                using (var archive = ArchiveFactory.Open(fileFullName))
+                using (var archive = ArchiveFactory.OpenArchive(fileFullName))
                 {
                     Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
-                    foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key).Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
+                    foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key)!.Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
                     {
-                        Program.helper.Log(manifest.Key);
-
-                        // Skip any mods that already are installed (don't handle updates)
-                        var parsedManifest = await ManifestParser.GetDataAsync(manifest);
-                        if (parsedManifest is null || HasModInstalled(parsedManifest.UniqueID) is true)
+                        if (manifest.Key is not null)
                         {
-                            continue;
+                            Program.helper.Log(manifest.Key);
+
+                            // Skip any mods that already are installed (don't handle updates)
+                            var parsedManifest = await ManifestParser.GetDataAsync(manifest);
+                            if (parsedManifest is null || HasModInstalled(parsedManifest.UniqueID) is true)
+                            {
+                                continue;
+                            }
+                            pathToManifests[manifest.Key] = parsedManifest;
                         }
-                        pathToManifests[manifest.Key] = parsedManifest;
                     }
 
                     // Warn and skip the install logic if the given archive has no manifest.json
