@@ -13,11 +13,15 @@ namespace Stardrop.Models
     {
         public List<PortableModData> ModData { get; set; }
 
-        public ProfileExternal(List<Mod> mods) : base()
+        public ProfileExternal() : base()
         {
             IsProtected = false;
 
             ModData = new List<PortableModData>();
+        }
+
+        public ProfileExternal(List<Mod> mods) : this()
+        {
             foreach (var mod in mods)
             {
                 ModData.Add(new PortableModData(mod.UniqueId, mod.ParsedVersion, mod.Name, mod.Author, mod.ModPageUri));

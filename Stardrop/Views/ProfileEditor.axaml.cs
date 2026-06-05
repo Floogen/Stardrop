@@ -1,8 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Microsoft.VisualBasic;
-using Semver;
 using Stardrop.Models;
 using Stardrop.ViewModels;
 using System;
@@ -50,6 +48,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("renameButton").Click += RenameButton_Click;
             this.FindControl<Button>("copyButton").Click += CopyButton_Click;
             this.FindControl<Button>("exportButton").Click += ExportButton_Click;
+            this.FindControl<Button>("importButton").Click += ImportButton_Click;
         }
 
         private void ProfileListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -59,6 +58,76 @@ namespace Stardrop.Views
             {
                 this.FindControl<Button>("deleteButton").IsEnabled = !profile.IsProtected;
                 this.FindControl<Button>("renameButton").IsEnabled = !profile.IsProtected;
+            }
+        }
+
+        private async void ImportButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "Open Mod Profile",
+                AllowMultiple = false,
+                Filters = new List<FileDialogFilter>
+                {
+                    new FileDialogFilter
+                    {
+                        Name = "JSON files",
+                        Extensions = new List<string> { "json" }
+                    }
+                }
+            };
+
+            string[]? files = await dialog.ShowAsync(this);
+            if (files is not null && files.Length > 0)
+            {
+                try
+                {
+                    var externalProfile = JsonSerializer.Deserialize<ProfileExternal>(File.ReadAllText(files.First()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                    if (externalProfile is null)
+                    {
+                        Program.helper.Log($"Deserialized empty external profile during import");
+                        return;
+                    }
+
+                    // Adjust the name if a copy of the name already exists
+                    if (_viewModel.Profiles.Any(p => p.Name.Equals(externalProfile.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        externalProfile.Name = $"{externalProfile.Name} (Copy)";
+                    }
+
+                    // Verify all mods exist, otherwise alert on the ones that don't
+                    var activeMods = _viewModel.GetMods();
+                    var missingMods = new List<string>();
+
+                    foreach (var modData in externalProfile.ModData)
+                    {
+                        if (modData is null)
+                        {
+                            continue;
+                        }
+
+                        if (activeMods.Any(m => m.UniqueId == modData.UniqueId) is false)
+                        {
+                            missingMods.Add(modData.UniqueId);
+                        }
+                    }
+
+                    // Display warning for any missing mods
+                    if (missingMods.Count > 0)
+                    {
+                        var requestWindow = new MessageWindow($"The following mods exist in the [{externalProfile.Name}] profile but are currently not installed:\n{string.Join(Environment.NewLine, missingMods)}\n\nContinue with profile import?");
+                        if (await requestWindow.ShowDialog<bool>(this) is false)
+                        {
+                            return;
+                        }
+                    }
+
+                    _viewModel.Profiles.Add(externalProfile);
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Failed handle external profile import: {ex}");
+                }
             }
         }
 
