@@ -2426,7 +2426,7 @@ namespace Stardrop.Views
                         Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
                         foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key)!.Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
                         {
-                            if (manifest.Key != null)
+                            if (manifest.Key is not null)
                             {
                                 Program.helper.Log(manifest.Key);
                                 pathToManifests[manifest.Key] = await ManifestParser.GetDataAsync(manifest);
