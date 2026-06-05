@@ -120,7 +120,7 @@ namespace Stardrop.Views
             // HEADER: "Value cannot be null. (Parameter 'path1')" error clears removing the below chunk
 
             // Set profile list
-            _editorView = new ProfileEditorViewModel(Pathing.GetProfilesFolderPath());
+            _editorView = new ProfileEditorViewModel(Pathing.GetProfilesFolderPath(), _viewModel.Mods.ToList());
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
             profileComboBox.Items = _editorView.Profiles;
             profileComboBox.SelectedIndex = 0;

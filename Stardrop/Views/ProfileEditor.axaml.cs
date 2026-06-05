@@ -1,10 +1,15 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Microsoft.VisualBasic;
+using Semver;
 using Stardrop.Models;
 using Stardrop.ViewModels;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 
 namespace Stardrop.Views
 {
@@ -44,6 +49,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("deleteButton").Click += DeleteButton_Click;
             this.FindControl<Button>("renameButton").Click += RenameButton_Click;
             this.FindControl<Button>("copyButton").Click += CopyButton_Click;
+            this.FindControl<Button>("exportButton").Click += ExportButton_Click;
         }
 
         private void ProfileListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -53,6 +59,32 @@ namespace Stardrop.Views
             {
                 this.FindControl<Button>("deleteButton").IsEnabled = !profile.IsProtected;
                 this.FindControl<Button>("renameButton").IsEnabled = !profile.IsProtected;
+            }
+        }
+
+        private async void ExportButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var selectedProfile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
+            if (selectedProfile is null)
+            {
+                return;
+            }
+
+            var dialog = new SaveFileDialog
+            {
+                Title = "Export Profile",
+                InitialFileName = $"{selectedProfile.Name}.json",
+                Filters = new List<FileDialogFilter>
+                {
+                    new FileDialogFilter { Name = "JSON", Extensions = { "json" } }
+                }
+            };
+
+            string? path = await dialog.ShowAsync(this);
+            if (path is not null)
+            {
+                var externalProfile = new ProfileExternal(_viewModel.GetMods()) { Name = selectedProfile.Name, EnabledModIds = selectedProfile.EnabledModIds, PreservedModConfigs = selectedProfile.PreservedModConfigs };
+                await File.WriteAllTextAsync(path, JsonSerializer.Serialize(externalProfile, new JsonSerializerOptions() { WriteIndented = true }));
             }
         }
 

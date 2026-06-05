@@ -17,13 +17,16 @@ namespace Stardrop.ViewModels
         public string ToolTip_Cancel { get; set; }
 
         private readonly string _profileFilePath;
+        private List<Mod> _mods;
 
-        public ProfileEditorViewModel(string profilesFilePath)
+        public ProfileEditorViewModel(string profilesFilePath, List<Mod> mods)
         {
             OldProfiles = new List<Profile>();
             Profiles = new ObservableCollection<Profile>();
 
             _profileFilePath = profilesFilePath;
+            _mods = mods;
+
             DirectoryInfo profileDirectory = new DirectoryInfo(_profileFilePath);
             foreach (var fileInfo in profileDirectory.GetFiles("*.json", SearchOption.AllDirectories))
             {
@@ -109,6 +112,11 @@ namespace Stardrop.ViewModels
 
             Profiles[profileIndex].EnabledModIds = enabledModIds;
             CreateProfile(profile, true);
+        }
+
+        internal List<Mod> GetMods()
+        {
+            return _mods;
         }
     }
 }
