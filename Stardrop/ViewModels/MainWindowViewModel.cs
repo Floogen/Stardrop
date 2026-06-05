@@ -252,7 +252,7 @@ namespace Stardrop.ViewModels
             try
             {
                 // Extract the archive data
-                using (var archive = ArchiveFactory.Open(fileFullName))
+                using (var archive = ArchiveFactory.OpenArchive(fileFullName))
                 {
                     Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
                     foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key).Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
