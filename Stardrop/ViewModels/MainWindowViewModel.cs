@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using DynamicData;
 using Json.More;
 using ReactiveUI;
+using SharpCompress.Archives;
+using SharpCompress.Common;
 using Stardrop.Models;
 using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
@@ -10,6 +12,7 @@ using Stardrop.Models.SMAPI;
 using Stardrop.Utilities;
 using Stardrop.Utilities.External;
 using Stardrop.Utilities.Internal;
+using Stardrop.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,6 +22,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Stardrop.ViewModels
 {
@@ -232,6 +237,126 @@ namespace Stardrop.ViewModels
         public bool HasModInstalled(string uniqueID)
         {
             return Mods.Any(m => m.UniqueId.Equals(uniqueID, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Only use to install new mods that don't currently exist within manager. Use MainWindow.AddMods for the safer method (update handling, various safety checks, etc.)
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public async Task<List<Mod>> DirectModInstallAsync(string? fileFullName)
+        {
+            List<Mod> addedMods = new List<Mod>();
+            if (string.IsNullOrEmpty(fileFullName))
+            {
+                return addedMods;
+            }
+
+            try
+            {
+                // Extract the archive data
+                using (var archive = ArchiveFactory.Open(fileFullName))
+                {
+                    Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
+                    foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key).Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        Program.helper.Log(manifest.Key);
+
+                        // Skip any mods that already are installed (don't handle updates)
+                        var parsedManifest = await ManifestParser.GetDataAsync(manifest);
+                        if (parsedManifest is null || HasModInstalled(parsedManifest.UniqueID) is true)
+                        {
+                            continue;
+                        }
+                        pathToManifests[manifest.Key] = parsedManifest;
+                    }
+
+                    // Warn and skip the install logic if the given archive has no manifest.json
+                    if (pathToManifests.Count == 0)
+                    {
+                        Program.helper.Log(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
+                        return addedMods;
+                    }
+
+                    int currentManifestIndex = 1;
+                    bool alwaysAskToDelete = Program.settings.AlwaysAskToDelete;
+                    foreach (var manifestPath in pathToManifests.Keys)
+                    {
+                        var manifest = pathToManifests[manifestPath];
+
+                        // If the archive doesn't have a manifest, warn the user
+                        if (manifest is not null)
+                        {
+                            var installPath = Program.settings.ModInstallPath;
+                            if (String.IsNullOrEmpty(manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                installPath = Path.Combine(installPath, manifest.UniqueID);
+                            }
+
+                            // Create the base directory, if needed
+                            if (Directory.Exists(installPath) is false)
+                            {
+                                Directory.CreateDirectory(installPath);
+                            }
+
+                            Program.helper.Log($"Install path for mod {manifest.UniqueID}:{installPath}");
+                            var manifestFolderPath = manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase);
+                            foreach (var entry in archive.Entries.Where(e => e.Key.StartsWith(manifestFolderPath)))
+                            {
+                                if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) || entry.Key.Contains(".DS_Store", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+                                var outputPath = Path.Combine(installPath, manifestFolderPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+
+                                if (String.IsNullOrEmpty(manifestFolderPath) is false)
+                                {
+                                    var installDirectory = new DirectoryInfo(installPath);
+                                    var manifestDirectory = new DirectoryInfo(manifestFolderPath);
+                                    if (installDirectory.Exists && (installDirectory.Name.Equals(manifestDirectory.Name, StringComparison.OrdinalIgnoreCase) || installDirectory.Name.Equals(manifest.UniqueID)))
+                                    {
+                                        outputPath = Path.Combine(installPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+
+                                        Program.helper.Log(outputPath);
+                                    }
+                                }
+                                outputPath = Regex.Replace(outputPath, @"\s+\/", "/");
+
+                                // Create the default location if it doesn't existe
+                                var outputFolder = Path.GetDirectoryName(outputPath);
+                                if (String.IsNullOrEmpty(outputFolder))
+                                {
+                                    continue;
+                                }
+                                else if (Directory.Exists(outputFolder) is false)
+                                {
+                                    Directory.CreateDirectory(outputFolder);
+                                }
+
+                                if (entry.IsDirectory is false)
+                                {
+                                    Program.helper.Log($"Writing mod file to {outputPath}");
+                                    await Task.Run(() => entry.WriteToFile(outputPath, new ExtractionOptions() { ExtractFullPath = false, Overwrite = true }));
+                                }
+                            }
+
+                            addedMods.Add(new Mod(manifest, new FileInfo(Path.Join(installPath, manifestFolderPath)), manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
+                        }
+                        else
+                        {
+                            Program.helper.Log(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
+                        }
+
+                        currentManifestIndex += 1;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
+            }
+
+            return addedMods;
         }
 
         public void DiscoverMods(string modsFilePath)
