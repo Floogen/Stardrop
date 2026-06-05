@@ -228,9 +228,16 @@ namespace Stardrop.Views
         private void OnGridLostFocus(object? sender, RoutedEventArgs e)
         {
             // Save Note when textbox loses focus
-            if (Program.settings.ShouldAutomaticallySaveProfileChanges && e.Source is TextBox textBox && textBox.Classes.Contains("notes"))
+            if (e.Source is TextBox textBox && textBox.Classes.Contains("notes"))
             {
-                UpdateProfile(GetCurrentProfile());
+                if (Program.settings.ShouldAutomaticallySaveProfileChanges)
+                {
+                    UpdateProfile(GetCurrentProfile());
+                }
+                else
+                {
+                    _viewModel.ShowSaveProfileChanges = true;
+                }
             }
         }
 
