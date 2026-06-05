@@ -172,22 +172,10 @@ namespace Stardrop.Views
                 return;
             }
 
-            var dialog = new SaveFileDialog
-            {
-                Title = "Export Profile",
-                InitialFileName = $"{selectedProfile.Name}.json",
-                Filters = new List<FileDialogFilter>
-                {
-                    new FileDialogFilter { Name = "JSON", Extensions = { "json" } }
-                }
-            };
-
-            string? path = await dialog.ShowAsync(this);
-            if (path is not null)
-            {
-                var externalProfile = new ProfileExternal(_viewModel.GetMods()) { Name = selectedProfile.Name, EnabledModIds = selectedProfile.EnabledModIds, PreservedModConfigs = selectedProfile.PreservedModConfigs };
-                await File.WriteAllTextAsync(path, JsonSerializer.Serialize(externalProfile, new JsonSerializerOptions() { WriteIndented = true }));
-            }
+            // Display the ProfileExportWindow
+            var profileExportWindow = new ProfileExportWindow(selectedProfile, _viewModel.GetMods());
+            profileExportWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            await profileExportWindow.ShowDialog(this);
         }
 
         private void CopyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

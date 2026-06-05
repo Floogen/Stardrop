@@ -26,5 +26,13 @@ namespace Stardrop.Models
                 ModData.Add(mod.GetPortableData());
             }
         }
+
+        public void AddMods(List<Mod> mods)
+        {
+            foreach (var mod in mods)
+            {
+                ModData.Add(mod.GetPortableData());
+            }
+        }
     }
 }
