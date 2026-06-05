@@ -229,6 +229,11 @@ namespace Stardrop.ViewModels
             return manifests;
         }
 
+        public bool HasModInstalled(string uniqueID)
+        {
+            return Mods.Any(m => m.UniqueId.Equals(uniqueID, StringComparison.OrdinalIgnoreCase));
+        }
+
         public void DiscoverMods(string modsFilePath)
         {
             if (Mods is null)
