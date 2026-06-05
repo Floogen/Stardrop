@@ -9,6 +9,7 @@ using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
 using Stardrop.Utilities;
+using Stardrop.Utilities.Extension;
 using Stardrop.Utilities.External;
 using Stardrop.Utilities.Internal;
 using System;
@@ -155,29 +156,57 @@ namespace Stardrop.ViewModels
 
             if (isActive)
             {
-                if (modGrid.Columns.Any(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header))
+                if (modGrid.Columns.Any(c => c.Header is string text && text == (string)column.Header))
                 {
                     column.Classes.Remove("ColumnInactive");
                     column.Classes.Add("ColumnActive");
 
-                    modGrid.Columns.First(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header).IsVisible = true;
+                    modGrid.Columns.First(c => c.Header is string text && text == (string)column.Header).IsVisible = true;
                     localDataCache.ColumnActiveStates[(string)column.Header] = true;
                 }
             }
             else
             {
-                if (modGrid.Columns.Any(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header))
+                if (modGrid.Columns.Any(c => c.Header is string text && text == (string)column.Header))
                 {
                     column.Classes.Remove("ColumnActive");
                     column.Classes.Add("ColumnInactive");
 
-                    modGrid.Columns.First(c => c.Header is TextBlock textBlock && textBlock.Text == (string)column.Header).IsVisible = false;
+                    modGrid.Columns.First(c => c.Header is string text && text == (string)column.Header).IsVisible = false;
                     localDataCache.ColumnActiveStates[(string)column.Header] = false;
                 }
             }
 
             // Cache the local data
             File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+        }
+
+        public void SetColumnOrder(DataGrid modGrid)
+        {
+            // Get the local data
+            ClientData localDataCache = new ClientData();
+            if (File.Exists(Pathing.GetDataCachePath()))
+            {
+                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            }
+
+            if (localDataCache is not null && modGrid is not null && modGrid.Columns is not null)
+            {
+                localDataCache.ColumnOrder.Clear();
+                foreach (var column in modGrid.Columns)
+                {
+                    var columnKey = ColumnExtensions.GetKey(column);
+                    if (string.IsNullOrEmpty(columnKey))
+                    {
+                        Program.helper.Log($"Failed to reorder column {column.Header.ToString()}: it lacks an ext:ColumnExtensions.Key value in the XAML.");
+                        continue;
+                    }
+                    localDataCache.ColumnOrder[columnKey] = column.DisplayIndex;
+                }
+
+                // Cache the local data
+                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+            }
         }
 
         public bool ParentFolderContainsPeriod(string oldestAncestorPath, DirectoryInfo? directoryInfo)

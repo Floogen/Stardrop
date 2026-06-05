@@ -17,6 +17,7 @@ using Stardrop.Models.Nexus.Web;
 using Stardrop.Models.SMAPI;
 using Stardrop.Models.SMAPI.Web;
 using Stardrop.Utilities;
+using Stardrop.Utilities.Extension;
 using Stardrop.Utilities.External;
 using Stardrop.Utilities.Internal;
 using Stardrop.ViewModels;
@@ -68,6 +69,7 @@ namespace Stardrop.Views
             modGrid.LoadingRow += (sender, e) => { e.Row.Header = e.Row.GetIndex() + 1; };
             modGrid.Items = _viewModel.DataView;
             modGrid.LoadingRowGroup += ModGrid_LoadingRowGroup;
+            modGrid.ColumnReordered += (sender, e) => { _viewModel.SetColumnOrder(modGrid); };
             modGrid.AddHandler(InputElement.LostFocusEvent, OnGridLostFocus, RoutingStrategies.Bubble);
 
             var dragOverBorder = this.FindControl<Border>("dragOverBorder");
@@ -117,6 +119,25 @@ namespace Stardrop.Views
                 }
             }
 
+            // Sets the grid's column order, based on previous session
+            if (localDataCache.ColumnOrder is not null)
+            {
+                foreach (var column in modGrid.Columns)
+                {
+                    var columnKey = ColumnExtensions.GetKey(column);
+                    if (string.IsNullOrEmpty(columnKey))
+                    {
+                        Program.helper.Log($"Failed to reorder column {column.Header.ToString()}: it lacks an ext:ColumnExtensions.Key value in the XAML.");
+                        continue;
+                    }
+                    else if (localDataCache.ColumnOrder.ContainsKey(columnKey) is false)
+                    {
+                        continue;
+                    }
+
+                    column.DisplayIndex = localDataCache.ColumnOrder[columnKey];
+                }
+            }
             // Handle the mainMenu bar for drag and related events
             var menuBorder = this.FindControl<Border>("menuBorder");
             menuBorder.PointerPressed += MainBar_PointerPressed;
@@ -228,9 +249,16 @@ namespace Stardrop.Views
         private void OnGridLostFocus(object? sender, RoutedEventArgs e)
         {
             // Save Note when textbox loses focus
-            if (Program.settings.ShouldAutomaticallySaveProfileChanges && e.Source is TextBox textBox && textBox.Classes.Contains("notes"))
+            if (e.Source is TextBox textBox && textBox.Classes.Contains("notes"))
             {
-                UpdateProfile(GetCurrentProfile());
+                if (Program.settings.ShouldAutomaticallySaveProfileChanges)
+                {
+                    UpdateProfile(GetCurrentProfile());
+                }
+                else
+                {
+                    _viewModel.ShowSaveProfileChanges = true;
+                }
             }
         }
 
@@ -368,7 +396,6 @@ namespace Stardrop.Views
             {
                 await HandleSMAPIUpdateCheck(false);
             }
-
 
             // Register a handler to watch whenever the Nexus client changes, so setpu and teardown get handled automatically
             Nexus.ClientChanged += NexusClientChanged;
