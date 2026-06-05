@@ -16,6 +16,7 @@ using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 
 namespace Stardrop.Models
 {
+    public record PortableModData(string UniqueId, string Version, string Name, string Author, string ModPageUri);
     public class Mod : INotifyPropertyChanged
     {
         internal readonly FileInfo ModFileInfo;
@@ -273,6 +274,11 @@ namespace Stardrop.Models
                 Program.helper.Log($"Failed to load thumbnail for mod {UniqueId} using following path {filePath}");
                 return null;
             }
+        }
+
+        internal PortableModData GetPortableData()
+        {
+            return new PortableModData(UniqueId, ParsedVersion, Name, Author, ModPageUri);
         }
 
         internal void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
