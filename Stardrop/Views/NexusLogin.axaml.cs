@@ -29,7 +29,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("cancelButton").Click += delegate { this.Close(null); };
             this.FindControl<Button>("exitButton").Click += delegate { this.Close(null); };
             this.FindControl<Button>("goToNexusButton").Click += delegate {
-                viewModel.OpenBrowser(_nexusWebsocket.ssoUrl);
+                Toolkit.OpenBrowser(_nexusWebsocket.ssoUrl);
                 HandleNexusFlow();
             };
 

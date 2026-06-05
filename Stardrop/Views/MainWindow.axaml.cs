@@ -321,7 +321,7 @@ namespace Stardrop.Views
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.stardrop_update_complete"));
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
-                    _viewModel.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
+                    Toolkit.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
                 }
 
                 Program.settings.Version = _viewModel.Version.Replace("v", String.Empty);
@@ -597,7 +597,7 @@ namespace Stardrop.Views
                 return;
             }
 
-            _viewModel.OpenBrowser(selectedMod.ModPageUri);
+            Toolkit.OpenBrowser(selectedMod.ModPageUri);
         }
 
         private void ModGridMenuRow_ShowWholeModGroup(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -1533,7 +1533,7 @@ namespace Stardrop.Views
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.SMAPI_update_complete"));
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
-                    _viewModel.OpenBrowser($"https://smapi.io/release/{latestSmapiToUri?.Key.Replace(".", String.Empty)}");
+                    Toolkit.OpenBrowser($"https://smapi.io/release/{latestSmapiToUri?.Key.Replace(".", String.Empty)}");
                 }
             }
             else if (manualCheck is true)

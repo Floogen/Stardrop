@@ -116,26 +116,7 @@ namespace Stardrop.ViewModels
 
         public void OpenBrowser(string url)
         {
-            if (String.IsNullOrEmpty(url))
-            {
-                return;
-            }
-
-            try
-            {
-                using Process process = Process.Start(new ProcessStartInfo
-                {
-                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url :
-                        RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" : "xdg-open",
-                    Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : $"\"{url}\"",
-                    CreateNoWindow = true,
-                    UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                });
-            }
-            catch (Exception ex)
-            {
-                Program.helper.Log($"Failed to utilize OpenBrowser with the url ({url}): {ex}");
-            }
+            Toolkit.OpenBrowser(url);
         }
 
         public void ChangeColumnVisibility(MenuItem column)
