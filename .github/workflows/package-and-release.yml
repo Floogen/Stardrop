@@ -69,7 +69,7 @@ jobs:
         name: "Stardrop ${{ env.TAG }}"
         append_body: false
         body: |
-          ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-linux-x64.zip?label=Linux+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-osx-x64.zip?label=macOS+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-win-x64.zip?label=Windows+Downloads)
+          ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-linux-x64.zip?label=Linux+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-osx-x64.zip?label=macOS+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-win-x64.zip?label=Windows+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-linux-arm64.zip?label=Linux+ARM+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-osx-arm64.zip?label=macOS+ARM+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-win-arm64.zip?label=Windows+ARM+Downloads)
           
           Documentation can be [found here](https://floogen.gitbook.io/stardrop/).
           
