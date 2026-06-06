@@ -91,6 +91,53 @@ public class ModConfigServiceTests
 
     
 
+    [Test]
+    public void DiscoverConfigs_NonExistentPath_DoesNotThrow()
+    {
+        var mods = new List<Mod>();
+        Assert.DoesNotThrow(() => _service.DiscoverConfigs(Path.Combine(_tempDir, "missing"), mods));
+    }
+
+    [Test]
+    public void DiscoverConfigs_NonExistentPath_ModConfigRemainsNull()
+    {
+        var mod = CreateMod("Author.Mod1");
+
+        _service.DiscoverConfigs(Path.Combine(_tempDir, "missing"), new List<Mod> { mod });
+
+        Assert.That(mod.Config, Is.Null);
+    }
+
+    [Test]
+    public void DiscoverConfigs_MatchingMod_ConfigAssigned()
+    {
+        var mod = CreateMod("Author.Mod1");
+        var configContent = """{"key": "value"}""";
+        File.WriteAllText(Path.Combine(mod.ModFileInfo.DirectoryName!, "config.json"), configContent);
+
+        _service.DiscoverConfigs(_tempDir, new List<Mod> { mod });
+
+        Assert.That(mod.Config, Is.Not.Null);
+        Assert.That(mod.Config!.UniqueId, Is.EqualTo("Author.Mod1"));
+        Assert.That(mod.Config.Data, Is.EqualTo(configContent));
+    }
+
+    [Test]
+    public void DiscoverConfigs_NoMatchingMod_ConfigRemainsNull()
+    {
+        var mod = CreateMod("Author.Mod1");
+        var otherDir = CreateSubdir("Author.Mod2");
+        File.WriteAllText(Path.Combine(otherDir, "config.json"), "{}");
+        File.WriteAllText(Path.Combine(otherDir, "manifest.json"), "{}");
+
+        _service.DiscoverConfigs(_tempDir, new List<Mod> { mod });
+
+        Assert.That(mod.Config, Is.Null);
+    }
+
+
+    
+
     private string CreateSubdir(string name)
     {
         var path = Path.Combine(_tempDir, name);
