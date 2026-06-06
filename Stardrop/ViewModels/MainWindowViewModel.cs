@@ -27,6 +27,9 @@ namespace Stardrop.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        private readonly IModDiscoveryService _modDiscoveryService;
+        private readonly IModConfigService _modConfigService;
+        
         private string ChromeHint { get; set; } = "NoChrome";
         private bool HasSystemDecorations { get; set; } = true;
         private bool ShowTitle { get; set; } = true;
@@ -88,8 +91,10 @@ namespace Stardrop.ViewModels
         public string ModGroupsStateButtonText { get { return _modGroupsStateButtonText; } set { this.RaiseAndSetIfChanged(ref _modGroupsStateButtonText, value); } }
         private string _modGroupsStateButtonText = Program.settings.ModGroupingMethod != ModGrouping.None ? Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse") : Program.translation.Get("ui.main_window.buttons.mod_groups_state.expand");
 
-        public MainWindowViewModel(string modsFilePath, string version)
+        public MainWindowViewModel(string modsFilePath, string version, IModConfigService modConfigService, IModDiscoveryService modDiscoveryService)
         {
+            _modConfigService = modConfigService;
+            _modDiscoveryService = modDiscoveryService;
             DiscoverMods(modsFilePath);
             Version = $"v{version}";
             SmapiVersion = Program.settings.GameDetails?.SmapiVersion;
@@ -528,6 +533,9 @@ namespace Stardrop.ViewModels
 
             ActualModCount = Mods.Count(m => !m.IsHidden);
         }
+        
+        public void DiscoverConfigs(string modFilePath, bool useArchive = false)
+         => _modConfigService.DiscoverConfigs(modFilePath, Mods, useArchive);
 
         public void HideRequiredMods()
         {
@@ -605,41 +613,6 @@ namespace Stardrop.ViewModels
             return configs;
         }
 
-        public void DiscoverConfigs(string modsFilePath, bool useArchive = false)
-        {
-            if (modsFilePath is null || !Directory.Exists(modsFilePath))
-            {
-                return;
-            }
-
-            foreach (var fileInfo in GetConfigFiles(new DirectoryInfo(modsFilePath)))
-            {
-                if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(modsFilePath, fileInfo.Directory)))
-                {
-                    continue;
-                }
-
-                var mod = Mods.FirstOrDefault(m => m.ModFileInfo is not null && m.ModFileInfo.DirectoryName == fileInfo.DirectoryName);
-                if (mod is null)
-                {
-                    continue;
-                }
-                else if (useArchive && mod.Config is not null)
-                {
-                    if (fileInfo.LastWriteTimeUtc <= mod.Config.LastWriteTimeUtc)
-                    {
-                        continue;
-                    }
-
-                    mod.Config.Data = File.ReadAllText(fileInfo.FullName);
-                    mod.Config.LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;
-                }
-                else
-                {
-                    mod.Config = new Config() { UniqueId = mod.UniqueId, FilePath = fileInfo.FullName, LastWriteTimeUtc = fileInfo.LastWriteTimeUtc, Data = File.ReadAllText(fileInfo.FullName) };
-                }
-            }
-        }
 
         internal List<Config> GetPendingConfigUpdates(Profile profile, bool excludeMissingConfigs = false, bool useArchiveAsBase = false)
         {
