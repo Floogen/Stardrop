@@ -1,1 +1,3 @@
-﻿[assembly: Parallelize(Scope = ExecutionScope.MethodLevel)]
+using NUnit.Framework;
+
+[assembly: Parallelizable(ParallelScope.All)]

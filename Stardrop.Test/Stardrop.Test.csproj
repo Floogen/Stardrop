@@ -1,12 +1,17 @@
-﻿<Project Sdk="MSTest.Sdk/4.0.2">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <UseVSTest>true</UseVSTest>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NUnit" Version="4.2.2" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Stardrop\Stardrop.csproj" />
