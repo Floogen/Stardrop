@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NUnit" Version="4.2.2" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Stardrop\Stardrop.csproj" />
+    </ItemGroup>
+
+    <!-- Avalonia's build tasks are pulled in transitively via the ProjectReference above.
+         The test project has no XAML files, so suppress the task to avoid a file-lock
+         race when both projects are built in parallel (CI reproduces this reliably). -->
+    <Target Name="CompileAvaloniaXaml" />
+
+</Project>
