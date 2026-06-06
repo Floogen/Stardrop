@@ -534,8 +534,6 @@ namespace Stardrop.ViewModels
             ActualModCount = Mods.Count(m => !m.IsHidden);
         }
         
-        public void DiscoverConfigs(string modFilePath, bool useArchive = false)
-         => _modConfigService.DiscoverConfigs(modFilePath, Mods, useArchive);
 
         public void HideRequiredMods()
         {
@@ -613,71 +611,11 @@ namespace Stardrop.ViewModels
             return configs;
         }
 
+        public void DiscoverConfigs(string modFilePath, bool useArchive = false)
+            => _modConfigService.DiscoverConfigs(modFilePath, Mods, useArchive);
 
         internal List<Config> GetPendingConfigUpdates(Profile profile, bool excludeMissingConfigs = false, bool useArchiveAsBase = false)
-        {
-            // Merge any existing preserved configs
-            List<Config> pendingConfigUpdates = new List<Config>();
-            foreach (var modId in profile.EnabledModIds.Select(id => id.ToLower()))
-            {
-                var mod = Mods.FirstOrDefault(m => m.UniqueId.Equals(modId, StringComparison.OrdinalIgnoreCase));
-                if (mod is null || mod.ModFileInfo is null)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    if (profile.PreservedModConfigs.ContainsKey(modId))
-                    {
-                        // Write the archived config, if the current one doesn't exist
-                        if (mod.Config is null)
-                        {
-                            if (excludeMissingConfigs || String.IsNullOrEmpty(mod.ModFileInfo.DirectoryName))
-                            {
-                                continue;
-                            }
-
-                            mod.Config = new Config() { UniqueId = modId, FilePath = Path.Combine(mod.ModFileInfo.DirectoryName, "config.json"), Data = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]) };
-                            pendingConfigUpdates.Add(mod.Config);
-                        }
-                        else
-                        {
-                            // Merge the config
-                            var currentJson = mod.Config.Data;
-                            var archivedJson = JsonTools.ParseDocumentToString(profile.PreservedModConfigs[modId]);
-                            if (JsonDocumentEqualityComparer.Instance.Equals(JsonDocument.Parse(mod.Config.Data), profile.PreservedModConfigs[modId]) is false)
-                            {
-                                // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
-                                string mergedJson = String.Empty;
-                                if (useArchiveAsBase is false)
-                                {
-                                    mergedJson = JsonTools.Merge(archivedJson, currentJson, false); ;
-                                }
-                                else
-                                {
-                                    mergedJson = JsonTools.Merge(currentJson, archivedJson, false);
-                                }
-
-                                // Apply the changes to the config file
-                                //Program.helper.Log($"The mod {modId} does not have its current configuration preserved\nCurrent:\n{currentJson}\nArchived:\n{archivedJson}", Helper.Status.Warning);
-                                pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mergedJson });
-                            }
-                        }
-                    }
-                    else if (mod.Config is not null)
-                    {
-                        pendingConfigUpdates.Add(new Config() { UniqueId = modId, FilePath = mod.Config.FilePath, Data = mod.Config.Data });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Program.helper.Log($"Failed to process config.json for mod {modId}: {ex}", Helper.Status.Warning);
-                }
-            }
-
-            return pendingConfigUpdates;
-        }
+            => _modConfigService.GetPendingConfigUpdates(profile, Mods, excludeMissingConfigs, useArchiveAsBase);
 
         internal async void UpdateEndorsements()
         {
