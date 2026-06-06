@@ -17,4 +17,9 @@
         <ProjectReference Include="..\Stardrop\Stardrop.csproj" />
     </ItemGroup>
 
+    <!-- Avalonia's build tasks are pulled in transitively via the ProjectReference above.
+         The test project has no XAML files, so suppress the task to avoid a file-lock
+         race when both projects are built in parallel (CI reproduces this reliably). -->
+    <Target Name="CompileAvaloniaXaml" />
+
 </Project>
