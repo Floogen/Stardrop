@@ -92,14 +92,26 @@ namespace Stardrop.Utilities.External
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                     {
                         downloadUri = String.Concat(downloadUri, "/", "Stardrop-osx-x64.zip");
+                        if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
+                        {
+                            downloadUri = String.Concat(downloadUri, "/", "Stardrop-osx-arm64.zip");
+                        }
                     }
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     {
                         downloadUri = String.Concat(downloadUri, "/", "Stardrop-linux-x64.zip");
+                        if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
+                        {
+                            downloadUri = String.Concat(downloadUri, "/", "Stardrop-linux-arm64.zip");
+                        }
                     }
                     else
                     {
                         downloadUri = String.Concat(downloadUri, "/", "Stardrop-win-x64.zip");
+                        if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
+                        {
+                            downloadUri = String.Concat(downloadUri, "/", "Stardrop-win-arm64.zip");
+                        }
                     }
                     downloadUri = downloadUri.Replace("releases/tag/", "releases/download/");
 
