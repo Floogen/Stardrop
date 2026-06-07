@@ -97,3 +97,28 @@ jobs:
           display_name: "Stardrop - Linux"
           description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop."
           version: ${{ env.CLEANED_VERSION }}
+  upload-macos-arm:
+    needs: [ upload-windows, upload-macos, upload-linux ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clean version
+        run: |
+          TAG=${{ env.CLEANED_VERSION }}
+          echo "CLEANED_VERSION=${TAG#v}" >> $GITHUB_ENV
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4    
+        with:
+          merge-multiple: true
+      - name: Upload mod to NexusMods
+        id: upload
+        uses: Nexus-Mods/upload-action@main
+        with:
+          api_key: ${{ secrets.NEXUS_API_KEY }}
+          file_group_id: ${{ vars.NEXUS_MAC_ARM_FILE_GROUP_ID }}
+          archive_existing_file: true
+          primary_mod_manager_download: false
+          allow_mod_manager_download: false
+          filename: Stardrop-osx-arm64.zip
+          display_name: "Stardrop - macOS (ARM)"
+          description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop. A temporary workaround is required to getting it running on macOS by going to Security & Privacy settings and click Open Anyway."
+          version: ${{ env.CLEANED_VERSION }}
