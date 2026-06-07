@@ -4,7 +4,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Stardrop.Models.Nexus.Web;
 using Stardrop.Utilities;
-using Stardrop.Utilities.External;
 using Stardrop.Views;
 using System;
 using System.Collections.Generic;

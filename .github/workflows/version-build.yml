@@ -15,3 +15,4 @@ jobs:
         tag: ${{ github.ref_name }}
         is-prerelease: ${{ contains(github.ref_name, '-beta') && 'true' || 'false' }}
         generate-release-notes: true
+      secrets: inherit

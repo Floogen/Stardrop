@@ -1,13 +1,10 @@
 ﻿using Stardrop.Models.Nexus.Web;
-using Stardrop.ViewModels;
 using System;
-using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace Stardrop.Utilities
 {

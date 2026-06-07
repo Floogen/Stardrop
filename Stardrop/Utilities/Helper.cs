@@ -29,7 +29,15 @@ namespace Stardrop.Utilities
             // Delete any previous log file
             if (File.Exists(GetLogPath()))
             {
-                File.Delete(GetLogPath());
+                try
+                {
+                    File.Delete(GetLogPath());
+                }
+                catch (Exception ex)
+                {
+                    // Failed to delete previous log
+                    Debug.WriteLine($"Failed to delete previous log file: {ex}");
+                }
             }
 
             // Create and enable the listener

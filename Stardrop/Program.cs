@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using Avalonia.Shared.PlatformSupport;
 using CommandLine;
@@ -235,6 +236,12 @@ namespace Stardrop
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
         {
+            // Below is required due to Avalonia UI design mode
+            if (Design.IsDesignMode)
+            {
+                Pathing.SetHomePath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+            }
+
             return AppBuilder.Configure<App>()
                 .UseReactiveUI()
                 .UsePlatformDetect()
