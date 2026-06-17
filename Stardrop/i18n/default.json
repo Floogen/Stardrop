@@ -31,6 +31,7 @@
   "ui.main_window.menu_items.context.open": "Open...",
   "ui.main_window.menu_items.context.filters": "Filters",
   "ui.main_window.menu_items.context.options": "Options",
+  "ui.main_window.menu_items.context.ignore_update": "Ignore Update",
   "ui.main_window.menu_items.context.clear_filter": "Clear",
   "ui.main_window.menu_items.context.delete": "Delete",
 

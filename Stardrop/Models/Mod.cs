@@ -74,6 +74,12 @@ namespace Stardrop.Models
         {
             get
             {
+                // If the suggested version is the same as an ignored version, treat as no update
+                if (!String.IsNullOrEmpty(SuggestedVersion) && !String.IsNullOrEmpty(IgnoredVersion) && IgnoredVersion.Equals(SuggestedVersion, StringComparison.OrdinalIgnoreCase))
+                {
+                    return String.Empty;
+                }
+
                 if (!String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
                 {
                     if (_status == WikiCompatibilityStatus.Unofficial)
@@ -96,6 +102,12 @@ namespace Stardrop.Models
         {
             get
             {
+                // If the suggested version is the same as an ignored version, treat as no update
+                if (!String.IsNullOrEmpty(SuggestedVersion) && !String.IsNullOrEmpty(IgnoredVersion) && IgnoredVersion.Equals(SuggestedVersion, StringComparison.OrdinalIgnoreCase))
+                {
+                    return String.Empty;
+                }
+
                 if (!String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
                 {
                     var nexusModId = GetNexusId();
@@ -117,6 +129,8 @@ namespace Stardrop.Models
 
         private string _note { get; set; }
         public string Note { get { return _note; } set { _note = value; NotifyPropertyChanged("Note"); } }
+        private string? _ignoredVersion { get; set; }
+        public string? IgnoredVersion { get { return _ignoredVersion; } set { _ignoredVersion = value; NotifyPropertyChanged(nameof(IgnoredVersion)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); } }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

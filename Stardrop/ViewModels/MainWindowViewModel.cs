@@ -476,6 +476,11 @@ namespace Stardrop.ViewModels
                         mod.LastUpdateTimestamp = localDataCache.ModInstallData.First(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).LastUpdateTimestamp;
                     }
 
+                   if (localDataCache is not null && localDataCache.IgnoredUpdates is not null && localDataCache.IgnoredUpdates.TryGetValue(mod.UniqueId, out string? value))
+                    {
+                        mod.IgnoredVersion = value;
+                    }
+
                     // Check if any config file exists
                     var configPath = Path.Combine(fileInfo.DirectoryName, "config.json");
                     if (File.Exists(configPath) && new FileInfo(configPath) is FileInfo configInfo && configInfo is not null)
