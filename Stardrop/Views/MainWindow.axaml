@@ -600,6 +600,13 @@
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
+					<DataGridTemplateColumn ext:ColumnExtensions.Key="Changelog" Header="{i18n:Translate ui.main_window.menu_headers.changelog}" CellStyleClasses="centered" IsVisible="{Binding ShowChangelogs}" CanUserSort="False">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<Button Name="changelogButton" Classes="hyperlink status" Content="{i18n:Translate ui.main_window.hyperlinks.view_changelog}" IsVisible="{Binding HasChangelog}" Click="ChangelogButton_Click" Tag="{Binding UniqueId}" Foreground="{DynamicResource HighlightForegroundBrush}" />
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Notes" Header="{i18n:Translate ui.main_window.menu_headers.notes}" SortMemberPath="Notes" CellStyleClasses="centered" Width="150" IsVisible="True" >
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>

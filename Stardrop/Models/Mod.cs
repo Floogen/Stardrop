@@ -69,7 +69,7 @@ namespace Stardrop.Models
         public string ChangeStateText { get { return IsEnabled ? Program.translation.Get("internal.disable") : Program.translation.Get("internal.enable"); } }
         public string ChangeWholeModGroupStateText { get { return IsEnabled ? Program.translation.Get("internal.disable_whole_mod") : Program.translation.Get("internal.enable_whole_mod"); } }
         private WikiCompatibilityStatus _status { get; set; }
-        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); NotifyPropertyChanged("InstallStatus"); } }
+        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); NotifyPropertyChanged("InstallStatus"); NotifyPropertyChanged("HasChangelog"); } }
         public string ParsedStatus
         {
             get
@@ -112,6 +112,17 @@ namespace Stardrop.Models
                 }
 
                 return String.Empty;
+            }
+        }
+
+        private ChangelogState _changelogState { get; set; }
+        public ChangelogState ChangelogState { get { return _changelogState; } set { _changelogState = value; NotifyPropertyChanged("ChangelogState"); } }
+
+        public bool HasChangelog
+        {
+            get
+            {
+                return !String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion) && GetNexusId() is not null;
             }
         }
 

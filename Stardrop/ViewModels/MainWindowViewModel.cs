@@ -59,6 +59,8 @@ namespace Stardrop.ViewModels
         public bool ShowEndorsements { get { return _showEndorsements; } set { this.RaiseAndSetIfChanged(ref _showEndorsements, value); } }
         private bool _showInstalls;
         public bool ShowInstalls { get { return _showInstalls; } set { this.RaiseAndSetIfChanged(ref _showInstalls, value); } }
+        private bool _showChangelogs;
+        public bool ShowChangelogs { get { return _showChangelogs; } set { this.RaiseAndSetIfChanged(ref _showChangelogs, value); } }
         private string _filterText;
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }
         private List<string> _columnFilter;

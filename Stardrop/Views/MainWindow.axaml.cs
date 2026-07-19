@@ -922,6 +922,46 @@ namespace Stardrop.Views
             }
         }
 
+        private async void ChangelogButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var button = e.Source as Button;
+            if (button is null)
+            {
+                return;
+            }
+
+            var clickedMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(button.Tag));
+            if (clickedMod is null || clickedMod.ChangelogState is not ChangelogState.Unknown)
+            {
+                return;
+            }
+
+            var modId = clickedMod.GetNexusId();
+            if (modId is null || Nexus.Client is null)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_nexus_changelog"), clickedMod.Name), Program.translation.Get("internal.ok"));
+                return;
+            }
+
+            clickedMod.ChangelogState = ChangelogState.Fetching;
+            try
+            {
+                // Show the window before fetching, so the user gets a loading spinner instead of a
+                // frozen-looking grid while Nexus responds.
+                var changelogWindow = new ChangelogWindow(clickedMod.Name, clickedMod.ModPageUri);
+                changelogWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+                var dialog = changelogWindow.ShowDialog(this);
+                changelogWindow.SetChangelogs(await Nexus.Client.GetModChangelogs(modId.Value));
+
+                await dialog;
+            }
+            finally
+            {
+                clickedMod.ChangelogState = ChangelogState.Unknown;
+            }
+        }
+
         private async void InstallButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var button = e.Source as Button;
@@ -2149,6 +2189,9 @@ namespace Stardrop.Views
                 // Show endorsements
                 _viewModel.ShowEndorsements = true;
 
+                // Show changelogs
+                _viewModel.ShowChangelogs = true;
+
                 // Show thumbnails
                 if (Program.settings.ShowModThumbnails)
                 {
@@ -2192,6 +2235,7 @@ namespace Stardrop.Views
                 _viewModel.NexusStatus = Program.translation.Get("internal.disconnected");
                 _viewModel.ShowEndorsements = false;
                 _viewModel.ShowInstalls = false;
+                _viewModel.ShowChangelogs = false;
             }
 
             if (newClient is not null)
