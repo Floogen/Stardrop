@@ -17,9 +17,9 @@
 		<key>CFBundleIdentifier</key>
 		<string>stardrop</string>
 		<key>CFBundleVersion</key>
-		<string>1.0.0</string>
+		<string>1.9.0</string>
 		<key>CFBundleShortVersionString</key>
-		<string>1.0</string>
+		<string>1.9</string>
 		<key>CFBundleURLTypes</key>
 		<array>
 			<dict>
