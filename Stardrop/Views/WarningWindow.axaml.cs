@@ -1,6 +1,8 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Stardrop.Utilities.External;
 using Stardrop.ViewModels;
 using System;
@@ -38,6 +40,16 @@ namespace Stardrop.Views
             _viewModel.WarningText = warningText;
             _viewModel.ButtonText = buttonText;
             _viewModel.IsButtonVisible = true;
+        }
+
+        /// <summary>
+        /// For messages that carry more than a line or two, such as the collection install summary. Passing a width
+        /// above the standard one also left aligns the text, as centring turns a list into a ragged column. The
+        /// message scrolls once it outgrows the window.
+        /// </summary>
+        public WarningWindow(string warningText, string buttonText, double windowWidth) : this(warningText, buttonText)
+        {
+            _viewModel.WindowWidth = windowWidth;
         }
 
         public WarningWindow(string warningText, string buttonText, bool closeOnExitSMAPI) : this(warningText, buttonText)

@@ -1,3 +1,5 @@
+﻿using Avalonia.Layout;
+using Avalonia.Media;
 using ReactiveUI;
 
 namespace Stardrop.ViewModels
@@ -14,6 +16,17 @@ namespace Stardrop.ViewModels
         public bool IsProgressBarVisible { get { return _isProgressBarVisible; } set { this.RaiseAndSetIfChanged(ref _isProgressBarVisible, value); } }
         private double _progressBarValue;
         public double ProgressBarValue { get { return _progressBarValue; } set { this.RaiseAndSetIfChanged(ref _progressBarValue, value); } }
+
+        /// <summary>The standard width. Anything wider is assumed to be carrying a list rather than a single line</summary>
+        public const double DefaultWidth = 300;
+
+        private double _windowWidth = DefaultWidth;
+        public double WindowWidth { get { return _windowWidth; } set { this.RaiseAndSetIfChanged(ref _windowWidth, value); } }
+
+        private TextAlignment _messageTextAlignment = TextAlignment.Center;
+        public TextAlignment MessageTextAlignment { get { return _messageTextAlignment; } set { this.RaiseAndSetIfChanged(ref _messageTextAlignment, value); } }
+        private HorizontalAlignment _messageHorizontalAlignment = HorizontalAlignment.Center;
+        public HorizontalAlignment MessageHorizontalAlignment { get { return _messageHorizontalAlignment; } set { this.RaiseAndSetIfChanged(ref _messageHorizontalAlignment, value); } }
 
         public WarningWindowViewModel()
         {

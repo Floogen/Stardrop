@@ -438,7 +438,7 @@ namespace Stardrop.Views
                 summary += Environment.NewLine + collection.InstallInstructions;
             }
 
-            await CreateWarningWindow(summary, Program.translation.Get("internal.ok"));
+            await CreateWarningWindow(summary, Program.translation.Get("internal.ok"), windowWidth: 560);
         }
     }
 }

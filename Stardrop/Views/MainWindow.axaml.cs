@@ -414,9 +414,13 @@ namespace Stardrop.Views
             SetupDownloadCountListener();
         }
 
-        private async Task CreateWarningWindow(string warningText, string buttonText)
+        /// <summary>
+        /// Opens a warning window. Pass a wider windowWidth for messages carrying lists rather than a single line,
+        /// which also switches the text to left aligned.
+        /// </summary>
+        private async Task CreateWarningWindow(string warningText, string buttonText, double windowWidth = WarningWindowViewModel.DefaultWidth)
         {
-            var warningWindow = new WarningWindow(warningText, buttonText);
+            var warningWindow = new WarningWindow(warningText, buttonText, windowWidth);
             await warningWindow.ShowDialog(this);
         }
 

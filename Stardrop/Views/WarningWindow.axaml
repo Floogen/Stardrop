@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Stardrop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,7 +9,7 @@
         Title="Warning"
         MinWidth="300"
         MinHeight="150"
-        Width="300"
+        Width="{Binding WindowWidth}"
         Height="150"
         Background="{DynamicResource ThemeBackgroundBrush}"
         HasSystemDecorations="false"
@@ -46,7 +46,9 @@
 			</Grid.ColumnDefinitions>
 
 			<StackPanel Grid.Column="1">
-				<TextBlock Grid.Row="0" Text="{Binding WarningText}" TextWrapping="Wrap" Foreground="{DynamicResource ThemeForegroundBrush}" HorizontalAlignment="Center" TextAlignment="Center"  Margin="0 35 0 20"/>
+				<ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0 35 0 20">
+					<TextBlock Text="{Binding WarningText}" TextWrapping="Wrap" Foreground="{DynamicResource ThemeForegroundBrush}" HorizontalAlignment="{Binding MessageHorizontalAlignment}" TextAlignment="{Binding MessageTextAlignment}"/>
+				</ScrollViewer>
 				<ProgressBar Grid.Row="1" IsVisible="{Binding IsProgressBarVisible}" Margin="0 10" Height="20"
 							  Minimum="0" Value="{Binding ProgressBarValue}"
 							  Foreground="{DynamicResource HighlightBrush}"
