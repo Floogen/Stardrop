@@ -172,7 +172,8 @@ namespace Stardrop.Utilities.External
                     ExternalUri = collectionMod.Source.Url,
                     Md5Checksum = collectionMod.Source.MD5Checksum,
                     FileExpression = collectionMod.Source.FileExpression,
-                    LogicalFilename = collectionMod.Source.LogicalFilename
+                    LogicalFilename = collectionMod.Source.LogicalFilename,
+                    SizeBytes = collectionMod.Source.Size
                 };
 
                 entry.Status = GetInitialStatus(entry, isPremium);

@@ -6,6 +6,29 @@ namespace Stardrop.Utilities
 {
     internal static class Toolkit
     {
+        /// <summary>
+        /// Formats a byte count for display, picking the largest unit that keeps the number readable.
+        /// </summary>
+        public static string ToHumanReadableSize(long bytes)
+        {
+            if (bytes >= 1024L * 1024L * 1024L)
+            {
+                return $"{(bytes / (1024.0 * 1024.0 * 1024.0)):N2} {Program.translation.Get("internal.measurements.gigabytes_size")}";
+            }
+
+            if (bytes >= 1024L * 1024L)
+            {
+                return $"{(bytes / (1024.0 * 1024.0)):N2} {Program.translation.Get("internal.measurements.megabytes_size")}";
+            }
+
+            if (bytes >= 1024L)
+            {
+                return $"{(bytes / 1024.0):N2} {Program.translation.Get("internal.measurements.kilobytes_size")}";
+            }
+
+            return $"{bytes:N0} {Program.translation.Get("internal.measurements.bytes_size")}";
+        }
+
         public static void OpenBrowser(string url)
         {
             if (String.IsNullOrEmpty(url))

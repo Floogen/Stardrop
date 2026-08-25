@@ -388,10 +388,15 @@ namespace Stardrop.Utilities.External
             return null;
         }
 
-        public async Task<NexusDownloadResult> DownloadFileAndGetPath(string uri, string fileName)
+        /// <summary>
+        /// Downloads a file to the Nexus folder. Passing an external token lets a caller abort the download from
+        /// outside, such as a collection install being cancelled, without taking away the download panel's own
+        /// per-file cancel button.
+        /// </summary>
+        public async Task<NexusDownloadResult> DownloadFileAndGetPath(string uri, string fileName, CancellationToken externalCancellationToken = default)
         {
             var requestUri = new Uri(uri);
-            var downloadCancellationSource = new CancellationTokenSource();
+            var downloadCancellationSource = externalCancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(externalCancellationToken) : new CancellationTokenSource();
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, requestUri);
             try
             {

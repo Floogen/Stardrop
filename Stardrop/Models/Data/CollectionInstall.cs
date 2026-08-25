@@ -35,6 +35,8 @@ namespace Stardrop.Models.Data
         /// <summary>Used to locate a Bundle entry's file inside the extracted collection archive</summary>
         public string? FileExpression { get; set; }
         public string? LogicalFilename { get; set; }
+        /// <summary>Download size from collection.json, used to drive the aggregate progress bar</summary>
+        public long? SizeBytes { get; set; }
 
         /// <summary>The archive this entry was installed from, recorded so a repair can skip re-downloading</summary>
         public string? SourceArchivePath { get; set; }
@@ -132,6 +134,15 @@ namespace Stardrop.Models.Data
         public int GetReusedCount()
         {
             return Mods.Count(m => m.Status is CollectionModStatus.SatisfiedExternally);
+        }
+
+        /// <summary>
+        /// Total download size of the entries Stardrop will fetch. Returns zero when no entry reports a size, which
+        /// the caller should treat as a signal to fall back to counting mods.
+        /// </summary>
+        public long GetPendingDownloadSize()
+        {
+            return Mods.Where(m => m.Status is CollectionModStatus.Pending && m.SizeBytes is not null).Sum(m => m.SizeBytes!.Value);
         }
 
         /// <summary>

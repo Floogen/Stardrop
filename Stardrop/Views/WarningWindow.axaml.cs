@@ -6,6 +6,7 @@ using Avalonia.Media;
 using Stardrop.Utilities.External;
 using Stardrop.ViewModels;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Stardrop.Views
@@ -16,6 +17,7 @@ namespace Stardrop.Views
         private readonly WarningWindowViewModel _viewModel;
         private bool _closeOnExitSMAPI;
         private bool _closeOnParentUnlock;
+        private CancellationTokenSource? _cancellationSource;
 
         public WarningWindow()
         {
@@ -47,9 +49,15 @@ namespace Stardrop.Views
         /// above the standard one also left aligns the text, as centring turns a list into a ragged column. The
         /// message scrolls once it outgrows the window.
         /// </summary>
-        public WarningWindow(string warningText, string buttonText, double windowWidth) : this(warningText, buttonText)
+        public WarningWindow(string warningText, string buttonText, double windowWidth, bool? alignTextLeft = null) : this(warningText, buttonText)
         {
             _viewModel.WindowWidth = windowWidth;
+
+            if (alignTextLeft ?? windowWidth > WarningWindowViewModel.DefaultWidth)
+            {
+                _viewModel.MessageTextAlignment = TextAlignment.Left;
+                _viewModel.MessageHorizontalAlignment = HorizontalAlignment.Left;
+            }
         }
 
         public WarningWindow(string warningText, string buttonText, bool closeOnExitSMAPI) : this(warningText, buttonText)
@@ -57,11 +65,19 @@ namespace Stardrop.Views
             _closeOnExitSMAPI = closeOnExitSMAPI;
         }
 
-        public WarningWindow(string warningText, MainWindowViewModel model, bool closeOnParentUnlock = true) : this(warningText, String.Empty)
+        /// <summary>
+        /// The lock window variant. Supplying a cancellation source shows a cancel button, which signals the running
+        /// operation rather than closing the window. Closing is left to whatever unlocks the main window, so the
+        /// window stays up while the operation winds down.
+        /// </summary>
+        public WarningWindow(string warningText, MainWindowViewModel model, bool closeOnParentUnlock = true, CancellationTokenSource? cancellationSource = null) : this(warningText, String.Empty)
         {
             _mainWindowModel = model;
             _closeOnParentUnlock = closeOnParentUnlock;
-            _viewModel.IsButtonVisible = false;
+            _cancellationSource = cancellationSource;
+
+            _viewModel.IsButtonVisible = cancellationSource is not null;
+            _viewModel.ButtonText = Program.translation.Get("internal.cancel");
             _viewModel.IsProgressBarVisible = false;
         }
 
@@ -116,7 +132,19 @@ namespace Stardrop.Views
 
         private void UnlockButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            this.Close();
+            if (_cancellationSource is null)
+            {
+                this.Close();
+                return;
+            }
+
+            // An in-flight download does not stop instantly, so the button reports that the request landed rather
+            // than closing a window that is still showing a running operation
+            Program.helper.Log("The user requested cancellation from the lock window");
+            _cancellationSource.Cancel();
+
+            _viewModel.IsButtonEnabled = false;
+            _viewModel.ButtonText = Program.translation.Get("internal.cancelling");
         }
 
         private void InitializeComponent()

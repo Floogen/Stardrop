@@ -9,6 +9,7 @@
         Title="Warning"
         MinWidth="300"
         MinHeight="150"
+        MaxHeight="600"
         Width="{Binding WindowWidth}"
         Height="150"
         Background="{DynamicResource ThemeBackgroundBrush}"
@@ -53,7 +54,7 @@
 							  Minimum="0" Value="{Binding ProgressBarValue}"
 							  Foreground="{DynamicResource HighlightBrush}"
 							  ShowProgressText="True"/>
-				<Button Grid.Row="2" IsVisible="{Binding IsButtonVisible}" Name="unlockButton" IsCancel="True" Content="{Binding ButtonText}" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+				<Button Grid.Row="2" IsVisible="{Binding IsButtonVisible}" IsEnabled="{Binding IsButtonEnabled}" Name="unlockButton" IsCancel="True" Content="{Binding ButtonText}" Click="UnlockButton_Click" HorizontalAlignment="Center" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
 			</StackPanel>
 		</Grid>
 	</Border>

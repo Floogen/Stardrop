@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Stardrop.Views
@@ -58,16 +59,24 @@ namespace Stardrop.Views
                 }
             }
 
-            var (index, extractedArchivePath) = await DownloadAndReadCollectionIndex(revision.DownloadLink, collectionName);
+            // One source covers the archive fetch and the mod downloads, so a single cancel press stops the lot
+            using var cancellationSource = new CancellationTokenSource();
+
+            // The lock window only appears once SetLockState has run, as a sentinel timer creates it from that state.
+            // UpdateLockWindow on its own does nothing, since it looks for a window that was never opened
+            SetLockState(true, String.Format(Program.translation.Get("ui.message.collection_preparing"), collectionName), cancellationSource);
+
+            var (index, extractedArchivePath) = await DownloadAndReadCollectionIndex(revision.DownloadLink, collectionName, cancellationSource.Token);
             if (index is null)
             {
+                SetLockState(false);
                 return false;
             }
 
             var resolvedRevision = revision.RevisionNumber is null ? (revisionNumber is null ? 0 : revisionNumber.Value) : revision.RevisionNumber.Value;
             var collection = Nexus.Client.CreateCollectionInstall(index, slug, resolvedRevision, domainName);
 
-            await InstallCollection(collection, extractedArchivePath);
+            await InstallCollection(collection, extractedArchivePath, cancellationSource);
 
             return true;
         }
@@ -75,7 +84,7 @@ namespace Stardrop.Views
         /// <summary>
         /// Fetches the collection archive and extracts it, returning the parsed collection.json.
         /// </summary>
-        private async Task<(CollectionIndex? Index, string ExtractedPath)> DownloadAndReadCollectionIndex(string revisionDownloadLink, string collectionName)
+        private async Task<(CollectionIndex? Index, string ExtractedPath)> DownloadAndReadCollectionIndex(string revisionDownloadLink, string collectionName, CancellationToken cancellationToken = default)
         {
             if (Nexus.Client is null)
             {
@@ -85,13 +94,14 @@ namespace Stardrop.Views
             var archiveUri = await Nexus.Client.GetCollectionArchiveLink(revisionDownloadLink, EnumParser.GetDescription(Program.settings.PreferredNexusServer));
             if (String.IsNullOrEmpty(archiveUri))
             {
+                SetLockState(false);
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_get_archive"), revisionDownloadLink), Program.translation.Get("internal.ok"));
                 return (null, String.Empty);
             }
 
             var safeName = String.Join("_", collectionName.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
             var archiveFileName = $"{safeName}.7z";
-            var downloadResult = await Nexus.Client.DownloadFileAndGetPath(archiveUri, archiveFileName);
+            var downloadResult = await Nexus.Client.DownloadFileAndGetPath(archiveUri, archiveFileName, cancellationToken);
             if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
             {
                 // No warning, as the user triggered this intentionally
@@ -100,6 +110,7 @@ namespace Stardrop.Views
 
             if (String.IsNullOrEmpty(downloadResult.DownloadedModFilePath))
             {
+                SetLockState(false);
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_download_archive"), archiveUri), Program.translation.Get("internal.ok"));
                 return (null, String.Empty);
             }
@@ -122,6 +133,7 @@ namespace Stardrop.Views
             catch (Exception ex)
             {
                 Program.helper.Log($"Failed to extract the collection archive: {ex}", Helper.Status.Alert);
+                SetLockState(false);
                 await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
                 return (null, String.Empty);
             }
@@ -130,6 +142,7 @@ namespace Stardrop.Views
             if (File.Exists(indexPath) is false)
             {
                 Program.helper.Log($"The collection archive did not contain a collection.json at {indexPath}", Helper.Status.Alert);
+                SetLockState(false);
                 await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
                 return (null, String.Empty);
             }
@@ -139,6 +152,7 @@ namespace Stardrop.Views
                 var index = JsonSerializer.Deserialize<CollectionIndex>(await File.ReadAllTextAsync(indexPath), new JsonSerializerOptions() { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
                 if (index is null)
                 {
+                    SetLockState(false);
                     await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
                     return (null, String.Empty);
                 }
@@ -148,6 +162,7 @@ namespace Stardrop.Views
             catch (Exception ex)
             {
                 Program.helper.Log($"Failed to parse the collection.json at {indexPath}: {ex}", Helper.Status.Alert);
+                SetLockState(false);
                 await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
                 return (null, String.Empty);
             }
@@ -157,7 +172,7 @@ namespace Stardrop.Views
         /// Downloads and installs everything the collection pins into its own folder, then generates a profile with
         /// exactly those mods enabled. Failures are gathered up and reported once at the end rather than per mod.
         /// </summary>
-        private async Task InstallCollection(CollectionInstall collection, string extractedArchivePath)
+        private async Task InstallCollection(CollectionInstall collection, string extractedArchivePath, CancellationTokenSource cancellationSource)
         {
             var installPath = Pathing.GetCollectionInstallPath(collection.SourceId);
             Directory.CreateDirectory(installPath);
@@ -169,21 +184,63 @@ namespace Stardrop.Views
             // Keyed by archive path, so AddMods can hand each installed mod back to the entry that requested it
             var entriesByArchive = new Dictionary<string, CollectionModEntry>(StringComparer.OrdinalIgnoreCase);
             var pendingMods = collection.Mods.Where(m => m.Status is CollectionModStatus.Pending).ToList();
+
+            // Mod sizes in a collection vary by orders of magnitude, so counting mods makes the bar sit still through
+            // one large download then jump. Bytes are tracked instead, falling back to counting when sizes are absent
+            var totalDownloadSize = collection.GetPendingDownloadSize();
+            var bytesByUri = new Dictionary<Uri, long>();
+            var currentEntryName = String.Empty;
             int currentIndex = 0;
-            foreach (var entry in pendingMods)
+
+            void OnDownloadProgress(object? sender, ModDownloadProgressEventArgs e)
             {
-                currentIndex++;
-                UpdateLockWindow(String.Format(Program.translation.Get("ui.message.collection_downloading"), entry.Name), currentIndex, pendingMods.Count);
-
-                var downloadedPath = await DownloadCollectionEntry(entry, extractedArchivePath);
-                if (String.IsNullOrEmpty(downloadedPath))
-                {
-                    continue;
-                }
-
-                entry.SourceArchivePath = downloadedPath;
-                entriesByArchive[downloadedPath] = entry;
+                bytesByUri[e.Uri] = e.TotalBytes;
+                UpdateCollectionProgress(currentEntryName, currentIndex, pendingMods.Count, bytesByUri.Values.Sum(), totalDownloadSize);
             }
+
+            if (Nexus.Client is not null)
+            {
+                Nexus.Client.DownloadProgressChanged += OnDownloadProgress;
+            }
+
+            SetLockState(true, String.Format(Program.translation.Get("ui.message.collection_preparing"), collection.Name), cancellationSource);
+
+            try
+            {
+                foreach (var entry in pendingMods)
+                {
+                    // Entries left Pending are the ones a resume would pick up, so nothing is marked here
+                    if (cancellationSource.IsCancellationRequested)
+                    {
+                        Program.helper.Log($"Collection install for {collection.Name} was cancelled with {pendingMods.Count - currentIndex} mod(s) left to download");
+                        break;
+                    }
+
+                    currentIndex++;
+                    currentEntryName = entry.Name;
+                    UpdateCollectionProgress(currentEntryName, currentIndex, pendingMods.Count, bytesByUri.Values.Sum(), totalDownloadSize);
+
+                    var downloadedPath = await DownloadCollectionEntry(entry, extractedArchivePath, cancellationSource.Token);
+                    if (String.IsNullOrEmpty(downloadedPath))
+                    {
+                        continue;
+                    }
+
+                    entry.SourceArchivePath = downloadedPath;
+                    entriesByArchive[downloadedPath] = entry;
+                }
+            }
+            finally
+            {
+                if (Nexus.Client is not null)
+                {
+                    Nexus.Client.DownloadProgressChanged -= OnDownloadProgress;
+                }
+            }
+
+            // AddMods waits for the window to unlock before it starts, then locks it again itself, so the download
+            // lock has to be released first or the install never begins
+            SetLockState(false);
 
             var installedModsByArchive = new Dictionary<string, List<Mod>>(StringComparer.OrdinalIgnoreCase);
             if (entriesByArchive.Count > 0)
@@ -200,7 +257,29 @@ namespace Stardrop.Views
             CreateProfileForCollection(collection);
             CollectionCache.Save(collection);
 
-            await ReportCollectionResult(collection);
+            await ReportCollectionResult(collection, cancellationSource.IsCancellationRequested);
+        }
+
+        /// <summary>
+        /// Writes the aggregate download progress into the lock window. Reports bytes when the collection declares
+        /// sizes, and falls back to a mod count when it does not.
+        /// </summary>
+        private void UpdateCollectionProgress(string currentModName, int currentIndex, int totalMods, long downloadedBytes, long totalBytes)
+        {
+            var heading = String.Format(Program.translation.Get("ui.message.collection_downloading"), currentModName, currentIndex, totalMods);
+
+            if (totalBytes <= 0)
+            {
+                UpdateLockWindow(heading, currentIndex, totalMods);
+                return;
+            }
+
+            // Reported in megabytes, as a large collection would overflow the int the lock window takes
+            var megabyte = 1024L * 1024L;
+            var cappedBytes = downloadedBytes > totalBytes ? totalBytes : downloadedBytes;
+            var sizeText = String.Format(Program.translation.Get("ui.message.collection_download_size"), Toolkit.ToHumanReadableSize(cappedBytes), Toolkit.ToHumanReadableSize(totalBytes));
+
+            UpdateLockWindow(String.Concat(heading, Environment.NewLine, sizeText), (int)(cappedBytes / megabyte), (int)(totalBytes / megabyte));
         }
 
         /// <summary>
@@ -290,7 +369,7 @@ namespace Stardrop.Views
             }
         }
 
-        private async Task<string?> DownloadCollectionEntry(CollectionModEntry entry, string extractedArchivePath)
+        private async Task<string?> DownloadCollectionEntry(CollectionModEntry entry, string extractedArchivePath, CancellationToken cancellationToken)
         {
             if (Nexus.Client is null)
             {
@@ -330,7 +409,9 @@ namespace Stardrop.Views
             var downloadResult = await Nexus.Client.DownloadFileAndGetPath(downloadLink, modFile.Name);
             if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
             {
-                entry.Status = CollectionModStatus.Skipped;
+                // A collection-wide cancel leaves the entry resumable, whereas cancelling this one file from the
+                // download panel means the user deliberately opted out of it
+                entry.Status = cancellationToken.IsCancellationRequested ? CollectionModStatus.Pending : CollectionModStatus.Skipped;
                 return null;
             }
 
@@ -406,14 +487,24 @@ namespace Stardrop.Views
         /// One summary at the end, rather than a dialog per mod. A large collection can easily have a dozen entries
         /// Stardrop cannot fetch itself, and a dozen modals is not a usable experience.
         /// </summary>
-        private async Task ReportCollectionResult(CollectionInstall collection)
+        private async Task ReportCollectionResult(CollectionInstall collection, bool wasCancelled = false)
         {
             var manualDownloads = collection.GetManualDownloads();
             var failures = collection.GetFailures();
             var installedCount = collection.Mods.Count(m => m.Status is CollectionModStatus.Installed);
             var reusedCount = collection.GetReusedCount();
 
-            var summary = String.Format(Program.translation.Get("ui.message.collection_install_summary"), collection.Name, installedCount, collection.Mods.Count);
+            var summary = String.Format(Program.translation.Get(wasCancelled ? "ui.message.collection_install_cancelled" : "ui.message.collection_install_summary"), collection.Name, installedCount, collection.Mods.Count);
+
+            if (wasCancelled)
+            {
+                // The record keeps its per-entry status, so what was skipped is still known for a later resume
+                var remaining = collection.Mods.Count(m => m.Status is CollectionModStatus.Pending);
+                if (remaining > 0)
+                {
+                    summary += Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_remaining"), remaining);
+                }
+            }
 
             if (reusedCount > 0)
             {

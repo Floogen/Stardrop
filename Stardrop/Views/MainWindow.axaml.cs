@@ -31,6 +31,7 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 
@@ -50,6 +51,7 @@ namespace Stardrop.Views
         private bool _ctrlPressed;
 
         private string _lockReason;
+        private CancellationTokenSource? _lockCancellationSource;
 
         // Session related
         private LastSessionData _lastSessionDate;
@@ -533,7 +535,7 @@ namespace Stardrop.Views
             {
                 Program.helper.Log($"Detected lock state request ({_lockReason}): Locking main window!");
 
-                var warningWindow = new WarningWindow(_lockReason, _viewModel);
+                var warningWindow = new WarningWindow(_lockReason, _viewModel, cancellationSource: _lockCancellationSource);
                 warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 await warningWindow.ShowDialog(this);
             }
@@ -1875,10 +1877,16 @@ namespace Stardrop.Views
             return true;
         }
 
-        private void SetLockState(bool isWindowLocked, string? lockReason = null)
+        /// <summary>
+        /// Locks or unlocks the main window. The lock window itself is opened by the sentinel timer from this state,
+        /// so calling UpdateLockWindow without having called this first does nothing.
+        /// </summary>
+        /// <param name="cancellationSource">Supply one to give the lock window a cancel button wired to it</param>
+        private void SetLockState(bool isWindowLocked, string? lockReason = null, CancellationTokenSource? cancellationSource = null)
         {
             _viewModel.IsLocked = isWindowLocked;
             _lockReason = lockReason is null ? String.Empty : lockReason;
+            _lockCancellationSource = isWindowLocked ? cancellationSource : null;
 
             foreach (var ownedWindow in this.OwnedWindows.ToList())
             {
