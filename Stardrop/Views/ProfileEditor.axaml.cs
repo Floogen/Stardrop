@@ -1,11 +1,13 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models;
 using Stardrop.Models.Data.Enums;
+using Stardrop.Utilities.Internal;
 using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -18,6 +20,7 @@ namespace Stardrop.Views
         private readonly ProfileEditorViewModel _viewModel;
         private readonly Func<string, Task<List<Mod>>>? _addModDirectly;
         private readonly Func<Task>? _refreshModList;
+        private bool _hasAppliedChanges;
 
         public ProfileEditor()
         {
@@ -62,8 +65,9 @@ namespace Stardrop.Views
             var profile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
             if (profile is not null)
             {
-                this.FindControl<Button>("deleteButton").IsEnabled = !profile.IsProtected;
-                this.FindControl<Button>("renameButton").IsEnabled = !profile.IsProtected;
+                // A collection profile is protected against editing, though it still has to be removable
+                this.FindControl<Button>("deleteButton").IsEnabled = profile.IsProtected is false || profile.IsFromCollection;
+                this.FindControl<Button>("renameButton").IsEnabled = profile.IsProtected is false;
             }
         }
 
@@ -205,9 +209,35 @@ namespace Stardrop.Views
             naming.ShowDialog(this);
         }
 
-        private void DeleteButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void DeleteButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var profile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
+            if (profile is null)
+            {
+                return;
+            }
+
+            // Removing a collection takes its downloaded mods with it unless the user says otherwise, so it needs
+            // asking about rather than being a silent side effect of deleting a profile
+            if (profile.IsFromCollection && String.IsNullOrEmpty(profile.SourceId) is false)
+            {
+                var collection = CollectionCache.Load(profile.SourceId);
+                var modCount = collection is null ? 0 : collection.Mods.Count(m => m.Status is CollectionModStatus.Installed);
+
+                var requestWindow = new FlexibleOptionWindow(String.Format(Program.translation.Get("ui.message.confirm_collection_delete"), profile.Name, modCount), Program.translation.Get("ui.message.collection_delete_with_mods"), Program.translation.Get("ui.message.collection_delete_keep_mods"), Program.translation.Get("internal.cancel"))
+                {
+                    Topmost = true
+                };
+
+                Choice response = await requestWindow.ShowDialog<Choice>(this);
+                if (response == Choice.Third)
+                {
+                    return;
+                }
+
+                _viewModel.MarkCollectionForRemoval(profile.SourceId, response == Choice.First);
+            }
+
             _viewModel.Profiles.Remove(profile);
         }
 
@@ -244,7 +274,24 @@ namespace Stardrop.Views
             }
 
             _viewModel.OldProfiles = currentProfileList.ToList();
+
+            _hasAppliedChanges = true;
             this.Close();
+        }
+
+        /// <summary>
+        /// Anything short of applying discards the changes. Handled here rather than on the cancel button so that
+        /// the exit button and the escape key behave the same way.
+        /// </summary>
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (_hasAppliedChanges is false && _viewModel is not null)
+            {
+                Program.helper.Log("Discarding unapplied profile editor changes");
+                _viewModel.RevertChanges();
+            }
+
+            base.OnClosing(e);
         }
 
         private void MainBar_DoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

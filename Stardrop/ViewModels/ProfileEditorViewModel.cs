@@ -1,4 +1,5 @@
 ﻿using Stardrop.Models;
+using Stardrop.Utilities.Internal;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,6 +19,12 @@ namespace Stardrop.ViewModels
 
         private readonly string _profileFilePath;
         private List<Mod> _mods;
+
+        // Deletion is deferred until the editor is applied, so the choice made at click time is held here until then
+        private readonly Dictionary<string, bool> _pendingCollectionRemovals = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Set when a collection was removed, so the caller knows the mod list needs rebuilding</summary>
+        public bool HasRemovedCollections { get; private set; }
 
         public ProfileEditorViewModel(string profilesFilePath, List<Mod> mods)
         {
@@ -79,8 +86,8 @@ namespace Stardrop.ViewModels
         }
 
         /// <summary>
-        /// Adds a profile to the list and saves it. CreateProfile only saves the profile, 
-        /// meaning it won't appear in the active list until restarting.
+        /// Adds a profile to the live list and writes it to disk. CreateProfile only does the latter, so anything
+        /// calling it alone stays invisible until Stardrop restarts and re-reads the profile folder.
         /// </summary>
         internal void AddProfile(Profile profile, bool force = false)
         {
@@ -110,16 +117,73 @@ namespace Stardrop.ViewModels
             File.WriteAllText(fileFullName, JsonSerializer.Serialize(profile, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
+        /// <summary>
+        /// Discards every unapplied change, restoring the list to the last applied state. Additions, deletions,
+        /// renames and copies are all held in memory until the editor is applied, so nothing on disk needs undoing.
+        /// </summary>
+        internal void RevertChanges()
+        {
+            Profiles.Clear();
+            foreach (var profile in OldProfiles)
+            {
+                Profiles.Add(profile);
+            }
+
+            // A confirmed collection removal that was never applied has to go too
+            _pendingCollectionRemovals.Clear();
+        }
+
+        /// <summary>
+        /// Records what should happen to a collection's downloaded mods when its profile is deleted. Called when the
+        /// user confirms, and acted on later when the editor is applied.
+        /// </summary>
+        internal void MarkCollectionForRemoval(string sourceId, bool deleteInstalledMods)
+        {
+            _pendingCollectionRemovals[sourceId] = deleteInstalledMods;
+        }
+
         internal void DeleteProfile(Profile profile)
         {
             string fileFullName = Path.Combine(_profileFilePath, profile.Name + ".json");
-            if (!File.Exists(fileFullName))
+            if (File.Exists(fileFullName) is false)
             {
                 Program.helper.Log($"Attempted to delete a non-existent profile file ({profile.Name}) at the path {fileFullName}", Utilities.Helper.Status.Warning);
+            }
+            else
+            {
+                File.Delete(fileFullName);
+            }
+
+            RemoveCollectionForProfile(profile);
+        }
+
+        /// <summary>
+        /// Removes the collection record behind a profile, and its downloaded mods where the user asked for that.
+        /// Mods the collection reused from elsewhere are never touched, as those belong to the user rather than to
+        /// the collection and live outside its folder.
+        /// </summary>
+        private void RemoveCollectionForProfile(Profile profile)
+        {
+            if (profile.IsFromCollection is false || String.IsNullOrEmpty(profile.SourceId))
+            {
                 return;
             }
 
-            File.Delete(fileFullName);
+            var deleteInstalledMods = _pendingCollectionRemovals.ContainsKey(profile.SourceId) && _pendingCollectionRemovals[profile.SourceId];
+            Program.helper.Log($"Removing the collection {profile.SourceId}{(deleteInstalledMods ? " along with its downloaded mods" : ", keeping its downloaded mods")}");
+
+            CollectionCache.Delete(profile.SourceId, deleteInstalledMods);
+            _pendingCollectionRemovals.Remove(profile.SourceId);
+
+            HasRemovedCollections = true;
+        }
+
+        /// <summary>
+        /// Clears the removal flag once the caller has rebuilt its mod list.
+        /// </summary>
+        public void ClearRemovedCollectionsFlag()
+        {
+            HasRemovedCollections = false;
         }
 
         internal void UpdateProfile(Profile profile, ObservableCollection<Mod> mods)

@@ -1037,6 +1037,14 @@ namespace Stardrop.Views
             editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             await editorWindow.ShowDialog(this);
 
+            // A removed collection takes its mod folder with it, so the grid has to be rebuilt before a profile is
+            // reapplied against a list that still contains mods which are no longer on disk
+            if (_editorView.HasRemovedCollections)
+            {
+                _viewModel.DiscoverMods(Pathing.defaultModPath);
+                _editorView.ClearRemovedCollectionsFlag();
+            }
+
             // Restore the previously selected profile
             if (_editorView.Profiles.Any(p => p.Name == oldProfile.Name))
             {
