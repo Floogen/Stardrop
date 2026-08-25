@@ -2392,7 +2392,13 @@ namespace Stardrop.Views
             }
         }
 
-        private async Task<List<Mod>> AddMods(string[]? filePaths, string? installPathOverride = null)
+        /// <summary>
+        /// Installs the mods contained in the given archives.
+        /// </summary>
+        /// <param name="filePaths">Archives to install from</param>
+        /// <param name="installPathOverride">Where to install to. Defaults to Settings.ModInstallPath</param>
+        /// <param name="installedModsByArchive">When supplied, is filled with the mods each archive produced. A single archive can hold several mods, so each entry is a list</param>
+        private async Task<List<Mod>> AddMods(string[]? filePaths, string? installPathOverride = null, IDictionary<string, List<Mod>>? installedModsByArchive = null)
         {
             Guid request = Guid.NewGuid();
 
@@ -2598,7 +2604,19 @@ namespace Stardrop.Views
                                     }
                                 }
 
-                                addedMods.Add(new Mod(manifest, new FileInfo(Path.Join(installPath, manifestFolderPath)), manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author));
+                                var addedMod = new Mod(manifest, new FileInfo(Path.Join(installPath, manifestFolderPath)), manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
+                                addedMods.Add(addedMod);
+
+                                // Record which archive produced this mod, so callers do not have to guess afterwards
+                                if (installedModsByArchive is not null)
+                                {
+                                    if (installedModsByArchive.ContainsKey(fileFullName) is false)
+                                    {
+                                        installedModsByArchive[fileFullName] = new List<Mod>();
+                                    }
+
+                                    installedModsByArchive[fileFullName].Add(addedMod);
+                                }
                             }
                             else
                             {

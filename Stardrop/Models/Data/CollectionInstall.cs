@@ -1,4 +1,4 @@
-using Stardrop.Models.Data.Enums;
+﻿using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus;
 using System;
 using System.Collections.Generic;
@@ -6,6 +6,12 @@ using System.Linq;
 
 namespace Stardrop.Models.Data
 {
+    /// <summary>
+    /// A single mod that a collection entry's archive placed on disk. An archive can hold several mods, so an entry
+    /// maps to zero or more of these.
+    /// </summary>
+    public record InstalledModRecord(string UniqueId, string? FolderName = null);
+
     /// <summary>
     /// A single mod pinned by a collection revision. The pin data lives here rather than on the generated profile,
     /// as a profile only tracks which mods are enabled and has nowhere to record a mod / file ID pair.
@@ -30,10 +36,11 @@ namespace Stardrop.Models.Data
         public string? FileExpression { get; set; }
         public string? LogicalFilename { get; set; }
 
-        /// <summary>Populated once the archive is installed and the manifest has been read</summary>
-        public string? UniqueId { get; set; }
+        /// <summary>The archive this entry was installed from, recorded so a repair can skip re-downloading</summary>
+        public string? SourceArchivePath { get; set; }
+        /// <summary>Everything this entry's archive placed on disk, taken from AddMods rather than matched by name</summary>
+        public List<InstalledModRecord> InstalledMods { get; set; } = new List<InstalledModRecord>();
         public CollectionModStatus Status { get; set; } = CollectionModStatus.Pending;
-        public string? InstalledFolderName { get; set; }
         public string? FailureReason { get; set; }
 
         public bool IsPinnedExactly()

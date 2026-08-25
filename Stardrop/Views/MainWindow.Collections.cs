@@ -161,7 +161,8 @@ namespace Stardrop.Views
             var installPath = Pathing.GetCollectionInstallPath(collection.SourceId);
             Directory.CreateDirectory(installPath);
 
-            var downloadedPaths = new List<string>();
+            // Keyed by archive path, so AddMods can hand each installed mod back to the entry that requested it
+            var entriesByArchive = new Dictionary<string, CollectionModEntry>(StringComparer.OrdinalIgnoreCase);
             var pendingMods = collection.Mods.Where(m => m.Status is CollectionModStatus.Pending).ToList();
             int currentIndex = 0;
             foreach (var entry in pendingMods)
@@ -175,12 +176,14 @@ namespace Stardrop.Views
                     continue;
                 }
 
-                downloadedPaths.Add(downloadedPath);
+                entry.SourceArchivePath = downloadedPath;
+                entriesByArchive[downloadedPath] = entry;
             }
 
-            if (downloadedPaths.Count > 0)
+            var installedModsByArchive = new Dictionary<string, List<Mod>>(StringComparer.OrdinalIgnoreCase);
+            if (entriesByArchive.Count > 0)
             {
-                await AddMods(downloadedPaths.ToArray(), installPath);
+                await AddMods(entriesByArchive.Keys.ToArray(), installPath, installedModsByArchive);
             }
 
             _viewModel.DiscoverMods(Pathing.defaultModPath);
@@ -188,7 +191,7 @@ namespace Stardrop.Views
             // The profile is built from what actually landed on disk rather than from what was requested, so a
             // partial install still produces a working profile
             var installedMods = _viewModel.Mods.Where(m => String.Equals(m.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
-            MatchInstalledMods(collection, installedMods);
+            RecordInstalledMods(entriesByArchive, installedModsByArchive, installedMods);
             CreateProfileForCollection(collection, installedMods);
             CollectionCache.Save(collection);
 
@@ -196,32 +199,31 @@ namespace Stardrop.Views
         }
 
         /// <summary>
-        /// Best-effort mapping of discovered mods back onto their collection entries. An archive's folder name has no
-        /// guaranteed relationship to the mod's name on Nexus, so entries that cannot be matched keep their pending
-        /// state rather than being wrongly marked installed.
+        /// Writes each archive's results back onto the entry that produced it. The unique IDs come straight from
+        /// AddMods, so nothing is matched by name here. Folder names are then filled in from the discovered mods,
+        /// which is an exact lookup now that the unique IDs are known.
         /// </summary>
-        private static void MatchInstalledMods(CollectionInstall collection, List<Mod> installedMods)
+        private static void RecordInstalledMods(Dictionary<string, CollectionModEntry> entriesByArchive, Dictionary<string, List<Mod>> installedModsByArchive, List<Mod> discoveredMods)
         {
-            var unmatchedMods = new List<Mod>(installedMods);
-            foreach (var entry in collection.Mods.Where(e => e.Status is CollectionModStatus.Downloading or CollectionModStatus.Pending))
+            foreach (var archivePath in entriesByArchive.Keys)
             {
-                var match = unmatchedMods.FirstOrDefault(m => m.Name.Equals(entry.Name, StringComparison.OrdinalIgnoreCase));
-                if (match is null)
-                {
-                    match = unmatchedMods.FirstOrDefault(m => m.Name.Contains(entry.Name, StringComparison.OrdinalIgnoreCase) || entry.Name.Contains(m.Name, StringComparison.OrdinalIgnoreCase));
-                }
-
-                if (match is null)
+                var entry = entriesByArchive[archivePath];
+                if (installedModsByArchive.TryGetValue(archivePath, out var producedMods) is false || producedMods.Count == 0)
                 {
                     entry.Status = CollectionModStatus.Failed;
-                    entry.FailureReason = Program.translation.Get("ui.message.collection_reason_not_found_after_install");
+                    entry.FailureReason = Program.translation.Get("ui.message.collection_reason_no_manifest");
                     continue;
                 }
 
-                entry.UniqueId = match.UniqueId;
-                entry.InstalledFolderName = match.ModFileInfo.Directory is null ? null : match.ModFileInfo.Directory.Name;
+                entry.InstalledMods.Clear();
+                foreach (var producedMod in producedMods)
+                {
+                    var discovered = discoveredMods.FirstOrDefault(m => m.UniqueId.Equals(producedMod.UniqueId, StringComparison.OrdinalIgnoreCase));
+                    var folderName = discovered is null || discovered.ModFileInfo.Directory is null ? null : discovered.ModFileInfo.Directory.Name;
+                    entry.InstalledMods.Add(new InstalledModRecord(producedMod.UniqueId, folderName));
+                }
+
                 entry.Status = CollectionModStatus.Installed;
-                unmatchedMods.Remove(match);
             }
         }
 
