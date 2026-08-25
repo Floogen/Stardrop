@@ -574,7 +574,8 @@ namespace Stardrop.Views
             var installedCount = collection.Mods.Count(m => m.Status is CollectionModStatus.Installed);
             var reusedCount = collection.GetReusedCount();
 
-            var summary = String.Format(Program.translation.Get("ui.message.collection_install_summary"), collection.Name, installedCount, collection.Mods.Count);
+            // Escaped, as the report is parsed for links further down and a mod name can hold the same characters
+            var summary = String.Format(Program.translation.Get("ui.message.collection_install_summary"), HyperlinkParser.Escape(collection.Name), installedCount, collection.Mods.Count);
 
             if (reusedCount > 0)
             {
@@ -584,22 +585,57 @@ namespace Stardrop.Views
             if (manualDownloads.Count > 0)
             {
                 summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_manual_downloads"), manualDownloads.Count);
-                summary += Environment.NewLine + String.Join(Environment.NewLine, manualDownloads.Select(m => $"  {m.Name}"));
+                foreach (var entry in manualDownloads)
+                {
+                    summary += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, GetEntryPageUri(collection, entry))}";
+                }
             }
 
             if (failures.Count > 0)
             {
                 summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_failures"), failures.Count);
-                summary += Environment.NewLine + String.Join(Environment.NewLine, failures.Select(m => $"  {m.Name}{(String.IsNullOrEmpty(m.FailureReason) ? String.Empty : $" ({m.FailureReason})")}"));
+                foreach (var entry in failures)
+                {
+                    var reason = String.IsNullOrEmpty(entry.FailureReason) ? String.Empty : $" ({HyperlinkParser.Escape(entry.FailureReason)})";
+                    summary += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, GetEntryPageUri(collection, entry))}{reason}";
+                }
             }
 
+            // Left as written, as the curator may have included links of their own
             if (String.IsNullOrEmpty(collection.InstallInstructions) is false)
             {
                 summary += Environment.NewLine + Environment.NewLine + Program.translation.Get("ui.message.collection_curator_notes");
                 summary += Environment.NewLine + collection.InstallInstructions;
             }
 
-            await CreateWarningWindow(summary, Program.translation.Get("internal.ok"), windowWidth: 560);
+            await CreateWarningWindow(summary, Program.translation.Get("internal.ok"), windowWidth: 560, enableHyperlinks: true);
+        }
+
+        /// <summary>
+        /// The page to send the user to for an entry they have to handle themselves, preferring the curator's own
+        /// link over one built from the Nexus IDs. Returns null when neither is available, which leaves the entry
+        /// as plain text in the report.
+        /// </summary>
+        private static string? GetEntryPageUri(CollectionInstall collection, CollectionModEntry entry)
+        {
+            if (String.IsNullOrEmpty(entry.ExternalUri) is false)
+            {
+                return entry.ExternalUri;
+            }
+
+            if (entry.NexusModId is null)
+            {
+                return null;
+            }
+
+            var domainName = String.IsNullOrEmpty(collection.DomainName) ? "stardewvalley" : collection.DomainName;
+            if (entry.NexusFileId is null)
+            {
+                return $"https://www.nexusmods.com/{domainName}/mods/{entry.NexusModId}";
+            }
+
+            // The collection pins a specific file, so the files tab saves the user hunting for it themselves
+            return $"https://www.nexusmods.com/{domainName}/mods/{entry.NexusModId}?tab=files&file_id={entry.NexusFileId}";
         }
     }
 }
