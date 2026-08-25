@@ -111,7 +111,7 @@ namespace Stardrop.Views
 
             try
             {
-                using (var archive = ArchiveFactory.Open(downloadResult.DownloadedModFilePath))
+                using (var archive = ArchiveFactory.OpenArchive(downloadResult.DownloadedModFilePath))
                 {
                     foreach (var entry in archive.Entries.Where(e => e.IsDirectory is false))
                     {
