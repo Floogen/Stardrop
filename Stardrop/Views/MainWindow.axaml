@@ -639,6 +639,7 @@
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.show_enabled_mods}" />
 			</ComboBox>
 			<CheckBox Name="showUpdatableMods" Content="{i18n:Translate ui.main_window.buttons.show_updatable_mods}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
+			<CheckBox Name="showAllModSources" Content="{i18n:Translate ui.main_window.buttons.show_all_mod_sources}" ToolTip.Tip="{i18n:Translate ui.main_window.tooltips.show_all_mod_sources}" IsVisible="{Binding HasCollectionMods}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
 		</DockPanel>
 		<Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 2 0 0">
 			<Grid>

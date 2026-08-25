@@ -195,6 +195,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("saveProfileChanges").Click += SaveProfileChanges_Click;
             this.FindControl<Button>("smapiButton").Click += Smapi_Click;
             this.FindControl<CheckBox>("showUpdatableMods").Click += ShowUpdatableModsButton_Click;
+            this.FindControl<CheckBox>("showAllModSources").Click += ShowAllModSourcesButton_Click;
             this.FindControl<Button>("nexusModsButton").Click += NexusModsButton_Click;
             this.FindControl<Button>("modGroupStateButton").Click += ModGroupStateButton;
 
@@ -841,6 +842,17 @@ namespace Stardrop.Views
             _viewModel.ShowUpdatableMods = (bool)showUpdatableModsCheckBox.IsChecked;
         }
 
+        private void ShowAllModSourcesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var showAllModSourcesCheckBox = e.Source as CheckBox;
+            if (showAllModSourcesCheckBox is null)
+            {
+                return;
+            }
+
+            _viewModel.ModSourceFilter = showAllModSourcesCheckBox.IsChecked is true ? ModSourceFilter.All : ModSourceFilter.ActiveProfile;
+        }
+
         private async void ProfileComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             var profile = (e.Source as ComboBox).SelectedItem as Profile;
@@ -869,8 +881,7 @@ namespace Stardrop.Views
             // Enable the mods for the selected profile
             _viewModel.EnableModsByProfile(profile);
 
-            // Update the EnabledModCount
-            _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
+            _viewModel.RefreshModCounts();
 
             Program.settings.ShouldWriteToModConfigs = true;
         }
@@ -2289,8 +2300,7 @@ namespace Stardrop.Views
             // Update the profile's enabled mods
             _editorView.UpdateProfile(profile, _viewModel.Mods);
 
-            // Update the EnabledModCount
-            _viewModel.EnabledModCount = _viewModel.Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
+            _viewModel.RefreshModCounts();
         }
 
         private async Task<string?> InstallModViaNexus(Mod mod)

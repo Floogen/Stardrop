@@ -301,5 +301,7 @@
   "ui.message.collection_reason_download_failed": "download failed",
   "ui.message.collection_reason_missing_bundle": "bundled file not found in the archive",
   "ui.message.collection_reason_no_manifest": "the downloaded archive contained no mod manifest",
-  "ui.message.collection_reused": "{0} mod(s) were already installed and will be used as-is."
+  "ui.message.collection_reused": "{0} mod(s) were already installed and will be used as-is.",
+  "ui.main_window.buttons.show_all_mod_sources": "Show All Sources",
+  "ui.main_window.tooltips.show_all_mod_sources": "Show mods belonging to collections you are not currently using."
 }

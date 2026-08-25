@@ -55,6 +55,13 @@ namespace Stardrop.ViewModels
 
         private bool _showUpdatableMods;
         public bool ShowUpdatableMods { get { return _showUpdatableMods; } set { _showUpdatableMods = value; UpdateFilter(); } }
+        private ModSourceFilter _modSourceFilter = ModSourceFilter.ActiveProfile;
+        public ModSourceFilter ModSourceFilter { get { return _modSourceFilter; } set { _modSourceFilter = value; UpdateFilter(); RefreshModCounts(); } }
+        private bool _hasCollectionMods;
+        /// <summary>Whether any installed mod belongs to a collection. Drives the visibility of the source filter, which is noise for users with no collections</summary>
+        public bool HasCollectionMods { get { return _hasCollectionMods; } set { this.RaiseAndSetIfChanged(ref _hasCollectionMods, value); } }
+        private Profile? _activeProfile;
+        private HashSet<ModReference> _activeProfileReferences = new HashSet<ModReference>();
         private bool _showEndorsements;
         public bool ShowEndorsements { get { return _showEndorsements; } set { this.RaiseAndSetIfChanged(ref _showEndorsements, value); } }
         private bool _showInstalls;
@@ -528,7 +535,8 @@ namespace Stardrop.ViewModels
             DiscoverConfigs(modsFilePath, useArchive: true);
             HideRequiredMods();
 
-            ActualModCount = Mods.Count(m => !m.IsHidden);
+            HasCollectionMods = Mods.Any(m => m.IsFromCollection);
+            RefreshModCounts();
         }
 
         public void HideRequiredMods()
@@ -540,8 +548,7 @@ namespace Stardrop.ViewModels
                 mod.IsEnabled = true;
             }
 
-            // Update the EnabledModCount
-            EnabledModCount = Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
+            RefreshModCounts();
 
             // Update data grid grouping
             UpdateDataGridGrouping();
@@ -835,6 +842,10 @@ namespace Stardrop.ViewModels
 
         public void EnableModsByProfile(Profile profile)
         {
+            // Cached so the source filter does not walk the reference list once per grid row
+            _activeProfile = profile;
+            _activeProfileReferences = new HashSet<ModReference>(profile.EnabledModIds);
+
             foreach (var mod in Mods)
             {
                 mod.IsEnabled = false;
@@ -852,8 +863,38 @@ namespace Stardrop.ViewModels
             }
             HideRequiredMods();
 
-            // Update the EnabledModCount
-            EnabledModCount = Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
+            RefreshModCounts();
+            UpdateFilter();
+        }
+
+        /// <summary>
+        /// Whether a mod belongs to what the user is currently looking at. A collection profile shows the mods it
+        /// references, including any it reuses from outside its own folder, while a plain profile shows everything
+        /// no collection owns.
+        /// </summary>
+        private bool PassesSourceFilter(Mod mod)
+        {
+            if (_modSourceFilter is ModSourceFilter.All)
+            {
+                return true;
+            }
+
+            if (_activeProfile is not null && _activeProfile.IsFromCollection)
+            {
+                return _activeProfileReferences.Contains(mod.ToReference());
+            }
+
+            return mod.IsFromCollection is false;
+        }
+
+        /// <summary>
+        /// Recalculates the footer counts. These follow the source filter, otherwise the totals disagree with what
+        /// the grid is showing.
+        /// </summary>
+        public void RefreshModCounts()
+        {
+            EnabledModCount = Mods.Count(m => m.IsEnabled && m.IsHidden is false && PassesSourceFilter(m));
+            ActualModCount = Mods.Count(m => m.IsHidden is false && PassesSourceFilter(m));
         }
 
         public void ForceModState(Profile profile, List<Mod> mods, bool modEnableState = false)
@@ -867,8 +908,7 @@ namespace Stardrop.ViewModels
                 mod.IsEnabled = modEnableState;
             }
 
-            // Update the EnabledModCount
-            EnabledModCount = Mods.Where(m => m.IsEnabled && !m.IsHidden).Count();
+            RefreshModCounts();
         }
 
         internal void UpdateDataGridGrouping()
@@ -928,6 +968,11 @@ namespace Stardrop.ViewModels
             }
 
             if (mod.IsHidden)
+            {
+                return false;
+            }
+
+            if (PassesSourceFilter(mod) is false)
             {
                 return false;
             }
