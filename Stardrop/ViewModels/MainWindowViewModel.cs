@@ -547,6 +547,29 @@ namespace Stardrop.ViewModels
             UpdateDataGridGrouping();
         }
 
+        /// <summary>
+        /// Finds the copy of a dependency that will actually be loaded alongside the given mod. With collections in
+        /// play the same unique ID can exist several times, so a mod's dependency has to resolve within its own
+        /// source first. Falling back to any copy would mark a requirement satisfied by a mod that is not enabled.
+        /// </summary>
+        private Mod? ResolveRequirement(Mod dependent, string requirementUniqueId)
+        {
+            var sameSourceMatch = Mods.FirstOrDefault(m => m.UniqueId.Equals(requirementUniqueId, StringComparison.OrdinalIgnoreCase) && String.Equals(m.SourceId, dependent.SourceId, StringComparison.OrdinalIgnoreCase));
+            if (sameSourceMatch is not null)
+            {
+                return sameSourceMatch;
+            }
+
+            // A collection mod can legitimately depend on something the user already had loose, so loose installs
+            // are a valid fallback. The reverse is not true, as a loose mod is never enabled by a collection profile
+            if (dependent.IsFromCollection)
+            {
+                return Mods.FirstOrDefault(m => m.UniqueId.Equals(requirementUniqueId, StringComparison.OrdinalIgnoreCase) && m.IsFromCollection is false);
+            }
+
+            return null;
+        }
+
         public void EvaluateRequirements()
         {
             // Get cached key data
@@ -563,7 +586,8 @@ namespace Stardrop.ViewModels
                 {
                     foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
                     {
-                        if (!Mods.Any(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase)) || Mods.First(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod matchedMod && matchedMod.IsModOutdated(requirement.MinimumVersion))
+                        var matchedMod = ResolveRequirement(mod, requirement.UniqueID);
+                        if (matchedMod is null || matchedMod.IsModOutdated(requirement.MinimumVersion))
                         {
                             requirement.IsMissing = true;
 
@@ -572,6 +596,12 @@ namespace Stardrop.ViewModels
                                 var dependencyKey = modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase));
                                 requirement.Name = dependencyKey is null ? requirement.UniqueID : dependencyKey.Name;
                             }
+                        }
+                        else
+                        {
+                            // Clear the flag, otherwise a requirement stays missing after it has been satisfied on
+                            // any pass that does not rebuild the mod list first
+                            requirement.IsMissing = false;
                         }
                     }
 

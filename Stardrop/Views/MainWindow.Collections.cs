@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Semver;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using Stardrop.Models;
@@ -161,6 +162,10 @@ namespace Stardrop.Views
             var installPath = Pathing.GetCollectionInstallPath(collection.SourceId);
             Directory.CreateDirectory(installPath);
 
+            // Anything the user already has is reused rather than downloaded again. The launch-time junction pulls
+            // mods in from wherever they live, so a collection profile can point outside its own folder
+            ReuseInstalledMods(collection);
+
             // Keyed by archive path, so AddMods can hand each installed mod back to the entry that requested it
             var entriesByArchive = new Dictionary<string, CollectionModEntry>(StringComparer.OrdinalIgnoreCase);
             var pendingMods = collection.Mods.Where(m => m.Status is CollectionModStatus.Pending).ToList();
@@ -192,10 +197,68 @@ namespace Stardrop.Views
             // partial install still produces a working profile
             var installedMods = _viewModel.Mods.Where(m => String.Equals(m.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
             RecordInstalledMods(entriesByArchive, installedModsByArchive, installedMods);
-            CreateProfileForCollection(collection, installedMods);
+            CreateProfileForCollection(collection);
             CollectionCache.Save(collection);
 
             await ReportCollectionResult(collection);
+        }
+
+        /// <summary>
+        /// Marks entries the user already satisfies, so they are never downloaded. Matching goes through the Nexus
+        /// mod ID taken from a mod's update keys, which is exact, rather than through display names.
+        /// </summary>
+        private void ReuseInstalledMods(CollectionInstall collection)
+        {
+            var candidates = _viewModel.Mods.Where(m => m.IsFromCollection is false && m.NexusModId is not null).ToList();
+            foreach (var entry in collection.Mods.Where(e => e.Status is CollectionModStatus.Pending or CollectionModStatus.AwaitingManualDownload))
+            {
+                if (entry.IsFromNexus() is false)
+                {
+                    continue;
+                }
+
+                var match = candidates.FirstOrDefault(m => m.NexusModId == entry.NexusModId && SatisfiesPin(m, entry));
+                if (match is null)
+                {
+                    continue;
+                }
+
+                Program.helper.Log($"Reusing the already installed {match.Name} ({match.ParsedVersion}) for the collection entry {entry.Name}");
+
+                entry.SatisfiedBy = match.ToReference();
+                entry.SatisfiedByVersion = match.ParsedVersion;
+                entry.Status = CollectionModStatus.SatisfiedExternally;
+            }
+        }
+
+        /// <summary>
+        /// Whether an installed mod meets a collection entry's pin. An exact pin needs the versions to agree, while
+        /// prefer and latest accept anything at or above the pinned version.
+        /// </summary>
+        private static bool SatisfiesPin(Mod mod, CollectionModEntry entry)
+        {
+            if (mod.HasValidVersion() is false)
+            {
+                return false;
+            }
+
+            // Without a pinned version there is nothing to compare, so any installed copy will do
+            if (String.IsNullOrEmpty(entry.Version))
+            {
+                return true;
+            }
+
+            if (SemVersion.TryParse(entry.Version.Replace("v", String.Empty), SemVersionStyles.Any, out var pinnedVersion) is false)
+            {
+                return false;
+            }
+
+            if (entry.IsPinnedExactly())
+            {
+                return mod.Version.CompareSortOrderTo(pinnedVersion) == 0;
+            }
+
+            return mod.Version.CompareSortOrderTo(pinnedVersion) >= 0;
         }
 
         /// <summary>
@@ -313,9 +376,9 @@ namespace Stardrop.Views
         /// Generates the profile that represents this collection. The profile is protected, as editing it directly
         /// would drift it away from the curator's pins. Users wanting changes clone it into a plain profile.
         /// </summary>
-        private void CreateProfileForCollection(CollectionInstall collection, List<Mod> installedMods)
+        private void CreateProfileForCollection(CollectionInstall collection)
         {
-            var enabledMods = installedMods.Select(m => m.ToReference()).ToList();
+            var enabledMods = collection.GetEnabledModReferences();
 
             var profileName = GetAvailableProfileName(collection);
             collection.ProfileName = profileName;
@@ -348,8 +411,14 @@ namespace Stardrop.Views
             var manualDownloads = collection.GetManualDownloads();
             var failures = collection.GetFailures();
             var installedCount = collection.Mods.Count(m => m.Status is CollectionModStatus.Installed);
+            var reusedCount = collection.GetReusedCount();
 
             var summary = String.Format(Program.translation.Get("ui.message.collection_install_summary"), collection.Name, installedCount, collection.Mods.Count);
+
+            if (reusedCount > 0)
+            {
+                summary += Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_reused"), reusedCount);
+            }
 
             if (manualDownloads.Count > 0)
             {
