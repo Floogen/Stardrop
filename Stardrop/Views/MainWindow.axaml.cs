@@ -420,7 +420,7 @@ namespace Stardrop.Views
         /// Opens a warning window. Pass a wider windowWidth for messages carrying lists rather than a single line,
         /// which also switches the text to left aligned.
         /// </summary>
-        private async Task CreateWarningWindow(string warningText, string buttonText, double windowWidth = WarningWindowViewModel.DefaultWidth)
+        private async Task CreateWarningWindow(string warningText, string buttonText, double? windowWidth = null)
         {
             var warningWindow = new WarningWindow(warningText, buttonText, windowWidth);
             await warningWindow.ShowDialog(this);

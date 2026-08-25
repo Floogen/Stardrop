@@ -35,28 +35,17 @@ namespace Stardrop.Views
 #endif
         }
 
-        public WarningWindow(string warningText, string buttonText) : this()
+        public WarningWindow(string warningText, string buttonText, double? windowWidth = null) : this()
         {
             Program.helper.Log($"Created a warning window with the following text: [{buttonText}] {warningText}");
 
             _viewModel.WarningText = warningText;
             _viewModel.ButtonText = buttonText;
             _viewModel.IsButtonVisible = true;
-        }
 
-        /// <summary>
-        /// For messages that carry more than a line or two, such as the collection install summary. Passing a width
-        /// above the standard one also left aligns the text, as centring turns a list into a ragged column. The
-        /// message scrolls once it outgrows the window.
-        /// </summary>
-        public WarningWindow(string warningText, string buttonText, double windowWidth, bool? alignTextLeft = null) : this(warningText, buttonText)
-        {
-            _viewModel.WindowWidth = windowWidth;
-
-            if (alignTextLeft ?? windowWidth > WarningWindowViewModel.DefaultWidth)
+            if (windowWidth is not null)
             {
-                _viewModel.MessageTextAlignment = TextAlignment.Left;
-                _viewModel.MessageHorizontalAlignment = HorizontalAlignment.Left;
+                _viewModel.WindowWidth = windowWidth.Value;
             }
         }
 

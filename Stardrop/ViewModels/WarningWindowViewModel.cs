@@ -18,15 +18,10 @@ namespace Stardrop.ViewModels
         public bool IsProgressBarVisible { get { return _isProgressBarVisible; } set { this.RaiseAndSetIfChanged(ref _isProgressBarVisible, value); } }
         private double _progressBarValue;
         public double ProgressBarValue { get { return _progressBarValue; } set { this.RaiseAndSetIfChanged(ref _progressBarValue, value); } }
-        /// <summary>The standard width. Anything wider is assumed to be carrying a list rather than a single line</summary>
-        public const double DefaultWidth = 300;
 
-        private double _windowWidth = DefaultWidth;
+        private double _windowWidth = 300;
         public double WindowWidth { get { return _windowWidth; } set { this.RaiseAndSetIfChanged(ref _windowWidth, value); } }
-        /// <summary>
-        /// Centred suits a one line warning. Anything carrying a list, such as the collection install summary, is
-        /// far easier to read left aligned.
-        /// </summary>
+
         private TextAlignment _messageTextAlignment = TextAlignment.Center;
         public TextAlignment MessageTextAlignment { get { return _messageTextAlignment; } set { this.RaiseAndSetIfChanged(ref _messageTextAlignment, value); } }
         private HorizontalAlignment _messageHorizontalAlignment = HorizontalAlignment.Center;
