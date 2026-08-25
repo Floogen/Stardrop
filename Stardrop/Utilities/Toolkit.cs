@@ -53,6 +53,39 @@ namespace Stardrop.Utilities
             }
         }
 
+        /// <summary>
+        /// Confirms a value is an http or https address before it is opened. Addresses that come from a collection
+        /// are authored by a third party, and <see cref="OpenBrowser"/> hands the value to the shell on Windows.
+        /// </summary>
+        public static bool TryGetWebAddress(string? url, out string webAddress)
+        {
+            webAddress = String.Empty;
+            if (String.IsNullOrWhiteSpace(url))
+            {
+                return false;
+            }
+
+            // Addresses are frequently written without a scheme, which Uri would otherwise reject
+            var candidate = url.Trim();
+            if (candidate.StartsWith("www.", StringComparison.OrdinalIgnoreCase))
+            {
+                candidate = $"https://{candidate}";
+            }
+
+            if (Uri.TryCreate(candidate, UriKind.Absolute, out var uri) is false)
+            {
+                return false;
+            }
+
+            if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+            {
+                return false;
+            }
+
+            webAddress = uri.AbsoluteUri;
+            return true;
+        }
+
         public static bool IsFromSite(string url, string expectedHostname)
         {
             if (Uri.TryCreate(url, UriKind.Absolute, out var uri) is false)

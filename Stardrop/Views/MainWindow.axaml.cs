@@ -418,11 +418,12 @@ namespace Stardrop.Views
 
         /// <summary>
         /// Opens a warning window. Pass a wider windowWidth for messages carrying lists rather than a single line,
-        /// which also switches the text to left aligned.
+        /// which also switches the text to left aligned. Pass enableHyperlinks for messages that may hold web
+        /// addresses, such as anything sourced from a collection's curator.
         /// </summary>
-        private async Task CreateWarningWindow(string warningText, string buttonText, double? windowWidth = null)
+        private async Task CreateWarningWindow(string warningText, string buttonText, double? windowWidth = null, bool enableHyperlinks = false)
         {
-            var warningWindow = new WarningWindow(warningText, buttonText, windowWidth);
+            var warningWindow = new WarningWindow(warningText, buttonText, windowWidth, enableHyperlinks);
             await warningWindow.ShowDialog(this);
         }
 

@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Stardrop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -25,12 +25,34 @@
 		<Style Selector="ProgressBar /template/ TextBlock">
 			<Setter Property="FontWeight" Value="ExtraBold"/>
 		</Style>
+		<!--Links sit inline with the message text, so the button chrome is stripped back down to plain text-->
+		<Style Selector="Button.hyperlink">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="MinWidth" Value="0"/>
+			<Setter Property="MinHeight" Value="0"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Foreground" Value="{DynamicResource HighlightBrush}"/>
+		</Style>
+		<Style Selector="Button.hyperlink /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+		<Style Selector="Button.hyperlink:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
+		</Style>
+		<Style Selector="Button.hyperlink:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
+		</Style>
 	</Window.Styles>
-	
+
 	<Window.Resources>
 		<StaticResource x:Key="SystemControlForegroundBaseHighBrush" ResourceKey="ThemeForegroundHighBrush"/>
 	</Window.Resources>
-	
+
 	<Border BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="1">
 		<Grid>
 			<Grid.RowDefinitions>
@@ -47,7 +69,36 @@
 
 			<StackPanel Grid.Column="1">
 				<ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0 35 0 20">
-					<TextBlock Text="{Binding WarningText}" TextWrapping="Wrap" Foreground="{DynamicResource ThemeForegroundBrush}" HorizontalAlignment="{Binding MessageHorizontalAlignment}" TextAlignment="{Binding MessageTextAlignment}"/>
+					<Panel>
+						<TextBlock IsVisible="{Binding !IsRichTextVisible}" Text="{Binding WarningText}" TextWrapping="Wrap" Foreground="{DynamicResource ThemeForegroundBrush}" HorizontalAlignment="{Binding MessageHorizontalAlignment}" TextAlignment="{Binding MessageTextAlignment}"/>
+						<!--The segment based display, used when the message may contain links. Avalonia 0.10 has no inline runs, so each line is laid out as its own wrapping panel of words-->
+						<ItemsControl IsVisible="{Binding IsRichTextVisible}" Items="{Binding WarningLines}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Grid ColumnDefinitions="Auto,*">
+										<Border Grid.Column="0" Width="{Binding IndentWidth}"/>
+										<ItemsControl Grid.Column="1" Items="{Binding Segments}">
+											<ItemsControl.ItemsPanel>
+												<ItemsPanelTemplate>
+													<WrapPanel Orientation="Horizontal"/>
+												</ItemsPanelTemplate>
+											</ItemsControl.ItemsPanel>
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<Panel>
+														<TextBlock IsVisible="{Binding !IsLink}" Text="{Binding Text}" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+														<Button IsVisible="{Binding IsLink}" Classes="hyperlink" ToolTip.Tip="{Binding Uri}" Command="{Binding $parent[Window].DataContext.OpenLink}" CommandParameter="{Binding Uri}">
+															<TextBlock Text="{Binding Text}" TextWrapping="Wrap" TextDecorations="Underline" MaxWidth="{Binding $parent[Window].DataContext.LinkMaxWidth}"/>
+														</Button>
+													</Panel>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</Grid>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</Panel>
 				</ScrollViewer>
 				<ProgressBar Grid.Row="1" IsVisible="{Binding IsProgressBarVisible}" Margin="0 10" Height="20"
 							  Minimum="0" Value="{Binding ProgressBarValue}"

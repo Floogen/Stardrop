@@ -35,7 +35,11 @@ namespace Stardrop.Views
 #endif
         }
 
-        public WarningWindow(string warningText, string buttonText, double? windowWidth = null) : this()
+        /// <summary>
+        /// Enable hyperlinks for messages that may carry web addresses, such as a collection's install report. The
+        /// message is then laid out as words rather than as a single block of text, which also left aligns it.
+        /// </summary>
+        public WarningWindow(string warningText, string buttonText, double? windowWidth = null, bool enableHyperlinks = false) : this()
         {
             Program.helper.Log($"Created a warning window with the following text: [{buttonText}] {warningText}");
 
@@ -46,6 +50,11 @@ namespace Stardrop.Views
             if (windowWidth is not null)
             {
                 _viewModel.WindowWidth = windowWidth.Value;
+            }
+
+            if (enableHyperlinks)
+            {
+                _viewModel.EnableHyperlinks();
             }
         }
 
