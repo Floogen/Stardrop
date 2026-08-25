@@ -9,7 +9,6 @@
         Title="Warning"
         MinWidth="300"
         MinHeight="150"
-        MaxHeight="600"
         Width="{Binding WindowWidth}"
         Height="150"
         Background="{DynamicResource ThemeBackgroundBrush}"
