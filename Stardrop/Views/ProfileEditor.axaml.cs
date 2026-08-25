@@ -224,7 +224,7 @@ namespace Stardrop.Views
                 var collection = CollectionCache.Load(profile.SourceId);
                 var modCount = collection is null ? 0 : collection.Mods.Count(m => m.Status is CollectionModStatus.Installed);
 
-                var requestWindow = new FlexibleOptionWindow(String.Format(Program.translation.Get("ui.message.confirm_collection_delete"), profile.Name, modCount), Program.translation.Get("ui.message.collection_delete_with_mods"), Program.translation.Get("ui.message.collection_delete_keep_mods"), Program.translation.Get("internal.cancel"))
+                var requestWindow = new FlexibleOptionWindow(String.Format(Program.translation.Get("ui.message.confirm_collection_delete"), profile.Name, modCount), Program.translation.Get("ui.message.collection_delete_with_mods"), Program.translation.Get("ui.message.collection_delete_keep_mods"), Program.translation.Get("internal.cancel"), windowWidth: 420)
                 {
                     Topmost = true
                 };
