@@ -38,7 +38,7 @@ namespace Stardrop.Models.Data
         /// <summary>Download size from collection.json, used to drive the aggregate progress bar</summary>
         public long? SizeBytes { get; set; }
 
-        /// <summary>The archive this entry was installed from, recorded so a repair can skip re-downloading</summary>
+        /// <summary>Name of the archive this entry was installed from. The archive itself is removed after installing, so this is a record rather than something to reuse</summary>
         public string? SourceArchivePath { get; set; }
         /// <summary>
         /// Set when the entry was satisfied by a mod the user already had. Holds that mod's reference so the profile

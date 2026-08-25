@@ -137,6 +137,12 @@ namespace Stardrop.Views
                 await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
                 return (null, String.Empty);
             }
+            finally
+            {
+                // The archive has served its purpose once extracted, and downloads use FileMode.CreateNew, so
+                // leaving it here would make a second attempt at the same collection fail outright
+                TryDelete(downloadResult.DownloadedModFilePath);
+            }
 
             var indexPath = Path.Combine(targetFolder, "collection.json");
             if (File.Exists(indexPath) is false)
@@ -238,6 +244,14 @@ namespace Stardrop.Views
                 }
             }
 
+            // A cancelled install leaves nothing behind. Installing a partial collection would produce a profile that
+            // silently does not match what the curator specified, which is worse than having nothing to show for it
+            if (cancellationSource.IsCancellationRequested)
+            {
+                await AbandonCollectionInstall(collection, entriesByArchive.Keys.ToList(), installPath, extractedArchivePath);
+                return;
+            }
+
             // AddMods waits for the window to unlock before it starts, then locks it again itself, so the download
             // lock has to be released first or the install never begins
             SetLockState(false);
@@ -246,7 +260,17 @@ namespace Stardrop.Views
             if (entriesByArchive.Count > 0)
             {
                 await AddMods(entriesByArchive.Keys.ToArray(), installPath, installedModsByArchive);
+
+                // Same reasoning as the collection archive: AddMods has extracted what it needs, and leaving dozens
+                // of archives behind would make reinstalling this collection fail on the first repeated filename
+                foreach (var archivePath in entriesByArchive.Keys)
+                {
+                    TryDelete(archivePath);
+                }
             }
+
+            // Bundled entries point at files inside the extracted archive, so this can only go once installing is done
+            TryDeleteDirectory(extractedArchivePath);
 
             _viewModel.DiscoverMods(Pathing.defaultModPath);
 
@@ -257,7 +281,65 @@ namespace Stardrop.Views
             CreateProfileForCollection(collection);
             CollectionCache.Save(collection);
 
-            await ReportCollectionResult(collection, cancellationSource.IsCancellationRequested);
+            await ReportCollectionResult(collection);
+        }
+
+        /// <summary>
+        /// Undoes a cancelled install. Nothing was written to the mod folder yet, as installing only happens after
+        /// the download loop, so this comes down to clearing the archives that had already been fetched.
+        /// </summary>
+        private async Task AbandonCollectionInstall(CollectionInstall collection, List<string> downloadedArchives, string installPath, string extractedArchivePath)
+        {
+            Program.helper.Log($"Discarding the cancelled install of the collection {collection.Name}, removing {downloadedArchives.Count} downloaded archive(s)");
+
+            foreach (var archivePath in downloadedArchives)
+            {
+                TryDelete(archivePath);
+            }
+
+            // The collection's own archive and the folder it was extracted into
+            TryDeleteDirectory(extractedArchivePath);
+
+            // Created before the loop, so it exists even when nothing was ever placed in it. Skipped when a record
+            // already exists, as that means an earlier install of this revision owns the folder and its contents
+            if (CollectionCache.Load(collection.SourceId) is null)
+            {
+                TryDeleteDirectory(installPath);
+            }
+
+            SetLockState(false);
+
+            await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.collection_install_cancelled"), collection.Name), Program.translation.Get("internal.ok"));
+        }
+
+        private static void TryDelete(string filePath)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to delete the file {filePath} while discarding a cancelled collection install: {ex.Message}", Helper.Status.Warning);
+            }
+        }
+
+        private static void TryDeleteDirectory(string directoryPath)
+        {
+            try
+            {
+                if (String.IsNullOrEmpty(directoryPath) is false && Directory.Exists(directoryPath))
+                {
+                    Directory.Delete(directoryPath, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to delete the folder {directoryPath} while discarding a cancelled collection install: {ex.Message}", Helper.Status.Warning);
+            }
         }
 
         /// <summary>
@@ -409,9 +491,7 @@ namespace Stardrop.Views
             var downloadResult = await Nexus.Client.DownloadFileAndGetPath(downloadLink, modFile.Name);
             if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
             {
-                // A collection-wide cancel leaves the entry resumable, whereas cancelling this one file from the
-                // download panel means the user deliberately opted out of it
-                entry.Status = cancellationToken.IsCancellationRequested ? CollectionModStatus.Pending : CollectionModStatus.Skipped;
+                entry.Status = CollectionModStatus.Skipped;
                 return null;
             }
 
@@ -487,24 +567,14 @@ namespace Stardrop.Views
         /// One summary at the end, rather than a dialog per mod. A large collection can easily have a dozen entries
         /// Stardrop cannot fetch itself, and a dozen modals is not a usable experience.
         /// </summary>
-        private async Task ReportCollectionResult(CollectionInstall collection, bool wasCancelled = false)
+        private async Task ReportCollectionResult(CollectionInstall collection)
         {
             var manualDownloads = collection.GetManualDownloads();
             var failures = collection.GetFailures();
             var installedCount = collection.Mods.Count(m => m.Status is CollectionModStatus.Installed);
             var reusedCount = collection.GetReusedCount();
 
-            var summary = String.Format(Program.translation.Get(wasCancelled ? "ui.message.collection_install_cancelled" : "ui.message.collection_install_summary"), collection.Name, installedCount, collection.Mods.Count);
-
-            if (wasCancelled)
-            {
-                // The record keeps its per-entry status, so what was skipped is still known for a later resume
-                var remaining = collection.Mods.Count(m => m.Status is CollectionModStatus.Pending);
-                if (remaining > 0)
-                {
-                    summary += Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_remaining"), remaining);
-                }
-            }
+            var summary = String.Format(Program.translation.Get("ui.message.collection_install_summary"), collection.Name, installedCount, collection.Mods.Count);
 
             if (reusedCount > 0)
             {
