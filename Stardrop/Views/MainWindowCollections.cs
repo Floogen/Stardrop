@@ -384,7 +384,7 @@ namespace Stardrop.Views
             collection.ProfileName = profileName;
 
             var profile = new Profile(profileName, isProtected: true, enabledMods: enabledMods, sourceId: collection.SourceId);
-            _editorView.CreateProfile(profile);
+            _editorView.AddProfile(profile);
         }
 
         private string GetAvailableProfileName(CollectionInstall collection)

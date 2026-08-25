@@ -78,6 +78,26 @@ namespace Stardrop.ViewModels
             }
         }
 
+        /// <summary>
+        /// Adds a profile to the list and saves it. CreateProfile only saves the profile, 
+        /// meaning it won't appear in the active list until restarting.
+        /// </summary>
+        internal void AddProfile(Profile profile, bool force = false)
+        {
+            if (Profiles.Any(p => p.Name.Equals(profile.Name, StringComparison.OrdinalIgnoreCase)) is false)
+            {
+                Profiles.Add(profile);
+            }
+
+            // Kept in step so the profile editor does not later treat this as an unsaved addition
+            if (OldProfiles.Any(p => p.Name.Equals(profile.Name, StringComparison.OrdinalIgnoreCase)) is false)
+            {
+                OldProfiles.Add(profile);
+            }
+
+            CreateProfile(profile, force);
+        }
+
         internal void CreateProfile(Profile profile, bool force = false)
         {
             string fileFullName = Path.Combine(_profileFilePath, profile.Name + ".json");
