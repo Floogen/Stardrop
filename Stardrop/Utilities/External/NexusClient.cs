@@ -99,10 +99,15 @@ namespace Stardrop.Utilities.External
         }
     }
 
-    public class NexusClient
+    public partial class NexusClient
     {
         private static readonly Uri _graphQLBaseUrl = new Uri("https://api.nexusmods.com/v2/graphql");
-        private const string _nxmPattern = @"nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>.*)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)";
+        internal const string NxmModPattern = @"nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>.*)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)";
+        internal const string NxmCollectionPattern = @"nxm:\/\/(?<domain>[a-z0-9]+)\/collections\/(?<slug>[a-z0-9]+)\/revisions\/(?<revision>[0-9]+)";
+        private const string _nxmPattern = NxmModPattern;
+
+        /// <summary>Nexus mod ID for SMAPI, which collections list as a mod but which Stardrop must never install into the mod folder</summary>
+        internal const int SmapiNexusModId = 2400;
 
         private readonly HttpClient _client;
         private NexusUser _settings = null!;
@@ -233,7 +238,7 @@ namespace Stardrop.Utilities.External
             return null;
         }
 
-        public async Task<ModFile?> GetFileByVersion(int modId, string version, string? modFlag = null)
+        public async Task<ModFile?> GetFileByVersion(int modId, string version, string? modFlag = null, bool ignoreCategory = false)
         {
             if (SemVersion.TryParse(version.Replace("v", String.Empty), SemVersionStyles.Any, out var targetVersion) is false)
             {
@@ -265,7 +270,7 @@ namespace Stardrop.Utilities.External
                             {
                                 selectedFile = file;
                             }
-                            else if (String.IsNullOrEmpty(modFlag) is true && String.IsNullOrEmpty(file.Category) is false && file.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase))
+                            else if (String.IsNullOrEmpty(modFlag) is true && String.IsNullOrEmpty(file.Category) is false && (ignoreCategory || file.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase)))
                             {
                                 selectedFile = file;
                             }

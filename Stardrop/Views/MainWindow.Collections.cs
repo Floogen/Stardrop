@@ -1,0 +1,373 @@
+﻿using Avalonia.Controls;
+using SharpCompress.Archives;
+using SharpCompress.Common;
+using Stardrop.Models;
+using Stardrop.Models.Data;
+using Stardrop.Models.Data.Enums;
+using Stardrop.Models.Nexus;
+using Stardrop.Models.Nexus.Web;
+using Stardrop.Utilities;
+using Stardrop.Utilities.External;
+using Stardrop.Utilities.Internal;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+namespace Stardrop.Views
+{
+    public partial class MainWindow : Window
+    {
+        /// <summary>
+        /// Handles an nxm collection link end to end: resolve the revision, pull the archive, read collection.json,
+        /// install what can be installed and generate a profile for the result.
+        /// </summary>
+        private async Task<bool> ProcessCollectionLink(NXM nxmLink)
+        {
+            if (Nexus.Client is null || String.IsNullOrEmpty(nxmLink.Link))
+            {
+                await CreateWarningWindow(Program.translation.Get("ui.message.require_nexus_login"), Program.translation.Get("internal.ok"));
+                return false;
+            }
+
+            if (NexusClient.TryParseCollectionNxmLink(nxmLink.Link, out var domainName, out var slug, out var revisionNumber) is false)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_get"), nxmLink.Link), Program.translation.Get("internal.ok"));
+                return false;
+            }
+
+            Program.helper.Log($"Processing NXM link as a collection: {slug} revision {revisionNumber}");
+
+            var revision = await Nexus.Client.GetCollectionRevision(slug, revisionNumber, domainName);
+            if (revision is null || String.IsNullOrEmpty(revision.DownloadLink))
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_get"), nxmLink.Link), Program.translation.Get("internal.ok"));
+                return false;
+            }
+
+            var collectionName = revision.Collection is null || String.IsNullOrEmpty(revision.Collection.Name) ? slug : revision.Collection.Name;
+            if (Program.settings.IsAskingBeforeAcceptingNXM)
+            {
+                var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_collection_install"), collectionName));
+                if (await requestWindow.ShowDialog<bool>(this) is false)
+                {
+                    return false;
+                }
+            }
+
+            var (index, extractedArchivePath) = await DownloadAndReadCollectionIndex(revision.DownloadLink, collectionName);
+            if (index is null)
+            {
+                return false;
+            }
+
+            var resolvedRevision = revision.RevisionNumber is null ? (revisionNumber is null ? 0 : revisionNumber.Value) : revision.RevisionNumber.Value;
+            var collection = Nexus.Client.CreateCollectionInstall(index, slug, resolvedRevision, domainName);
+
+            await InstallCollection(collection, extractedArchivePath);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Fetches the collection archive and extracts it, returning the parsed collection.json.
+        /// </summary>
+        private async Task<(CollectionIndex? Index, string ExtractedPath)> DownloadAndReadCollectionIndex(string revisionDownloadLink, string collectionName)
+        {
+            if (Nexus.Client is null)
+            {
+                return (null, String.Empty);
+            }
+
+            var archiveUri = await Nexus.Client.GetCollectionArchiveLink(revisionDownloadLink, EnumParser.GetDescription(Program.settings.PreferredNexusServer));
+            if (String.IsNullOrEmpty(archiveUri))
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_get_archive"), revisionDownloadLink), Program.translation.Get("internal.ok"));
+                return (null, String.Empty);
+            }
+
+            var safeName = String.Join("_", collectionName.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
+            var archiveFileName = $"{safeName}.7z";
+            var downloadResult = await Nexus.Client.DownloadFileAndGetPath(archiveUri, archiveFileName);
+            if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
+            {
+                // No warning, as the user triggered this intentionally
+                return (null, String.Empty);
+            }
+
+            if (String.IsNullOrEmpty(downloadResult.DownloadedModFilePath))
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_download_archive"), archiveUri), Program.translation.Get("internal.ok"));
+                return (null, String.Empty);
+            }
+
+            Program.helper.Log($"Downloaded the collection archive to {downloadResult.DownloadedModFilePath}");
+
+            var targetFolder = Path.Combine(Pathing.GetNexusPath(), safeName);
+            Directory.CreateDirectory(targetFolder);
+
+            try
+            {
+                using (var archive = ArchiveFactory.Open(downloadResult.DownloadedModFilePath))
+                {
+                    foreach (var entry in archive.Entries.Where(e => e.IsDirectory is false))
+                    {
+                        entry.WriteToDirectory(targetFolder, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to extract the collection archive: {ex}", Helper.Status.Alert);
+                await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
+                return (null, String.Empty);
+            }
+
+            var indexPath = Path.Combine(targetFolder, "collection.json");
+            if (File.Exists(indexPath) is false)
+            {
+                Program.helper.Log($"The collection archive did not contain a collection.json at {indexPath}", Helper.Status.Alert);
+                await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
+                return (null, String.Empty);
+            }
+
+            try
+            {
+                var index = JsonSerializer.Deserialize<CollectionIndex>(await File.ReadAllTextAsync(indexPath), new JsonSerializerOptions() { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
+                if (index is null)
+                {
+                    await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
+                    return (null, String.Empty);
+                }
+
+                return (index, targetFolder);
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to parse the collection.json at {indexPath}: {ex}", Helper.Status.Alert);
+                await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
+                return (null, String.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Downloads and installs everything the collection pins into its own folder, then generates a profile with
+        /// exactly those mods enabled. Failures are gathered up and reported once at the end rather than per mod.
+        /// </summary>
+        private async Task InstallCollection(CollectionInstall collection, string extractedArchivePath)
+        {
+            var installPath = Pathing.GetCollectionInstallPath(collection.SourceId);
+            Directory.CreateDirectory(installPath);
+
+            var downloadedPaths = new List<string>();
+            var pendingMods = collection.Mods.Where(m => m.Status is CollectionModStatus.Pending).ToList();
+            int currentIndex = 0;
+            foreach (var entry in pendingMods)
+            {
+                currentIndex++;
+                UpdateLockWindow(String.Format(Program.translation.Get("ui.message.collection_downloading"), entry.Name), currentIndex, pendingMods.Count);
+
+                var downloadedPath = await DownloadCollectionEntry(entry, extractedArchivePath);
+                if (String.IsNullOrEmpty(downloadedPath))
+                {
+                    continue;
+                }
+
+                downloadedPaths.Add(downloadedPath);
+            }
+
+            if (downloadedPaths.Count > 0)
+            {
+                await AddMods(downloadedPaths.ToArray(), installPath);
+            }
+
+            _viewModel.DiscoverMods(Pathing.defaultModPath);
+
+            // The profile is built from what actually landed on disk rather than from what was requested, so a
+            // partial install still produces a working profile
+            var installedMods = _viewModel.Mods.Where(m => String.Equals(m.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
+            MatchInstalledMods(collection, installedMods);
+            CreateProfileForCollection(collection, installedMods);
+            CollectionCache.Save(collection);
+
+            await ReportCollectionResult(collection);
+        }
+
+        /// <summary>
+        /// Best-effort mapping of discovered mods back onto their collection entries. An archive's folder name has no
+        /// guaranteed relationship to the mod's name on Nexus, so entries that cannot be matched keep their pending
+        /// state rather than being wrongly marked installed.
+        /// </summary>
+        private static void MatchInstalledMods(CollectionInstall collection, List<Mod> installedMods)
+        {
+            var unmatchedMods = new List<Mod>(installedMods);
+            foreach (var entry in collection.Mods.Where(e => e.Status is CollectionModStatus.Downloading or CollectionModStatus.Pending))
+            {
+                var match = unmatchedMods.FirstOrDefault(m => m.Name.Equals(entry.Name, StringComparison.OrdinalIgnoreCase));
+                if (match is null)
+                {
+                    match = unmatchedMods.FirstOrDefault(m => m.Name.Contains(entry.Name, StringComparison.OrdinalIgnoreCase) || entry.Name.Contains(m.Name, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (match is null)
+                {
+                    entry.Status = CollectionModStatus.Failed;
+                    entry.FailureReason = Program.translation.Get("ui.message.collection_reason_not_found_after_install");
+                    continue;
+                }
+
+                entry.UniqueId = match.UniqueId;
+                entry.InstalledFolderName = match.ModFileInfo.Directory is null ? null : match.ModFileInfo.Directory.Name;
+                entry.Status = CollectionModStatus.Installed;
+                unmatchedMods.Remove(match);
+            }
+        }
+
+        private async Task<string?> DownloadCollectionEntry(CollectionModEntry entry, string extractedArchivePath)
+        {
+            if (Nexus.Client is null)
+            {
+                return null;
+            }
+
+            // Bundled files are already on disk inside the extracted archive
+            if (entry.SourceType is CollectionModSourceType.Bundle)
+            {
+                return FindBundledFile(entry, extractedArchivePath);
+            }
+
+            if (entry.IsFromNexus() is false)
+            {
+                entry.Status = CollectionModStatus.AwaitingManualDownload;
+                return null;
+            }
+
+            entry.Status = CollectionModStatus.Downloading;
+
+            // Collection files are frequently not in the MAIN category, so category filtering has to be relaxed here
+            var modFile = await Nexus.Client.GetFileByVersion(entry.NexusModId!.Value, String.IsNullOrEmpty(entry.Version) ? String.Empty : entry.Version, ignoreCategory: true);
+            if (modFile is null || String.IsNullOrEmpty(modFile.Name))
+            {
+                entry.Status = CollectionModStatus.Failed;
+                entry.FailureReason = Program.translation.Get("ui.message.collection_reason_no_file");
+                return null;
+            }
+
+            var downloadLink = await Nexus.Client.GetFileDownloadLink(entry.NexusModId.Value, entry.NexusFileId!.Value, serverName: EnumParser.GetDescription(Program.settings.PreferredNexusServer));
+            if (String.IsNullOrEmpty(downloadLink))
+            {
+                entry.Status = CollectionModStatus.AwaitingManualDownload;
+                return null;
+            }
+
+            var downloadResult = await Nexus.Client.DownloadFileAndGetPath(downloadLink, modFile.Name);
+            if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
+            {
+                entry.Status = CollectionModStatus.Skipped;
+                return null;
+            }
+
+            if (String.IsNullOrEmpty(downloadResult.DownloadedModFilePath))
+            {
+                entry.Status = CollectionModStatus.Failed;
+                entry.FailureReason = Program.translation.Get("ui.message.collection_reason_download_failed");
+                return null;
+            }
+
+            return downloadResult.DownloadedModFilePath;
+        }
+
+        private static string? FindBundledFile(CollectionModEntry entry, string extractedArchivePath)
+        {
+            if (String.IsNullOrEmpty(extractedArchivePath) || Directory.Exists(extractedArchivePath) is false)
+            {
+                entry.Status = CollectionModStatus.Failed;
+                entry.FailureReason = Program.translation.Get("ui.message.collection_reason_missing_bundle");
+                return null;
+            }
+
+            var searchName = String.IsNullOrEmpty(entry.FileExpression) ? entry.LogicalFilename : entry.FileExpression;
+            if (String.IsNullOrEmpty(searchName))
+            {
+                entry.Status = CollectionModStatus.Failed;
+                entry.FailureReason = Program.translation.Get("ui.message.collection_reason_missing_bundle");
+                return null;
+            }
+
+            var match = new DirectoryInfo(extractedArchivePath).GetFiles(searchName, SearchOption.AllDirectories).FirstOrDefault();
+            if (match is null)
+            {
+                entry.Status = CollectionModStatus.Failed;
+                entry.FailureReason = Program.translation.Get("ui.message.collection_reason_missing_bundle");
+                return null;
+            }
+
+            return match.FullName;
+        }
+
+        /// <summary>
+        /// Generates the profile that represents this collection. The profile is protected, as editing it directly
+        /// would drift it away from the curator's pins. Users wanting changes clone it into a plain profile.
+        /// </summary>
+        private void CreateProfileForCollection(CollectionInstall collection, List<Mod> installedMods)
+        {
+            var enabledMods = installedMods.Select(m => m.ToReference()).ToList();
+
+            var profileName = GetAvailableProfileName(collection);
+            collection.ProfileName = profileName;
+
+            var profile = new Profile(profileName, isProtected: true, enabledMods: enabledMods, sourceId: collection.SourceId);
+            _editorView.CreateProfile(profile);
+        }
+
+        private string GetAvailableProfileName(CollectionInstall collection)
+        {
+            var baseName = String.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
+            var candidate = $"{baseName} (r{collection.RevisionNumber})";
+
+            int suffix = 2;
+            while (_editorView.Profiles.Any(p => p.Name.Equals(candidate, StringComparison.OrdinalIgnoreCase)))
+            {
+                candidate = $"{baseName} (r{collection.RevisionNumber}) [{suffix}]";
+                suffix++;
+            }
+
+            return candidate;
+        }
+
+        /// <summary>
+        /// One summary at the end, rather than a dialog per mod. A large collection can easily have a dozen entries
+        /// Stardrop cannot fetch itself, and a dozen modals is not a usable experience.
+        /// </summary>
+        private async Task ReportCollectionResult(CollectionInstall collection)
+        {
+            var manualDownloads = collection.GetManualDownloads();
+            var failures = collection.GetFailures();
+            var installedCount = collection.Mods.Count(m => m.Status is CollectionModStatus.Installed);
+
+            var summary = String.Format(Program.translation.Get("ui.message.collection_install_summary"), collection.Name, installedCount, collection.Mods.Count);
+
+            if (manualDownloads.Count > 0)
+            {
+                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_manual_downloads"), manualDownloads.Count);
+                summary += Environment.NewLine + String.Join(Environment.NewLine, manualDownloads.Select(m => $"  {m.Name}"));
+            }
+
+            if (failures.Count > 0)
+            {
+                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_failures"), failures.Count);
+                summary += Environment.NewLine + String.Join(Environment.NewLine, failures.Select(m => $"  {m.Name}{(String.IsNullOrEmpty(m.FailureReason) ? String.Empty : $" ({m.FailureReason})")}"));
+            }
+
+            if (String.IsNullOrEmpty(collection.InstallInstructions) is false)
+            {
+                summary += Environment.NewLine + Environment.NewLine + Program.translation.Get("ui.message.collection_curator_notes");
+                summary += Environment.NewLine + collection.InstallInstructions;
+            }
+
+            await CreateWarningWindow(summary, Program.translation.Get("internal.ok"));
+        }
+    }
+}

@@ -1,4 +1,4 @@
-using Stardrop.Models;
+﻿using Stardrop.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -110,7 +110,7 @@ namespace Stardrop.ViewModels
                 return;
             }
 
-            Profiles[profileIndex].EnabledModIds = mods.Where(m => m.IsEnabled).Select(m => m.UniqueId).ToList();
+            Profiles[profileIndex].EnabledModIds = mods.Where(m => m.IsEnabled).Select(m => m.ToReference()).ToList();
             Profiles[profileIndex].Notes = mods.Where(m => string.IsNullOrEmpty(m.Note) is false).Select(m => new ModNote(m.UniqueId, m.Note)).ToList();
             CreateProfile(profile, true);
         }

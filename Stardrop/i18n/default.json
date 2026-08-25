@@ -286,5 +286,19 @@
   "internal.measurements.kilobytes_size": "KB",
   "internal.measurements.kilobytes_per_second": "KB/s",
   "internal.measurements.megabytes_size": "MB",
-  "internal.measurements.megabytes_per_second": "MB/s"
+  "internal.measurements.megabytes_per_second": "MB/s",
+  "ui.message.failed_collection_get": "Failed to get the collection details for:\n\n{0}",
+  "ui.message.confirm_nxm_collection_install": "Would you like to install the following collection:\n\n{0}\n\nYou can disable this confirmation in the settings menu.",
+  "ui.message.failed_collection_get_archive": "Failed to get the collection archive download for:\n\n{0}",
+  "ui.message.failed_collection_download_archive": "Failed to download the collection archive for:\n\n{0}",
+  "ui.message.failed_read_collection_index": "Failed to read the collection's index file.",
+  "ui.message.collection_downloading": "Downloading {0}",
+  "ui.message.collection_install_summary": "Finished installing the collection {0}.\n\nInstalled {1} of {2} mods.",
+  "ui.message.collection_manual_downloads": "{0} mod(s) need to be downloaded manually:",
+  "ui.message.collection_failures": "{0} mod(s) could not be installed:",
+  "ui.message.collection_curator_notes": "Notes from the curator:",
+  "ui.message.collection_reason_no_file": "no matching file on Nexus Mods",
+  "ui.message.collection_reason_download_failed": "download failed",
+  "ui.message.collection_reason_missing_bundle": "bundled file not found in the archive",
+  "ui.message.collection_reason_not_found_after_install": "could not be matched to an installed mod"
 }

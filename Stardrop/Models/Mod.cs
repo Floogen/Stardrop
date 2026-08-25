@@ -1,8 +1,10 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Semver;
+using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
+using Stardrop.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,6 +23,12 @@ namespace Stardrop.Models
         internal readonly Manifest Manifest;
 
         public string UniqueId { get; set; }
+        /// <summary>
+        /// The collection this copy of the mod belongs to, or null for a loose install. Paired with UniqueId this
+        /// forms the mod's real identity, as a collection can pin a version the user also has installed loosely.
+        /// </summary>
+        public string? SourceId { get; set; }
+        public bool IsFromCollection { get { return String.IsNullOrEmpty(SourceId) is false; } }
         public SemVersion Version { get; set; }
         public string ParsedVersion { get { return Version.ToString(); } }
         public string SuggestedVersion { get; set; }
@@ -125,6 +133,7 @@ namespace Stardrop.Models
             Manifest = manifest;
             ModFileInfo = modFileInfo;
             UniqueId = uniqueId;
+            SourceId = Pathing.GetCollectionSourceId(modFileInfo.DirectoryName);
             Version = SemVersion.TryParse(version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : SemVersion.ParsedFrom(0, 0, 0, "bad-version");
             Name = String.IsNullOrEmpty(name) ? uniqueId : name;
             Path = ComputeModPath(modFileInfo);
@@ -302,6 +311,14 @@ namespace Stardrop.Models
         internal PortableModData GetPortableData()
         {
             return new PortableModData(UniqueId, ParsedVersion, Name, Author, ModPageUri);
+        }
+
+        /// <summary>
+        /// Builds the identity used by profiles to reference this specific copy of the mod.
+        /// </summary>
+        public ModReference ToReference()
+        {
+            return new ModReference(UniqueId, SourceId);
         }
 
         internal void NotifyPropertyChanged([CallerMemberName] String propertyName = "")

@@ -115,5 +115,55 @@ namespace Stardrop.Utilities
         {
             return Path.Combine(defaultHomePath, "SMAPI");
         }
+
+        /// <summary>
+        /// Root folder for collection installs. This sits inside the scanned mod folder on purpose, so that
+        /// collection mods are picked up by the existing discovery pass with no extra plumbing.
+        /// </summary>
+        public static string GetCollectionsFolderPath()
+        {
+            return Path.Combine(defaultModPath, "Stardrop Collections");
+        }
+
+        public static string GetCollectionInstallPath(string sourceId)
+        {
+            return Path.Combine(GetCollectionsFolderPath(), sourceId);
+        }
+
+        public static string GetCollectionsCacheFolderPath()
+        {
+            return Path.Combine(defaultHomePath, "Collections");
+        }
+
+        public static string GetCollectionCachePath(string sourceId)
+        {
+            return Path.Combine(GetCollectionsCacheFolderPath(), $"{sourceId}.json");
+        }
+
+        /// <summary>
+        /// Returns the collection SourceId owning the given mod folder, or null when the mod is a loose install.
+        /// </summary>
+        public static string? GetCollectionSourceId(string? modDirectoryPath)
+        {
+            if (String.IsNullOrEmpty(modDirectoryPath) || String.IsNullOrEmpty(defaultModPath))
+            {
+                return null;
+            }
+
+            var collectionsRoot = GetCollectionsFolderPath();
+            if (modDirectoryPath.StartsWith(collectionsRoot, StringComparison.OrdinalIgnoreCase) is false)
+            {
+                return null;
+            }
+
+            var relativePath = modDirectoryPath.Substring(collectionsRoot.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (String.IsNullOrEmpty(relativePath))
+            {
+                return null;
+            }
+
+            var separatorIndex = relativePath.IndexOfAny(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+            return separatorIndex == -1 ? relativePath : relativePath.Substring(0, separatorIndex);
+        }
     }
 }

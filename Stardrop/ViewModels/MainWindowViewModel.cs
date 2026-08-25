@@ -1,4 +1,4 @@
-using Avalonia.Collections;
+﻿using Avalonia.Collections;
 using Avalonia.Controls;
 using Json.More;
 using ReactiveUI;
@@ -484,15 +484,17 @@ namespace Stardrop.ViewModels
                     }
 
                     // Add or update the mod
-                    if (!Mods.Any(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)))
+                    // Identity is (SourceId, UniqueId), so a collection's pinned copy never displaces a loose install of the same mod
+                    var modReference = mod.ToReference();
+                    var existingMod = Mods.FirstOrDefault(m => modReference.Matches(m));
+                    if (existingMod is null)
                     {
                         Mods.Add(mod);
                     }
-                    else if (Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase) && m.Version.CompareSortOrderTo(mod.Version) < 0) is Mod oldMod && oldMod is not null)
+                    else if (existingMod.Version.CompareSortOrderTo(mod.Version) < 0)
                     {
                         // Replace old mod with newer one
-                        int oldModIndex = Mods.IndexOf(Mods.First(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase) && m.Version.CompareSortOrderTo(mod.Version) < 0));
-                        Mods[oldModIndex] = mod;
+                        Mods[Mods.IndexOf(existingMod)] = mod;
                     }
                 }
                 catch (Exception ex)
@@ -645,9 +647,10 @@ namespace Stardrop.ViewModels
         {
             // Merge any existing preserved configs
             List<Config> pendingConfigUpdates = new List<Config>();
-            foreach (var modId in profile.EnabledModIds.Select(id => id.ToLower()))
+            foreach (var reference in profile.EnabledModIds)
             {
-                var mod = Mods.FirstOrDefault(m => m.UniqueId.Equals(modId, StringComparison.OrdinalIgnoreCase));
+                var modId = reference.UniqueId.ToLower();
+                var mod = Mods.FirstOrDefault(m => reference.Matches(m));
                 if (mod is null || mod.ModFileInfo is null)
                 {
                     continue;
@@ -805,7 +808,7 @@ namespace Stardrop.ViewModels
             foreach (var mod in Mods)
             {
                 mod.IsEnabled = false;
-                if (profile.EnabledModIds.Any(id => id.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)))
+                if (profile.EnabledModIds.Any(reference => reference.Matches(mod)))
                 {
                     mod.IsEnabled = true;
                 }

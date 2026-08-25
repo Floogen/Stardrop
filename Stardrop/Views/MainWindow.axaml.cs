@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -1772,6 +1772,17 @@ namespace Stardrop.Views
                 return false;
             }
 
+            // Collection links follow an entirely different flow, so split them off before the mod handling below
+            if (nxmLink.ResolvePurpose() is NXM.NXMPurpose.Collection)
+            {
+                if (await ValidateSMAPIPath() is false)
+                {
+                    return false;
+                }
+
+                return await ProcessCollectionLink(nxmLink);
+            }
+
 
             if (await ValidateSMAPIPath() is false)
             {
@@ -2381,7 +2392,7 @@ namespace Stardrop.Views
             }
         }
 
-        private async Task<List<Mod>> AddMods(string[]? filePaths)
+        private async Task<List<Mod>> AddMods(string[]? filePaths, string? installPathOverride = null)
         {
             Guid request = Guid.NewGuid();
 
@@ -2469,8 +2480,12 @@ namespace Stardrop.Views
                             bool isUpdate = false;
                             if (manifest is not null)
                             {
-                                var installPath = Program.settings.ModInstallPath;
-                                if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null && mod.ModFileInfo.Directory is not null)
+                                var installPath = String.IsNullOrEmpty(installPathOverride) ? Program.settings.ModInstallPath : installPathOverride;
+
+                                // Only treat this as an update of a mod from the same source, otherwise installing a
+                                // collection would overwrite the user's loose copy of the same mod
+                                var targetSourceId = Pathing.GetCollectionSourceId(installPath);
+                                if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase) && String.Equals(m.SourceId, targetSourceId, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null && mod.ModFileInfo.Directory is not null)
                                 {
                                     if (manifest.DeleteOldVersion is false && alwaysAskToDelete is true)
                                     {
@@ -2689,30 +2704,38 @@ namespace Stardrop.Views
             }
 
             string spacing = String.Concat(Environment.NewLine, "\t");
-            Program.helper.Log($"Creating links for the following enabled mods from profile {profile.Name}:{spacing}{String.Join(spacing, profile.EnabledModIds)}");
+            Program.helper.Log($"Creating links for the following enabled mods from profile {profile.Name}:{spacing}{String.Join(spacing, profile.EnabledModIds.Select(r => r.ToString()))}");
 
             // Link the enabled mods via a chained command
             List<string> arguments = new List<string>();
-            foreach (string modId in _viewModel.Mods.Where(m => m.IsEnabled).Select(m => m.UniqueId))
+            List<string> usedLinkNames = new List<string>();
+            foreach (var mod in _viewModel.Mods.Where(m => m.IsEnabled))
             {
-                var mod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId == modId);
-                if (mod is null)
+                if (mod is null || mod.ModFileInfo is null || mod.ModFileInfo.Directory is null)
                 {
                     continue;
                 }
+
+                // SMAPI does not care about folder names, so a collision between a collection mod and a loose one can be resolved by suffixing
+                var linkName = mod.ModFileInfo.Directory.Name;
+                if (usedLinkNames.Any(n => n.Equals(linkName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    linkName = $"{linkName} ({(mod.IsFromCollection ? mod.SourceId : "local")})";
+                }
+                usedLinkNames.Add(linkName);
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     var longPathPrefix = @"\\?\";
 
-                    var linkPath = Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name);
+                    var linkPath = Path.Combine(enabledModsPath, linkName);
                     if (linkPath.Length >= 260)
                     {
                         linkPath = longPathPrefix + linkPath;
                     }
 
                     var modDirectoryName = mod.ModFileInfo.DirectoryName;
-                    if (Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name).Length >= 260)
+                    if (Path.Combine(enabledModsPath, linkName).Length >= 260)
                     {
                         modDirectoryName = longPathPrefix + modDirectoryName;
                     }
@@ -2722,7 +2745,7 @@ namespace Stardrop.Views
                 else
                 {
                     var edq = "\\\""; // Escaped double quotes, to prevent issues with paths that contain single quotes
-                    arguments.Add($"ln -sf {edq}{mod.ModFileInfo.DirectoryName}{edq} {edq}{Path.Combine(enabledModsPath, mod.ModFileInfo.Directory.Name)}{edq}");
+                    arguments.Add($"ln -sf {edq}{mod.ModFileInfo.DirectoryName}{edq} {edq}{Path.Combine(enabledModsPath, linkName)}{edq}");
                 }
             }
 
