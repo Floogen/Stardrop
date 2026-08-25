@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using Stardrop.Models.Nexus.Converters;
+using System.Text.Json.Serialization;
 
 namespace Stardrop.Models.Nexus.GraphQL
 {
@@ -9,9 +10,11 @@ namespace Stardrop.Models.Nexus.GraphQL
     public class CollectionRevision
     {
         [JsonPropertyName("id")]
+        [JsonConverter(typeof(FlexibleInt32Converter))]
         public int? Id { get; set; }
 
         [JsonPropertyName("revisionNumber")]
+        [JsonConverter(typeof(FlexibleInt32Converter))]
         public int? RevisionNumber { get; set; }
 
         /// <summary>Link to the collection archive, which holds collection.json along with any bundled config files</summary>
@@ -19,9 +22,11 @@ namespace Stardrop.Models.Nexus.GraphQL
         public string? DownloadLink { get; set; }
 
         [JsonPropertyName("totalSize")]
+        [JsonConverter(typeof(FlexibleInt64Converter))]
         public long? TotalSize { get; set; }
 
         [JsonPropertyName("modCount")]
+        [JsonConverter(typeof(FlexibleInt32Converter))]
         public int? ModCount { get; set; }
 
         [JsonPropertyName("collection")]
@@ -31,6 +36,7 @@ namespace Stardrop.Models.Nexus.GraphQL
     public class CollectionSummary
     {
         [JsonPropertyName("id")]
+        [JsonConverter(typeof(FlexibleInt32Converter))]
         public int? Id { get; set; }
 
         [JsonPropertyName("slug")]

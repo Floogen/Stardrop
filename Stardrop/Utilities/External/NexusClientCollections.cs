@@ -1,4 +1,4 @@
-using Stardrop.Models.Data;
+﻿using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus;
 using Stardrop.Models.Nexus.GraphQL;
@@ -53,7 +53,18 @@ namespace Stardrop.Utilities.External
                     return null;
                 }
 
-                var result = JsonSerializer.Deserialize<QueryResponse<CollectionRevisionData>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                QueryResponse<CollectionRevisionData>? result;
+                try
+                {
+                    result = JsonSerializer.Deserialize<QueryResponse<CollectionRevisionData>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                catch (JsonException ex)
+                {
+                    Program.helper.Log($"Failed to deserialize the collection revision for {slug}: {ex.Message}", Helper.Status.Alert);
+                    Program.helper.Log($"Response from Nexus Mods:\n{content}", Helper.Status.Debug);
+                    return null;
+                }
+
                 if (result is null || result.Data is null || result.Data.CollectionRevision is null)
                 {
                     Program.helper.Log($"Unable to parse the collection revision for {slug}. Response from Nexus Mods:\n{content}", Helper.Status.Alert);

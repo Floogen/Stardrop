@@ -1,3 +1,4 @@
+﻿using Stardrop.Models.Nexus.Converters;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -128,6 +129,7 @@ namespace Stardrop.Models.Nexus
         public CollectionModSourceType Type { get; set; }
 
         [JsonPropertyName("fileSize")]
+        [JsonConverter(typeof(FlexibleInt64Converter))]
         public long? Size { get; set; }
 
         // "bundle" type only
@@ -150,9 +152,11 @@ namespace Stardrop.Models.Nexus
 
         // "nexus" type only
         [JsonPropertyName("modId")]
+        [JsonConverter(typeof(FlexibleInt32Converter))]
         public int? ModId { get; set; }
 
         [JsonPropertyName("fileId")]
+        [JsonConverter(typeof(FlexibleInt32Converter))]
         public int? FileId { get; set; }
 
         // "browse" and "direct" types only
