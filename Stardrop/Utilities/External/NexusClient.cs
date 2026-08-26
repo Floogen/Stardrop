@@ -167,7 +167,7 @@ namespace Stardrop.Utilities.External
                 }
 
                 Program.settings.NexusDetails.Username = validationModel.Name;
-                Program.settings.NexusDetails.IsPremium = false;// validationModel.IsPremium;
+                Program.settings.NexusDetails.IsPremium = validationModel.IsPremium;
                 _settings = Program.settings.NexusDetails;
 
                 UpdateRequestCounts(response.Headers);
