@@ -110,10 +110,10 @@
 			</Setter>
 		</Style>
 		<Style Selector="Button:pointerover /template/ ContentPresenter">
-			<Setter Property="Background" Value="LightGray"/>
+			<Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
 		</Style>
 		<Style Selector="Button:pressed /template/ ContentPresenter">
-			<Setter Property="Background" Value="White"/>
+			<Setter Property="Background" Value="{DynamicResource ButtonPressedBrush}"/>
 		</Style>
 		<Style Selector="Button[IsEnabled=false] /template/ ContentPresenter">
 			<Setter Property="Opacity" Value="0.5"/>

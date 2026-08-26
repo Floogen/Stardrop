@@ -22,13 +22,14 @@
 
 	<Window.Styles>
 		<Style Selector="Button:pointerover /template/ ContentPresenter">
-			<Setter Property="Background" Value="LightGray"/>
+			<Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
 		</Style>
 		<Style Selector="Button:pressed /template/ ContentPresenter">
-			<Setter Property="Background" Value="White"/>
+			<Setter Property="Background" Value="{DynamicResource ButtonPressedBrush}"/>
 		</Style>
 		<Style Selector="Button[IsEnabled=False] /template/ ContentPresenter">
-			<Setter Property="Background" Value="Gray"/>
+			<Setter Property="Opacity" Value="0.5"/>
+			<Setter Property="Background" Value="Transparent"/>
 		</Style>
 		<Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
 			<Setter Property="Background" Value="Red"/>
@@ -69,9 +70,6 @@
 		</Style>
 		<Style Selector="TextBlock.sortable:pointerover">
 			<Setter Property="Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
-		</Style>
-		<Style Selector="Button#removeButton">
-			<Setter Property="BorderBrush" Value="{DynamicResource UpdateBrokenBrush}" />
 		</Style>
 		<Style Selector="ScrollViewer">
 			<Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}" />
@@ -126,13 +124,18 @@
 
 			<Border Grid.Column="1" Margin="15 0 0 0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
 				<DockPanel Margin="10" IsVisible="{Binding HasSelection}">
-					<StackPanel DockPanel.Dock="Top" Margin="0 0 0 8">
-						<TextBlock Classes="detail" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding SelectedCollection.Name}" />
-						<TextBlock Classes="subtle" IsVisible="{Binding SelectedCollection.HasCurator}" Text="{Binding SelectedCollection.Curator}" />
-						<TextBlock Classes="subtle" Text="{Binding SelectedCollection.Revision}" />
-						<TextBlock Classes="subtle" Text="{Binding SelectedCollection.Profile}" />
-						<TextBlock Classes="detail" Margin="0 6 0 0" Text="{Binding SelectedCollection.Progress}" />
-					</StackPanel>
+					<!-- The remove button overlays the header rather than following it, so it sits in the corner of
+					     the panel it acts on and the title still wraps across the full width beneath it -->
+					<Grid DockPanel.Dock="Top" Margin="0 0 0 8">
+						<StackPanel Margin="0 0 30 0">
+							<TextBlock Classes="detail" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding SelectedCollection.Name}" />
+							<TextBlock Classes="subtle" IsVisible="{Binding SelectedCollection.HasCurator}" Text="{Binding SelectedCollection.Curator}" />
+							<TextBlock Classes="subtle" Text="{Binding SelectedCollection.Revision}" />
+							<TextBlock Classes="subtle" Text="{Binding SelectedCollection.Profile}" />
+							<TextBlock Classes="detail" Margin="0 6 0 0" Text="{Binding SelectedCollection.Progress}" />
+						</StackPanel>
+						<Button Name="removeButton" HorizontalAlignment="Right" VerticalAlignment="Top" Cursor="Hand" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.remove}" i:Attached.Icon="mdi-delete" Foreground="{DynamicResource UpdateBrokenBrush}" BorderThickness="0" Background="Transparent" />
+					</Grid>
 
 					<CheckBox DockPanel.Dock="Top" Name="missingOnlyCheckBox" Margin="0 0 0 6" IsChecked="{Binding ShowMissingOnly}" Content="{i18n:Translate ui.collections_window.checkbox.missing_only}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
 
@@ -159,14 +162,13 @@
 			</Border>
 		</Grid>
 
-		<!-- Mirrors the content grid above, so each button lines up under the panel it acts on -->
+		<!-- Mirrors the content grid above, so the button lines up under the collection list -->
 		<Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="20 5 20 0">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="260" />
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 			<Button Name="openPageButton" Grid.Column="0" HorizontalAlignment="Center" IsEnabled="{Binding HasSelection}" Content="{i18n:Translate ui.collections_window.button.open_page}" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
-			<Button Name="removeButton" Grid.Column="1" HorizontalAlignment="Center" IsEnabled="{Binding HasSelection}" Content="{i18n:Translate ui.collections_window.button.remove}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
 		</Grid>
 	</Grid>
 </Window>

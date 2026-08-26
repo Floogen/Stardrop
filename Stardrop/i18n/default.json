@@ -327,7 +327,7 @@
   "ui.collections_window.labels.installed": "{0} of {1} mods installed",
   "ui.collections_window.checkbox.missing_only": "Show Missing Only",
   "ui.collections_window.button.open_page": "Open Collection Page",
-  "ui.collections_window.button.remove": "Remove Collection",
+  "ui.collections_window.tooltips.remove": "Remove this collection",
   "ui.collections_window.textblock.open_entry_hint": "Double click a mod to open its page.",
   "ui.collections_window.headers.mod_name": "Mod Name",
   "ui.collections_window.headers.version": "Version",
