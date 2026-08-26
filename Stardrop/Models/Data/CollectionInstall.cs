@@ -150,6 +150,56 @@ namespace Stardrop.Models.Data
         }
 
         /// <summary>
+        /// Entries that ended up on disk. Overlays are excluded, as they are the curator's configuration rather than
+        /// mods of their own and counting them would report more mods than the collection actually pins.
+        /// </summary>
+        public int GetInstalledCount()
+        {
+            return Mods.Count(m => m.Status is CollectionModStatus.Installed);
+        }
+
+        /// <summary>The number of mods the collection pins, leaving out the configuration entries among them</summary>
+        public int GetModCount()
+        {
+            return Mods.Count - Mods.Count(m => m.Status is CollectionModStatus.AppliedAsOverlay);
+        }
+
+        /// <summary>The collection's own page on Nexus Mods</summary>
+        public string GetPageUri()
+        {
+            var domainName = String.IsNullOrEmpty(DomainName) ? "stardewvalley" : DomainName;
+
+            return $"https://next.nexusmods.com/{domainName}/collections/{Slug}";
+        }
+
+        /// <summary>
+        /// The page to send the user to for an entry they have to handle themselves, preferring the curator's own
+        /// link over one built from the Nexus IDs. Returns null when neither is available, which leaves the entry
+        /// as plain text wherever it is shown.
+        /// </summary>
+        public string? GetEntryPageUri(CollectionModEntry entry)
+        {
+            if (String.IsNullOrEmpty(entry.ExternalUri) is false)
+            {
+                return entry.ExternalUri;
+            }
+
+            if (entry.NexusModId is null)
+            {
+                return null;
+            }
+
+            var domainName = String.IsNullOrEmpty(DomainName) ? "stardewvalley" : DomainName;
+            if (entry.NexusFileId is null)
+            {
+                return $"https://www.nexusmods.com/{domainName}/mods/{entry.NexusModId}";
+            }
+
+            // The collection pins a specific file, so the files tab saves the user hunting for it themselves
+            return $"https://www.nexusmods.com/{domainName}/mods/{entry.NexusModId}?tab=files&file_id={entry.NexusFileId}";
+        }
+
+        /// <summary>
         /// Total download size of the entries Stardrop will fetch. Returns zero when no entry reports a size, which
         /// the caller should treat as a signal to fall back to counting mods.
         /// </summary>

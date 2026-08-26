@@ -1155,6 +1155,16 @@ namespace Stardrop.Views
             await DisplaySettingsWindow();
         }
 
+        private async void Collections_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            await DisplayCollectionsWindow();
+        }
+
+        private async void Collections_Click(object? sender, EventArgs e)
+        {
+            await DisplayCollectionsWindow();
+        }
+
         private void LogFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             OpenNativeExplorer(Pathing.GetLogFolderPath());
@@ -1389,6 +1399,19 @@ namespace Stardrop.Views
                 _viewModel.AreModGroupsEnabled = Program.settings.ModGroupingMethod != ModGrouping.None;
                 _viewModel.ShowModThumbnails = Program.settings.ShowModThumbnails;
             }
+        }
+
+        /// <summary>
+        /// Opens the collections window. Nothing is passed in, as it reads the cached records itself, and nothing
+        /// comes back out, as it only reports on what is installed rather than changing it.
+        /// </summary>
+        private async Task DisplayCollectionsWindow()
+        {
+            Program.helper.Log($"Opening collections window");
+
+            var collectionsWindow = new CollectionsWindow();
+            collectionsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            await collectionsWindow.ShowDialog(this);
         }
 
         private async Task HandleStardropUpdateCheck(bool manualCheck = false)

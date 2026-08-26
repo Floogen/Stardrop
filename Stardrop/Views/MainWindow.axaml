@@ -336,6 +336,7 @@
 			<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_headers.view}">
 				<NativeMenu>
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.settings}" Click="Settings_Click" />
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.collections}" Click="Collections_Click" />
 					<NativeMenuItemSeparator/>
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.stardrop_log_file}" Click="LogFile_Click" />
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.smapi_log_file}" Click="SmapiLogFile_Click" />
@@ -392,6 +393,7 @@
 				</MenuItem>
 				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.view}" Margin="-10 0 0 0" Classes="Bar">
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.settings}" Click="Settings_Click" Classes="Bar"/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.collections}" Click="Collections_Click" Classes="Bar"/>
 					<Separator/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.stardrop_log_file}" Click="LogFile_Click" Classes="Bar"/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.smapi_log_file}" Click="SmapiLogFile_Click" Classes="Bar"/>

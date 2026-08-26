@@ -919,7 +919,7 @@ namespace Stardrop.Views
                 summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_manual_downloads"), manualDownloads.Count);
                 foreach (var entry in manualDownloads)
                 {
-                    summary += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, GetEntryPageUri(collection, entry))}";
+                    summary += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, collection.GetEntryPageUri(entry))}";
                 }
             }
 
@@ -929,7 +929,7 @@ namespace Stardrop.Views
                 foreach (var entry in failures)
                 {
                     var reason = String.IsNullOrEmpty(entry.FailureReason) ? String.Empty : $" ({HyperlinkParser.Escape(entry.FailureReason)})";
-                    summary += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, GetEntryPageUri(collection, entry))}{reason}";
+                    summary += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, collection.GetEntryPageUri(entry))}{reason}";
                 }
             }
 
@@ -950,33 +950,6 @@ namespace Stardrop.Views
             }
 
             await CreateWarningWindow(summary, Program.translation.Get("internal.ok"), windowWidth: 560, enableHyperlinks: true);
-        }
-
-        /// <summary>
-        /// The page to send the user to for an entry they have to handle themselves, preferring the curator's own
-        /// link over one built from the Nexus IDs. Returns null when neither is available, which leaves the entry
-        /// as plain text in the report.
-        /// </summary>
-        private static string? GetEntryPageUri(CollectionInstall collection, CollectionModEntry entry)
-        {
-            if (String.IsNullOrEmpty(entry.ExternalUri) is false)
-            {
-                return entry.ExternalUri;
-            }
-
-            if (entry.NexusModId is null)
-            {
-                return null;
-            }
-
-            var domainName = String.IsNullOrEmpty(collection.DomainName) ? "stardewvalley" : collection.DomainName;
-            if (entry.NexusFileId is null)
-            {
-                return $"https://www.nexusmods.com/{domainName}/mods/{entry.NexusModId}";
-            }
-
-            // The collection pins a specific file, so the files tab saves the user hunting for it themselves
-            return $"https://www.nexusmods.com/{domainName}/mods/{entry.NexusModId}?tab=files&file_id={entry.NexusFileId}";
         }
     }
 }
