@@ -116,13 +116,20 @@ namespace Stardrop.Utilities
             return Path.Combine(defaultHomePath, "SMAPI");
         }
 
+        public static string GetCollectionsRootPath()
+        {
+            return Path.Combine(defaultHomePath, "Collections");
+        }
+
         /// <summary>
-        /// Root folder for collection installs. This sits inside the scanned mod folder on purpose, so that
-        /// collection mods are picked up by the existing discovery pass with no extra plumbing.
+        /// Root folder for collection installs. Deliberately outside the scanned mod folder: a collection installs
+        /// its own copy of every mod it pins, so leaving these under Mods would show a SMAPI run started without
+        /// Stardrop two copies of each, and SMAPI skips every copy of a duplicated unique ID rather than picking one.
+        /// Discovery walks this as a root of its own instead.
         /// </summary>
         public static string GetCollectionsFolderPath()
         {
-            return Path.Combine(defaultModPath, "Stardrop Collections");
+            return Path.Combine(GetCollectionsRootPath(), "Mods");
         }
 
         public static string GetCollectionInstallPath(string sourceId)
@@ -132,7 +139,7 @@ namespace Stardrop.Utilities
 
         public static string GetCollectionsCacheFolderPath()
         {
-            return Path.Combine(defaultHomePath, "Collections");
+            return Path.Combine(GetCollectionsRootPath(), "Cache");
         }
 
         public static string GetCollectionCachePath(string sourceId)
@@ -145,7 +152,7 @@ namespace Stardrop.Utilities
         /// </summary>
         public static string? GetCollectionSourceId(string? modDirectoryPath)
         {
-            if (String.IsNullOrEmpty(modDirectoryPath) || String.IsNullOrEmpty(defaultModPath))
+            if (String.IsNullOrEmpty(modDirectoryPath) || String.IsNullOrEmpty(defaultHomePath))
             {
                 return null;
             }

@@ -241,6 +241,48 @@ namespace Stardrop.ViewModels
             return false;
         }
 
+        /// <summary>
+        /// The folders a discovery pass walks. Collections are installed outside the mod folder, so they are a root
+        /// of their own rather than something the mod folder walk reaches on its way down.
+        /// </summary>
+        private static List<string> GetScanRoots(string modsFilePath)
+        {
+            var roots = new List<string>();
+            if (String.IsNullOrEmpty(modsFilePath) is false && Directory.Exists(modsFilePath))
+            {
+                roots.Add(modsFilePath);
+            }
+
+            // Skipped when the mod folder already contains it, which would otherwise walk every collection twice
+            var collectionsPath = Pathing.GetCollectionsFolderPath();
+            if (Directory.Exists(collectionsPath) && roots.Any(r => collectionsPath.StartsWith(r, StringComparison.OrdinalIgnoreCase)) is false)
+            {
+                roots.Add(collectionsPath);
+            }
+
+            return roots;
+        }
+
+        /// <summary>
+        /// Walks every root, keeping each file paired with the root it was found under. The root has to travel with
+        /// the file because <see cref="ParentFolderContainsPeriod"/> measures from it, and the collections root sits
+        /// under the application data folder, which is itself a dotted folder on Linux and macOS. Measuring a
+        /// collection mod from the mod folder would find that period and hide every collection mod on those systems.
+        /// </summary>
+        private static List<(string Root, FileInfo File)> GetDiscoverableFiles(List<string> scanRoots, Func<DirectoryInfo, List<FileInfo>> walkRoot)
+        {
+            var found = new List<(string Root, FileInfo File)>();
+            foreach (var root in scanRoots)
+            {
+                foreach (var file in walkRoot(new DirectoryInfo(root)))
+                {
+                    found.Add((root, file));
+                }
+            }
+
+            return found;
+        }
+
         public List<FileInfo> GetManifestFiles(DirectoryInfo modDirectory)
         {
             List<FileInfo> manifests = new List<FileInfo>();
@@ -403,7 +445,8 @@ namespace Stardrop.ViewModels
             }
             Mods.Clear();
 
-            if (modsFilePath is null || !Directory.Exists(modsFilePath))
+            var scanRoots = GetScanRoots(modsFilePath);
+            if (scanRoots.Count == 0)
             {
                 return;
             }
@@ -436,9 +479,9 @@ namespace Stardrop.ViewModels
                 }
             }
 
-            foreach (var fileInfo in GetManifestFiles(new DirectoryInfo(modsFilePath)))
+            foreach (var (scanRoot, fileInfo) in GetDiscoverableFiles(scanRoots, GetManifestFiles))
             {
-                if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(modsFilePath, fileInfo.Directory)))
+                if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(scanRoot, fileInfo.Directory)))
                 {
                     continue;
                 }
@@ -646,14 +689,9 @@ namespace Stardrop.ViewModels
 
         public void DiscoverConfigs(string modsFilePath, bool useArchive = false)
         {
-            if (modsFilePath is null || !Directory.Exists(modsFilePath))
+            foreach (var (scanRoot, fileInfo) in GetDiscoverableFiles(GetScanRoots(modsFilePath), GetConfigFiles))
             {
-                return;
-            }
-
-            foreach (var fileInfo in GetConfigFiles(new DirectoryInfo(modsFilePath)))
-            {
-                if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(modsFilePath, fileInfo.Directory)))
+                if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(scanRoot, fileInfo.Directory)))
                 {
                     continue;
                 }

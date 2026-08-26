@@ -164,27 +164,21 @@ namespace Stardrop.Models
 
 
         /// <summary>
-        /// Compute relative path to a mod from the installed mods path or default Stardew Valley mods path.
+        /// Compute relative path to a mod from the root it was discovered under, which is what mods are grouped by.
+        /// The mod folder is tested first so that grouping there is unchanged, then the collections folder, which
+        /// sits outside the mod folder and would otherwise match neither.
         /// </summary>
         private string ComputeModPath(FileInfo modFileInfo)
         {
             // Set whole mod path for grouping with other mods from the same mod.
-            var commonNameInstalledFolder = Program.settings.ModInstallPath;
-            var commonNameModsFolder = Program.settings.ModFolderPath;
-            string modNamePath;
-            if (System.IO.Path.EndsInDirectorySeparator(commonNameInstalledFolder))
-            {
-                commonNameInstalledFolder += System.IO.Path.DirectorySeparatorChar;
-            }
+            var modNamePath = GetPathUnderRoot(modFileInfo.DirectoryName, Program.settings.ModFolderPath) ?? GetPathUnderRoot(modFileInfo.DirectoryName, Pathing.GetCollectionsFolderPath());
 
-            if (modFileInfo.DirectoryName.Contains(commonNameModsFolder))
+            // Grouped as unknown rather than thrown over. This runs from the constructor, so throwing takes down
+            // whatever was building the mod, which for an install is the whole archive
+            if (String.IsNullOrEmpty(modNamePath))
             {
-                // Mod inside default Stardew Valley mods folder.
-                modNamePath = modFileInfo.DirectoryName.Substring(commonNameModsFolder.Length + 1);
-            }
-            else
-            {
-                throw new Exception($"Invalid mod folder path: {modFileInfo.DirectoryName}");
+                Program.helper.Log($"The mod at {modFileInfo.DirectoryName} sits under neither the mod folder nor the collections folder, so it has no group", Helper.Status.Warning);
+                return Program.translation.Get("internal.unknown");
             }
 
             // TODO: Add program config option to switch between both approaches? And to disable grouping entirely?
@@ -200,6 +194,27 @@ namespace Stardrop.Models
             var nameLength = foundIndex == -1 ? modNamePath.Length : foundIndex;
             var finalPath = modNamePath.Substring(0, nameLength);
             return String.IsNullOrEmpty(finalPath) ? Program.translation.Get("internal.unknown") : finalPath;
+        }
+
+        /// <summary>
+        /// The part of a mod's folder below the given root, or null when the mod does not sit under it. Matched as a
+        /// prefix ending in a separator, rather than by the old Contains test, which also accepted a root appearing
+        /// anywhere in the path and one that merely shared a name prefix with the folder the mod is really in.
+        /// </summary>
+        private static string? GetPathUnderRoot(string? modDirectoryName, string? root)
+        {
+            if (String.IsNullOrEmpty(modDirectoryName) || String.IsNullOrEmpty(root))
+            {
+                return null;
+            }
+
+            var prefix = System.IO.Path.EndsInDirectorySeparator(root) ? root : root + System.IO.Path.DirectorySeparatorChar;
+            if (modDirectoryName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) is false)
+            {
+                return null;
+            }
+
+            return modDirectoryName.Substring(prefix.Length);
         }
 
         private string GetRootPath(string path)
