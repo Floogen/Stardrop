@@ -12,6 +12,8 @@
         SatisfiedExternally,
         Failed,
         /// <summary>An optional entry the user chose not to install</summary>
-        Skipped
+        Skipped,
+        /// <summary>Not a mod of its own: a bundled file whose contents were copied over the mod its rules point at, which is how curators ship configuration</summary>
+        AppliedAsOverlay
     }
 }

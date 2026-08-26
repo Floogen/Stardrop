@@ -1,4 +1,4 @@
-{
+﻿{
   // Main Window - Menu Items
   "ui.main_window.menu_items.add_mod": "Add Mod",
   "ui.main_window.menu_items.add_mods": "Add Mods",
@@ -310,6 +310,12 @@
   "ui.message.collection_reason_missing_bundle": "bundled file not found in the archive",
   "ui.message.collection_reason_no_manifest": "the downloaded archive contained no mod manifest",
   "ui.message.collection_reused": "{0} mod(s) were already installed and will be used as-is.",
+  "ui.message.collection_overlays": "{0} configuration file(s) from the curator were applied:",
+  "ui.message.collection_overlay_entry": "{0} (applied to {1})",
+  "ui.message.collection_overlay_entry_unmatched": "{0} (added to the collection folder)",
+  "ui.message.collection_conflicts": "The curator flagged {0} conflict(s) between mods in this collection:",
+  "ui.message.collection_conflict_entry": "{0} conflicts with {1}",
+  "ui.message.collection_reason_overlay_failed": "the file could not be placed",
   "ui.main_window.buttons.show_all_mod_sources": "Show All Sources",
   "ui.main_window.tooltips.show_all_mod_sources": "Show mods belonging to collections you are not currently using."
 }

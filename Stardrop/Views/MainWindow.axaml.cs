@@ -403,7 +403,7 @@ namespace Stardrop.Views
             // Register a handler to watch whenever the Nexus client changes, so setpu and teardown get handled automatically
             Nexus.ClientChanged += NexusClientChanged;
 
-            // Set up the Nexus Mods connection, and attempt to register for the NXM URI protocol
+            // Set up the Nexus Mods connection and attempt to register for the NXM URI protocol
             await CheckForNexusConnection();
 
             if (String.IsNullOrEmpty(Program.nxmLink) is false)
@@ -2168,7 +2168,7 @@ namespace Stardrop.Views
 
         private async Task CheckForNexusConnection()
         {
-            // Create the client, and open access to Nexus if we haven't already done it
+            // Create the client and open access to Nexus if we haven't already done it
             await SetupNexusConnection(Nexus.GetCachedKey());
 
             Program.helper.Log($"Attempting to check for Nexus Mods connection (Has valid client: {Nexus.Client is not null})");
@@ -2902,7 +2902,7 @@ namespace Stardrop.Views
 
             // Change listener and intial value setter
             // Both of these need to have a .StartWith(), because a) CombineLatest() will never emit anything until both
-            // sources have emitted *something*, and b) this also ensures that we do intial value setting before 
+            // sources have emitted *something* and b) this also ensures that we do intial value setting before 
             // Downloads count or selected language otherwise changes.
             Observable.CombineLatest(
                 first: panelVM.InProgressDownloads.StartWith(0),

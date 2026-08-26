@@ -135,7 +135,7 @@ namespace Stardrop.ViewModels
 
         /// <summary>
         /// Records what should happen to a collection's downloaded mods when its profile is deleted. Called when the
-        /// user confirms, and acted on later when the editor is applied.
+        /// user confirms and acted on later when the editor is applied.
         /// </summary>
         internal void MarkCollectionForRemoval(string sourceId, bool deleteInstalledMods)
         {
@@ -158,7 +158,7 @@ namespace Stardrop.ViewModels
         }
 
         /// <summary>
-        /// Removes the collection record behind a profile, and its downloaded mods where the user asked for that.
+        /// Removes the collection record behind a profile and its downloaded mods where the user asked for that.
         /// Mods the collection reused from elsewhere are never touched, as those belong to the user rather than to
         /// the collection and live outside its folder.
         /// </summary>

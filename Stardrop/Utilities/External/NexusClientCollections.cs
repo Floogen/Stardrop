@@ -3,7 +3,9 @@ using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus;
 using Stardrop.Models.Nexus.GraphQL;
 using Stardrop.Models.Nexus.Web;
+using Stardrop.Utilities.Internal;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -122,7 +124,7 @@ namespace Stardrop.Utilities.External
 
         /// <summary>
         /// Turns a parsed collection.json into a local install record. Entries that Stardrop cannot fetch itself are
-        /// flagged for manual download rather than being dropped, and optional entries start out skipped so nothing
+        /// flagged for manual download rather than being dropped and optional entries start out skipped so nothing
         /// installs that the user did not ask for.
         /// </summary>
         public CollectionInstall CreateCollectionInstall(CollectionIndex index, string slug, int revisionNumber, string domainName = "stardewvalley")
@@ -167,6 +169,7 @@ namespace Stardrop.Utilities.External
                     Phase = collectionMod.Phase,
                     SourceType = collectionMod.Source.Type,
                     UpdatePolicy = collectionMod.Source.UpdatePolicy,
+                    Tag = collectionMod.Source.Tag,
                     NexusModId = collectionMod.Source.ModId,
                     NexusFileId = collectionMod.Source.FileId,
                     ExternalUri = collectionMod.Source.Url,
@@ -180,7 +183,49 @@ namespace Stardrop.Utilities.External
                 install.Mods.Add(entry);
             }
 
+            install.Rules = ResolveModRules(index.ModRules, install.Mods);
+
             return install;
+        }
+
+        /// <summary>
+        /// Matches each mod rule's two ends back to the entries they describe. Rules that point at something not in
+        /// this collection are dropped, as a rule with an end that cannot be found has nothing to act on.
+        /// </summary>
+        private static List<CollectionEntryRule> ResolveModRules(List<CollectionModRule>? modRules, List<CollectionModEntry> entries)
+        {
+            var rules = new List<CollectionEntryRule>();
+            if (modRules is null)
+            {
+                return rules;
+            }
+
+            foreach (var modRule in modRules)
+            {
+                if (modRule.Type is CollectionModRuleType.Unknown)
+                {
+                    continue;
+                }
+
+                var rule = new CollectionEntryRule()
+                {
+                    Type = modRule.Type,
+                    SourceIndex = CollectionReferenceMatcher.FindEntryIndex(entries, modRule.Source),
+                    TargetIndex = CollectionReferenceMatcher.FindEntryIndex(entries, modRule.Reference)
+                };
+
+                if (rule.IsResolved() is false)
+                {
+                    Program.helper.Log($"Skipping an unresolvable {modRule.Type} mod rule, as one of its ends is not an entry in this collection");
+                    continue;
+                }
+
+                rules.Add(rule);
+            }
+
+            Program.helper.Log($"Resolved {rules.Count} of {modRules.Count} mod rule(s) from the collection index");
+
+            return rules;
         }
 
         private static CollectionModStatus GetInitialStatus(CollectionModEntry entry, bool isPremium)

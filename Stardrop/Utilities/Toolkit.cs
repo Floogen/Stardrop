@@ -55,7 +55,7 @@ namespace Stardrop.Utilities
 
         /// <summary>
         /// Confirms a value is an http or https address before it is opened. Addresses that come from a collection
-        /// are authored by a third party, and <see cref="OpenBrowser"/> hands the value to the shell on Windows.
+        /// are authored by a third party and <see cref="OpenBrowser"/> hands the value to the shell on Windows.
         /// </summary>
         public static bool TryGetWebAddress(string? url, out string webAddress)
         {

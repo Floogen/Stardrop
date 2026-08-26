@@ -59,10 +59,10 @@ namespace Stardrop.Utilities.External
         }
 
         /// <summary>
-        /// Creates a new HttpClient configured with a Nexus API key, and validates it against the Nexus API.
+        /// Creates a new HttpClient configured with a Nexus API key and validates it against the Nexus API.
         /// If successfully validated, sets <see cref="Client"/>, as well as returning a reference to it.
         /// If called when a <see cref="Client"/> is already set, the Client will be replaced.<br/>
-        /// On success, fires <see cref="ClientChanged"/>, with the previous client (if any), and the new client.
+        /// On success, fires <see cref="ClientChanged"/>, with the previous client (if any) and the new client.
         /// </summary>
         /// <param name="apiKey">The API key from Nexus mods that will be included in the 'apiKey' header when making calls.</param>
         /// <returns>The created client, if successful. Null otherwise.</returns>
@@ -89,7 +89,7 @@ namespace Stardrop.Utilities.External
         }
 
         /// <summary>
-        /// Nulls out the <see cref="Client"/>, and fires a <see cref="ClientChanged"/> event
+        /// Nulls out the <see cref="Client"/> and fires a <see cref="ClientChanged"/> event
         /// to give consumers a chance to clean up their event handlers.
         /// </summary>
         public static void ClearClient()

@@ -38,32 +38,26 @@ namespace Stardrop.Models.Nexus
         public bool RecommendNewProfile { get; set; }
     }
 
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    /// <summary>
+    /// Collections carry more rule types than are meaningful here and the set grows over time. Unknown sits first
+    /// so that anything unrecognised lands there rather than being mistaken for a rule Stardrop acts on.
+    /// </summary>
+    [JsonConverter(typeof(FlexibleEnumConverter<CollectionModRuleType>))]
     public enum CollectionModRuleType
     {
+        Unknown,
         Before,
+        After,
         Conflicts,
-        After
+        Requires,
+        Recommends,
+        Provides
     }
 
-    public class CollectionModRuleSource
-    {
-        [JsonPropertyName("fileExpression")]
-        public string? FileExpression { get; set; }
-
-        [JsonPropertyName("fileMD5")]
-        public string? FileMD5 { get; set; }
-
-        [JsonPropertyName("tag")]
-        public string? Tag { get; set; }
-
-        [JsonPropertyName("versionMatch")]
-        public string? VersionMatch { get; set; }
-
-        [JsonPropertyName("logicalFileName")]
-        public string? LogicalFileName { get; set; }
-    }
-
+    /// <summary>
+    /// One end of a mod rule. Both ends carry the same shape in collection.json, so a rule's source and its
+    /// reference are read into the same type here and matched by the same tests.
+    /// </summary>
     public class CollectionModRuleReference
     {
         [JsonPropertyName("fileExpression")]
@@ -78,13 +72,18 @@ namespace Stardrop.Models.Nexus
         [JsonPropertyName("idHint")]
         public string? IdHint { get; set; }
 
+        [JsonPropertyName("tag")]
+        public string? Tag { get; set; }
+
         [JsonPropertyName("logicalFileName")]
         public string? LogicalFileName { get; set; }
     }
 
     /// <summary>
-    /// Load order and conflict rules. Stardew has no load order in the sense Vortex means, so only the Conflicts
-    /// rules are of much interest here, and then only for warning the user.
+    /// Load order and conflict rules. These do not decide which files a mod places, only which mod wins where two
+    /// of them place the same file: every mod is written whole, in the order the rules impose and the last one to
+    /// land takes the collision. A curator's configuration is a mod like any other under that arrangement, ordered
+    /// after the mods it configures so that its files sit on top of theirs.
     /// </summary>
     public class CollectionModRule
     {
@@ -92,7 +91,7 @@ namespace Stardrop.Models.Nexus
         public CollectionModRuleType Type { get; set; }
 
         [JsonPropertyName("source")]
-        public CollectionModRuleSource? Source { get; set; }
+        public CollectionModRuleReference? Source { get; set; }
 
         [JsonPropertyName("reference")]
         public CollectionModRuleReference? Reference { get; set; }
