@@ -238,6 +238,50 @@ namespace Stardrop.Utilities.External
             return null;
         }
 
+        /// <summary>
+        /// Looks a file up by its own ID rather than by matching on version. A mod can publish several files under
+        /// the same version number, so anything holding a file ID (a collection pin, an nxm link) has to ask for
+        /// that file directly or it risks being handed one of its siblings.
+        /// </summary>
+        public async Task<ModFile?> GetFile(int modId, int fileId)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"games/stardewvalley/mods/{modId}/files/{fileId}.json");
+                if (response.StatusCode != System.Net.HttpStatusCode.OK || response.Content is null)
+                {
+                    Program.helper.Log($"Bad status given from Nexus Mods for the file {fileId} of mod {modId}: {response.StatusCode}");
+                    if (response.Content is not null)
+                    {
+                        Program.helper.Log($"Response from Nexus Mods:\n{await response.Content.ReadAsStringAsync()}");
+                    }
+
+                    return null;
+                }
+
+                string content = await response.Content.ReadAsStringAsync();
+                ModFile? modFile = JsonSerializer.Deserialize<ModFile>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (modFile is null)
+                {
+                    Program.helper.Log($"Unable to get the file {fileId} of mod {modId} from Nexus Mods");
+                    Program.helper.Log($"Response from Nexus Mods:\n{content}");
+
+                    return null;
+                }
+
+                UpdateRequestCounts(response.Headers);
+
+                return modFile;
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to get the file {fileId} of mod {modId} from Nexus Mods: {ex}", Helper.Status.Alert);
+            }
+
+            return null;
+        }
+
         public async Task<ModFile?> GetFileByVersion(int modId, string version, string? modFlag = null, bool ignoreCategory = false)
         {
             if (SemVersion.TryParse(version.Replace("v", String.Empty), SemVersionStyles.Any, out var targetVersion) is false)
@@ -398,6 +442,11 @@ namespace Stardrop.Utilities.External
             var requestUri = new Uri(uri);
             var downloadCancellationSource = externalCancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(externalCancellationToken) : new CancellationTokenSource();
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, requestUri);
+            var filePath = Path.Combine(Pathing.GetNexusPath(), fileName);
+
+            // FileMode.CreateNew throws on a name that is already taken, which would otherwise send a download that
+            // never started down the cleanup path below and delete whatever already held the name
+            bool hasCreatedFile = false;
             try
             {
 
@@ -408,7 +457,9 @@ namespace Stardrop.Utilities.External
                     return new(DownloadResultKind.Failed, null);
                 }
 
-                using var fileStream = new FileStream(Path.Combine(Pathing.GetNexusPath(), fileName), FileMode.CreateNew);
+                using var fileStream = new FileStream(filePath, FileMode.CreateNew);
+                hasCreatedFile = true;
+
                 using var downloadStream = await response.Content.ReadAsStreamAsync();
 
                 long? contentLength = response.Content.Headers.ContentLength;
@@ -425,12 +476,16 @@ namespace Stardrop.Utilities.External
                 }
 
                 DownloadCompleted?.Invoke(this, new ModDownloadCompletedEventArgs(requestUri));
-                return new(DownloadResultKind.Success, Path.Combine(Pathing.GetNexusPath(), fileName));
+                return new(DownloadResultKind.Success, filePath);
             }
             catch (Exception ex)
             {
-                // Delete partially downloaded file, if any.
-                File.Delete(Path.Combine(Pathing.GetNexusPath(), fileName));
+                // Delete partially downloaded file, if any
+                if (hasCreatedFile)
+                {
+                    File.Delete(filePath);
+                }
+
                 if (ex is TaskCanceledException)
                 {
                     Program.helper.Log($"The user canceled the download from Nexus from URL {uri}", Helper.Status.Info);

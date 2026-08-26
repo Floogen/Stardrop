@@ -607,10 +607,21 @@ namespace Stardrop.Views
         private void ReuseInstalledMods(CollectionInstall collection)
         {
             var candidates = _viewModel.Mods.Where(m => m.IsFromCollection is false && m.NexusModId is not null).ToList();
+
+            // A mod pinned more than once in one collection is pinned to a different file each time and an installed
+            // copy carries no file ID, so there is no telling which of those entries it would be standing in for
+            var repeatedModIds = collection.Mods.Where(m => m.NexusModId is not null).GroupBy(m => m.NexusModId!.Value).Where(g => g.Count() > 1).Select(g => g.Key).ToHashSet();
+
             foreach (var entry in collection.Mods.Where(e => e.Status is CollectionModStatus.Pending or CollectionModStatus.AwaitingManualDownload))
             {
                 if (entry.IsFromNexus() is false)
                 {
+                    continue;
+                }
+
+                if (repeatedModIds.Contains(entry.NexusModId!.Value))
+                {
+                    Program.helper.Log($"Not reusing an installed copy for the collection entry {entry.Name}, as this collection pins more than one file from mod {entry.NexusModId}");
                     continue;
                 }
 
@@ -708,8 +719,10 @@ namespace Stardrop.Views
 
             entry.Status = CollectionModStatus.Downloading;
 
-            // Collection files are frequently not in the MAIN category, so category filtering has to be relaxed here
-            var modFile = await Nexus.Client.GetFileByVersion(entry.NexusModId!.Value, String.IsNullOrEmpty(entry.Version) ? String.Empty : entry.Version, ignoreCategory: true);
+            // Asked for by file ID rather than by version. A mod can publish several files under one version number
+            // and a collection routinely pins more than one of them, so matching on version hands every entry that
+            // shares a mod ID the same file and only its name is used, which then collides on the way to disk
+            var modFile = await Nexus.Client.GetFile(entry.NexusModId!.Value, entry.NexusFileId!.Value);
             if (modFile is null || String.IsNullOrEmpty(modFile.Name))
             {
                 entry.Status = CollectionModStatus.Failed;
@@ -717,14 +730,14 @@ namespace Stardrop.Views
                 return null;
             }
 
-            var downloadLink = await Nexus.Client.GetFileDownloadLink(entry.NexusModId.Value, entry.NexusFileId!.Value, serverName: EnumParser.GetDescription(Program.settings.PreferredNexusServer));
+            var downloadLink = await Nexus.Client.GetFileDownloadLink(entry.NexusModId.Value, entry.NexusFileId.Value, serverName: EnumParser.GetDescription(Program.settings.PreferredNexusServer));
             if (String.IsNullOrEmpty(downloadLink))
             {
                 entry.Status = CollectionModStatus.AwaitingManualDownload;
                 return null;
             }
 
-            var downloadResult = await Nexus.Client.DownloadFileAndGetPath(downloadLink, modFile.Name);
+            var downloadResult = await Nexus.Client.DownloadFileAndGetPath(downloadLink, GetAvailableDownloadName(modFile.Name, entry.NexusFileId.Value), cancellationToken);
             if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
             {
                 entry.Status = CollectionModStatus.Skipped;
@@ -739,6 +752,35 @@ namespace Stardrop.Views
             }
 
             return downloadResult.DownloadedModFilePath;
+        }
+
+        /// <summary>
+        /// A download name nothing in the Nexus folder is already using. Two entries in one collection can point at
+        /// files that were uploaded under the same name and a download cannot write over a name that is taken, so
+        /// the file ID is folded in where that happens.
+        /// </summary>
+        private static string GetAvailableDownloadName(string fileName, int fileId)
+        {
+            var downloadPath = Pathing.GetNexusPath();
+            if (File.Exists(Path.Combine(downloadPath, fileName)) is false)
+            {
+                return fileName;
+            }
+
+            var baseName = Path.GetFileNameWithoutExtension(fileName);
+            var extension = Path.GetExtension(fileName);
+
+            var candidate = $"{baseName} [{fileId}]{extension}";
+            int suffix = 2;
+            while (File.Exists(Path.Combine(downloadPath, candidate)))
+            {
+                candidate = $"{baseName} [{fileId}] ({suffix}){extension}";
+                suffix++;
+            }
+
+            Program.helper.Log($"Downloading the file {fileId} as {candidate}, as {fileName} is already taken in the Nexus folder");
+
+            return candidate;
         }
 
         /// <summary>
