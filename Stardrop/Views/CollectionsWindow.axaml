@@ -70,6 +70,9 @@
 		<Style Selector="TextBlock.sortable:pointerover">
 			<Setter Property="Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
 		</Style>
+		<Style Selector="Button#removeButton">
+			<Setter Property="BorderBrush" Value="{DynamicResource UpdateBrokenBrush}" />
+		</Style>
 		<Style Selector="ScrollViewer">
 			<Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}" />
 		</Style>
@@ -131,7 +134,7 @@
 						<TextBlock Classes="detail" Margin="0 6 0 0" Text="{Binding SelectedCollection.Progress}" />
 					</StackPanel>
 
-					<CheckBox DockPanel.Dock="Top" Name="outstandingOnlyCheckBox" Margin="0 0 0 6" IsChecked="{Binding ShowOutstandingOnly}" Content="{i18n:Translate ui.collections_window.checkbox.outstanding_only}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
+					<CheckBox DockPanel.Dock="Top" Name="missingOnlyCheckBox" Margin="0 0 0 6" IsChecked="{Binding ShowMissingOnly}" Content="{i18n:Translate ui.collections_window.checkbox.missing_only}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
 
 					<Grid DockPanel.Dock="Top" ColumnDefinitions="1.4* 0.5* 1.6*" Height="22">
 						<TextBlock Classes="header sortable" Grid.Column="0" Cursor="Hand" Tapped="OnNameHeaderTapped" Text="{Binding NameHeader}" FontWeight="Bold" />
@@ -156,13 +159,14 @@
 			</Border>
 		</Grid>
 
-		<!-- Mirrors the content grid above, so the button lines up under the collection list -->
+		<!-- Mirrors the content grid above, so each button lines up under the panel it acts on -->
 		<Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="20 5 20 0">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="260" />
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 			<Button Name="openPageButton" Grid.Column="0" HorizontalAlignment="Center" IsEnabled="{Binding HasSelection}" Content="{i18n:Translate ui.collections_window.button.open_page}" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+			<Button Name="removeButton" Grid.Column="1" HorizontalAlignment="Center" IsEnabled="{Binding HasSelection}" Content="{i18n:Translate ui.collections_window.button.remove}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
 		</Grid>
 	</Grid>
 </Window>

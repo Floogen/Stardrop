@@ -1038,14 +1038,6 @@ namespace Stardrop.Views
             editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             await editorWindow.ShowDialog(this);
 
-            // A removed collection takes its mod folder with it, so the grid has to be rebuilt before a profile is
-            // reapplied against a list that still contains mods which are no longer on disk
-            if (_editorView.HasRemovedCollections)
-            {
-                _viewModel.DiscoverMods(Pathing.defaultModPath);
-                _editorView.ClearRemovedCollectionsFlag();
-            }
-
             // Restore the previously selected profile
             if (_editorView.Profiles.Any(p => p.Name == oldProfile.Name))
             {
@@ -1402,16 +1394,44 @@ namespace Stardrop.Views
         }
 
         /// <summary>
-        /// Opens the collections window. Nothing is passed in, as it reads the cached records itself, and nothing
-        /// comes back out, as it only reports on what is installed rather than changing it.
+        /// Opens the collections window. It reads the cached records itself, so the only things handed to it are the
+        /// profile list, since removing a collection has to deal with the profile that was generated for it, and a
+        /// callback for putting the grid back in order afterwards.
         /// </summary>
         private async Task DisplayCollectionsWindow()
         {
             Program.helper.Log($"Opening collections window");
 
-            var collectionsWindow = new CollectionsWindow();
+            var collectionsWindow = new CollectionsWindow(_editorView, HandleCollectionRemoved);
             collectionsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             await collectionsWindow.ShowDialog(this);
+        }
+
+        /// <summary>
+        /// Rebuilds the grid after a collection is removed. Its mod folder went with it, so the list has to be
+        /// discovered again before any profile is applied against it, and the selection has to fall back where the
+        /// profile that was selected is one of the things that just went away.
+        /// </summary>
+        private void HandleCollectionRemoved()
+        {
+            var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
+            var selectedProfile = profileComboBox.SelectedItem as Profile;
+
+            _viewModel.DiscoverMods(Pathing.defaultModPath);
+
+            // Applied by hand where the profile survived, as it is the same instance and reassigning it would raise
+            // nothing, leaving every freshly discovered mod disabled
+            if (selectedProfile is not null && _editorView.Profiles.Contains(selectedProfile))
+            {
+                _viewModel.EnableModsByProfile(selectedProfile);
+            }
+            else
+            {
+                profileComboBox.SelectedIndex = 0;
+            }
+
+            _viewModel.RefreshModCounts();
+            _viewModel.UpdateFilter();
         }
 
         private async Task HandleStardropUpdateCheck(bool manualCheck = false)

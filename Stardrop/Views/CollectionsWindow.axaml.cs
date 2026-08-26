@@ -2,20 +2,27 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Stardrop.Models;
+using Stardrop.Models.Data.Enums;
 using Stardrop.Utilities;
+using Stardrop.Utilities.Internal;
 using Stardrop.ViewModels;
 using System;
+using System.Linq;
 
 namespace Stardrop.Views
 {
     /// <summary>
-    /// Read-only view over the installed collection records. Its job is to give the entries a collection could not
-    /// install somewhere the user can come back to, since the summary shown once at the end of an install is gone
-    /// by the time they have finished fetching anything by hand.
+    /// View over the installed collection records. Its job is to give the entries a collection could not install
+    /// somewhere the user can come back to, since the summary shown once at the end of an install is gone by the
+    /// time they have finished fetching anything by hand. Removing a collection also lives here, as the profile
+    /// editor now treats a generated profile as read-only.
     /// </summary>
     public partial class CollectionsWindow : Window
     {
         private readonly CollectionsWindowViewModel _viewModel = new CollectionsWindowViewModel();
+        private readonly ProfileEditorViewModel? _editorView;
+        private readonly Action? _onCollectionRemoved;
 
         public CollectionsWindow()
         {
@@ -35,12 +42,19 @@ namespace Stardrop.Views
             // Handle buttons
             this.FindControl<Button>("exitButton").Click += delegate { this.Close(); };
             this.FindControl<Button>("openPageButton").Click += OpenPageButton_Click;
+            this.FindControl<Button>("removeButton").Click += RemoveButton_Click;
 
             // Skipped in the previewer, which has no paths set up to read the cache from
             if (Design.IsDesignMode is false)
             {
                 _viewModel.Load();
             }
+        }
+
+        public CollectionsWindow(ProfileEditorViewModel editorView, Action onCollectionRemoved) : this()
+        {
+            _editorView = editorView;
+            _onCollectionRemoved = onCollectionRemoved;
         }
 
         private void OpenPageButton_Click(object? sender, RoutedEventArgs e)
@@ -51,6 +65,67 @@ namespace Stardrop.Views
             }
 
             Toolkit.OpenBrowser(_viewModel.SelectedCollection.PageUri);
+        }
+
+        /// <summary>
+        /// Removes a collection, taking its downloaded mods with it unless the user says otherwise. Keeping them
+        /// detaches the generated profile rather than deleting it, so the mods are still named by something after
+        /// the record they came from is gone.
+        /// </summary>
+        private async void RemoveButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (_viewModel.SelectedCollection is not CollectionView collection || _editorView is null)
+            {
+                return;
+            }
+
+            var dependentProfiles = CollectionsWindowViewModel.GetDependentProfiles(_editorView.Profiles, collection);
+
+            var message = String.Format(Program.translation.Get("ui.message.confirm_collection_delete"), collection.Name, collection.InstalledModCount);
+            if (dependentProfiles.Count > 0)
+            {
+                message += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_delete_dependents"), dependentProfiles.Count);
+            }
+
+            message += Environment.NewLine + Environment.NewLine + Program.translation.Get("ui.message.collection_delete_keep_note");
+
+            var requestWindow = new FlexibleOptionWindow(message, Program.translation.Get("ui.message.collection_delete_with_mods"), Program.translation.Get("ui.message.collection_delete_keep_mods"), Program.translation.Get("internal.cancel"), windowWidth: 460)
+            {
+                Topmost = true
+            };
+
+            Choice response = await requestWindow.ShowDialog<Choice>(this);
+            if (response == Choice.Third)
+            {
+                return;
+            }
+
+            var deleteInstalledMods = response == Choice.First;
+            Program.helper.Log($"Removing the collection {collection.SourceId}{(deleteInstalledMods ? " along with its downloaded mods" : ", keeping its downloaded mods")}");
+
+            CollectionCache.Delete(collection.SourceId, deleteInstalledMods);
+            HandleGeneratedProfile(collection, deleteInstalledMods);
+
+            _viewModel.Load();
+            _onCollectionRemoved?.Invoke();
+        }
+
+        private void HandleGeneratedProfile(CollectionView collection, bool deleteInstalledMods)
+        {
+            if (_editorView is null || _editorView.Profiles.FirstOrDefault(p => p.Name.Equals(collection.ProfileName, StringComparison.OrdinalIgnoreCase)) is not Profile profile)
+            {
+                return;
+            }
+
+            // With the mods gone the profile would enable nothing, so it goes with them. Kept and detached
+            // otherwise, since it is then the only record of which of those mods the curator had enabled
+            if (deleteInstalledMods)
+            {
+                _editorView.RemoveProfileNow(profile);
+                return;
+            }
+
+            _editorView.DetachCollectionProfile(profile);
         }
 
         private void OnNameHeaderTapped(object? sender, RoutedEventArgs e)

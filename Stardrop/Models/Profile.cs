@@ -65,5 +65,16 @@ namespace Stardrop.Models
 
             return copy;
         }
+
+        /// <summary>
+        /// Turns a collection's generated profile into an ordinary one, keeping its name and its enabled mods. Used
+        /// when a collection is removed but its downloaded mods are kept, since the profile is then the only record
+        /// of which of those mods the curator had enabled.
+        /// </summary>
+        public void DetachFromCollection()
+        {
+            IsProtected = false;
+            SourceId = null;
+        }
     }
 }

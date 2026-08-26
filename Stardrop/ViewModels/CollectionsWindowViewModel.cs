@@ -1,5 +1,6 @@
 using ReactiveUI;
 using Semver;
+using Stardrop.Models;
 using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Utilities.Internal;
@@ -29,7 +30,7 @@ namespace Stardrop.ViewModels
         public string Status { get; }
         public string? PageUri { get; }
         /// <summary>Whether the user still has to do something about this entry, which is what the filter reads</summary>
-        public bool IsOutstanding { get; }
+        public bool IsMissing { get; }
         /// <summary>Parsed for sorting, so that 10.0 lands above 9.0 rather than below it. Null when unparseable</summary>
         public SemVersion? SortableVersion { get; }
 
@@ -41,8 +42,8 @@ namespace Stardrop.ViewModels
             PageUri = collection.GetEntryPageUri(entry);
             SortableVersion = SemVersion.TryParse(Version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : null;
 
-            // Skipped entries are optional ones the user turned down, so they are accounted for rather than pending
-            IsOutstanding = entry.IsSatisfied() is false && entry.Status is not CollectionModStatus.Skipped;
+            // Skipped entries are optional ones the user turned down, so they are accounted for rather than missing
+            IsMissing = entry.IsSatisfied() is false && entry.Status is not CollectionModStatus.Skipped;
         }
 
         private static string DescribeStatus(CollectionModEntry entry)
@@ -73,6 +74,8 @@ namespace Stardrop.ViewModels
     /// </summary>
     public class CollectionView
     {
+        public string SourceId { get; }
+        public string ProfileName { get; }
         public string Name { get; }
         public string Curator { get; }
         public string Revision { get; }
@@ -80,16 +83,20 @@ namespace Stardrop.ViewModels
         public string Progress { get; }
         public string PageUri { get; }
         public bool HasCurator { get; }
+        public int InstalledModCount { get; }
         public List<CollectionEntryView> Entries { get; }
 
         public CollectionView(CollectionInstall collection)
         {
+            SourceId = collection.SourceId;
+            ProfileName = collection.ProfileName;
             Name = String.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
             HasCurator = String.IsNullOrEmpty(collection.Curator) is false;
             Curator = HasCurator ? String.Format(Program.translation.Get("ui.collections_window.labels.curator"), collection.Curator) : String.Empty;
             Revision = String.Format(Program.translation.Get("ui.collections_window.labels.revision"), collection.RevisionNumber, collection.InstallTimestamp.ToShortDateString());
             Profile = String.Format(Program.translation.Get("ui.collections_window.labels.profile"), collection.ProfileName);
-            Progress = String.Format(Program.translation.Get("ui.collections_window.labels.installed"), collection.GetInstalledCount(), collection.GetModCount());
+            InstalledModCount = collection.GetInstalledCount();
+            Progress = String.Format(Program.translation.Get("ui.collections_window.labels.installed"), InstalledModCount, collection.GetModCount());
             PageUri = collection.GetPageUri();
 
             Entries = collection.Mods.Select(m => new CollectionEntryView(collection, m)).ToList();
@@ -113,13 +120,13 @@ namespace Stardrop.ViewModels
             }
         }
 
-        private bool _showOutstandingOnly;
-        public bool ShowOutstandingOnly
+        private bool _showMissingOnly;
+        public bool ShowMissingOnly
         {
-            get { return _showOutstandingOnly; }
+            get { return _showMissingOnly; }
             set
             {
-                this.RaiseAndSetIfChanged(ref _showOutstandingOnly, value);
+                this.RaiseAndSetIfChanged(ref _showMissingOnly, value);
                 RefreshEntries();
             }
         }
@@ -127,7 +134,7 @@ namespace Stardrop.ViewModels
         // Built on CompareSortOrderTo, so a prerelease sorts below the release it leads up to
         private static readonly IComparer<SemVersion?> _versionComparer = Comparer<SemVersion?>.Create((left, right) => left is null || right is null ? 0 : left.CompareSortOrderTo(right));
 
-        // Status ascending puts the outstanding entries on top, which is what someone opening this window is here for
+        // Status ascending puts the missing entries on top, which is what someone opening this window is here for
         private CollectionSortColumn _sortColumn = CollectionSortColumn.Status;
         private bool _sortDescending;
 
@@ -144,6 +151,8 @@ namespace Stardrop.ViewModels
         /// </summary>
         public void Load()
         {
+            var previousSourceId = _selectedCollection?.SourceId;
+
             Collections.Clear();
 
             foreach (var collection in CollectionCache.LoadAll().OrderByDescending(c => c.InstallTimestamp))
@@ -153,7 +162,18 @@ namespace Stardrop.ViewModels
 
             this.RaisePropertyChanged(nameof(HasCollections));
 
-            SelectedCollection = Collections.FirstOrDefault();
+            // Held across a reload where the collection is still there, so a refresh does not move the user
+            SelectedCollection = Collections.FirstOrDefault(c => c.SourceId.Equals(previousSourceId, StringComparison.OrdinalIgnoreCase)) ?? Collections.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// The profiles whose enabled mods live in the given collection's folder, leaving out the collection's own
+        /// generated profile. Removing the collection's mods breaks every one of them, so the count is what the
+        /// confirmation is built around.
+        /// </summary>
+        public static List<Profile> GetDependentProfiles(IEnumerable<Profile> profiles, CollectionView collection)
+        {
+            return profiles.Where(p => p.Name.Equals(collection.ProfileName, StringComparison.OrdinalIgnoreCase) is false && p.EnabledModIds.Any(m => collection.SourceId.Equals(m.SourceId, StringComparison.OrdinalIgnoreCase))).ToList();
         }
 
         /// <summary>
@@ -199,7 +219,7 @@ namespace Stardrop.ViewModels
                 return;
             }
 
-            foreach (var entry in SortEntries(_selectedCollection.Entries.Where(e => _showOutstandingOnly is false || e.IsOutstanding)))
+            foreach (var entry in SortEntries(_selectedCollection.Entries.Where(e => _showMissingOnly is false || e.IsMissing)))
             {
                 Entries.Add(entry);
             }
@@ -226,8 +246,8 @@ namespace Stardrop.ViewModels
 
                 default:
                     var byStatus = _sortDescending
-                        ? entries.OrderBy(e => e.IsOutstanding).ThenByDescending(e => e.Status, StringComparer.OrdinalIgnoreCase)
-                        : entries.OrderByDescending(e => e.IsOutstanding).ThenBy(e => e.Status, StringComparer.OrdinalIgnoreCase);
+                        ? entries.OrderBy(e => e.IsMissing).ThenByDescending(e => e.Status, StringComparer.OrdinalIgnoreCase)
+                        : entries.OrderByDescending(e => e.IsMissing).ThenBy(e => e.Status, StringComparer.OrdinalIgnoreCase);
 
                     return byStatus.ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase);
             }

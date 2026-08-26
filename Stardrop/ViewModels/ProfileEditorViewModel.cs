@@ -1,5 +1,4 @@
 ﻿using Stardrop.Models;
-using Stardrop.Utilities.Internal;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,12 +18,6 @@ namespace Stardrop.ViewModels
 
         private readonly string _profileFilePath;
         private List<Mod> _mods;
-
-        // Deletion is deferred until the editor is applied, so the choice made at click time is held here until then
-        private readonly Dictionary<string, bool> _pendingCollectionRemovals = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>Set when a collection was removed, so the caller knows the mod list needs rebuilding</summary>
-        public bool HasRemovedCollections { get; private set; }
 
         public ProfileEditorViewModel(string profilesFilePath, List<Mod> mods)
         {
@@ -128,18 +121,6 @@ namespace Stardrop.ViewModels
             {
                 Profiles.Add(profile);
             }
-
-            // A confirmed collection removal that was never applied has to go too
-            _pendingCollectionRemovals.Clear();
-        }
-
-        /// <summary>
-        /// Records what should happen to a collection's downloaded mods when its profile is deleted. Called when the
-        /// user confirms and acted on later when the editor is applied.
-        /// </summary>
-        internal void MarkCollectionForRemoval(string sourceId, bool deleteInstalledMods)
-        {
-            _pendingCollectionRemovals[sourceId] = deleteInstalledMods;
         }
 
         internal void DeleteProfile(Profile profile)
@@ -153,37 +134,30 @@ namespace Stardrop.ViewModels
             {
                 File.Delete(fileFullName);
             }
-
-            RemoveCollectionForProfile(profile);
         }
 
         /// <summary>
-        /// Removes the collection record behind a profile and its downloaded mods where the user asked for that.
-        /// Mods the collection reused from elsewhere are never touched, as those belong to the user rather than to
-        /// the collection and live outside its folder.
+        /// Deletes a profile there and then, rather than on the editor being applied. For callers outside the editor
+        /// such as the collections window, which have no apply step to defer the work to.
         /// </summary>
-        private void RemoveCollectionForProfile(Profile profile)
+        internal void RemoveProfileNow(Profile profile)
         {
-            if (profile.IsFromCollection is false || String.IsNullOrEmpty(profile.SourceId))
-            {
-                return;
-            }
+            DeleteProfile(profile);
 
-            var deleteInstalledMods = _pendingCollectionRemovals.ContainsKey(profile.SourceId) && _pendingCollectionRemovals[profile.SourceId];
-            Program.helper.Log($"Removing the collection {profile.SourceId}{(deleteInstalledMods ? " along with its downloaded mods" : ", keeping its downloaded mods")}");
-
-            CollectionCache.Delete(profile.SourceId, deleteInstalledMods);
-            _pendingCollectionRemovals.Remove(profile.SourceId);
-
-            HasRemovedCollections = true;
+            Profiles.Remove(profile);
+            OldProfiles.RemoveAll(p => p.Name.Equals(profile.Name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
-        /// Clears the removal flag once the caller has rebuilt its mod list.
+        /// Turns a collection's generated profile into an ordinary one and writes it back. Used when a collection is
+        /// removed but its mods are kept, so that the profile outlives the record it was generated from instead of
+        /// becoming a protected profile with no collection behind it.
         /// </summary>
-        public void ClearRemovedCollectionsFlag()
+        internal void DetachCollectionProfile(Profile profile)
         {
-            HasRemovedCollections = false;
+            profile.DetachFromCollection();
+
+            CreateProfile(profile, force: true);
         }
 
         internal void UpdateProfile(Profile profile, ObservableCollection<Mod> mods)

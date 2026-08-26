@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models;
 using Stardrop.Models.Data.Enums;
-using Stardrop.Utilities.Internal;
 using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -66,7 +65,7 @@ namespace Stardrop.Views
             if (profile is not null)
             {
                 // A collection profile is protected against editing, though it still has to be removable
-                this.FindControl<Button>("deleteButton").IsEnabled = profile.IsProtected is false || profile.IsFromCollection;
+                this.FindControl<Button>("deleteButton").IsEnabled = profile.IsProtected is false;
                 this.FindControl<Button>("renameButton").IsEnabled = profile.IsProtected is false;
             }
         }
@@ -209,33 +208,12 @@ namespace Stardrop.Views
             naming.ShowDialog(this);
         }
 
-        private async void DeleteButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void DeleteButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var profile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
             if (profile is null)
             {
                 return;
-            }
-
-            // Removing a collection takes its downloaded mods with it unless the user says otherwise, so it needs
-            // asking about rather than being a silent side effect of deleting a profile
-            if (profile.IsFromCollection && String.IsNullOrEmpty(profile.SourceId) is false)
-            {
-                var collection = CollectionCache.Load(profile.SourceId);
-                var modCount = collection is null ? 0 : collection.Mods.Count(m => m.Status is CollectionModStatus.Installed);
-
-                var requestWindow = new FlexibleOptionWindow(String.Format(Program.translation.Get("ui.message.confirm_collection_delete"), profile.Name, modCount), Program.translation.Get("ui.message.collection_delete_with_mods"), Program.translation.Get("ui.message.collection_delete_keep_mods"), Program.translation.Get("internal.cancel"), windowWidth: 420)
-                {
-                    Topmost = true
-                };
-
-                Choice response = await requestWindow.ShowDialog<Choice>(this);
-                if (response == Choice.Third)
-                {
-                    return;
-                }
-
-                _viewModel.MarkCollectionForRemoval(profile.SourceId, response == Choice.First);
             }
 
             _viewModel.Profiles.Remove(profile);
