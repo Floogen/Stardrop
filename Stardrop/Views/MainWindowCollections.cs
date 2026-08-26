@@ -13,6 +13,7 @@ using Stardrop.Utilities.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -740,32 +741,128 @@ namespace Stardrop.Views
             return downloadResult.DownloadedModFilePath;
         }
 
+        /// <summary>
+        /// Locates a bundled entry inside the extracted collection archive. A curator can bundle a folder just as
+        /// readily as an archive and collection.json records the name with its extension stripped either way, so an
+        /// exact filename is only one of the three shapes a bundle arrives in. A folder is packed into an archive of
+        /// its own, as everything downstream reads an entry's contents out of one.
+        /// </summary>
         private static string? FindBundledFile(CollectionModEntry entry, string extractedArchivePath)
         {
             if (String.IsNullOrEmpty(extractedArchivePath) || Directory.Exists(extractedArchivePath) is false)
             {
-                entry.Status = CollectionModStatus.Failed;
-                entry.FailureReason = Program.translation.Get("ui.message.collection_reason_missing_bundle");
-                return null;
+                return FailBundledEntry(entry, "ui.message.collection_reason_missing_bundle");
             }
 
-            var searchName = String.IsNullOrEmpty(entry.FileExpression) ? entry.LogicalFilename : entry.FileExpression;
-            if (String.IsNullOrEmpty(searchName))
+            // Both names describe the same file and either can be absent, so whichever is present is tried in turn
+            var searchNames = new[] { entry.FileExpression, entry.LogicalFilename }.Where(n => String.IsNullOrEmpty(n) is false).Select(n => n!).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            if (searchNames.Count == 0)
             {
-                entry.Status = CollectionModStatus.Failed;
-                entry.FailureReason = Program.translation.Get("ui.message.collection_reason_missing_bundle");
-                return null;
+                return FailBundledEntry(entry, "ui.message.collection_reason_missing_bundle");
             }
 
-            var match = new DirectoryInfo(extractedArchivePath).GetFiles(searchName, SearchOption.AllDirectories).FirstOrDefault();
-            if (match is null)
+            var root = new DirectoryInfo(extractedArchivePath);
+            foreach (var searchName in searchNames)
             {
-                entry.Status = CollectionModStatus.Failed;
-                entry.FailureReason = Program.translation.Get("ui.message.collection_reason_missing_bundle");
-                return null;
+                if (MatchBundledFile(root, searchName) is FileInfo file)
+                {
+                    return file.FullName;
+                }
+
+                if (MatchBundledFolder(root, searchName) is not DirectoryInfo folder)
+                {
+                    continue;
+                }
+
+                var packedPath = PackBundledFolder(folder);
+                if (String.IsNullOrEmpty(packedPath))
+                {
+                    return FailBundledEntry(entry, "ui.message.collection_reason_bundle_pack_failed");
+                }
+
+                Program.helper.Log($"Packed the bundled folder {folder.Name} for {entry.Name}, so it installs by the same route as every other entry");
+
+                return packedPath;
             }
 
-            return match.FullName;
+            return FailBundledEntry(entry, "ui.message.collection_reason_missing_bundle");
+        }
+
+        /// <summary>
+        /// The file a bundled entry names, preferring an exact match and falling back to the same name under any
+        /// extension. An archive wins that fallback, as a curator bundling one alongside a loose file of the same
+        /// name means the archive.
+        /// </summary>
+        private static FileInfo? MatchBundledFile(DirectoryInfo root, string searchName)
+        {
+            try
+            {
+                if (root.GetFiles(searchName, SearchOption.AllDirectories).FirstOrDefault() is FileInfo exact)
+                {
+                    return exact;
+                }
+
+                var candidates = root.GetFiles($"{searchName}.*", SearchOption.AllDirectories);
+
+                return candidates.FirstOrDefault(f => IsArchiveFile(f.FullName)) ?? candidates.FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to search {root.FullName} for the bundled file {searchName}: {ex.Message}", Helper.Status.Warning);
+
+                return null;
+            }
+        }
+
+        private static DirectoryInfo? MatchBundledFolder(DirectoryInfo root, string searchName)
+        {
+            try
+            {
+                return root.GetDirectories(searchName, SearchOption.AllDirectories).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to search {root.FullName} for the bundled folder {searchName}: {ex.Message}", Helper.Status.Warning);
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Packs a bundled folder into an archive of its own, written alongside the collection's other downloads so
+        /// that the cleanup after installing removes it along with the rest. The folder is kept as the archive's
+        /// root rather than being flattened into it, since its name is what the mod ends up installed as.
+        /// </summary>
+        private static string? PackBundledFolder(DirectoryInfo folder)
+        {
+            try
+            {
+                var downloadPath = Pathing.GetNexusPath();
+                Directory.CreateDirectory(downloadPath);
+
+                // Removed first, as CreateFromDirectory refuses to write over a file that already exists
+                var archivePath = Path.Combine(downloadPath, $"{folder.Name}.zip");
+                TryDelete(archivePath);
+
+                // Uncompressed, as this is read back and deleted within the same install
+                ZipFile.CreateFromDirectory(folder.FullName, archivePath, CompressionLevel.NoCompression, includeBaseDirectory: true);
+
+                return archivePath;
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to pack the bundled folder {folder.FullName}: {ex}", Helper.Status.Alert);
+
+                return null;
+            }
+        }
+
+        private static string? FailBundledEntry(CollectionModEntry entry, string reasonKey)
+        {
+            entry.Status = CollectionModStatus.Failed;
+            entry.FailureReason = Program.translation.Get(reasonKey);
+
+            return null;
         }
 
         /// <summary>

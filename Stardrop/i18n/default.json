@@ -308,6 +308,7 @@
   "ui.message.collection_reason_no_file": "no matching file on Nexus Mods",
   "ui.message.collection_reason_download_failed": "download failed",
   "ui.message.collection_reason_missing_bundle": "bundled file not found in the archive",
+  "ui.message.collection_reason_bundle_pack_failed": "the bundled folder could not be prepared for install",
   "ui.message.collection_reason_no_manifest": "the downloaded archive contained no mod manifest",
   "ui.message.collection_reused": "{0} mod(s) were already installed and will be used as-is.",
   "ui.message.collection_overlays": "{0} configuration file(s) from the curator were applied:",
