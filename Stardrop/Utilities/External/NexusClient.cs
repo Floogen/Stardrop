@@ -167,7 +167,7 @@ namespace Stardrop.Utilities.External
                 }
 
                 Program.settings.NexusDetails.Username = validationModel.Name;
-                Program.settings.NexusDetails.IsPremium = validationModel.IsPremium;
+                Program.settings.NexusDetails.IsPremium = false;// validationModel.IsPremium;
                 _settings = Program.settings.NexusDetails;
 
                 UpdateRequestCounts(response.Headers);
@@ -352,6 +352,32 @@ namespace Stardrop.Utilities.External
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Pulls the domain, mod ID and file ID out of an nxm mod link. The key and expiry the link also carries are
+        /// left to <see cref="GetFileDownloadLink(NXM, string?)"/>, as they only matter at the point of downloading.
+        /// </summary>
+        public static bool TryParseModNxmLink(string link, out string domainName, out int modId, out int fileId)
+        {
+            domainName = String.Empty;
+            modId = 0;
+            fileId = 0;
+
+            if (String.IsNullOrEmpty(link))
+            {
+                return false;
+            }
+
+            var match = Regex.Match(Regex.Unescape(link), NxmModPattern);
+            if (match.Success is false)
+            {
+                return false;
+            }
+
+            domainName = match.Groups["domain"].ToString().ToLower();
+
+            return Int32.TryParse(match.Groups["mod"].ToString(), out modId) && Int32.TryParse(match.Groups["file"].ToString(), out fileId);
         }
 
         public async Task<string?> GetFileDownloadLink(NXM nxmData, string? serverName = null)

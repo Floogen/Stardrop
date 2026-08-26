@@ -57,6 +57,16 @@ namespace Stardrop.Views
             _onCollectionRemoved = onCollectionRemoved;
         }
 
+        /// <summary>
+        /// Re-reads the cached records. Used when something lands while this window is open, such as a mod fetched
+        /// through the link on one of its own rows, so that the entry stops reporting itself as missing. The
+        /// selected collection is held across the reload, so the user is not moved off what they were looking at.
+        /// </summary>
+        public void RefreshCollections()
+        {
+            _viewModel.Load();
+        }
+
         private void OpenPageButton_Click(object? sender, RoutedEventArgs e)
         {
             if (_viewModel.SelectedCollection is null)

@@ -308,6 +308,7 @@
   "ui.message.collection_delete_keep_mods": "Keep Mods",
   "ui.message.collection_manual_downloads": "{0} mod(s) need to be downloaded manually:",
   "ui.message.collection_failures": "{0} mod(s) could not be installed:",
+  "ui.message.collection_entries_truncated": "... and {0} more. See the Collections menu for details.",
   "ui.message.collection_curator_notes": "Notes from the curator:",
   "ui.message.collection_reason_no_file": "no matching file on Nexus Mods",
   "ui.message.collection_reason_download_failed": "download failed",
@@ -317,6 +318,10 @@
   "ui.message.collection_conflicts": "The curator flagged {0} conflict(s) between mods in this collection:",
   "ui.message.collection_conflict_entry": "{0} conflicts with {1}",
   "ui.message.collection_reason_overlay_failed": "the file could not be placed",
+  "ui.message.confirm_collection_entry_capture": "{0} is required by the following collection(s):\n\n{1}\n\nWould you like to install it as part of the collection, instead of a standalone mod?\n\nYou can disable this confirmation in the settings menu.",
+  "ui.message.collection_entry_installed": "Installed {0} into the collection {1}.",
+  "ui.message.collection_entry_failed": "Failed to install {0} into the collection {1}.",
+  "ui.message.collection_entry_remaining": "{0} mod(s) in that collection still need to be downloaded manually.",
   "ui.main_window.buttons.show_all_mod_sources": "Show All Sources",
   "ui.main_window.tooltips.show_all_mod_sources": "Show mods belonging to collections you are not currently using.",
 

@@ -25,6 +25,9 @@ namespace Stardrop.Views
         /// <summary>Extensions AddMods is able to open, used to tell an archive apart from a loose file</summary>
         private static readonly string[] _archiveExtensions = new string[] { ".zip", ".7z", ".rar", ".tar", ".gz", ".bz2", ".xz" };
 
+        /// <summary>How many entries a list in the install summary names before it gives a count instead</summary>
+        private const int _maxListedEntries = 5;
+
         /// <summary>
         /// Handles an nxm collection link end to end: resolve the revision, pull the archive, read collection.json,
         /// install what can be installed and generate a profile for the result.
@@ -898,6 +901,279 @@ namespace Stardrop.Views
         }
 
         /// <summary>
+        /// Handles an nxm mod link that matches an entry a collection is still waiting on. A Mod Manager Download
+        /// link carries the key and expiry pair that authorises the download, so this is the one route a non-premium
+        /// account has into a collection Stardrop could not fetch on its behalf.
+        /// </summary>
+        /// <returns>True when the link was handled here, false when it should install as an ordinary mod</returns>
+        private async Task<bool> TryProcessCollectionEntryLink(NXM nxmLink)
+        {
+            if (Nexus.Client is null || String.IsNullOrEmpty(nxmLink.Link))
+            {
+                return false;
+            }
+
+            if (NexusClient.TryParseModNxmLink(nxmLink.Link, out _, out var modId, out var fileId) is false)
+            {
+                return false;
+            }
+
+            var matches = FindUnsatisfiedCollectionEntries(modId, fileId);
+            if (matches.Count == 0)
+            {
+                return false;
+            }
+
+            var entryName = matches[0].Entry.Name;
+            Program.helper.Log($"The file {fileId} of mod {modId} is pinned by {matches.Count} collection(s) that are still waiting on it");
+
+            // Not asked while the collections window is open, as a link arriving then came from a row the user
+            // clicked in it. They have already picked the entry, so a prompt naming it back at them adds nothing
+            if (Program.settings.IsAskingBeforeAcceptingNXM && _collectionsWindow is null)
+            {
+                var collectionNames = String.Join(Environment.NewLine, matches.Select(m => $"  {m.Collection.Name}"));
+                var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_collection_entry_capture"), entryName, collectionNames));
+                KeepDialogAboveSiblings(requestWindow);
+
+                // Declining asks for the ordinary install rather than cancelling, so the caller carries on from here
+                if (await requestWindow.ShowDialog<bool>(this) is false)
+                {
+                    return false;
+                }
+            }
+
+            var fileSafetyResult = await Nexus.Client.ValidateFileSafety(modId, fileId);
+            if (fileSafetyResult is false)
+            {
+                await CreateWarningWindow(Program.translation.Get("ui.warning.file_quarantined"), Program.translation.Get("internal.ok"));
+                return true;
+            }
+
+            if (fileSafetyResult is null)
+            {
+                var safetyWindow = new MessageWindow(Program.translation.Get("ui.warning.failed_to_verify_mod_file"));
+                KeepDialogAboveSiblings(safetyWindow);
+
+                if (await safetyWindow.ShowDialog<bool>(this) is false)
+                {
+                    return true;
+                }
+            }
+
+            var archivePath = await DownloadCollectionEntryViaNXM(nxmLink, modId, fileId);
+            if (String.IsNullOrEmpty(archivePath))
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), entryName), Program.translation.Get("internal.ok"));
+                return true;
+            }
+
+            var summary = new List<string>();
+            foreach (var match in matches)
+            {
+                // Each collection installs into a folder of its own, so a file two of them pin lands in both
+                var wasInstalled = await InstallCollectionEntryArchive(match.Collection, match.Entry, archivePath);
+                if (wasInstalled)
+                {
+                    AddEntryToCollectionProfile(match.Collection, match.Entry);
+                }
+
+                // After the profile, as enabling the mod can rename the collection's record of which profile it owns
+                CollectionCache.Save(match.Collection);
+
+                if (wasInstalled is false)
+                {
+                    var reason = String.IsNullOrEmpty(match.Entry.FailureReason) ? String.Empty : $" ({match.Entry.FailureReason})";
+                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_failed"), entryName, match.Collection.Name) + reason);
+                    continue;
+                }
+
+                summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_installed"), entryName, match.Collection.Name));
+
+                var remaining = match.Collection.GetManualDownloads().Count;
+                if (remaining > 0)
+                {
+                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_remaining"), remaining));
+                }
+            }
+
+            // Stardrop's own copy rather than the user's, so this is the same cleanup the main install performs
+            TryDelete(archivePath);
+
+            _viewModel.EvaluateRequirements();
+            _viewModel.UpdateEndorsements();
+            _viewModel.UpdateFilter();
+
+            // The row the user clicked to get here is still showing the old status, so the window behind is brought
+            // back in step before the summary goes up in front of it
+            _collectionsWindow?.RefreshCollections();
+
+            await CreateWarningWindow(String.Join(Environment.NewLine, summary), Program.translation.Get("internal.ok"), windowWidth: 560);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Every cached collection pinning this exact file that has not accounted for it yet. Skipped entries count,
+        /// as an optional mod fetched by hand is the user asking for it, and so do failed ones, since downloading the
+        /// file again is the natural way to repair an entry whose first attempt did not land.
+        /// </summary>
+        private static List<(CollectionInstall Collection, CollectionModEntry Entry)> FindUnsatisfiedCollectionEntries(int modId, int fileId)
+        {
+            var matches = new List<(CollectionInstall Collection, CollectionModEntry Entry)>();
+            foreach (var collection in CollectionCache.LoadAll())
+            {
+                foreach (var entry in collection.Mods)
+                {
+                    if (entry.IsFromNexus() is false || entry.IsSatisfied())
+                    {
+                        continue;
+                    }
+
+                    if (entry.NexusModId!.Value != modId || entry.NexusFileId!.Value != fileId)
+                    {
+                        continue;
+                    }
+
+                    // A collection pins any given file once, so there is nothing further to find in this one
+                    matches.Add((collection, entry));
+                    break;
+                }
+            }
+
+            return matches;
+        }
+
+        /// <summary>
+        /// Fetches the file the link points at. The link itself is handed to GetFileDownloadLink rather than the two
+        /// IDs, as the key and expiry pair it carries is what authorises a download without a Premium account.
+        /// </summary>
+        private async Task<string?> DownloadCollectionEntryViaNXM(NXM nxmLink, int modId, int fileId)
+        {
+            if (Nexus.Client is null)
+            {
+                return null;
+            }
+
+            var modFile = await Nexus.Client.GetFile(modId, fileId);
+            if (modFile is null || String.IsNullOrEmpty(modFile.Name))
+            {
+                return null;
+            }
+
+            var downloadLink = await Nexus.Client.GetFileDownloadLink(nxmLink, EnumParser.GetDescription(Program.settings.PreferredNexusServer));
+            if (String.IsNullOrEmpty(downloadLink))
+            {
+                return null;
+            }
+
+            var downloadResult = await Nexus.Client.DownloadFileAndGetPath(downloadLink, GetAvailableDownloadName(modFile.Name, fileId));
+            if (downloadResult.ResultKind is not DownloadResultKind.Success)
+            {
+                return null;
+            }
+
+            return downloadResult.DownloadedModFilePath;
+        }
+
+        /// <summary>
+        /// Installs a single archive into the collection it belongs to, taking the same two paths the main install
+        /// does: an archive carrying a manifest goes through AddMods, while anything else is the curator's
+        /// configuration and is copied over the mods it targets.
+        /// </summary>
+        private async Task<bool> InstallCollectionEntryArchive(CollectionInstall collection, CollectionModEntry entry, string archivePath)
+        {
+            var installPath = Pathing.GetCollectionInstallPath(collection.SourceId);
+            Directory.CreateDirectory(installPath);
+
+            entry.SourceArchivePath = archivePath;
+
+            // The rules decide which entry wins where two of them write the same path, and an entry arriving after
+            // the install has finished is written last whatever rank they gave it
+            var installOrder = collection.GetInstallOrder();
+            var entryRank = installOrder.IndexOf(entry);
+            if (entryRank >= 0 && installOrder.Skip(entryRank + 1).Any(m => m.IsSatisfied()))
+            {
+                Program.helper.Log($"Writing {entry.Name} into {collection.Name} after entries the curator's rules place below it, as it arrived once the install had finished", Helper.Status.Warning);
+            }
+
+            if (IsArchiveFile(archivePath) is false || ArchiveHasManifest(archivePath) is false)
+            {
+                Program.helper.Log($"Handling {entry.Name} as configuration rather than as a mod, as it carries no manifest of its own");
+
+                var overwritten = GetOverwrittenTargets(collection, entry, archivePath);
+                if (TryExtractOverlay(archivePath, installPath) is false)
+                {
+                    entry.Status = CollectionModStatus.Failed;
+                    entry.FailureReason = Program.translation.Get("ui.message.collection_reason_overlay_failed");
+
+                    return false;
+                }
+
+                entry.OverlayTargets = overwritten;
+                entry.Status = CollectionModStatus.AppliedAsOverlay;
+
+                // Configuration only lands at this point, so the mods it touched need a second pass to report that
+                // they now have a config
+                _viewModel.DiscoverMods(Pathing.defaultModPath);
+
+                return true;
+            }
+
+            var installedModsByArchive = new Dictionary<string, List<Mod>>(StringComparer.OrdinalIgnoreCase);
+            await AddMods(new string[] { archivePath }, installPath, installedModsByArchive);
+
+            _viewModel.DiscoverMods(Pathing.defaultModPath);
+
+            var installedMods = _viewModel.Mods.Where(m => String.Equals(m.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
+            var entriesByArchive = new Dictionary<string, CollectionModEntry>(StringComparer.OrdinalIgnoreCase) { [archivePath] = entry };
+            RecordInstalledMods(entriesByArchive, installedModsByArchive, installedMods);
+
+            return entry.Status is CollectionModStatus.Installed;
+        }
+
+        /// <summary>
+        /// Adds a late arrival to the collection's generated profile. Matched on the source ID rather than the
+        /// profile name, as a user is free to rename the profile and the source ID is what ties the two together.
+        /// </summary>
+        private void AddEntryToCollectionProfile(CollectionInstall collection, CollectionModEntry entry)
+        {
+            var profile = _editorView.Profiles.FirstOrDefault(p => String.Equals(p.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase));
+            if (profile is null)
+            {
+                Program.helper.Log($"Installed {entry.Name} into {collection.Name}, though its profile could not be found to enable the mod in", Helper.Status.Warning);
+                return;
+            }
+
+            var addedReference = false;
+            foreach (var installedMod in entry.InstalledMods)
+            {
+                var reference = new ModReference(installedMod.UniqueId, collection.SourceId);
+                if (profile.EnabledModIds.Contains(reference))
+                {
+                    continue;
+                }
+
+                profile.EnabledModIds.Add(reference);
+                addedReference = true;
+            }
+
+            if (addedReference is false)
+            {
+                return;
+            }
+
+            _editorView.CreateProfile(profile, force: true);
+            collection.ProfileName = profile.Name;
+
+            // Only when it is the profile on screen, as enabling mods by a profile the user is not looking at would
+            // leave the grid showing one profile's mods under another's name
+            if (GetCurrentProfile() == profile)
+            {
+                _viewModel.EnableModsByProfile(profile);
+            }
+        }
+
+        /// <summary>
         /// One summary at the end, rather than a dialog per mod. A large collection can easily have a dozen entries
         /// Stardrop cannot fetch itself and a dozen modals is not a usable experience.
         /// </summary>
@@ -917,20 +1193,13 @@ namespace Stardrop.Views
             if (manualDownloads.Count > 0)
             {
                 summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_manual_downloads"), manualDownloads.Count);
-                foreach (var entry in manualDownloads)
-                {
-                    summary += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, collection.GetEntryPageUri(entry))}";
-                }
+                summary += BuildEntryLines(collection, manualDownloads, includeFailureReasons: false);
             }
 
             if (failures.Count > 0)
             {
                 summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_failures"), failures.Count);
-                foreach (var entry in failures)
-                {
-                    var reason = String.IsNullOrEmpty(entry.FailureReason) ? String.Empty : $" ({HyperlinkParser.Escape(entry.FailureReason)})";
-                    summary += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, collection.GetEntryPageUri(entry))}{reason}";
-                }
+                summary += BuildEntryLines(collection, failures, includeFailureReasons: true);
             }
 
             if (conflicts.Count > 0)
@@ -950,6 +1219,28 @@ namespace Stardrop.Views
             }
 
             await CreateWarningWindow(summary, Program.translation.Get("internal.ok"), windowWidth: 560, enableHyperlinks: true);
+        }
+
+        /// <summary>
+        /// One line per entry, stopping once the list would be long enough to push the rest of the summary off the
+        /// window. The heading above it already carries the full count and the collections window holds the whole
+        /// list, so what is left is reported as a number rather than named.
+        /// </summary>
+        private static string BuildEntryLines(CollectionInstall collection, List<CollectionModEntry> entries, bool includeFailureReasons)
+        {
+            var lines = String.Empty;
+            foreach (var entry in entries.Take(_maxListedEntries))
+            {
+                var reason = includeFailureReasons is false || String.IsNullOrEmpty(entry.FailureReason) ? String.Empty : $" ({HyperlinkParser.Escape(entry.FailureReason)})";
+                lines += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, collection.GetEntryPageUri(entry))}{reason}";
+            }
+
+            if (entries.Count > _maxListedEntries)
+            {
+                lines += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_entries_truncated"), entries.Count - _maxListedEntries))}";
+            }
+
+            return lines;
         }
     }
 }

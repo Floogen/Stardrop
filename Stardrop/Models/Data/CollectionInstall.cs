@@ -196,7 +196,13 @@ namespace Stardrop.Models.Data
             }
 
             // The collection pins a specific file, so the files tab saves the user hunting for it themselves
-            return $"https://www.nexusmods.com/{domainName}/mods/{entry.NexusModId}?tab=files&file_id={entry.NexusFileId}";
+            var filePage = $"https://www.nexusmods.com/{domainName}/mods/{entry.NexusModId}?tab=files&file_id={entry.NexusFileId}";
+
+            // An entry still waiting on the user gets the mod manager form of that link, which has Nexus hand the
+            // file back as an nxm link rather than leaving them to find the button on the page. An entry already
+            // accounted for keeps the plain page, since a download for one has no pending entry to match and would
+            // land as a loose second copy of a mod the collection already holds
+            return entry.IsSatisfied() ? filePage : $"{filePage}&nmm=1";
         }
 
         /// <summary>

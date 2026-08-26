@@ -52,6 +52,15 @@ namespace Stardrop.Views
 
         private string _lockReason;
         private CancellationTokenSource? _lockCancellationSource;
+        /// <summary>The window the lock state opened, so that unlocking closes that one rather than every dialog the main window owns</summary>
+        private WarningWindow? _lockWindow;
+        /// <summary>The collections window while it is open, which is the one window an nxm link is not made to wait on</summary>
+        private CollectionsWindow? _collectionsWindow;
+
+        /// <summary>Whether a tick is still working through the links an earlier one read out of the cache file</summary>
+        private bool _isProcessingNXMLinks;
+        /// <summary>Keeps the sentinel from writing a line a second for as long as the links are being held back</summary>
+        private bool _hasLoggedNXMHold;
 
         // Session related
         private LastSessionData _lastSessionDate;
@@ -424,6 +433,8 @@ namespace Stardrop.Views
         private async Task CreateWarningWindow(string warningText, string buttonText, double? windowWidth = null, bool enableHyperlinks = false)
         {
             var warningWindow = new WarningWindow(warningText, buttonText, windowWidth, enableHyperlinks);
+            KeepDialogAboveSiblings(warningWindow);
+
             await warningWindow.ShowDialog(this);
         }
 
@@ -480,6 +491,24 @@ namespace Stardrop.Views
                 return;
             }
 
+            // Handling a link locks the main window, and a lock arriving under a dialog would close it out from
+            // underneath whoever is waiting on it. The links stay in the cache file until the way is clear rather
+            // than being read out and dropped, as a collection's summary is exactly the window a user is looking at
+            // while they fetch the downloads it lists
+            if (_isProcessingNXMLinks || _viewModel.IsLocked || IsBlockedByOpenWindow())
+            {
+                if (_hasLoggedNXMHold is false)
+                {
+                    Program.helper.Log($"Holding the pending NXM link(s), as the main window is busy or has a window open over it", Helper.Status.Debug);
+                    _hasLoggedNXMHold = true;
+                }
+
+                return;
+            }
+
+            _hasLoggedNXMHold = false;
+            _isProcessingNXMLinks = true;
+
             try
             {
                 var nxmLinks = new List<NXM>();
@@ -528,17 +557,40 @@ namespace Stardrop.Views
                     Program.helper.Log($"Failed to delete the Links.json file: {ioEx}");
                 }
             }
+            finally
+            {
+                _isProcessingNXMLinks = false;
+            }
         }
 
         private async void _lockSentinelTimer_Tick(object? sender, EventArgs e)
         {
-            if (this.OwnedWindows.Any(w => w is WarningWindow) is false && _viewModel.IsLocked && String.IsNullOrEmpty(_lockReason) is false)
+            if (_lockWindow is not null || this.OwnedWindows.Any(w => w is WarningWindow) || _viewModel.IsLocked is false || String.IsNullOrEmpty(_lockReason))
             {
-                Program.helper.Log($"Detected lock state request ({_lockReason}): Locking main window!");
+                return;
+            }
 
-                var warningWindow = new WarningWindow(_lockReason, _viewModel, cancellationSource: _lockCancellationSource);
-                warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            Program.helper.Log($"Detected lock state request ({_lockReason}): Locking main window!");
+
+            var warningWindow = new WarningWindow(_lockReason, _viewModel, cancellationSource: _lockCancellationSource);
+            warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            KeepDialogAboveSiblings(warningWindow);
+
+            // Held onto so that SetLockState and UpdateLockWindow have this window to work with, rather than
+            // reaching for whichever one the main window happens to own at the time
+            _lockWindow = warningWindow;
+
+            try
+            {
                 await warningWindow.ShowDialog(this);
+            }
+            finally
+            {
+                // Only when it is still the current one, since SetLockState may already have replaced it
+                if (ReferenceEquals(_lockWindow, warningWindow))
+                {
+                    _lockWindow = null;
+                }
             }
         }
 
@@ -1404,7 +1456,19 @@ namespace Stardrop.Views
 
             var collectionsWindow = new CollectionsWindow(_editorView, HandleCollectionRemoved);
             collectionsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            await collectionsWindow.ShowDialog(this);
+
+            // Held so that an arriving nxm link can tell this window apart from a dialog waiting on an answer, and
+            // so that anything installed while it is open can put it back in step
+            _collectionsWindow = collectionsWindow;
+
+            try
+            {
+                await collectionsWindow.ShowDialog(this);
+            }
+            finally
+            {
+                _collectionsWindow = null;
+            }
         }
 
         /// <summary>
@@ -1834,6 +1898,9 @@ namespace Stardrop.Views
 
         internal async Task<bool> ProcessNXMLink(NXM nxmLink)
         {
+            // An nxm link arrives unannounced, so it waits its turn rather than starting an install underneath
+            // whatever the user is currently in the middle of
+            await WaitForMainWindowToBeFree();
 
             if (Nexus.Client is null)
             {
@@ -1856,6 +1923,13 @@ namespace Stardrop.Views
             if (await ValidateSMAPIPath() is false)
             {
                 return false;
+            }
+
+            // A file that a collection is still waiting on installs into that collection rather than loose, which is
+            // the only route a non-premium account has into one Stardrop could not fetch on its behalf
+            if (await TryProcessCollectionEntryLink(nxmLink))
+            {
+                return true;
             }
 
             Program.helper.Log($"Processing NXM link: {nxmLink.Link}");
@@ -1930,6 +2004,46 @@ namespace Stardrop.Views
         }
 
         /// <summary>
+        /// Waits until nothing is sitting over the main window. Installing locks the window, and a lock closes the
+        /// lock window, so starting one while a dialog is open would close that dialog out from underneath whoever
+        /// is waiting on its answer.
+        /// </summary>
+        private async Task WaitForMainWindowToBeFree()
+        {
+            if (_viewModel.IsLocked is false && IsBlockedByOpenWindow() is false)
+            {
+                return;
+            }
+
+            Program.helper.Log($"Waiting for the main window to be free before handling an NXM link");
+
+            while (_viewModel.IsLocked || IsBlockedByOpenWindow())
+            {
+                await Task.Delay(500);
+            }
+        }
+
+        /// <summary>
+        /// Whether anything the main window owns would be disturbed by an install starting. The collections window
+        /// is left out, as fetching the entries a collection is missing is the whole reason it exists: holding the
+        /// links it produces until it closes leaves the user clicking through mods to no visible effect.
+        /// </summary>
+        private bool IsBlockedByOpenWindow()
+        {
+            return this.OwnedWindows.Any(w => ReferenceEquals(w, _collectionsWindow) is false);
+        }
+
+        /// <summary>
+        /// Puts a dialog above the ones the main window already owns. Two dialogs sharing an owner have no order
+        /// between them, so one opened while another is up can land behind it. Left alone when there is nothing to
+        /// sit above, since a topmost window would otherwise float over other applications.
+        /// </summary>
+        private void KeepDialogAboveSiblings(Window dialog)
+        {
+            dialog.Topmost = this.OwnedWindows.Any(w => ReferenceEquals(w, dialog) is false);
+        }
+
+        /// <summary>
         /// Locks or unlocks the main window. The lock window itself is opened by the sentinel timer from this state,
         /// so calling UpdateLockWindow without having called this first does nothing.
         /// </summary>
@@ -1940,9 +2054,13 @@ namespace Stardrop.Views
             _lockReason = lockReason is null ? String.Empty : lockReason;
             _lockCancellationSource = isWindowLocked ? cancellationSource : null;
 
-            foreach (var ownedWindow in this.OwnedWindows.ToList())
+            // Only the window this state opened. Closing everything the main window owns takes any dialog the user
+            // is partway through with it, and an awaited ShowDialog closed from underneath returns the same result
+            // as the user dismissing it, so its caller carries on as though they had answered
+            if (_lockWindow is not null)
             {
-                ownedWindow.Close();
+                _lockWindow.Close();
+                _lockWindow = null;
             }
         }
 
@@ -1954,14 +2072,13 @@ namespace Stardrop.Views
                 return;
             }
 
-            WarningWindow? lockWindow = OwnedWindows.FirstOrDefault(w => w is WarningWindow) as WarningWindow;
-            if (lockWindow is null)
+            if (_lockWindow is null)
             {
                 return;
             }
 
             Program.helper.Log($"Successfully updated lock window!");
-            lockWindow.UpdateProgress(lockReason, progress, maxProgress);
+            _lockWindow.UpdateProgress(lockReason, progress, maxProgress);
         }
 
         private async Task<UpdateCache?> GetCachedModUpdates(List<Mod> mods, bool skipCacheCheck = false)
