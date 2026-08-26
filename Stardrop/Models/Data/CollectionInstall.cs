@@ -42,13 +42,6 @@ namespace Stardrop.Models.Data
 
         /// <summary>Name of the archive this entry was installed from. The archive itself is removed after installing, so this is a record rather than something to reuse</summary>
         public string? SourceArchivePath { get; set; }
-        /// <summary>
-        /// Set when the entry was satisfied by a mod the user already had. Holds that mod's reference so the profile
-        /// can point at it and so a later validation pass can tell whether it has since drifted off the pin.
-        /// </summary>
-        public ModReference? SatisfiedBy { get; set; }
-        /// <summary>The version that was present when the entry was satisfied externally, for drift detection</summary>
-        public string? SatisfiedByVersion { get; set; }
         /// <summary>Everything this entry's archive placed on disk, taken from AddMods rather than matched by name</summary>
         public List<InstalledModRecord> InstalledMods { get; set; } = new List<InstalledModRecord>();
         /// <summary>Names of the mods this entry's files were copied over, when it was applied as an overlay rather than installed</summary>
@@ -66,7 +59,7 @@ namespace Stardrop.Models.Data
         /// </summary>
         public bool IsSatisfied()
         {
-            return Status is CollectionModStatus.Installed or CollectionModStatus.SatisfiedExternally or CollectionModStatus.AppliedAsOverlay;
+            return Status is CollectionModStatus.Installed or CollectionModStatus.AppliedAsOverlay;
         }
 
         public bool IsFromNexus()
@@ -156,11 +149,6 @@ namespace Stardrop.Models.Data
             return Mods.Count(m => m.Status is CollectionModStatus.Pending or CollectionModStatus.AwaitingManualDownload or CollectionModStatus.Downloading or CollectionModStatus.Failed);
         }
 
-        public int GetReusedCount()
-        {
-            return Mods.Count(m => m.Status is CollectionModStatus.SatisfiedExternally);
-        }
-
         /// <summary>
         /// Total download size of the entries Stardrop will fetch. Returns zero when no entry reports a size, which
         /// the caller should treat as a signal to fall back to counting mods.
@@ -171,24 +159,14 @@ namespace Stardrop.Models.Data
         }
 
         /// <summary>
-        /// Builds the profile's enabled list. Entries Stardrop installed resolve to the collection's own copy, while
-        /// reused entries point at whatever the user already had, so both end up junctioned at launch.
+        /// Builds the profile's enabled list. Every entry resolves to the collection's own copy, as every entry is
+        /// installed into the collection's folder rather than being satisfied by something already on disk.
         /// </summary>
         public List<ModReference> GetEnabledModReferences()
         {
             var references = new List<ModReference>();
             foreach (var entry in Mods.Where(m => m.IsSatisfied()))
             {
-                if (entry.Status is CollectionModStatus.SatisfiedExternally)
-                {
-                    if (entry.SatisfiedBy is not null)
-                    {
-                        references.Add(entry.SatisfiedBy);
-                    }
-
-                    continue;
-                }
-
                 foreach (var installedMod in entry.InstalledMods)
                 {
                     references.Add(new ModReference(installedMod.UniqueId, SourceId));

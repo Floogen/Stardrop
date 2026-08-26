@@ -8,8 +8,6 @@
         AwaitingManualDownload,
         Downloading,
         Installed,
-        /// <summary>Already present elsewhere in the user's mod folder, so the profile points at that copy instead of downloading another</summary>
-        SatisfiedExternally,
         Failed,
         /// <summary>An optional entry the user chose not to install</summary>
         Skipped,

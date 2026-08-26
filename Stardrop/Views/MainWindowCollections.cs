@@ -1,5 +1,4 @@
 ﻿using Avalonia.Controls;
-using Semver;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using Stardrop.Models;
@@ -187,10 +186,10 @@ namespace Stardrop.Views
             var installPath = Pathing.GetCollectionInstallPath(collection.SourceId);
             Directory.CreateDirectory(installPath);
 
-            // Anything the user already has is reused rather than downloaded again. The launch-time junction pulls
-            // mods in from wherever they live, so a collection profile can point outside its own folder
-            ReuseInstalledMods(collection);
-
+            // Every entry is downloaded into the collection's own folder, including mods the user already has
+            // elsewhere. A second copy costs disk, while pointing at the user's copy puts that mod outside the only
+            // folder the curator's configuration and ordering rules are ever written to
+            //
             // Keyed by archive path, so AddMods can hand each installed mod back to the entry that requested it
             var entriesByArchive = new Dictionary<string, CollectionModEntry>(StringComparer.OrdinalIgnoreCase);
             var pendingMods = collection.Mods.Where(m => m.Status is CollectionModStatus.Pending).ToList();
@@ -605,75 +604,6 @@ namespace Stardrop.Views
         }
 
         /// <summary>
-        /// Marks entries the user already satisfies, so they are never downloaded. Matching goes through the Nexus
-        /// mod ID taken from a mod's update keys, which is exact, rather than through display names.
-        /// </summary>
-        private void ReuseInstalledMods(CollectionInstall collection)
-        {
-            var candidates = _viewModel.Mods.Where(m => m.IsFromCollection is false && m.NexusModId is not null).ToList();
-
-            // A mod pinned more than once in one collection is pinned to a different file each time and an installed
-            // copy carries no file ID, so there is no telling which of those entries it would be standing in for
-            var repeatedModIds = collection.Mods.Where(m => m.NexusModId is not null).GroupBy(m => m.NexusModId!.Value).Where(g => g.Count() > 1).Select(g => g.Key).ToHashSet();
-
-            foreach (var entry in collection.Mods.Where(e => e.Status is CollectionModStatus.Pending or CollectionModStatus.AwaitingManualDownload))
-            {
-                if (entry.IsFromNexus() is false)
-                {
-                    continue;
-                }
-
-                if (repeatedModIds.Contains(entry.NexusModId!.Value))
-                {
-                    Program.helper.Log($"Not reusing an installed copy for the collection entry {entry.Name}, as this collection pins more than one file from mod {entry.NexusModId}");
-                    continue;
-                }
-
-                var match = candidates.FirstOrDefault(m => m.NexusModId == entry.NexusModId && SatisfiesPin(m, entry));
-                if (match is null)
-                {
-                    continue;
-                }
-
-                Program.helper.Log($"Reusing the already installed {match.Name} ({match.ParsedVersion}) for the collection entry {entry.Name}");
-
-                entry.SatisfiedBy = match.ToReference();
-                entry.SatisfiedByVersion = match.ParsedVersion;
-                entry.Status = CollectionModStatus.SatisfiedExternally;
-            }
-        }
-
-        /// <summary>
-        /// Whether an installed mod meets a collection entry's pin. An exact pin needs the versions to agree, while
-        /// prefer and latest accept anything at or above the pinned version.
-        /// </summary>
-        private static bool SatisfiesPin(Mod mod, CollectionModEntry entry)
-        {
-            if (mod.HasValidVersion() is false)
-            {
-                return false;
-            }
-
-            // Without a pinned version there is nothing to compare, so any installed copy will do
-            if (String.IsNullOrEmpty(entry.Version))
-            {
-                return true;
-            }
-
-            if (SemVersion.TryParse(entry.Version.Replace("v", String.Empty), SemVersionStyles.Any, out var pinnedVersion) is false)
-            {
-                return false;
-            }
-
-            if (entry.IsPinnedExactly())
-            {
-                return mod.Version.CompareSortOrderTo(pinnedVersion) == 0;
-            }
-
-            return mod.Version.CompareSortOrderTo(pinnedVersion) >= 0;
-        }
-
-        /// <summary>
         /// Writes each archive's results back onto the entry that produced it. The unique IDs come straight from
         /// AddMods, so nothing is matched by name here. Folder names are then filled in from the discovered mods,
         /// which is an exact lookup now that the unique IDs are known.
@@ -975,37 +905,14 @@ namespace Stardrop.Views
         {
             var manualDownloads = collection.GetManualDownloads();
             var failures = collection.GetFailures();
-            var overlays = collection.GetOverlays();
             var conflicts = collection.GetConflicts();
             var installedCount = collection.Mods.Count(m => m.Status is CollectionModStatus.Installed);
-            var reusedCount = collection.GetReusedCount();
 
             // Overlays are configuration rather than mods, so counting them in the total would misreport the install
-            var modCount = collection.Mods.Count - overlays.Count;
+            var modCount = collection.Mods.Count - collection.GetOverlays().Count;
 
             // Escaped, as the report is parsed for links further down and a mod name can hold the same characters
             var summary = String.Format(Program.translation.Get("ui.message.collection_install_summary"), HyperlinkParser.Escape(collection.Name), installedCount, modCount);
-
-            if (reusedCount > 0)
-            {
-                summary += Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_reused"), reusedCount);
-            }
-
-            if (overlays.Count > 0)
-            {
-                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_overlays"), overlays.Count);
-                foreach (var entry in overlays)
-                {
-                    if (entry.OverlayTargets.Count == 0)
-                    {
-                        summary += Environment.NewLine + $"  {String.Format(Program.translation.Get("ui.message.collection_overlay_entry_unmatched"), HyperlinkParser.Escape(entry.Name))}";
-                        continue;
-                    }
-
-                    var targets = HyperlinkParser.Escape(String.Join(", ", entry.OverlayTargets));
-                    summary += Environment.NewLine + $"  {String.Format(Program.translation.Get("ui.message.collection_overlay_entry"), HyperlinkParser.Escape(entry.Name), targets)}";
-                }
-            }
 
             if (manualDownloads.Count > 0)
             {
