@@ -694,9 +694,10 @@ namespace Stardrop.Views
         /// <summary>
         /// A download name nothing in the Nexus folder is already using. Two entries in one collection can point at
         /// files that were uploaded under the same name and a download cannot write over a name that is taken, so
-        /// the file ID is folded in where that happens.
+        /// the file ID is folded in where that happens. A file the user supplied carries no ID, and falls back to a
+        /// plain number.
         /// </summary>
-        private static string GetAvailableDownloadName(string fileName, int fileId)
+        private static string GetAvailableDownloadName(string fileName, int? fileId = null)
         {
             var downloadPath = Pathing.GetNexusPath();
             if (File.Exists(Path.Combine(downloadPath, fileName)) is false)
@@ -706,16 +707,17 @@ namespace Stardrop.Views
 
             var baseName = Path.GetFileNameWithoutExtension(fileName);
             var extension = Path.GetExtension(fileName);
+            var qualifier = fileId is null ? String.Empty : $" [{fileId}]";
 
-            var candidate = $"{baseName} [{fileId}]{extension}";
+            var candidate = $"{baseName}{qualifier}{extension}";
             int suffix = 2;
             while (File.Exists(Path.Combine(downloadPath, candidate)))
             {
-                candidate = $"{baseName} [{fileId}] ({suffix}){extension}";
+                candidate = $"{baseName}{qualifier} ({suffix}){extension}";
                 suffix++;
             }
 
-            Program.helper.Log($"Downloading the file {fileId} as {candidate}, as {fileName} is already taken in the Nexus folder");
+            Program.helper.Log($"Writing {fileName} as {candidate}, as the original name is already taken in the Nexus folder");
 
             return candidate;
         }
@@ -967,6 +969,28 @@ namespace Stardrop.Views
                 return true;
             }
 
+            var summary = await InstallEntryIntoCollections(entryName, archivePath, matches);
+
+            _viewModel.EvaluateRequirements();
+            _viewModel.UpdateEndorsements();
+            _viewModel.UpdateFilter();
+
+            // The row the user clicked to get here is still showing the old status, so the window behind is brought
+            // back in step before the summary goes up in front of it
+            _collectionsWindow?.RefreshCollections();
+
+            await CreateWarningWindow(String.Join(Environment.NewLine, summary), Program.translation.Get("internal.ok"), windowWidth: 560);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Installs one archive into every entry it satisfies, then removes it. The archive belongs to Stardrop by
+        /// this point, whether it was downloaded or copied out of the way of a file the user supplied, so clearing
+        /// it up here is the same cleanup the main install performs.
+        /// </summary>
+        private async Task<List<string>> InstallEntryIntoCollections(string entryName, string archivePath, List<(CollectionInstall Collection, CollectionModEntry Entry)> matches)
+        {
             var summary = new List<string>();
             foreach (var match in matches)
             {
@@ -996,20 +1020,108 @@ namespace Stardrop.Views
                 }
             }
 
-            // Stardrop's own copy rather than the user's, so this is the same cleanup the main install performs
             TryDelete(archivePath);
+
+            return summary;
+        }
+
+        /// <summary>
+        /// Installs files the user fetched themselves into the collections waiting on them. This is the only route
+        /// open to a Browse or Direct entry, which produces no nxm link at all, and the checksum recorded in
+        /// collection.json is what identifies the file, since such an entry has no file ID behind it either.
+        /// </summary>
+        private async Task HandleCollectionFileDrop(string[] filePaths)
+        {
+            var summary = new List<string>();
+            foreach (var filePath in filePaths)
+            {
+                if (File.Exists(filePath) is false)
+                {
+                    continue;
+                }
+
+                var checksum = Toolkit.GetFileChecksum(filePath);
+                var matches = String.IsNullOrEmpty(checksum) ? new List<(CollectionInstall Collection, CollectionModEntry Entry)>() : FindUnsatisfiedCollectionEntries(checksum);
+                if (matches.Count == 0)
+                {
+                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_drop_no_match"), Path.GetFileName(filePath)));
+                    continue;
+                }
+
+                // Installing removes the archive it worked from, which must never be the user's own copy sitting
+                // wherever they saved it
+                var archivePath = CopyIntoDownloadFolder(filePath);
+                if (String.IsNullOrEmpty(archivePath))
+                {
+                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_drop_copy_failed"), Path.GetFileName(filePath)));
+                    continue;
+                }
+
+                summary.AddRange(await InstallEntryIntoCollections(matches[0].Entry.Name, archivePath, matches));
+            }
+
+            if (summary.Count == 0)
+            {
+                return;
+            }
 
             _viewModel.EvaluateRequirements();
             _viewModel.UpdateEndorsements();
             _viewModel.UpdateFilter();
 
-            // The row the user clicked to get here is still showing the old status, so the window behind is brought
-            // back in step before the summary goes up in front of it
-            _collectionsWindow?.RefreshCollections();
-
             await CreateWarningWindow(String.Join(Environment.NewLine, summary), Program.translation.Get("internal.ok"), windowWidth: 560);
+        }
 
-            return true;
+        /// <summary>
+        /// Copies a file the user supplied into the download folder, under a name nothing there is already using.
+        /// </summary>
+        private static string? CopyIntoDownloadFolder(string filePath)
+        {
+            try
+            {
+                var downloadPath = Pathing.GetNexusPath();
+                Directory.CreateDirectory(downloadPath);
+
+                var targetPath = Path.Combine(downloadPath, GetAvailableDownloadName(Path.GetFileName(filePath)));
+                File.Copy(filePath, targetPath);
+
+                return targetPath;
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to copy the dropped file {filePath} into the download folder: {ex}", Helper.Status.Alert);
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Every cached collection with an unsatisfied entry pinned to this checksum. It is the one identifier a
+        /// file the user supplied carries, as an entry Stardrop cannot fetch has no download name or file ID.
+        /// </summary>
+        private static List<(CollectionInstall Collection, CollectionModEntry Entry)> FindUnsatisfiedCollectionEntries(string checksum)
+        {
+            var matches = new List<(CollectionInstall Collection, CollectionModEntry Entry)>();
+            foreach (var collection in CollectionCache.LoadAll())
+            {
+                foreach (var entry in collection.Mods)
+                {
+                    if (entry.IsSatisfied() || String.IsNullOrEmpty(entry.Md5Checksum))
+                    {
+                        continue;
+                    }
+
+                    if (String.Equals(entry.Md5Checksum, checksum, StringComparison.OrdinalIgnoreCase) is false)
+                    {
+                        continue;
+                    }
+
+                    matches.Add((collection, entry));
+                    break;
+                }
+            }
+
+            return matches;
         }
 
         /// <summary>
@@ -1232,7 +1344,7 @@ namespace Stardrop.Views
             foreach (var entry in entries.Take(_maxListedEntries))
             {
                 var reason = includeFailureReasons is false || String.IsNullOrEmpty(entry.FailureReason) ? String.Empty : $" ({HyperlinkParser.Escape(entry.FailureReason)})";
-                lines += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, collection.GetEntryPageUri(entry))}{reason}";
+                lines += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, collection.GetEntryPageUri(entry, Program.settings.UseNXMLinks))}{reason}";
             }
 
             if (entries.Count > _maxListedEntries)

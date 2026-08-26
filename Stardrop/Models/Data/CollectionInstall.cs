@@ -177,7 +177,8 @@ namespace Stardrop.Models.Data
         /// link over one built from the Nexus IDs. Returns null when neither is available, which leaves the entry
         /// as plain text wherever it is shown.
         /// </summary>
-        public string? GetEntryPageUri(CollectionModEntry entry)
+        /// <param name="useModManagerLink">Whether a pinned file asks Nexus Mods for the mod manager download</param>
+        public string? GetEntryPageUri(CollectionModEntry entry, bool useModManagerLink = true)
         {
             if (String.IsNullOrEmpty(entry.ExternalUri) is false)
             {
@@ -202,7 +203,12 @@ namespace Stardrop.Models.Data
             // file back as an nxm link rather than leaving them to find the button on the page. An entry already
             // accounted for keeps the plain page, since a download for one has no pending entry to match and would
             // land as a loose second copy of a mod the collection already holds
-            return entry.IsSatisfied() ? filePage : $"{filePage}&nmm=1";
+            if (useModManagerLink is false || entry.IsSatisfied())
+            {
+                return filePage;
+            }
+
+            return $"{filePage}&nmm=1";
         }
 
         /// <summary>

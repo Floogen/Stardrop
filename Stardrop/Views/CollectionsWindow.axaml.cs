@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models;
@@ -9,6 +10,7 @@ using Stardrop.Utilities.Internal;
 using Stardrop.ViewModels;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Stardrop.Views
 {
@@ -23,6 +25,7 @@ namespace Stardrop.Views
         private readonly CollectionsWindowViewModel _viewModel = new CollectionsWindowViewModel();
         private readonly ProfileEditorViewModel? _editorView;
         private readonly Action? _onCollectionRemoved;
+        private readonly Func<string[], Task>? _onFilesDropped;
 
         public CollectionsWindow()
         {
@@ -39,6 +42,11 @@ namespace Stardrop.Views
             menuBar.PointerPressed += MainBar_PointerPressed;
             menuBar.DoubleTapped += MainBar_DoubleTapped;
 
+            // Handled at the window, as the panel below is the only thing that takes a drop and the event bubbles
+            // up to here from it
+            AddHandler(DragDrop.DropEvent, OnFilesDropped);
+            AddHandler(DragDrop.DragOverEvent, OnFilesDraggedOver);
+
             // Handle buttons
             this.FindControl<Button>("exitButton").Click += delegate { this.Close(); };
             this.FindControl<Button>("openPageButton").Click += OpenPageButton_Click;
@@ -51,10 +59,37 @@ namespace Stardrop.Views
             }
         }
 
-        public CollectionsWindow(ProfileEditorViewModel editorView, Action onCollectionRemoved) : this()
+        public CollectionsWindow(ProfileEditorViewModel editorView, Action onCollectionRemoved, Func<string[], Task>? onFilesDropped = null) : this()
         {
             _editorView = editorView;
             _onCollectionRemoved = onCollectionRemoved;
+            _onFilesDropped = onFilesDropped;
+        }
+
+        /// <summary>
+        /// Takes in a file the user fetched themselves, leaving its checksum to say which entry it belongs to.
+        /// </summary>
+        private async void OnFilesDropped(object? sender, DragEventArgs e)
+        {
+            if (_onFilesDropped is null || e.Data.Contains(DataFormats.FileNames) is false)
+            {
+                return;
+            }
+
+            var filePaths = e.Data.GetFileNames()?.ToArray();
+            if (filePaths is null || filePaths.Length == 0)
+            {
+                return;
+            }
+
+            await _onFilesDropped(filePaths);
+
+            RefreshCollections();
+        }
+
+        private void OnFilesDraggedOver(object? sender, DragEventArgs e)
+        {
+            e.DragEffects = _onFilesDropped is not null && e.Data.Contains(DataFormats.FileNames) ? DragDropEffects.Copy : DragDropEffects.None;
         }
 
         /// <summary>

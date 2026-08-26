@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 namespace Stardrop.Utilities
 {
@@ -27,6 +29,27 @@ namespace Stardrop.Utilities
             }
 
             return $"{bytes:N0} {Program.translation.Get("internal.measurements.bytes_size")}";
+        }
+
+        /// <summary>
+        /// The MD5 of a file, as the lowercase hex that a collection records its entries' checksums in. Returns null
+        /// when the file cannot be read, which leaves the caller with nothing to match rather than a wrong answer.
+        /// </summary>
+        public static string? GetFileChecksum(string filePath)
+        {
+            try
+            {
+                using var stream = File.OpenRead(filePath);
+                using var md5 = MD5.Create();
+
+                return Convert.ToHexString(md5.ComputeHash(stream)).ToLowerInvariant();
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to read {filePath} while working out its checksum: {ex.Message}", Helper.Status.Warning);
+
+                return null;
+            }
         }
 
         public static void OpenBrowser(string url)

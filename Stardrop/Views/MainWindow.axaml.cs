@@ -1454,7 +1454,7 @@ namespace Stardrop.Views
         {
             Program.helper.Log($"Opening collections window");
 
-            var collectionsWindow = new CollectionsWindow(_editorView, HandleCollectionRemoved);
+            var collectionsWindow = new CollectionsWindow(_editorView, HandleCollectionRemoved, HandleCollectionFileDrop);
             collectionsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             // Held so that an arriving nxm link can tell this window apart from a dialog waiting on an answer, and

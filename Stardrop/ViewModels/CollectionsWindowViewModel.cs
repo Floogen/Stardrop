@@ -25,10 +25,18 @@ namespace Stardrop.ViewModels
     /// </summary>
     public class CollectionEntryView
     {
+        private readonly CollectionInstall _collection;
+        private readonly CollectionModEntry _entry;
+
         public string Name { get; }
         public string Version { get; }
         public string Status { get; }
-        public string? PageUri { get; }
+
+        /// <summary>
+        /// Where a double click sends the user. Built on each read rather than once, as the mod manager form of the
+        /// link is a setting that can be turned off while this window is open.
+        /// </summary>
+        public string? PageUri { get { return _collection.GetEntryPageUri(_entry, Program.settings.UseNXMLinks); } }
         /// <summary>Whether the user still has to do something about this entry, which is what the filter reads</summary>
         public bool IsMissing { get; }
         /// <summary>Parsed for sorting, so that 10.0 lands above 9.0 rather than below it. Null when unparseable</summary>
@@ -36,10 +44,12 @@ namespace Stardrop.ViewModels
 
         public CollectionEntryView(CollectionInstall collection, CollectionModEntry entry)
         {
+            _collection = collection;
+            _entry = entry;
+
             Name = String.IsNullOrEmpty(entry.Name) ? Program.translation.Get("internal.unknown") : entry.Name;
             Version = String.IsNullOrEmpty(entry.Version) ? String.Empty : entry.Version;
             Status = DescribeStatus(entry);
-            PageUri = collection.GetEntryPageUri(entry);
             SortableVersion = SemVersion.TryParse(Version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : null;
 
             // Skipped entries are optional ones the user turned down, so they are accounted for rather than missing
@@ -117,6 +127,20 @@ namespace Stardrop.ViewModels
                 this.RaiseAndSetIfChanged(ref _selectedCollection, value);
                 this.RaisePropertyChanged(nameof(HasSelection));
                 RefreshEntries();
+            }
+        }
+
+        /// <summary>
+        /// Whether an entry's link asks for the mod manager download. Kept on the settings rather than here, so the
+        /// choice holds across sessions, and read back out on every row since nothing caches the address.
+        /// </summary>
+        public bool UseNXMLinks
+        {
+            get { return Program.settings.UseNXMLinks; }
+            set
+            {
+                Program.settings.UseNXMLinks = value;
+                this.RaisePropertyChanged(nameof(UseNXMLinks));
             }
         }
 

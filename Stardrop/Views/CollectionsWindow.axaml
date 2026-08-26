@@ -59,6 +59,13 @@
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
 			<Setter Property="FontSize" Value="11" />
 		</Style>
+		<Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+			<Setter Property="BorderBrush" Value="{DynamicResource ThemeBackgroundBrush}" />
+			<Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+		</Style>
+		<Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
+			<Setter Property="Fill" Value="{DynamicResource ThemeForegroundBrush}"/>
+		</Style>
 		<Style Selector="CheckBox.OptionClickbox:unchecked /template/ Border#NormalRectangle">
 			<Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
 		</Style>
@@ -123,7 +130,7 @@
 			</Border>
 
 			<Border Grid.Column="1" Margin="15 0 0 0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
-				<DockPanel Margin="10" IsVisible="{Binding HasSelection}">
+				<DockPanel Margin="10" DragDrop.AllowDrop="True" IsVisible="{Binding HasSelection}">
 					<!-- The remove button overlays the header rather than following it, so it sits in the corner of
 					     the panel it acts on and the title still wraps across the full width beneath it -->
 					<Grid DockPanel.Dock="Top" Margin="0 0 0 8">
@@ -137,7 +144,10 @@
 						<Button Name="removeButton" HorizontalAlignment="Right" VerticalAlignment="Top" Cursor="Hand" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.remove}" i:Attached.Icon="mdi-delete" Foreground="{DynamicResource UpdateBrokenBrush}" BorderThickness="0" Background="Transparent" />
 					</Grid>
 
-					<CheckBox DockPanel.Dock="Top" Name="missingOnlyCheckBox" Margin="0 0 0 6" IsChecked="{Binding ShowMissingOnly}" Content="{i18n:Translate ui.collections_window.checkbox.missing_only}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
+					<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0 0 0 6">
+						<CheckBox Name="missingOnlyCheckBox" IsChecked="{Binding ShowMissingOnly}" Content="{i18n:Translate ui.collections_window.checkbox.missing_only}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
+						<CheckBox Name="useNxmLinksCheckBox" Margin="20 0 0 0" IsChecked="{Binding UseNXMLinks}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.use_nxm_links}" Content="{i18n:Translate ui.collections_window.checkbox.use_nxm_links}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
+					</StackPanel>
 
 					<Grid DockPanel.Dock="Top" ColumnDefinitions="1.4* 0.5* 1.6*" Height="22">
 						<TextBlock Classes="header sortable" Grid.Column="0" Cursor="Hand" Tapped="OnNameHeaderTapped" Text="{Binding NameHeader}" FontWeight="Bold" />
@@ -145,6 +155,7 @@
 						<TextBlock Classes="header sortable" Grid.Column="2" Cursor="Hand" Tapped="OnStatusHeaderTapped" Text="{Binding StatusHeader}" FontWeight="Bold" />
 					</Grid>
 
+					<TextBlock DockPanel.Dock="Bottom" Classes="subtle" Margin="0 2 0 0" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Text="{i18n:Translate ui.collections_window.textblock.drop_entry_hint}" />
 					<TextBlock DockPanel.Dock="Bottom" Classes="subtle" Margin="0 6 0 0" HorizontalAlignment="Center" Text="{i18n:Translate ui.collections_window.textblock.open_entry_hint}" />
 
 					<ListBox Name="entryList" Items="{Binding Entries}">
