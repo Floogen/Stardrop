@@ -1,4 +1,4 @@
-using Stardrop.Models.Data;
+﻿using Stardrop.Models.Data;
 using System.Collections.Generic;
 using System.Text.Json;
 
@@ -40,9 +40,30 @@ namespace Stardrop.Models
             Notes = notes is null ? new List<ModNote>() : notes;
         }
 
-        public Profile ShallowCopy()
+        /// <summary>
+        /// A plain, editable copy of this profile under a new name. The copy is never tied to a collection, even
+        /// when the original was: a collection's profile is generated from its cache record, so a second profile
+        /// claiming the same SourceId would be treated as that collection and deleting it would take the
+        /// collection's record and downloaded mods with it.
+        ///
+        /// The SourceId carried by each entry in EnabledModIds is a different thing and is kept. That one points a
+        /// mod at the collection folder it lives in, which is where the copy still has to find its mods.
+        /// </summary>
+        public Profile CopyAsPlainProfile(string name)
         {
-            return (Profile)this.MemberwiseClone();
+            var copy = (Profile)this.MemberwiseClone();
+
+            copy.Name = name;
+            copy.IsProtected = false;
+            copy.SourceId = null;
+
+            // Rebuilt rather than shared. MemberwiseClone hands over the same instances, so an in-place write such
+            // as the one in ReadModConfigs would go straight through into the profile that was copied
+            copy.EnabledModIds = new List<ModReference>(EnabledModIds);
+            copy.PreservedModConfigs = new Dictionary<string, JsonDocument>(PreservedModConfigs);
+            copy.Notes = new List<ModNote>(Notes);
+
+            return copy;
         }
     }
 }
