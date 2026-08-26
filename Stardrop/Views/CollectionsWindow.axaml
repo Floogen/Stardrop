@@ -58,6 +58,18 @@
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
 			<Setter Property="FontSize" Value="11" />
 		</Style>
+		<Style Selector="CheckBox.OptionClickbox:unchecked /template/ Border#NormalRectangle">
+			<Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
+		</Style>
+		<Style Selector="CheckBox.OptionClickbox:checked /template/ Border#NormalRectangle">
+			<Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
+		</Style>
+		<Style Selector="CheckBox.OptionClickbox:pointerover /template/ ContentPresenter#ContentPresenter">
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
+		</Style>
+		<Style Selector="TextBlock.sortable:pointerover">
+			<Setter Property="Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
+		</Style>
 		<Style Selector="ScrollViewer">
 			<Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}" />
 		</Style>
@@ -85,7 +97,7 @@
 			</Menu>
 		</Border>
 		<Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
-			<Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+			<Button Name="exitButton" IsCancel="True" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
 		</Menu>
 
 		<TextBlock Grid.Row="1" Grid.ColumnSpan="2" IsVisible="{Binding !HasCollections}" Classes="detail" TextWrapping="Wrap" MaxWidth="420" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Text="{i18n:Translate ui.collections_window.labels.no_collections}" />
@@ -119,12 +131,12 @@
 						<TextBlock Classes="detail" Margin="0 6 0 0" Text="{Binding SelectedCollection.Progress}" />
 					</StackPanel>
 
-					<CheckBox DockPanel.Dock="Top" Name="outstandingOnlyCheckBox" Margin="0 0 0 6" IsChecked="{Binding ShowOutstandingOnly}" Content="{i18n:Translate ui.collections_window.checkbox.outstanding_only}" Foreground="{DynamicResource ThemeForegroundBrush}" />
+					<CheckBox DockPanel.Dock="Top" Name="outstandingOnlyCheckBox" Margin="0 0 0 6" IsChecked="{Binding ShowOutstandingOnly}" Content="{i18n:Translate ui.collections_window.checkbox.outstanding_only}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
 
 					<Grid DockPanel.Dock="Top" ColumnDefinitions="1.4* 0.5* 1.6*" Height="22">
-						<TextBlock Classes="header" Grid.Column="0" Text="{i18n:Translate ui.collections_window.headers.mod_name}" FontWeight="Bold" />
-						<TextBlock Classes="header" Grid.Column="1" Text="{i18n:Translate ui.collections_window.headers.version}" FontWeight="Bold" />
-						<TextBlock Classes="header" Grid.Column="2" Text="{i18n:Translate ui.collections_window.headers.status}" FontWeight="Bold" />
+						<TextBlock Classes="header sortable" Grid.Column="0" Cursor="Hand" Tapped="OnNameHeaderTapped" Text="{Binding NameHeader}" FontWeight="Bold" />
+						<TextBlock Classes="header sortable" Grid.Column="1" Cursor="Hand" Tapped="OnVersionHeaderTapped" Text="{Binding VersionHeader}" FontWeight="Bold" />
+						<TextBlock Classes="header sortable" Grid.Column="2" Cursor="Hand" Tapped="OnStatusHeaderTapped" Text="{Binding StatusHeader}" FontWeight="Bold" />
 					</Grid>
 
 					<TextBlock DockPanel.Dock="Bottom" Classes="subtle" Margin="0 6 0 0" HorizontalAlignment="Center" Text="{i18n:Translate ui.collections_window.textblock.open_entry_hint}" />
@@ -132,7 +144,7 @@
 					<ListBox Name="entryList" Items="{Binding Entries}">
 						<ListBox.ItemTemplate>
 							<DataTemplate>
-								<Grid ColumnDefinitions="1.4* 0.5* 1.6*" Background="Transparent" Tapped="OnEntryTapped">
+								<Grid ColumnDefinitions="1.4* 0.5* 1.6*" Background="Transparent" DoubleTapped="OnEntryDoubleTapped">
 									<TextBlock Classes="row" Grid.Column="0" Text="{Binding Name}" TextWrapping="Wrap" />
 									<TextBlock Classes="row" Grid.Column="1" Text="{Binding Version}" />
 									<TextBlock Classes="row" Grid.Column="2" Text="{Binding Status}" TextWrapping="Wrap" />
@@ -144,9 +156,13 @@
 			</Border>
 		</Grid>
 
-		<DockPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="0 5 0 0">
-			<Button Name="openPageButton" IsEnabled="{Binding HasSelection}" Content="{i18n:Translate ui.collections_window.button.open_page}" Margin="0 0 15 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
-			<Button Name="closeButton" IsCancel="True" Content="{i18n:Translate ui.collections_window.button.close}" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
-		</DockPanel>
+		<!-- Mirrors the content grid above, so the button lines up under the collection list -->
+		<Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="20 5 20 0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="260" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+			<Button Name="openPageButton" Grid.Column="0" HorizontalAlignment="Center" IsEnabled="{Binding HasSelection}" Content="{i18n:Translate ui.collections_window.button.open_page}" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+		</Grid>
 	</Grid>
 </Window>

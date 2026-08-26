@@ -34,7 +34,6 @@ namespace Stardrop.Views
 
             // Handle buttons
             this.FindControl<Button>("exitButton").Click += delegate { this.Close(); };
-            this.FindControl<Button>("closeButton").Click += delegate { this.Close(); };
             this.FindControl<Button>("openPageButton").Click += OpenPageButton_Click;
 
             // Skipped in the previewer, which has no paths set up to read the cache from
@@ -54,7 +53,26 @@ namespace Stardrop.Views
             Toolkit.OpenBrowser(_viewModel.SelectedCollection.PageUri);
         }
 
-        private void OnEntryTapped(object? sender, RoutedEventArgs e)
+        private void OnNameHeaderTapped(object? sender, RoutedEventArgs e)
+        {
+            _viewModel.SortBy(CollectionSortColumn.Name);
+        }
+
+        private void OnVersionHeaderTapped(object? sender, RoutedEventArgs e)
+        {
+            _viewModel.SortBy(CollectionSortColumn.Version);
+        }
+
+        private void OnStatusHeaderTapped(object? sender, RoutedEventArgs e)
+        {
+            _viewModel.SortBy(CollectionSortColumn.Status);
+        }
+
+        /// <summary>
+        /// Opens an entry's page on a double click rather than a single one, so that selecting a row to read its
+        /// status does not send the user to a browser they did not ask for.
+        /// </summary>
+        private void OnEntryDoubleTapped(object? sender, RoutedEventArgs e)
         {
             if (sender is not Control { DataContext: CollectionEntryView entry } || String.IsNullOrEmpty(entry.PageUri))
             {

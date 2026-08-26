@@ -1,4 +1,5 @@
 using ReactiveUI;
+using Semver;
 using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Utilities.Internal;
@@ -9,6 +10,13 @@ using System.Linq;
 
 namespace Stardrop.ViewModels
 {
+    public enum CollectionSortColumn
+    {
+        Name,
+        Version,
+        Status
+    }
+
     /// <summary>
     /// One of a collection's entries as the window shows it. Nothing on <see cref="CollectionModEntry"/> is ready to
     /// display, since the status is an enum and the page address has to be built from the Nexus IDs, so the shaping
@@ -22,6 +30,8 @@ namespace Stardrop.ViewModels
         public string? PageUri { get; }
         /// <summary>Whether the user still has to do something about this entry, which is what the filter reads</summary>
         public bool IsOutstanding { get; }
+        /// <summary>Parsed for sorting, so that 10.0 lands above 9.0 rather than below it. Null when unparseable</summary>
+        public SemVersion? SortableVersion { get; }
 
         public CollectionEntryView(CollectionInstall collection, CollectionModEntry entry)
         {
@@ -29,6 +39,7 @@ namespace Stardrop.ViewModels
             Version = String.IsNullOrEmpty(entry.Version) ? String.Empty : entry.Version;
             Status = DescribeStatus(entry);
             PageUri = collection.GetEntryPageUri(entry);
+            SortableVersion = SemVersion.TryParse(Version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : null;
 
             // Skipped entries are optional ones the user turned down, so they are accounted for rather than pending
             IsOutstanding = entry.IsSatisfied() is false && entry.Status is not CollectionModStatus.Skipped;
@@ -113,8 +124,19 @@ namespace Stardrop.ViewModels
             }
         }
 
+        // Built on CompareSortOrderTo, so a prerelease sorts below the release it leads up to
+        private static readonly IComparer<SemVersion?> _versionComparer = Comparer<SemVersion?>.Create((left, right) => left is null || right is null ? 0 : left.CompareSortOrderTo(right));
+
+        // Status ascending puts the outstanding entries on top, which is what someone opening this window is here for
+        private CollectionSortColumn _sortColumn = CollectionSortColumn.Status;
+        private bool _sortDescending;
+
         public bool HasCollections { get { return Collections.Count > 0; } }
         public bool HasSelection { get { return _selectedCollection is not null; } }
+
+        public string NameHeader { get { return BuildHeader("ui.collections_window.headers.mod_name", CollectionSortColumn.Name); } }
+        public string VersionHeader { get { return BuildHeader("ui.collections_window.headers.version", CollectionSortColumn.Version); } }
+        public string StatusHeader { get { return BuildHeader("ui.collections_window.headers.status", CollectionSortColumn.Status); } }
 
         /// <summary>
         /// Reads every cached collection record. Newest first, as the one a user has just installed is the one they
@@ -134,6 +156,40 @@ namespace Stardrop.ViewModels
             SelectedCollection = Collections.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Sorts by the given column, reversing the direction when it is already the one being sorted on. Clicking
+        /// Status twice therefore returns the list to how it opened, so the default view is never out of reach.
+        /// </summary>
+        public void SortBy(CollectionSortColumn column)
+        {
+            if (_sortColumn == column)
+            {
+                _sortDescending = _sortDescending is false;
+            }
+            else
+            {
+                _sortColumn = column;
+                _sortDescending = false;
+            }
+
+            this.RaisePropertyChanged(nameof(NameHeader));
+            this.RaisePropertyChanged(nameof(VersionHeader));
+            this.RaisePropertyChanged(nameof(StatusHeader));
+
+            RefreshEntries();
+        }
+
+        private string BuildHeader(string key, CollectionSortColumn column)
+        {
+            var header = Program.translation.Get(key);
+            if (_sortColumn != column)
+            {
+                return header;
+            }
+
+            return _sortDescending ? $"{header} \u25BC" : $"{header} \u25B2";
+        }
+
         private void RefreshEntries()
         {
             Entries.Clear();
@@ -143,9 +199,37 @@ namespace Stardrop.ViewModels
                 return;
             }
 
-            foreach (var entry in _selectedCollection.Entries.Where(e => _showOutstandingOnly is false || e.IsOutstanding))
+            foreach (var entry in SortEntries(_selectedCollection.Entries.Where(e => _showOutstandingOnly is false || e.IsOutstanding)))
             {
                 Entries.Add(entry);
+            }
+        }
+
+        /// <summary>
+        /// Applies the current sort. Name is the tie-break on every column, so entries sharing a version or a status
+        /// hold a readable order rather than shuffling about between sorts.
+        /// </summary>
+        private IEnumerable<CollectionEntryView> SortEntries(IEnumerable<CollectionEntryView> entries)
+        {
+            switch (_sortColumn)
+            {
+                case CollectionSortColumn.Name:
+                    return _sortDescending ? entries.OrderByDescending(e => e.Name, StringComparer.OrdinalIgnoreCase) : entries.OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase);
+
+                case CollectionSortColumn.Version:
+                    // An unparseable version sorts last either way, as it carries no position of its own
+                    var byVersion = _sortDescending
+                        ? entries.OrderBy(e => e.SortableVersion is null).ThenByDescending(e => e.SortableVersion, _versionComparer)
+                        : entries.OrderBy(e => e.SortableVersion is null).ThenBy(e => e.SortableVersion, _versionComparer);
+
+                    return byVersion.ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase);
+
+                default:
+                    var byStatus = _sortDescending
+                        ? entries.OrderBy(e => e.IsOutstanding).ThenByDescending(e => e.Status, StringComparer.OrdinalIgnoreCase)
+                        : entries.OrderByDescending(e => e.IsOutstanding).ThenBy(e => e.Status, StringComparer.OrdinalIgnoreCase);
+
+                    return byStatus.ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase);
             }
         }
     }
