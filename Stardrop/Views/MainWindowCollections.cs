@@ -307,10 +307,14 @@ namespace Stardrop.Views
             // installing has finished
             TryDeleteDirectory(extractedArchivePath);
 
-            CreateProfileForCollection(collection);
+            var profile = CreateProfileForCollection(collection);
             CollectionCache.Save(collection);
 
             await ReportCollectionResult(collection);
+
+            // After the summary rather than before it. Switching profiles can raise its own dialog over unsaved
+            // configuration on the profile being left, which would collide with the summary still being open
+            SelectCollectionProfile(profile);
         }
 
         /// <summary>
@@ -911,7 +915,7 @@ namespace Stardrop.Views
         /// Generates the profile that represents this collection. The profile is protected, as editing it directly
         /// would drift it away from the curator's pins. Users wanting changes clone it into a plain profile.
         /// </summary>
-        private void CreateProfileForCollection(CollectionInstall collection)
+        private Profile CreateProfileForCollection(CollectionInstall collection)
         {
             var enabledMods = collection.GetEnabledModReferences();
 
@@ -920,6 +924,32 @@ namespace Stardrop.Views
 
             var profile = new Profile(profileName, isProtected: true, enabledMods: enabledMods, sourceId: collection.SourceId);
             _editorView.AddProfile(profile);
+
+            return profile;
+        }
+
+        /// <summary>
+        /// Switches the grid over to the collection's profile, so what was just installed is what the user is left
+        /// looking at. A profile with nothing enabled is left alone, as selecting it would empty the grid and give
+        /// the user nothing to look at after a report explaining what went wrong.
+        /// </summary>
+        private void SelectCollectionProfile(Profile profile)
+        {
+            if (profile.EnabledModIds.Count == 0)
+            {
+                Program.helper.Log($"Leaving the current profile selected, as {profile.Name} has nothing enabled to show");
+                return;
+            }
+
+            var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
+            if (profileComboBox is null)
+            {
+                return;
+            }
+
+            // The profile was built moments ago and GetAvailableProfileName gives it a name nothing else holds, so
+            // this is always a change of selection and always raises the handler that enables its mods
+            profileComboBox.SelectedItem = profile;
         }
 
         private string GetAvailableProfileName(CollectionInstall collection)
