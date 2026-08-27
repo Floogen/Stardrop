@@ -1007,8 +1007,8 @@ namespace Stardrop.Views
                 return;
             }
 
-            // Get the mod based on the checkbox's content (which contains the UniqueId)
-            var clickedMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(button.Tag));
+            // Take the mod from the row's own data context, as a unique ID lookup can land on a collection copy
+            var clickedMod = button.DataContext as Mod;
             if (clickedMod is null)
             {
                 return;
@@ -2118,6 +2118,10 @@ namespace Stardrop.Views
             int modsToUpdate = 0;
             UpdateCache? oldUpdateCache = null;
 
+            // Cached update data is never applied to a collection mod, as its collection owns the version. The cache
+            // is keyed by unique ID alone, which a collection copy can share with a loose copy
+            mods = mods.Where(m => m.IsFromCollection is false).ToList();
+
             if (File.Exists(Pathing.GetVersionCachePath()))
             {
                 oldUpdateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
@@ -2240,7 +2244,10 @@ namespace Stardrop.Views
                 int modsToUpdate = 0;
                 var updateCache = useCache && oldUpdateCache is not null ? oldUpdateCache : new UpdateCache(DateTime.Now);
                 var modUpdateData = await SMAPI.GetModUpdateData(Program.settings.GameDetails, mods);
-                foreach (var modItem in mods)
+
+                // The full list still goes to GetModUpdateData so requirement names keep resolving, but only mods
+                // outside a collection take update data back out of it
+                foreach (var modItem in mods.Where(m => m.IsFromCollection is false))
                 {
                     var updateLink = String.Empty;
                     var modPageLink = String.Empty;
@@ -2520,6 +2527,13 @@ namespace Stardrop.Views
         private async Task<string?> InstallModViaNexus(Mod mod)
         {
             if (mod is null || mod.InstallState != InstallState.Unknown)
+            {
+                return null;
+            }
+
+            // A collection owns the versions of the mods it installs, so updating one here would put the profile out
+            // of step with what the collection pins
+            if (mod.IsFromCollection is true)
             {
                 return null;
             }
