@@ -327,6 +327,11 @@ namespace Stardrop.Views
             var profile = CreateProfileForCollection(collection);
             CollectionCache.Save(collection);
 
+            // An nxm collection link is the one thing not held back while this window is open, so a collection can
+            // finish installing behind it. Without this the window keeps showing the list it read when it opened,
+            // which is missing the collection the user has just watched install
+            _collectionsWindow?.RefreshCollections();
+
             // Handed straight over to the summary, so the two never overlap
             SetLockState(false);
 
