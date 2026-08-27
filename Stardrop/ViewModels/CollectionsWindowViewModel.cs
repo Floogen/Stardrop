@@ -59,6 +59,13 @@ namespace Stardrop.ViewModels
 
         private static string DescribeStatus(CollectionModEntry entry)
         {
+            // An optional entry Stardrop could not fetch on the user's behalf is theirs to decide on, so it says so
+            // rather than reading as something the collection is still waiting on
+            if (entry.Status is CollectionModStatus.AwaitingManualDownload && entry.IsOptional)
+            {
+                return Program.translation.Get("ui.collections_window.status.awaiting_manual_optional");
+            }
+
             var status = entry.Status switch
             {
                 CollectionModStatus.Installed => Program.translation.Get("ui.collections_window.status.installed"),

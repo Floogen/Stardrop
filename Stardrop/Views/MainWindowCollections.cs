@@ -1407,8 +1407,10 @@ namespace Stardrop.Views
             var lines = String.Empty;
             foreach (var entry in entries.Take(_maxListedEntries))
             {
+                // Marked so that a list of pages to work through says which of them can be passed on
+                var optional = entry.IsOptional is false ? String.Empty : $" {HyperlinkParser.Escape(Program.translation.Get("ui.message.collection_entry_optional"))}";
                 var reason = includeFailureReasons is false || String.IsNullOrEmpty(entry.FailureReason) ? String.Empty : $" ({HyperlinkParser.Escape(entry.FailureReason)})";
-                lines += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, collection.GetEntryPageUri(entry, Program.settings.UseNXMLinks))}{reason}";
+                lines += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, collection.GetEntryPageUri(entry, Program.settings.UseNXMLinks))}{optional}{reason}";
             }
 
             if (entries.Count > _maxListedEntries)

@@ -228,14 +228,14 @@ namespace Stardrop.Utilities.External
             return rules;
         }
 
+        /// <summary>
+        /// Where an entry starts out. An optional entry follows the same route as a required one: with Premium
+        /// Stardrop can fetch it along with the rest, and the curator put it in the collection for a reason. Without
+        /// Premium it lands as a manual download like everything else, where the window names it as optional so the
+        /// user can tell which of the pages they are being sent to are ones they can pass on.
+        /// </summary>
         private static CollectionModStatus GetInitialStatus(CollectionModEntry entry, bool isPremium)
         {
-            // Optional mods wait on the user rather than installing by default
-            if (entry.IsOptional)
-            {
-                return CollectionModStatus.Skipped;
-            }
-
             switch (entry.SourceType)
             {
                 case CollectionModSourceType.Nexus:
