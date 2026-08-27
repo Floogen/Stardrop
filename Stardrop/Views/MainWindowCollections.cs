@@ -54,15 +54,9 @@ namespace Stardrop.Views
 
             Program.helper.Log($"Processing NXM link as a collection: {slug} revision {revisionNumber}");
 
-            // A collection keeps one identity across revisions, so installing over one already on disk would write
-            // into its folder and overwrite its record without any of the reconciliation an update needs. Blocked
-            // until the update path exists
+            // A collection keeps one identity across revisions, so a link for one already on disk is an update of it
+            // rather than a second install
             var existingInstall = CollectionCache.Load(CollectionInstall.CreateSourceId(domainName, slug));
-            if (existingInstall is not null)
-            {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.collection_already_installed"), existingInstall.Name), Program.translation.Get("internal.ok"));
-                return false;
-            }
 
             var revision = await Nexus.Client.GetCollectionRevision(slug, revisionNumber, domainName);
             if (revision is null || String.IsNullOrEmpty(revision.DownloadLink))
@@ -72,10 +66,33 @@ namespace Stardrop.Views
             }
 
             var collectionName = revision.Collection is null || String.IsNullOrEmpty(revision.Collection.Name) ? slug : revision.Collection.Name;
-            if (Program.settings.IsAskingBeforeAcceptingNXM)
+            var resolvedRevision = revision.RevisionNumber is null ? (revisionNumber is null ? 0 : revisionNumber.Value) : revision.RevisionNumber.Value;
+
+            if (existingInstall is null)
             {
-                var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_collection_install"), collectionName));
-                if (await requestWindow.ShowDialog<bool>(this) is false)
+                if (Program.settings.IsAskingBeforeAcceptingNXM)
+                {
+                    var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_collection_install"), collectionName));
+                    if (await requestWindow.ShowDialog<bool>(this) is false)
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                // Nothing to apply where the revision on disk is the one being asked for, unless it never finished
+                // landing, in which case going round again is how the remaining entries get picked up
+                if (resolvedRevision == existingInstall.RevisionNumber && existingInstall.IsUpdateInProgress() is false)
+                {
+                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.collection_already_installed"), existingInstall.Name, resolvedRevision), Program.translation.Get("internal.ok"));
+                    return false;
+                }
+
+                // Asked whatever the nxm confirmation setting says, as this writes over a collection the user
+                // already has rather than adding something new
+                var updateWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_collection_update"), collectionName, existingInstall.RevisionNumber, resolvedRevision));
+                if (await updateWindow.ShowDialog<bool>(this) is false)
                 {
                     return false;
                 }
@@ -95,12 +112,211 @@ namespace Stardrop.Views
                 return false;
             }
 
-            var resolvedRevision = revision.RevisionNumber is null ? (revisionNumber is null ? 0 : revisionNumber.Value) : revision.RevisionNumber.Value;
             var collection = Nexus.Client.CreateCollectionInstall(index, slug, resolvedRevision, domainName);
 
-            await InstallCollection(collection, extractedArchivePath, cancellationSource);
+            // Worked out before anything is downloaded, so the install pass, the profile amendment and the summary
+            // all read one answer rather than each deciding for themselves what changed
+            var updatePlan = existingInstall is null ? null : ReconcileCollectionUpdate(existingInstall, collection);
+
+            await InstallCollection(collection, extractedArchivePath, cancellationSource, updatePlan);
 
             return true;
+        }
+
+        /// <summary>
+        /// Matches a newly fetched revision's entries against the ones already on disk, carrying the install state
+        /// forward wherever the curator has not moved the pin. Entries whose file has changed are left Pending so
+        /// the install pass treats them as work, and entries the revision no longer lists are handed back so the
+        /// profile can drop them.
+        ///
+        /// Mutates the incoming record, which has not been saved or shown to anyone at this point.
+        /// </summary>
+        private static CollectionUpdatePlan ReconcileCollectionUpdate(CollectionInstall previous, CollectionInstall updated)
+        {
+            var plan = new CollectionUpdatePlan(previous);
+
+            // Matched out of a pool rather than by lookup, as two entries in one collection can share a mod ID and
+            // would otherwise both resolve to whichever of them was found first
+            var unmatched = previous.Mods.ToList();
+
+            foreach (var entry in updated.Mods)
+            {
+                var match = TakeMatchingEntry(unmatched, entry);
+                if (match is null)
+                {
+                    plan.Added.Add(entry);
+                    continue;
+                }
+
+                // An entry the previous revision never managed to install is work either way, so only a satisfied
+                // one carries anything forward
+                if (IsSamePin(match, entry) && match.IsSatisfied())
+                {
+                    entry.Status = match.Status;
+                    entry.InstalledMods = match.InstalledMods;
+                    entry.OverlayTargets = match.OverlayTargets;
+                    entry.SourceArchivePath = match.SourceArchivePath;
+
+                    plan.Unchanged.Add(entry);
+                    continue;
+                }
+
+                // Left with the status CreateCollectionInstall gave it, so the install pass downloads it afresh
+                plan.Replaced.Add(new CollectionEntryReplacement(match, entry));
+            }
+
+            plan.Removed.AddRange(unmatched);
+
+            // The profile name is the user's, and the install date is when this collection first arrived rather than
+            // when it was last touched
+            updated.ProfileName = previous.ProfileName;
+            updated.InstallTimestamp = previous.InstallTimestamp;
+            updated.LatestRevisionNumber = previous.LatestRevisionNumber;
+
+            // Held back until every entry lands, so a stalled update never reads as the revision it was reaching for
+            updated.PendingRevisionNumber = updated.RevisionNumber;
+            updated.RevisionNumber = previous.RevisionNumber;
+
+            Program.helper.Log($"Applying revision {updated.PendingRevisionNumber} of {updated.Name} over revision {previous.RevisionNumber}: {plan.Added.Count} added, {plan.Replaced.Count} replaced, {plan.Removed.Count} removed, {plan.Unchanged.Count} unchanged");
+
+            return plan;
+        }
+
+        /// <summary>
+        /// Finds the previous revision's counterpart for an entry and takes it out of the pool, so a second entry
+        /// sharing the same mod ID pairs with the second candidate rather than the first.
+        ///
+        /// The keys are tried in order of how well each survives a revision. A curator's own tag outlives a file
+        /// change where a file ID does not, an external address outlives a checksum, and the name is a last resort
+        /// for entries carrying none of the others.
+        /// </summary>
+        private static CollectionModEntry? TakeMatchingEntry(List<CollectionModEntry> candidates, CollectionModEntry entry)
+        {
+            CollectionModEntry? match = null;
+
+            if (String.IsNullOrEmpty(entry.Tag) is false)
+            {
+                match = candidates.FirstOrDefault(c => String.Equals(c.Tag, entry.Tag, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (match is null && entry.NexusModId is not null)
+            {
+                match = candidates.FirstOrDefault(c => c.NexusModId == entry.NexusModId);
+            }
+
+            if (match is null && String.IsNullOrEmpty(entry.ExternalUri) is false)
+            {
+                match = candidates.FirstOrDefault(c => String.Equals(c.ExternalUri, entry.ExternalUri, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (match is null && String.IsNullOrEmpty(entry.Name) is false)
+            {
+                match = candidates.FirstOrDefault(c => String.Equals(c.Name, entry.Name, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (match is not null)
+            {
+                candidates.Remove(match);
+            }
+
+            return match;
+        }
+
+        /// <summary>
+        /// Whether two revisions point the same entry at the same file. A Nexus entry is settled by its file ID,
+        /// where a Bundle, Browse or Direct entry has none and is judged on everything that identifies its file.
+        /// </summary>
+        private static bool IsSamePin(CollectionModEntry previous, CollectionModEntry updated)
+        {
+            if (previous.SourceType != updated.SourceType)
+            {
+                return false;
+            }
+
+            if (updated.IsFromNexus())
+            {
+                return previous.NexusModId == updated.NexusModId && previous.NexusFileId == updated.NexusFileId;
+            }
+
+            return String.Equals(previous.Md5Checksum, updated.Md5Checksum, StringComparison.OrdinalIgnoreCase)
+                && String.Equals(previous.ExternalUri, updated.ExternalUri, StringComparison.OrdinalIgnoreCase)
+                && String.Equals(previous.FileExpression, updated.FileExpression, StringComparison.OrdinalIgnoreCase)
+                && String.Equals(previous.LogicalFilename, updated.LogicalFilename, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Reads config.json out of each folder an entry being replaced occupies, so the user's own settings survive
+        /// the delete AddMods performs when it writes the new version over the old one. Held as bytes rather than
+        /// text, so nothing about the file's encoding or line endings is decided here.
+        ///
+        /// Only for the mods the curator supplies no configuration for. Where an overlay covers one of these, it is
+        /// written after this is restored and wins, which is the point: the collection owns the configuration it
+        /// ships and the user owns the rest.
+        /// </summary>
+        private static Dictionary<string, byte[]> CaptureReplacedConfigs(CollectionUpdatePlan plan, string installPath)
+        {
+            var configsByFolder = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var folderName in plan.GetReplacedFolderNames())
+            {
+                var configPath = Path.Combine(installPath, folderName, "config.json");
+
+                try
+                {
+                    if (File.Exists(configPath) is false)
+                    {
+                        continue;
+                    }
+
+                    configsByFolder[folderName] = File.ReadAllBytes(configPath);
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Unable to hold onto the configuration in {folderName} across the update: {ex}", Helper.Status.Warning);
+                }
+            }
+
+            return configsByFolder;
+        }
+
+        /// <summary>
+        /// Puts the captured configuration back, skipping any folder the replacement did not recreate. Run before
+        /// the overlays, so a curator's configuration is written over this rather than under it.
+        /// </summary>
+        private static void RestoreReplacedConfigs(Dictionary<string, byte[]> configsByFolder, string installPath)
+        {
+            foreach (var folderName in configsByFolder.Keys)
+            {
+                var folderPath = Path.Combine(installPath, folderName);
+
+                try
+                {
+                    if (Directory.Exists(folderPath) is false)
+                    {
+                        continue;
+                    }
+
+                    File.WriteAllBytes(Path.Combine(folderPath, "config.json"), configsByFolder[folderName]);
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Unable to restore the configuration in {folderName} after the update: {ex}", Helper.Status.Warning);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes the folders a replaced entry left behind that its replacement did not write into, which happens
+        /// when a mod renames its folder between versions. Left in place they would be discovered as part of this
+        /// collection while nothing enables them.
+        /// </summary>
+        private static void RemoveStaleCollectionFolders(CollectionUpdatePlan plan, string installPath)
+        {
+            foreach (var folderName in plan.GetStaleFolderNames())
+            {
+                Program.helper.Log($"Removing {folderName}, as the entry that placed it now installs somewhere else");
+                TryDeleteDirectory(Path.Combine(installPath, folderName));
+            }
         }
 
         /// <summary>
@@ -200,7 +416,7 @@ namespace Stardrop.Views
         /// Downloads and installs everything the collection pins into its own folder, then generates a profile with
         /// exactly those mods enabled. Failures are gathered up and reported once at the end rather than per mod.
         /// </summary>
-        private async Task InstallCollection(CollectionInstall collection, string extractedArchivePath, CancellationTokenSource cancellationSource)
+        private async Task InstallCollection(CollectionInstall collection, string extractedArchivePath, CancellationTokenSource cancellationSource, CollectionUpdatePlan? updatePlan = null)
         {
             var installPath = Pathing.GetCollectionInstallPath(collection.SourceId);
             Directory.CreateDirectory(installPath);
@@ -270,7 +486,7 @@ namespace Stardrop.Views
             // silently does not match what the curator specified, which is worse than having nothing to show for it
             if (cancellationSource.IsCancellationRequested)
             {
-                await AbandonCollectionInstall(collection, entriesByArchive.Keys.ToList(), installPath, extractedArchivePath);
+                await AbandonCollectionInstall(collection, entriesByArchive.Keys.ToList(), installPath, extractedArchivePath, updatePlan is not null);
                 return;
             }
 
@@ -290,10 +506,16 @@ namespace Stardrop.Views
                 Program.helper.Log($"The ordering rules in {collection.Name} form a cycle, so the entries caught in it are written in the order the collection declares them", Helper.Status.Warning);
             }
 
+            // AddMods deletes the folder it is writing over, so anything the user configured in a mod being replaced
+            // is read out first and put back below
+            var replacedConfigs = updatePlan is null ? new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase) : CaptureReplacedConfigs(updatePlan, installPath);
+
             var installedModsByArchive = new Dictionary<string, List<Mod>>(StringComparer.OrdinalIgnoreCase);
             if (orderedArchives.Count > 0)
             {
                 await AddMods(orderedArchives.ToArray(), installPath, installedModsByArchive);
+
+                RestoreReplacedConfigs(replacedConfigs, installPath);
 
                 // Same reasoning as the collection archive: AddMods has extracted what it needs and leaving dozens
                 // of archives behind would make reinstalling this collection fail on the first repeated filename
@@ -316,6 +538,15 @@ namespace Stardrop.Views
             var installedMods = _viewModel.Mods.Where(m => String.Equals(m.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
             RecordInstalledMods(entriesByArchive, installedModsByArchive, installedMods);
 
+            // Only knowable once the replacements have recorded where they landed, so this waits until here rather
+            // than clearing the folders before the install
+            var staleFolderCount = 0;
+            if (updatePlan is not null)
+            {
+                staleFolderCount = updatePlan.GetStaleFolderNames().Count;
+                RemoveStaleCollectionFolders(updatePlan, installPath);
+            }
+
             UpdateLockWindow(Program.translation.Get("ui.message.collection_finalizing_configuration"));
             await YieldToLockWindow();
 
@@ -325,7 +556,7 @@ namespace Stardrop.Views
 
             // Configuration only lands at this point, so a second pass is needed for the mods it touched to report
             // that they now have a config
-            if (overlaysByArchive.Count > 0)
+            if (overlaysByArchive.Count > 0 || staleFolderCount > 0)
             {
                 _viewModel.DiscoverMods(Pathing.defaultModPath);
             }
@@ -337,7 +568,12 @@ namespace Stardrop.Views
             UpdateLockWindow(Program.translation.Get("ui.message.collection_finalizing_profile"));
             await YieldToLockWindow();
 
-            var profile = CreateProfileForCollection(collection);
+            var profile = updatePlan is null ? CreateProfileForCollection(collection) : UpdateProfileForCollection(collection, updatePlan);
+
+            // Only moves onto the new revision once nothing is left outstanding, so a collection waiting on a manual
+            // download stays on the revision it actually has
+            collection.TryCompleteUpdate();
+
             CollectionCache.Save(collection);
 
             // An nxm collection link is the one thing not held back while this window is open, so a collection can
@@ -348,11 +584,28 @@ namespace Stardrop.Views
             // Handed straight over to the summary, so the two never overlap
             SetLockState(false);
 
-            await ReportCollectionResult(collection);
+            if (updatePlan is null)
+            {
+                await ReportCollectionResult(collection);
 
-            // After the summary rather than before it. Switching profiles can raise its own dialog over unsaved
-            // configuration on the profile being left, which would collide with the summary still being open
-            SelectCollectionProfile(profile);
+                // After the summary rather than before it. Switching profiles can raise its own dialog over unsaved
+                // configuration on the profile being left, which would collide with the summary still being open
+                SelectCollectionProfile(profile);
+
+                return;
+            }
+
+            await ReportCollectionUpdateResult(collection, updatePlan);
+
+            // An update does not move the user, as they may well be sitting on a profile of their own. The grid is
+            // put back in step only where the collection's own profile is the one on screen
+            if (GetCurrentProfile() == profile)
+            {
+                _viewModel.EnableModsByProfile(profile);
+                _viewModel.UpdateFilter();
+            }
+
+            RefreshCollectionUpdateCount();
         }
 
         /// <summary>
@@ -566,7 +819,7 @@ namespace Stardrop.Views
         /// Undoes a cancelled install. Nothing was written to the mod folder yet, as installing only happens after
         /// the download loop, so this comes down to clearing the archives that had already been fetched.
         /// </summary>
-        private async Task AbandonCollectionInstall(CollectionInstall collection, List<string> downloadedArchives, string installPath, string extractedArchivePath)
+        private async Task AbandonCollectionInstall(CollectionInstall collection, List<string> downloadedArchives, string installPath, string extractedArchivePath, bool isUpdate = false)
         {
             Program.helper.Log($"Discarding the cancelled install of the collection {collection.Name}, removing {downloadedArchives.Count} downloaded archive(s)");
 
@@ -578,9 +831,10 @@ namespace Stardrop.Views
             // The collection's own archive and the folder it was extracted into
             TryDeleteDirectory(extractedArchivePath);
 
-            // Created before the loop, so it exists even when nothing was ever placed in it. Skipped when a record
-            // already exists, as that means an earlier install of this revision owns the folder and its contents
-            if (CollectionCache.Load(collection.SourceId) is null)
+            // Created before the loop, so it exists even when nothing was ever placed in it. Skipped for an update,
+            // where the folder holds the revision the user already had and nothing has been written over it yet,
+            // and skipped when a record exists, as that means an earlier install owns the folder and its contents
+            if (isUpdate is false && CollectionCache.Load(collection.SourceId) is null)
             {
                 TryDeleteDirectory(installPath);
             }
@@ -904,6 +1158,60 @@ namespace Stardrop.Views
         }
 
         /// <summary>
+        /// Amends the collection's existing profile rather than generating a new one. The profile carries state the
+        /// collection does not own: mods the user enabled alongside it, mods of the collection's own that they
+        /// turned off, the name they may have given it, their notes and their preserved configuration. Rebuilding it
+        /// would take all of that with it.
+        ///
+        /// Falls back to generating one where the profile has been deleted since the collection was installed.
+        /// </summary>
+        private Profile UpdateProfileForCollection(CollectionInstall collection, CollectionUpdatePlan plan)
+        {
+            // Matched on the source ID rather than the name, as the user is free to rename the profile
+            var profile = _editorView.Profiles.FirstOrDefault(p => String.Equals(p.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase));
+            if (profile is null)
+            {
+                Program.helper.Log($"The profile for {collection.Name} could not be found, so one is generated for the revision being applied", Helper.Status.Warning);
+                return CreateProfileForCollection(collection);
+            }
+
+            collection.ProfileName = profile.Name;
+
+            // The install pass enables everything it installs, so a mod the previous revision placed that the
+            // profile does not list is one the user turned off. Absence is the only record of that choice, which is
+            // why it is read against what was installed rather than taken from the profile alone
+            var previouslyInstalled = plan.GetPreviouslyInstalledIds();
+            var disabledByUser = previouslyInstalled.Where(id => profile.EnabledModIds.Any(r => IsCollectionReference(r, collection) && String.Equals(r.UniqueId, id, StringComparison.OrdinalIgnoreCase)) is false).ToList();
+
+            // References pointing anywhere but this collection are the user's own additions and are left as they are
+            var references = profile.EnabledModIds.Where(r => IsCollectionReference(r, collection) is false).ToList();
+
+            foreach (var reference in collection.GetEnabledModReferences())
+            {
+                if (disabledByUser.Contains(reference.UniqueId, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                references.Add(reference);
+            }
+
+            Program.helper.Log($"Amending the profile {profile.Name}: {references.Count} mod(s) enabled, with {disabledByUser.Count} left off as the user had disabled them");
+
+            // Notes, PreservedModConfigs, Name and IsProtected are deliberately untouched
+            profile.EnabledModIds = references;
+            _editorView.CreateProfile(profile, force: true);
+
+            return profile;
+        }
+
+        /// <summary>Whether a profile reference points at a mod this collection installed</summary>
+        private static bool IsCollectionReference(ModReference reference, CollectionInstall collection)
+        {
+            return String.Equals(reference.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Switches the grid over to the collection's profile, so what was just installed is what the user is left
         /// looking at. A profile with nothing enabled is left alone, as selecting it would empty the grid and give
         /// the user nothing to look at after a report explaining what went wrong.
@@ -929,13 +1237,15 @@ namespace Stardrop.Views
 
         private string GetAvailableProfileName(CollectionInstall collection)
         {
+            // The revision is deliberately absent. The profile now outlives the revision it was generated for, so a
+            // number in the name would be wrong from the first update onwards
             var baseName = String.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
-            var candidate = $"{baseName} (r{collection.RevisionNumber})";
+            var candidate = baseName;
 
             int suffix = 2;
             while (_editorView.Profiles.Any(p => p.Name.Equals(candidate, StringComparison.OrdinalIgnoreCase)))
             {
-                candidate = $"{baseName} (r{collection.RevisionNumber}) [{suffix}]";
+                candidate = $"{baseName} [{suffix}]";
                 suffix++;
             }
 
@@ -1371,6 +1681,14 @@ namespace Stardrop.Views
             var entriesByArchive = new Dictionary<string, CollectionModEntry>(StringComparer.OrdinalIgnoreCase) { [archivePath] = entry };
             RecordInstalledMods(entriesByArchive, installedModsByArchive, installedMods);
 
+            // The last outstanding entry of a stalled update is what completes it, and it usually arrives here
+            // rather than through the install pass
+            if (collection.TryCompleteUpdate())
+            {
+                Program.helper.Log($"Revision {collection.RevisionNumber} of {collection.Name} is now fully installed");
+                RefreshCollectionUpdateCount();
+            }
+
             return entry.Status is CollectionModStatus.Installed;
         }
 
@@ -1462,6 +1780,65 @@ namespace Stardrop.Views
                 {
                     summary += Environment.NewLine + $"  {String.Format(Program.translation.Get("ui.message.collection_conflict_entry"), HyperlinkParser.Escape(conflict.Source.Name), HyperlinkParser.Escape(conflict.Target.Name))}";
                 }
+            }
+
+            // Left as written, as the curator may have included links of their own
+            if (String.IsNullOrEmpty(collection.InstallInstructions) is false)
+            {
+                summary += Environment.NewLine + Environment.NewLine + Program.translation.Get("ui.message.collection_curator_notes");
+                summary += Environment.NewLine + collection.InstallInstructions;
+            }
+
+            await CreateWarningWindow(summary, Program.translation.Get("internal.ok"), windowWidth: 560, enableHyperlinks: true);
+        }
+
+        /// <summary>
+        /// Reports what applying a revision changed. Built around the difference rather than the totals, as a user
+        /// who already had this collection is here to find out what moved rather than how many mods it holds.
+        /// </summary>
+        private async Task ReportCollectionUpdateResult(CollectionInstall collection, CollectionUpdatePlan plan)
+        {
+            var appliedRevision = collection.IsUpdateInProgress() ? collection.PendingRevisionNumber!.Value : collection.RevisionNumber;
+
+            // Escaped, as the report is parsed for links further down and a collection name can hold the same characters
+            var summary = String.Format(Program.translation.Get("ui.message.collection_update_summary"), HyperlinkParser.Escape(collection.Name), plan.Previous.RevisionNumber, appliedRevision);
+
+            if (plan.HasChanges() is false)
+            {
+                summary += Environment.NewLine + Environment.NewLine + Program.translation.Get("ui.message.collection_update_no_changes");
+            }
+            else
+            {
+                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_update_counts"), plan.Added.Count, plan.Replaced.Count, plan.Removed.Count, plan.Unchanged.Count);
+            }
+
+            // Named rather than counted, as their files are still on disk and the user is the one who decides
+            // whether to keep them
+            if (plan.Removed.Count > 0)
+            {
+                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_update_removed"), plan.Removed.Count);
+                summary += BuildEntryLines(collection, plan.Removed, includeFailureReasons: false);
+            }
+
+            var manualDownloads = collection.GetManualDownloads();
+            if (manualDownloads.Count > 0)
+            {
+                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_manual_downloads"), manualDownloads.Count);
+                summary += BuildEntryLines(collection, manualDownloads, includeFailureReasons: false);
+            }
+
+            var failures = collection.GetFailures();
+            if (failures.Count > 0)
+            {
+                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_failures"), failures.Count);
+                summary += BuildEntryLines(collection, failures, includeFailureReasons: true);
+            }
+
+            // Says outright that the revision has not landed, as the collections window will keep reporting an
+            // update until whatever is outstanding is dealt with
+            if (collection.IsUpdateInProgress())
+            {
+                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_update_incomplete"), collection.RevisionNumber);
             }
 
             // Left as written, as the curator may have included links of their own

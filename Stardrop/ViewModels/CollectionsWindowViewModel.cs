@@ -104,6 +104,8 @@ namespace Stardrop.ViewModels
         public int InstalledModCount { get; }
         /// <summary>Whether a newer revision is available, which both the list marker and the detail line read</summary>
         public bool HasUpdate { get; }
+        /// <summary>Whether a revision is part way through being applied, which reads differently from one merely being available</summary>
+        public bool IsUpdateInProgress { get; }
         /// <summary>The available revision, spelt out for the detail panel. Empty where there is nothing to say</summary>
         public string UpdateStatus { get; }
         /// <summary>The short form for the list, where a full sentence would not fit beside the install progress</summary>
@@ -125,10 +127,29 @@ namespace Stardrop.ViewModels
             Progress = String.Format(Program.translation.Get("ui.collections_window.labels.installed"), InstalledModCount, collection.GetModCount());
             PageUri = collection.GetPageUri();
 
-            HasUpdate = collection.HasUpdate();
-            UpdateStatus = HasUpdate ? String.Format(Program.translation.Get("ui.collections_window.labels.update_available"), collection.LatestRevisionNumber) : String.Empty;
-            UpdateMarker = HasUpdate ? Program.translation.Get("ui.collections_window.labels.update_marker") : String.Empty;
-            UpdatePageUri = HasUpdate ? collection.GetRevisionPageUri(collection.LatestRevisionNumber!.Value) : String.Empty;
+            IsUpdateInProgress = collection.IsUpdateInProgress();
+            HasUpdate = collection.HasUpdate() || IsUpdateInProgress;
+
+            // An update part way through is described as such rather than as one waiting to be started, since the
+            // user has already agreed to it and is looking at what is left of it
+            if (IsUpdateInProgress)
+            {
+                UpdateStatus = String.Format(Program.translation.Get("ui.collections_window.labels.update_in_progress"), collection.PendingRevisionNumber);
+                UpdateMarker = Program.translation.Get("ui.collections_window.labels.update_in_progress_marker");
+                UpdatePageUri = collection.GetRevisionPageUri(collection.PendingRevisionNumber!.Value);
+            }
+            else if (HasUpdate)
+            {
+                UpdateStatus = String.Format(Program.translation.Get("ui.collections_window.labels.update_available"), collection.LatestRevisionNumber);
+                UpdateMarker = Program.translation.Get("ui.collections_window.labels.update_marker");
+                UpdatePageUri = collection.GetRevisionPageUri(collection.LatestRevisionNumber!.Value);
+            }
+            else
+            {
+                UpdateStatus = String.Empty;
+                UpdateMarker = String.Empty;
+                UpdatePageUri = String.Empty;
+            }
 
             Entries = collection.Mods.Select(m => new CollectionEntryView(collection, m)).ToList();
         }

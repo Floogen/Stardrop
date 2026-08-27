@@ -110,6 +110,12 @@ namespace Stardrop.Models.Data
         public DateTime? LastRefreshTimestamp { get; set; }
         /// <summary>Latest revision Nexus reported, or null where the check has not run or could not reach them</summary>
         public int? LatestRevisionNumber { get; set; }
+        /// <summary>
+        /// The revision currently being applied, or null when nothing is part way through. RevisionNumber stays on
+        /// the last revision fully on disk while this is set, so an update that stalls on a manual download never
+        /// reads as though it completed.
+        /// </summary>
+        public int? PendingRevisionNumber { get; set; }
         /// <summary>Name of the profile generated for this collection, so the two can be re-linked after a rename</summary>
         public string ProfileName { get; set; } = String.Empty;
         public List<CollectionModEntry> Mods { get; set; } = new List<CollectionModEntry>();
@@ -159,6 +165,30 @@ namespace Stardrop.Models.Data
         public bool HasUpdate()
         {
             return LatestRevisionNumber is not null && LatestRevisionNumber.Value > RevisionNumber;
+        }
+
+        /// <summary>Whether a revision is part way through being applied, with entries still to land</summary>
+        public bool IsUpdateInProgress()
+        {
+            return PendingRevisionNumber is not null;
+        }
+
+        /// <summary>
+        /// Moves the record onto the revision being applied, once every entry of it has landed. Called both at the
+        /// end of an update and by the paths that satisfy a single entry afterwards, since the last manual download
+        /// a user drops in is what completes the update.
+        /// </summary>
+        public bool TryCompleteUpdate()
+        {
+            if (PendingRevisionNumber is null || IsFullyInstalled() is false)
+            {
+                return false;
+            }
+
+            RevisionNumber = PendingRevisionNumber.Value;
+            PendingRevisionNumber = null;
+
+            return true;
         }
 
         public int GetPendingCount()
