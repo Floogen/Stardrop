@@ -516,9 +516,13 @@ namespace Stardrop.Views
                 // Gather the NXM links, then clear the file
                 using (FileStream stream = new FileStream(Pathing.GetLinksCachePath(), FileMode.Open, FileAccess.ReadWrite, FileShare.None))
                 {
-                    foreach (var nxmLink in await JsonSerializer.DeserializeAsync<List<NXM>>(stream, new JsonSerializerOptions { AllowTrailingCommas = true }))
+                    var pendingLinks = await JsonSerializer.DeserializeAsync<List<NXM>>(stream, new JsonSerializerOptions { AllowTrailingCommas = true });
+                    if (pendingLinks is not null)
                     {
-                        nxmLinks.Add(nxmLink);
+                        foreach (var nxmLink in pendingLinks)
+                        {
+                            nxmLinks.Add(nxmLink);
+                        }
                     }
 
                     // Clear the stream and empty out the file
@@ -530,7 +534,9 @@ namespace Stardrop.Views
                 // Process each link
                 foreach (var nxmLink in nxmLinks)
                 {
-                    if (await ProcessNXMLink(nxmLink) is false)
+                    // Only a blocked link stops the run. A single mod failing or being backed out of says nothing
+                    // about the ones queued behind it, which the user asked for just as deliberately
+                    if (await ProcessNXMLink(nxmLink) is NXMLinkResult.Blocked)
                     {
                         break;
                     }
@@ -1896,7 +1902,7 @@ namespace Stardrop.Views
             _viewModel.HideRequiredMods();
         }
 
-        internal async Task<bool> ProcessNXMLink(NXM nxmLink)
+        internal async Task<NXMLinkResult> ProcessNXMLink(NXM nxmLink)
         {
             // An nxm link arrives unannounced, so it waits its turn rather than starting an install underneath
             // whatever the user is currently in the middle of
@@ -1905,7 +1911,7 @@ namespace Stardrop.Views
             if (Nexus.Client is null)
             {
                 await CreateWarningWindow(Program.translation.Get("ui.message.require_nexus_login"), Program.translation.Get("internal.ok"));
-                return false;
+                return NXMLinkResult.Blocked;
             }
 
             // Collection links follow an entirely different flow, so split them off before the mod handling below
@@ -1913,23 +1919,23 @@ namespace Stardrop.Views
             {
                 if (await ValidateSMAPIPath() is false)
                 {
-                    return false;
+                    return NXMLinkResult.Blocked;
                 }
 
-                return await ProcessCollectionLink(nxmLink);
+                return await ProcessCollectionLink(nxmLink) ? NXMLinkResult.Success : NXMLinkResult.Failed;
             }
 
 
             if (await ValidateSMAPIPath() is false)
             {
-                return false;
+                return NXMLinkResult.Blocked;
             }
 
             // A file that a collection is still waiting on installs into that collection rather than loose, which is
             // the only route a non-premium account has into one Stardrop could not fetch on its behalf
             if (await TryProcessCollectionEntryLink(nxmLink))
             {
-                return true;
+                return NXMLinkResult.Success;
             }
 
             Program.helper.Log($"Processing NXM link: {nxmLink.Link}");
@@ -1939,7 +1945,7 @@ namespace Stardrop.Views
             if (String.IsNullOrEmpty(processedDownloadLink))
             {
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_get_download_link"), nxmLink.Link), Program.translation.Get("internal.ok"));
-                return false;
+                return NXMLinkResult.Failed;
             }
 
             // Get the mod details
@@ -1947,7 +1953,7 @@ namespace Stardrop.Views
             if (modDetails is null || String.IsNullOrEmpty(modDetails.Name))
             {
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_get_mod_details"), nxmLink.Link), Program.translation.Get("internal.ok"));
-                return false;
+                return NXMLinkResult.Failed;
             }
 
             bool? fileSafetyResults = await Nexus.Client.ValidateFileSafety(nxmLink);
@@ -1956,14 +1962,14 @@ namespace Stardrop.Views
                 // Unable to verify mod scan status on Nexus Mods, ask user if they want to continue
                 if (await new MessageWindow(Program.translation.Get("ui.warning.failed_to_verify_mod_file")).ShowDialog<bool>(this) is false)
                 {
-                    return false;
+                    return NXMLinkResult.Canceled;
                 }
             }
             else if (fileSafetyResults is false)
             {
                 // Reject downloading any quarantined mods on Nexus Mods
                 await CreateWarningWindow(Program.translation.Get("ui.warning.file_quarantined"), Program.translation.Get("internal.ok"));
-                return false;
+                return NXMLinkResult.Failed;
             }
 
             var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
@@ -1973,12 +1979,12 @@ namespace Stardrop.Views
                 if (downloadResult.ResultKind is DownloadResultKind.Failed)
                 {
                     await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
-                    return false;
+                    return NXMLinkResult.Failed;
                 }
                 if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
                 {
                     // No need for a warning, this is something the user chose intentionally
-                    return false;
+                    return NXMLinkResult.Canceled;
                 }
                 string downloadedFilePath = downloadResult.DownloadedModFilePath!;
 
@@ -1998,9 +2004,12 @@ namespace Stardrop.Views
 
                 // Let the user know that the mod was installed via NXM
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.succeeded_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
+
+                return NXMLinkResult.Success;
             }
 
-            return true;
+            // Declining the confirmation is a choice rather than a fault, so the links behind it still go ahead
+            return NXMLinkResult.Canceled;
         }
 
         /// <summary>

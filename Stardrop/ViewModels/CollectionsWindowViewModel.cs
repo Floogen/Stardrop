@@ -1,4 +1,4 @@
-using ReactiveUI;
+﻿using ReactiveUI;
 using Semver;
 using Stardrop.Models;
 using Stardrop.Models.Data;
@@ -163,6 +163,31 @@ namespace Stardrop.ViewModels
         // Status ascending puts the missing entries on top, which is what someone opening this window is here for
         private CollectionSortColumn _sortColumn = CollectionSortColumn.Status;
         private bool _sortDescending;
+
+        private string _statusMessage = String.Empty;
+        /// <summary>
+        /// The result of the last thing that landed while this window was open. Shown in the footer rather than in
+        /// a dialog, since a user fetching a page of missing entries would otherwise have one to dismiss per mod.
+        /// </summary>
+        public string StatusMessage
+        {
+            get { return _statusMessage; }
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _statusMessage, value);
+                this.RaisePropertyChanged(nameof(HasStatusMessage));
+            }
+        }
+
+        private bool _isStatusMessageFailure;
+        /// <summary>Whether the last result was a failure, which is the only thing the footer colours differently</summary>
+        public bool IsStatusMessageFailure
+        {
+            get { return _isStatusMessageFailure; }
+            set { this.RaiseAndSetIfChanged(ref _isStatusMessageFailure, value); }
+        }
+
+        public bool HasStatusMessage { get { return String.IsNullOrEmpty(_statusMessage) is false; } }
 
         public bool HasCollections { get { return Collections.Count > 0; } }
         public bool HasSelection { get { return _selectedCollection is not null; } }

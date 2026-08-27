@@ -78,6 +78,13 @@
 		<Style Selector="TextBlock.sortable:pointerover">
 			<Setter Property="Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
 		</Style>
+		<Style Selector="TextBlock.status">
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+			<Setter Property="FontSize" Value="12" />
+		</Style>
+		<Style Selector="TextBlock.status.failure">
+			<Setter Property="Foreground" Value="{DynamicResource UpdateBrokenBrush}" />
+		</Style>
 		<Style Selector="ScrollViewer">
 			<Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}" />
 		</Style>
@@ -144,11 +151,13 @@
 						<Button Name="removeButton" HorizontalAlignment="Right" VerticalAlignment="Top" Cursor="Hand" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.remove}" i:Attached.Icon="mdi-delete" Foreground="{DynamicResource UpdateBrokenBrush}" BorderThickness="0" Background="Transparent" />
 					</Grid>
 
-					<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0 0 0 6">
-						<CheckBox Name="missingOnlyCheckBox" IsChecked="{Binding ShowMissingOnly}" Content="{i18n:Translate ui.collections_window.checkbox.missing_only}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
-						<CheckBox Name="useNxmLinksCheckBox" Margin="20 0 0 0" IsChecked="{Binding UseNXMLinks}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.use_nxm_links}" Content="{i18n:Translate ui.collections_window.checkbox.use_nxm_links}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
-						<Button Name="openMissingButton" Margin="20 0 0 0" Padding="10 2" VerticalAlignment="Center" Cursor="Hand" IsEnabled="{Binding HasMissingPages}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.open_missing}" Content="{i18n:Translate ui.collections_window.button.open_missing}" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" />
-					</StackPanel>
+					<Grid DockPanel.Dock="Top" ColumnDefinitions="* Auto" Margin="0 0 0 6">
+						<StackPanel Grid.Column="0" Orientation="Horizontal">
+							<CheckBox Name="missingOnlyCheckBox" IsChecked="{Binding ShowMissingOnly}" Content="{i18n:Translate ui.collections_window.checkbox.missing_only}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
+							<CheckBox Name="useNxmLinksCheckBox" Margin="20 0 0 0" IsChecked="{Binding UseNXMLinks}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.use_nxm_links}" Content="{i18n:Translate ui.collections_window.checkbox.use_nxm_links}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
+						</StackPanel>
+						<Button Name="openMissingButton" Height="26" Grid.Column="1" Margin="20 0 0 0" Padding="10 2" HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand" IsEnabled="{Binding HasMissingPages}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.open_missing}" Content="{i18n:Translate ui.collections_window.button.open_missing}" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" />
+					</Grid>
 
 					<Grid DockPanel.Dock="Top" ColumnDefinitions="1.4* 0.5* 1.6*" Height="22">
 						<TextBlock Classes="header sortable" Grid.Column="0" Cursor="Hand" Tapped="OnNameHeaderTapped" Text="{Binding NameHeader}" FontWeight="Bold" />
@@ -181,6 +190,10 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 			<Button Name="openPageButton" Grid.Column="0" HorizontalAlignment="Center" IsEnabled="{Binding HasSelection}" Content="{i18n:Translate ui.collections_window.button.open_page}" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+
+			<!-- Takes the place a per-mod dialog used to, so a user fetching a page of missing entries is told what
+			     landed without having anything to dismiss between one download and the next -->
+			<TextBlock Name="statusMessageBlock" Grid.Column="1" Classes="status" Classes.failure="{Binding IsStatusMessageFailure}" Margin="15 0 0 0" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" IsVisible="{Binding HasStatusMessage}" Text="{Binding StatusMessage}" />
 		</Grid>
 	</Grid>
 </Window>

@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -106,6 +106,17 @@ namespace Stardrop.Views
         public void RefreshCollections()
         {
             _viewModel.Load();
+        }
+
+        /// <summary>
+        /// Puts the result of something that just landed in the footer, beside the button that opens the collection
+        /// page. Takes the place of the dialog this used to raise, which a user working through a page of missing
+        /// entries had to dismiss once per mod before the next one could be handled.
+        /// </summary>
+        public void ShowStatusMessage(string message, bool isFailure = false)
+        {
+            _viewModel.IsStatusMessageFailure = isFailure;
+            _viewModel.StatusMessage = message;
         }
 
         private void OpenPageButton_Click(object? sender, RoutedEventArgs e)

@@ -947,7 +947,7 @@ namespace Stardrop.Views
             var fileSafetyResult = await Nexus.Client.ValidateFileSafety(modId, fileId);
             if (fileSafetyResult is false)
             {
-                await CreateWarningWindow(Program.translation.Get("ui.warning.file_quarantined"), Program.translation.Get("internal.ok"));
+                await ReportCollectionEntryResult(Program.translation.Get("ui.warning.file_quarantined"), isFailure: true);
                 return true;
             }
 
@@ -965,23 +965,43 @@ namespace Stardrop.Views
             var archivePath = await DownloadCollectionEntryViaNXM(nxmLink, modId, fileId);
             if (String.IsNullOrEmpty(archivePath))
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), entryName), Program.translation.Get("internal.ok"));
+                await ReportCollectionEntryResult(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), entryName), isFailure: true);
                 return true;
             }
 
-            var summary = await InstallEntryIntoCollections(entryName, archivePath, matches);
+            // The count of what a collection still needs is dropped while its window is open, as the details panel
+            // above already carries it and repeating it in the footer says the same thing twice
+            var summary = await InstallEntryIntoCollections(entryName, archivePath, matches, includeRemainingCount: _collectionsWindow is null);
+            var hasFailure = matches.Any(m => m.Entry.IsSatisfied() is false);
 
             _viewModel.EvaluateRequirements();
             _viewModel.UpdateEndorsements();
             _viewModel.UpdateFilter();
 
             // The row the user clicked to get here is still showing the old status, so the window behind is brought
-            // back in step before the summary goes up in front of it
+            // back in step before the result is written into it
             _collectionsWindow?.RefreshCollections();
 
-            await CreateWarningWindow(String.Join(Environment.NewLine, summary), Program.translation.Get("internal.ok"), windowWidth: 560);
+            await ReportCollectionEntryResult(String.Join(Environment.NewLine, summary), hasFailure);
 
             return true;
+        }
+
+        /// <summary>
+        /// Reports what a single collection entry's link did. With the collections window open it goes into that
+        /// window's footer, since a user working down a list of missing entries is sending links over faster than
+        /// they could dismiss a dialog for each one. With the window closed there is nowhere to put it but a window
+        /// of its own.
+        /// </summary>
+        private async Task ReportCollectionEntryResult(string message, bool isFailure = false)
+        {
+            if (_collectionsWindow is not null)
+            {
+                _collectionsWindow.ShowStatusMessage(message, isFailure);
+                return;
+            }
+
+            await CreateWarningWindow(message, Program.translation.Get("internal.ok"), windowWidth: 560);
         }
 
         /// <summary>
@@ -989,7 +1009,7 @@ namespace Stardrop.Views
         /// this point, whether it was downloaded or copied out of the way of a file the user supplied, so clearing
         /// it up here is the same cleanup the main install performs.
         /// </summary>
-        private async Task<List<string>> InstallEntryIntoCollections(string entryName, string archivePath, List<(CollectionInstall Collection, CollectionModEntry Entry)> matches)
+        private async Task<List<string>> InstallEntryIntoCollections(string entryName, string archivePath, List<(CollectionInstall Collection, CollectionModEntry Entry)> matches, bool includeRemainingCount = true)
         {
             var summary = new List<string>();
             foreach (var match in matches)
@@ -1012,6 +1032,11 @@ namespace Stardrop.Views
                 }
 
                 summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_installed"), entryName, match.Collection.Name));
+
+                if (includeRemainingCount is false)
+                {
+                    continue;
+                }
 
                 var remaining = match.Collection.GetManualDownloads().Count;
                 if (remaining > 0)
@@ -1069,7 +1094,9 @@ namespace Stardrop.Views
             _viewModel.UpdateEndorsements();
             _viewModel.UpdateFilter();
 
-            await CreateWarningWindow(String.Join(Environment.NewLine, summary), Program.translation.Get("internal.ok"), windowWidth: 560);
+            // Reported the same way an nxm link is, so a drop and a download read the same in the same window. The
+            // caller refreshes the window after this returns, which is why nothing here clears the footer
+            await ReportCollectionEntryResult(String.Join(Environment.NewLine, summary));
         }
 
         /// <summary>
