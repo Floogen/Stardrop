@@ -73,6 +73,7 @@
 					<DataTemplate>
 						<StackPanel>
 							<TextBlock Text="{Binding Path=Name}"/>
+							<TextBlock Text="{i18n:Translate ui.profile_editor.labels.from_collection}" IsVisible="{Binding IsFromCollection}" FontSize="11" Opacity="0.6"/>
 						</StackPanel>
 					</DataTemplate>
 				</ListBox.ItemTemplate>

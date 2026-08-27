@@ -109,6 +109,9 @@
   "ui.missing_mods_window.textblock.drag_and_drop": "Drag and drop the missing mods above",
   "ui.missing_mods_window.button.continue": "Continue",
 
+  // Profile Editor Window - Labels
+  "ui.profile_editor.labels.from_collection": "From a collection",
+
   // Profile Export Window
   "ui.profile_export_window.text.options": "Options",
   "ui.profile_export_window.checkbox.include_mod_configs": "Include Mod Configs",

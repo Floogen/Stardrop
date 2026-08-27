@@ -1,12 +1,15 @@
 ﻿using Stardrop.Models.Data;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Stardrop.Models
 {
     public record ModNote(string UniqueId, string Note);
 
-    public class Profile
+    public class Profile : INotifyPropertyChanged
     {
         public string Name { get; set; }
         public bool IsProtected { get; set; }
@@ -19,7 +22,20 @@ namespace Stardrop.Models
         public Dictionary<string, JsonDocument> PreservedModConfigs { get; set; }
         public List<ModNote> Notes { get; set; }
 
+        [JsonIgnore]
         public bool IsFromCollection => string.IsNullOrEmpty(SourceId) is false;
+
+        private bool _isFirstCollectionProfile;
+        /// <summary>
+        /// Whether this is the first collection profile in the profile list, which is what draws the divider
+        /// separating the plain profiles from the collection ones in the profile dropdown. Maintained by
+        /// <see cref="ViewModels.ProfileEditorViewModel"/> as the list changes and never written to the profile
+        /// file, as it describes a position in a list rather than anything about the profile itself.
+        /// </summary>
+        [JsonIgnore]
+        public bool IsFirstCollectionProfile { get { return _isFirstCollectionProfile; } set { _isFirstCollectionProfile = value; NotifyPropertyChanged(); } }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public Profile()
         {
@@ -63,6 +79,11 @@ namespace Stardrop.Models
             copy.PreservedModConfigs = new Dictionary<string, JsonDocument>(PreservedModConfigs);
             copy.Notes = new List<ModNote>(Notes);
 
+            // MemberwiseClone hands over the subscriber list along with everything else, which would have the copy
+            // raising its changes at the lists bound to the profile it was copied from
+            copy.PropertyChanged = null;
+            copy.IsFirstCollectionProfile = false;
+
             return copy;
         }
 
@@ -75,6 +96,18 @@ namespace Stardrop.Models
         {
             IsProtected = false;
             SourceId = null;
+
+            // The profile moves out of the collection group in the list and is no longer marked as being from one,
+            // neither of which the list can see without being told
+            NotifyPropertyChanged(nameof(IsFromCollection));
+        }
+
+        internal void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            if (PropertyChanged is not null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
     }
 }

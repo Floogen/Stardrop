@@ -1,7 +1,9 @@
-﻿using Stardrop.Models;
+﻿using Avalonia.Threading;
+using Stardrop.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -18,6 +20,11 @@ namespace Stardrop.ViewModels
 
         private readonly string _profileFilePath;
         private List<Mod> _mods;
+
+        /// <summary>Set while RefreshProfileOrdering is moving profiles about, so that its own moves are not taken as another change to react to</summary>
+        private bool _isReorderingProfiles;
+        /// <summary>Set between a change arriving and the reorder it posted running, so that a run of changes such as the one in RevertChanges only posts once</summary>
+        private bool _hasReorderPending;
 
         public ProfileEditorViewModel(string profilesFilePath, List<Mod> mods)
         {
@@ -66,6 +73,11 @@ namespace Stardrop.ViewModels
 
             OldProfiles = Profiles.ToList();
 
+            // Subscribed after the load rather than during it, so that the profiles being read off disk do not each
+            // post an ordering pass of their own
+            RefreshProfileOrdering();
+            Profiles.CollectionChanged += Profiles_CollectionChanged;
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 ToolTip_Save = Program.translation.Get("ui.settings_window.tooltips.save_changes");
@@ -75,6 +87,63 @@ namespace Stardrop.ViewModels
             {
                 // TEMPORARY FIX: Due to bug with Avalonia on Linux platforms, tooltips currently cause crashes when they disappear
                 // To work around this, tooltips are purposely not displayed
+            }
+        }
+
+        private void Profiles_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (_isReorderingProfiles || _hasReorderPending)
+            {
+                return;
+            }
+
+            // Posted rather than run here. The dropdown and the editor's list are part way through handling this
+            // same change, and moving profiles underneath them at that point leaves their own indexes pointing at
+            // the wrong rows
+            _hasReorderPending = true;
+            Dispatcher.UIThread.Post(() =>
+            {
+                _hasReorderPending = false;
+                RefreshProfileOrdering();
+            });
+        }
+
+        /// <summary>
+        /// Moves the collection profiles to the bottom of the list and marks the first of them, which is what draws
+        /// the divider in the profile dropdown. The order within each group is left alone, so the default profile
+        /// keeps the top position the constructor gave it and a rename never shuffles anything.
+        /// </summary>
+        internal void RefreshProfileOrdering()
+        {
+            _isReorderingProfiles = true;
+
+            try
+            {
+                // Everything from this index down is a collection profile once the moves below are done
+                int nextPlainIndex = 0;
+                foreach (var profile in Profiles.Where(p => p.IsFromCollection is false).ToList())
+                {
+                    int currentIndex = Profiles.IndexOf(profile);
+                    if (currentIndex != nextPlainIndex)
+                    {
+                        Profiles.Move(currentIndex, nextPlainIndex);
+                    }
+
+                    nextPlainIndex += 1;
+                }
+
+                for (int i = 0; i < Profiles.Count; i++)
+                {
+                    bool isFirstCollectionProfile = i == nextPlainIndex;
+                    if (Profiles[i].IsFirstCollectionProfile != isFirstCollectionProfile)
+                    {
+                        Profiles[i].IsFirstCollectionProfile = isFirstCollectionProfile;
+                    }
+                }
+            }
+            finally
+            {
+                _isReorderingProfiles = false;
             }
         }
 
@@ -156,6 +225,10 @@ namespace Stardrop.ViewModels
         internal void DetachCollectionProfile(Profile profile)
         {
             profile.DetachFromCollection();
+
+            // The profile has left the collection group without the list itself changing, so nothing has posted the
+            // pass that would move it back up among the plain profiles
+            RefreshProfileOrdering();
 
             CreateProfile(profile, force: true);
         }

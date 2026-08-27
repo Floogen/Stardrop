@@ -162,6 +162,13 @@
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
 			<Setter Property="Background" Value="{DynamicResource ComboBoxItemBackgroundBrush}"/>
 		</Style>
+		<!-- Hidden by default, as a ComboBox draws its closed state with the same ItemTemplate as its rows and the divider has nothing to divide there -->
+		<Style Selector="Border.collectionDivider">
+			<Setter Property="IsVisible" Value="False"/>
+		</Style>
+		<Style Selector="ComboBoxItem Border.collectionDivider.firstCollection">
+			<Setter Property="IsVisible" Value="True"/>
+		</Style>
 		<Style Selector="ComboBox">
 			<Setter Property="Background" Value="Transparent" />
 			<Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
@@ -436,7 +443,12 @@
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
 						<StackPanel>
-							<TextBlock Text="{Binding Path=Name}"/>
+							<Border Classes="collectionDivider" Classes.firstCollection="{Binding IsFirstCollectionProfile}" Background="{DynamicResource HighlightBrush}" Height="1" Margin="0 2 0 5"/>
+							<!-- A Grid rather than a horizontal StackPanel, which would hand the name unlimited width and leave it overrunning the dropdown instead of trimming -->
+							<Grid ColumnDefinitions="Auto,*">
+								<i:Icon Grid.Column="0" Value="mdi-package-variant-closed" IsVisible="{Binding IsFromCollection}" VerticalAlignment="Center" Margin="0 0 5 0"/>
+								<TextBlock Grid.Column="1" Text="{Binding Path=Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+							</Grid>
 						</StackPanel>
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
