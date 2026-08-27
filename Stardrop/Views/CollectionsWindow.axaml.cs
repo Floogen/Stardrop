@@ -31,6 +31,7 @@ namespace Stardrop.Views
         private readonly ProfileEditorViewModel? _editorView;
         private readonly Action? _onCollectionRemoved;
         private readonly Func<string[], Task>? _onFilesDropped;
+        private readonly Func<Task>? _onRefreshRequested;
 
         public CollectionsWindow()
         {
@@ -57,6 +58,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("openPageButton").Click += OpenPageButton_Click;
             this.FindControl<Button>("openMissingButton").Click += OpenMissingButton_Click;
             this.FindControl<Button>("removeButton").Click += RemoveButton_Click;
+            this.FindControl<Button>("refreshButton").Click += RefreshButton_Click;
 
             // Skipped in the previewer, which has no paths set up to read the cache from
             if (Design.IsDesignMode is false)
@@ -65,11 +67,37 @@ namespace Stardrop.Views
             }
         }
 
-        public CollectionsWindow(ProfileEditorViewModel editorView, Action onCollectionRemoved, Func<string[], Task>? onFilesDropped = null) : this()
+        public CollectionsWindow(ProfileEditorViewModel editorView, Action onCollectionRemoved, Func<string[], Task>? onFilesDropped = null, Func<Task>? onRefreshRequested = null) : this()
         {
             _editorView = editorView;
             _onCollectionRemoved = onCollectionRemoved;
             _onFilesDropped = onFilesDropped;
+            _onRefreshRequested = onRefreshRequested;
+        }
+
+        /// <summary>
+        /// Asks the main window to re-run the revision check, then reloads so the answer lands in the list. The
+        /// records are written to the cache by the check itself, so nothing is handed back here.
+        /// </summary>
+        private async void RefreshButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (_onRefreshRequested is null || _viewModel.IsCheckingForUpdates)
+            {
+                return;
+            }
+
+            _viewModel.IsCheckingForUpdates = true;
+
+            try
+            {
+                await _onRefreshRequested();
+            }
+            finally
+            {
+                _viewModel.IsCheckingForUpdates = false;
+            }
+
+            _viewModel.Load();
         }
 
         /// <summary>
@@ -226,6 +254,20 @@ namespace Stardrop.Views
             }
 
             _editorView.DetachCollectionProfile(profile);
+        }
+
+        /// <summary>
+        /// Sends the user to the page for the revision they do not have. Nothing is installed from here, as the
+        /// curator's notes are the only thing Stardrop can offer until the update path exists.
+        /// </summary>
+        private void OnUpdateStatusTapped(object? sender, RoutedEventArgs e)
+        {
+            if (_viewModel.SelectedCollection is null || String.IsNullOrEmpty(_viewModel.SelectedCollection.UpdatePageUri))
+            {
+                return;
+            }
+
+            Toolkit.OpenBrowser(_viewModel.SelectedCollection.UpdatePageUri);
         }
 
         private void OnNameHeaderTapped(object? sender, RoutedEventArgs e)

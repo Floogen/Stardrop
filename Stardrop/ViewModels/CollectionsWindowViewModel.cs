@@ -102,6 +102,14 @@ namespace Stardrop.ViewModels
         public string PageUri { get; }
         public bool HasCurator { get; }
         public int InstalledModCount { get; }
+        /// <summary>Whether a newer revision is available, which both the list marker and the detail line read</summary>
+        public bool HasUpdate { get; }
+        /// <summary>The available revision, spelt out for the detail panel. Empty where there is nothing to say</summary>
+        public string UpdateStatus { get; }
+        /// <summary>The short form for the list, where a full sentence would not fit beside the install progress</summary>
+        public string UpdateMarker { get; }
+        /// <summary>Where the update line sends the user, being the page for the revision they do not have yet</summary>
+        public string UpdatePageUri { get; }
         public List<CollectionEntryView> Entries { get; }
 
         public CollectionView(CollectionInstall collection)
@@ -116,6 +124,11 @@ namespace Stardrop.ViewModels
             InstalledModCount = collection.GetInstalledCount();
             Progress = String.Format(Program.translation.Get("ui.collections_window.labels.installed"), InstalledModCount, collection.GetModCount());
             PageUri = collection.GetPageUri();
+
+            HasUpdate = collection.HasUpdate();
+            UpdateStatus = HasUpdate ? String.Format(Program.translation.Get("ui.collections_window.labels.update_available"), collection.LatestRevisionNumber) : String.Empty;
+            UpdateMarker = HasUpdate ? Program.translation.Get("ui.collections_window.labels.update_marker") : String.Empty;
+            UpdatePageUri = HasUpdate ? collection.GetRevisionPageUri(collection.LatestRevisionNumber!.Value) : String.Empty;
 
             Entries = collection.Mods.Select(m => new CollectionEntryView(collection, m)).ToList();
         }
@@ -197,6 +210,18 @@ namespace Stardrop.ViewModels
         public bool HasStatusMessage { get { return String.IsNullOrEmpty(_statusMessage) is false; } }
 
         public bool HasCollections { get { return Collections.Count > 0; } }
+        /// <summary>Whether anything is mid-check, which the refresh button reads so it cannot be pressed twice</summary>
+        public bool IsCheckingForUpdates
+        {
+            get { return _isCheckingForUpdates; }
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _isCheckingForUpdates, value);
+                this.RaisePropertyChanged(nameof(CanCheckForUpdates));
+            }
+        }
+        private bool _isCheckingForUpdates;
+        public bool CanCheckForUpdates { get { return _isCheckingForUpdates is false; } }
         public bool HasSelection { get { return _selectedCollection is not null; } }
         /// <summary>Whether the selected collection has anything left for the bulk open button to send the user to</summary>
         public bool HasMissingPages { get { return GetMissingPageUris().Count > 0; } }

@@ -412,6 +412,10 @@ namespace Stardrop.Views
             // Register a handler to watch whenever the Nexus client changes, so setpu and teardown get handled automatically
             Nexus.ClientChanged += NexusClientChanged;
 
+            // Shown from the cache first, so last session's answer is on screen whether or not the check below can
+            // reach Nexus at all
+            RefreshCollectionUpdateCount();
+
             // Set up the Nexus Mods connection and attempt to register for the NXM URI protocol
             await CheckForNexusConnection();
 
@@ -1475,7 +1479,7 @@ namespace Stardrop.Views
         {
             Program.helper.Log($"Opening collections window");
 
-            var collectionsWindow = new CollectionsWindow(_editorView, HandleCollectionRemoved, HandleCollectionFileDrop);
+            var collectionsWindow = new CollectionsWindow(_editorView, HandleCollectionRemoved, HandleCollectionFileDrop, HandleCollectionRefresh);
             collectionsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             // Held so that an arriving nxm link can tell this window apart from a dialog waiting on an answer, and
@@ -1497,6 +1501,15 @@ namespace Stardrop.Views
         /// discovered again before any profile is applied against it, and the selection has to fall back where the
         /// profile that was selected is one of the things that just went away.
         /// </summary>
+        /// <summary>
+        /// Re-runs the revision check for the collections window's refresh button, forced past the once-a-session
+        /// guard since the user asking for it is the whole point.
+        /// </summary>
+        private async Task HandleCollectionRefresh()
+        {
+            await CheckForCollectionUpdates(forceCheck: true);
+        }
+
         private void HandleCollectionRemoved()
         {
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
@@ -1517,6 +1530,8 @@ namespace Stardrop.Views
 
             _viewModel.RefreshModCounts();
             _viewModel.UpdateFilter();
+
+            RefreshCollectionUpdateCount();
         }
 
         private async Task HandleStardropUpdateCheck(bool manualCheck = false)
@@ -2399,6 +2414,10 @@ namespace Stardrop.Views
 
                 // Show Nexus mod download column, if user is premium
                 _viewModel.ShowInstalls = Program.settings.NexusDetails.IsPremium;
+
+                // Check the installed collections for a newer revision. Awaited rather than fired off, so the count
+                // it produces is in place before anything reads it
+                await CheckForCollectionUpdates();
             }
             else
             {

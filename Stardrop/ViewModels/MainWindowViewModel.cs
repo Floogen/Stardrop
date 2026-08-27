@@ -76,6 +76,22 @@ namespace Stardrop.ViewModels
         public string DownloadsButtonText { get => _downloadsButtonText; set => this.RaiseAndSetIfChanged(ref _downloadsButtonText, value); }
         private int _modsWithCachedUpdates;
         public int ModsWithCachedUpdates { get { return _modsWithCachedUpdates; } set { this.RaiseAndSetIfChanged(ref _modsWithCachedUpdates, value); } }
+        private int _collectionsWithUpdates;
+        /// <summary>
+        /// Collections sitting behind a newer revision. Shown beside the mod update count as a pointer towards the
+        /// collections window, which is where the update itself is described and acted on.
+        /// </summary>
+        public int CollectionsWithUpdates
+        {
+            get { return _collectionsWithUpdates; }
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _collectionsWithUpdates, value);
+                this.RaisePropertyChanged(nameof(HasCollectionUpdates));
+            }
+        }
+        /// <summary>Hides the collection update count outright, rather than showing a zero to the many users who have no collections</summary>
+        public bool HasCollectionUpdates { get { return _collectionsWithUpdates > 0; } }
         public string Version { get; set; }
 
         private string _nexusStatus = String.Concat("Nexus Mods: ", Program.translation.Get("internal.disconnected"));

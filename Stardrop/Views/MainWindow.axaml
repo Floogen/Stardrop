@@ -472,6 +472,14 @@
 					<TextBlock Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center" Margin="0 0 0 2"/>
 					<TextBlock Text="{i18n:Translate ui.main_window.labels.updatable_mods}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
 					<TextBlock Text="{Binding ModsWithCachedUpdates}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+
+					<!-- Points at the collections window, which is where a collection update is described and acted on.
+					     Hidden outright rather than showing a zero, as most users have no collections at all -->
+					<StackPanel Orientation="Horizontal" IsVisible="{Binding HasCollectionUpdates}" ToolTip.Tip="{i18n:Translate ui.main_window.tooltips.updatable_collections}">
+						<TextBlock Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}"/>
+						<TextBlock Text="{i18n:Translate ui.main_window.labels.updatable_collections}" Foreground="{DynamicResource UpdateAvailableBrush}"/>
+						<TextBlock Text="{Binding CollectionsWithUpdates}" Foreground="{DynamicResource UpdateAvailableBrush}"/>
+					</StackPanel>
 				</StackPanel>
 			</Grid>
 		</DockPanel>

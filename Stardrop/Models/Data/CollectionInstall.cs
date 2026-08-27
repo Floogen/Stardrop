@@ -106,7 +106,10 @@ namespace Stardrop.Models.Data
         /// <summary>The curator's own signal, taken from collectionConfig.recommendNewProfile</summary>
         public bool RecommendsNewProfile { get; set; } = true;
         public DateTime InstallTimestamp { get; set; } = DateTime.Now;
+        /// <summary>When the revision check last ran, so a window opening can say how current its answer is</summary>
         public DateTime? LastRefreshTimestamp { get; set; }
+        /// <summary>Latest revision Nexus reported, or null where the check has not run or could not reach them</summary>
+        public int? LatestRevisionNumber { get; set; }
         /// <summary>Name of the profile generated for this collection, so the two can be re-linked after a rename</summary>
         public string ProfileName { get; set; } = String.Empty;
         public List<CollectionModEntry> Mods { get; set; } = new List<CollectionModEntry>();
@@ -148,6 +151,16 @@ namespace Stardrop.Models.Data
             return GetPendingCount() == 0;
         }
 
+        /// <summary>
+        /// Whether the curator has published a revision newer than the installed one. A collection revision is the
+        /// only unit of update Stardrop recognises, as its mods take their versions from the collection rather than
+        /// from their own update keys.
+        /// </summary>
+        public bool HasUpdate()
+        {
+            return LatestRevisionNumber is not null && LatestRevisionNumber.Value > RevisionNumber;
+        }
+
         public int GetPendingCount()
         {
             return Mods.Count(m => m.Status is CollectionModStatus.Pending or CollectionModStatus.AwaitingManualDownload or CollectionModStatus.Downloading or CollectionModStatus.Failed);
@@ -174,6 +187,15 @@ namespace Stardrop.Models.Data
             var domainName = String.IsNullOrEmpty(DomainName) ? "stardewvalley" : DomainName;
 
             return $"https://next.nexusmods.com/{domainName}/collections/{Slug}";
+        }
+
+        /// <summary>
+        /// The page for one specific revision, which is where the curator's notes for it live. The collection's own
+        /// page opens on whatever revision is latest without saying which, so an update links here instead.
+        /// </summary>
+        public string GetRevisionPageUri(int revisionNumber)
+        {
+            return $"{GetPageUri()}/revisions/{revisionNumber}";
         }
 
         /// <summary>

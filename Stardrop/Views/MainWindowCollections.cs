@@ -31,6 +31,9 @@ namespace Stardrop.Views
         // long enough to let that timer run. Sits above the sentinel's own interval
         private const int _lockWindowYieldMilliseconds = 150;
 
+        /// <summary>Whether the revision check has already run this session, so a refresh does not repeat it</summary>
+        private bool _hasCheckedCollectionRevisions;
+
         /// <summary>
         /// Handles an nxm collection link end to end: resolve the revision, pull the archive, read collection.json,
         /// install what can be installed and generate a profile for the result.
@@ -1085,6 +1088,70 @@ namespace Stardrop.Views
             TryDelete(archivePath);
 
             return summary;
+        }
+
+        /// <summary>
+        /// Asks Nexus for the latest revision of every installed collection and records it against each one. Kept
+        /// apart from the mod update check, which needs SMAPI's log, the game details and the version cache and
+        /// gives up early without them, where this needs nothing beyond a signed in client.
+        ///
+        /// Runs once a session unless forced, as a curator publishing a revision mid-session is rare enough that
+        /// the collections window's own refresh covers it.
+        /// </summary>
+        internal async Task CheckForCollectionUpdates(bool forceCheck = false)
+        {
+            if (Nexus.Client is null)
+            {
+                return;
+            }
+
+            if (_hasCheckedCollectionRevisions && forceCheck is false)
+            {
+                return;
+            }
+
+            var collections = CollectionCache.LoadAll();
+            if (collections.Count == 0)
+            {
+                _hasCheckedCollectionRevisions = true;
+                return;
+            }
+
+            Program.helper.Log($"Checking {collections.Count} installed collection(s) for a newer revision");
+
+            foreach (var collection in collections)
+            {
+                // A null revision asks for whatever the curator has published most recently
+                var revision = await Nexus.Client.GetCollectionRevision(collection.Slug, null, collection.DomainName);
+                if (revision is null || revision.RevisionNumber is null)
+                {
+                    Program.helper.Log($"Unable to check the collection {collection.Name} for a newer revision", Helper.Status.Alert);
+                    continue;
+                }
+
+                collection.LatestRevisionNumber = revision.RevisionNumber.Value;
+                collection.LastRefreshTimestamp = DateTime.Now;
+
+                if (collection.HasUpdate())
+                {
+                    Program.helper.Log($"The collection {collection.Name} has revision {collection.LatestRevisionNumber} available, against the installed revision {collection.RevisionNumber}");
+                }
+
+                CollectionCache.Save(collection);
+            }
+
+            _hasCheckedCollectionRevisions = true;
+
+            RefreshCollectionUpdateCount();
+        }
+
+        /// <summary>
+        /// Recounts the collections sitting behind a newer revision, read from the cache rather than the network so
+        /// that an install or a removal can call it without spending a request.
+        /// </summary>
+        internal void RefreshCollectionUpdateCount()
+        {
+            _viewModel.CollectionsWithUpdates = CollectionCache.LoadAll().Count(c => c.HasUpdate());
         }
 
         /// <summary>

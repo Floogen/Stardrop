@@ -85,6 +85,14 @@
 		<Style Selector="TextBlock.status.failure">
 			<Setter Property="Foreground" Value="{DynamicResource UpdateBrokenBrush}" />
 		</Style>
+		<Style Selector="TextBlock.update">
+			<Setter Property="Foreground" Value="{DynamicResource UpdateAvailableBrush}" />
+			<Setter Property="FontSize" Value="11" />
+		</Style>
+		<Style Selector="TextBlock.update.link:pointerover">
+			<Setter Property="Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
+			<Setter Property="TextDecorations" Value="Underline" />
+		</Style>
 		<Style Selector="ScrollViewer">
 			<Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}" />
 		</Style>
@@ -130,6 +138,7 @@
 							<StackPanel Margin="0 2 0 2">
 								<TextBlock Classes="row" Text="{Binding Name}" TextWrapping="Wrap" />
 								<TextBlock Classes="subtle" Text="{Binding Progress}" />
+								<TextBlock Classes="update" IsVisible="{Binding HasUpdate}" Text="{Binding UpdateMarker}" />
 							</StackPanel>
 						</DataTemplate>
 					</ListBox.ItemTemplate>
@@ -138,17 +147,21 @@
 
 			<Border Grid.Column="1" Margin="15 0 0 0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
 				<DockPanel Margin="10" DragDrop.AllowDrop="True" IsVisible="{Binding HasSelection}">
-					<!-- The remove button overlays the header rather than following it, so it sits in the corner of
-					     the panel it acts on and the title still wraps across the full width beneath it -->
+					<!-- The buttons overlay the header rather than following it, so they sit in the corner of the
+					     panel they act on and the title still wraps across the full width beneath them -->
 					<Grid DockPanel.Dock="Top" Margin="0 0 0 8">
-						<StackPanel Margin="0 0 30 0">
+						<StackPanel Margin="0 0 60 0">
 							<TextBlock Classes="detail" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding SelectedCollection.Name}" />
 							<TextBlock Classes="subtle" IsVisible="{Binding SelectedCollection.HasCurator}" Text="{Binding SelectedCollection.Curator}" />
 							<TextBlock Classes="subtle" Text="{Binding SelectedCollection.Revision}" />
+							<TextBlock Classes="update link" HorizontalAlignment="Left" Cursor="Hand" Tapped="OnUpdateStatusTapped" IsVisible="{Binding SelectedCollection.HasUpdate}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.update_available}" TextWrapping="Wrap" Text="{Binding SelectedCollection.UpdateStatus}" />
 							<TextBlock Classes="subtle" Text="{Binding SelectedCollection.Profile}" />
 							<TextBlock Classes="detail" Margin="0 6 0 0" Text="{Binding SelectedCollection.Progress}" />
 						</StackPanel>
-						<Button Name="removeButton" HorizontalAlignment="Right" VerticalAlignment="Top" Cursor="Hand" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.remove}" i:Attached.Icon="mdi-delete" Foreground="{DynamicResource UpdateBrokenBrush}" BorderThickness="0" Background="Transparent" />
+						<StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal">
+							<Button Name="refreshButton" Cursor="Hand" IsEnabled="{Binding CanCheckForUpdates}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.check_updates}" i:Attached.Icon="mdi-refresh" Foreground="{DynamicResource ThemeForegroundBrush}" BorderThickness="0" Background="Transparent" />
+							<Button Name="removeButton" Cursor="Hand" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.remove}" i:Attached.Icon="mdi-delete" Foreground="{DynamicResource UpdateBrokenBrush}" BorderThickness="0" Background="Transparent" />
+						</StackPanel>
 					</Grid>
 
 					<Grid DockPanel.Dock="Top" ColumnDefinitions="* Auto" Margin="0 0 0 6">
