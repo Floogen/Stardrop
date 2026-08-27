@@ -468,7 +468,9 @@ namespace Stardrop.Utilities.External
             var requestUri = new Uri(uri);
             var downloadCancellationSource = externalCancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(externalCancellationToken) : new CancellationTokenSource();
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, requestUri);
-            var filePath = Path.Combine(Pathing.GetNexusPath(), fileName);
+            // Every caller here hands over a name that came from Nexus Mods, so the last chance to make it
+            // usable as a filename is on the way into the path rather than at any one of them
+            var filePath = Path.Combine(Pathing.GetNexusPath(), Pathing.GetSafePathSegment(fileName));
 
             // FileMode.CreateNew throws on a name that is already taken, which would otherwise send a download that
             // never started down the cleanup path below and delete whatever already held the name

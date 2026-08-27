@@ -105,7 +105,7 @@ namespace Stardrop.Views
                 return (null, String.Empty);
             }
 
-            var safeName = String.Join("_", collectionName.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
+            var safeName = Pathing.GetSafePathSegment(collectionName);
             var archiveFileName = $"{safeName}.7z";
             var downloadResult = await Nexus.Client.DownloadFileAndGetPath(archiveUri, archiveFileName, cancellationToken);
             if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
@@ -699,6 +699,10 @@ namespace Stardrop.Views
         /// </summary>
         private static string GetAvailableDownloadName(string fileName, int? fileId = null)
         {
+            // Taken care of before anything is looked for, as a name the filesystem would alter on the way in gets
+            // written under one name and checked for under another
+            fileName = Pathing.GetSafePathSegment(fileName);
+
             var downloadPath = Pathing.GetNexusPath();
             if (File.Exists(Path.Combine(downloadPath, fileName)) is false)
             {

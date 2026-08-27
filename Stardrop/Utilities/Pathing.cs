@@ -1,11 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Stardrop.Utilities
 {
     public static class Pathing
     {
+        // Used when a name is nothing but characters that had to be taken out, so that a path segment is still
+        // produced rather than one that collapses into its parent folder
+        private const string _fallbackPathSegment = "unnamed";
+
         internal static string defaultGamePath;
         internal static string defaultModPath;
         internal static string defaultHomePath;
@@ -145,6 +150,31 @@ namespace Stardrop.Utilities
         public static string GetCollectionCachePath(string sourceId)
         {
             return Path.Combine(GetCollectionsCacheFolderPath(), $"{sourceId}.json");
+        }
+
+        /// <summary>
+        /// Turns a name from an outside source, such as a collection or a file on Nexus Mods, into something usable
+        /// as a single path segment. Invalid characters are replaced, and leading whitespace along with trailing
+        /// whitespace and periods are removed: Windows silently drops those when it writes the file, so a path built
+        /// from the untrimmed name stops pointing at what actually landed on disk.
+        /// </summary>
+        public static string GetSafePathSegment(string? name, char replacement = '_')
+        {
+            if (String.IsNullOrWhiteSpace(name))
+            {
+                return _fallbackPathSegment;
+            }
+
+            var invalidCharacters = Path.GetInvalidFileNameChars();
+            var builder = new StringBuilder(name.Length);
+            foreach (var character in name)
+            {
+                builder.Append(Array.IndexOf(invalidCharacters, character) >= 0 ? replacement : character);
+            }
+
+            var safeName = builder.ToString().Trim().TrimEnd('.', ' ');
+
+            return String.IsNullOrEmpty(safeName) ? _fallbackPathSegment : safeName;
         }
 
         /// <summary>
