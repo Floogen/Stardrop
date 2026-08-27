@@ -51,6 +51,16 @@ namespace Stardrop.Views
 
             Program.helper.Log($"Processing NXM link as a collection: {slug} revision {revisionNumber}");
 
+            // A collection keeps one identity across revisions, so installing over one already on disk would write
+            // into its folder and overwrite its record without any of the reconciliation an update needs. Blocked
+            // until the update path exists
+            var existingInstall = CollectionCache.Load(CollectionInstall.CreateSourceId(domainName, slug));
+            if (existingInstall is not null)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.collection_already_installed"), existingInstall.Name), Program.translation.Get("internal.ok"));
+                return false;
+            }
+
             var revision = await Nexus.Client.GetCollectionRevision(slug, revisionNumber, domainName);
             if (revision is null || String.IsNullOrEmpty(revision.DownloadLink))
             {

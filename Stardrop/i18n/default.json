@@ -300,6 +300,7 @@
   "ui.message.failed_collection_get_archive": "Failed to get the collection archive download for:\n\n{0}",
   "ui.message.failed_collection_download_archive": "Failed to download the collection archive for:\n\n{0}",
   "ui.message.failed_read_collection_index": "Failed to read the collection's index file.",
+  "ui.message.collection_already_installed": "The collection {0} is already installed.\n\nRemove it from the collections window before installing it again.",
   "ui.message.collection_preparing": "Preparing the collection {0}...",
   "ui.message.collection_finalizing": "Finishing the install of the collection {0}...",
   "ui.message.collection_finalizing_configuration": "Applying the collection's configuration...",

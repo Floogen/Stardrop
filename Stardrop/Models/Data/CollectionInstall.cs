@@ -123,20 +123,24 @@ namespace Stardrop.Models.Data
             DomainName = domainName;
             Slug = slug;
             RevisionNumber = revisionNumber;
-            SourceId = CreateSourceId(domainName, slug, revisionNumber);
+            SourceId = CreateSourceId(domainName, slug);
         }
 
         /// <summary>
         /// Builds a filesystem-safe source ID. Periods are stripped because a folder containing one is skipped
         /// during discovery whenever Settings.IgnoreHiddenFolders is enabled.
+        ///
+        /// The revision is deliberately absent, even though <see cref="RevisionNumber"/> sits alongside it. A
+        /// collection keeps one identity for its whole life so that a new revision updates the install it already
+        /// has, rather than appearing as an unrelated second collection with its own folder and profile.
         /// </summary>
-        public static string CreateSourceId(string domainName, string slug, int revisionNumber)
+        public static string CreateSourceId(string domainName, string slug)
         {
             var invalidCharacters = System.IO.Path.GetInvalidFileNameChars().Concat(new[] { '.', ' ' }).ToArray();
             var safeSlug = String.Join("-", slug.Split(invalidCharacters, StringSplitOptions.RemoveEmptyEntries));
             var safeDomain = String.Join("-", domainName.Split(invalidCharacters, StringSplitOptions.RemoveEmptyEntries));
 
-            return $"{safeDomain}-{safeSlug}-r{revisionNumber}";
+            return $"{safeDomain}-{safeSlug}";
         }
 
         public bool IsFullyInstalled()
