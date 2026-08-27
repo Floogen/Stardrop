@@ -626,25 +626,64 @@ namespace Stardrop.ViewModels
 
         /// <summary>
         /// Finds the copy of a dependency that will actually be loaded alongside the given mod. With collections in
-        /// play the same unique ID can exist several times, so a mod's dependency has to resolve within its own
-        /// source first. Falling back to any copy would mark a requirement satisfied by a mod that is not enabled.
+        /// play the same unique ID can exist several times, so a copy that is already enabled is taken before any
+        /// other, and a mod's dependency otherwise resolves within its own source first. Falling back to any copy
+        /// would mark a requirement satisfied by a mod that is not enabled.
         /// </summary>
-        private Mod? ResolveRequirement(Mod dependent, string requirementUniqueId)
+        internal Mod? ResolveRequirement(Mod dependent, string requirementUniqueId)
         {
-            var sameSourceMatch = Mods.FirstOrDefault(m => m.UniqueId.Equals(requirementUniqueId, StringComparison.OrdinalIgnoreCase) && String.Equals(m.SourceId, dependent.SourceId, StringComparison.OrdinalIgnoreCase));
+            var candidates = Mods.Where(m => m.UniqueId.Equals(requirementUniqueId, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            // An enabled copy wins over everything else, the dependent's own source first. Each enabled mod is
+            // handed to SMAPI as a junction of its own, so resolving past one that is already on and enabling a
+            // second copy puts two folders claiming the same unique ID in the mods folder
+            var enabledMatch = candidates.FirstOrDefault(m => m.IsEnabled && String.Equals(m.SourceId, dependent.SourceId, StringComparison.OrdinalIgnoreCase));
+            if (enabledMatch is null)
+            {
+                enabledMatch = candidates.FirstOrDefault(m => m.IsEnabled);
+            }
+
+            if (enabledMatch is not null)
+            {
+                return enabledMatch;
+            }
+
+            // Nothing is on yet, so the copy that belongs alongside the dependent is the one to reach for
+            var sameSourceMatch = candidates.FirstOrDefault(m => String.Equals(m.SourceId, dependent.SourceId, StringComparison.OrdinalIgnoreCase));
             if (sameSourceMatch is not null)
             {
                 return sameSourceMatch;
             }
 
-            // A collection mod can legitimately depend on something the user already had loose, so loose installs
-            // are a valid fallback. The reverse is not true, as a loose mod is never enabled by a collection profile
+            // A collection mod can legitimately depend on something the user already had loose, so a loose install
+            // is a valid fallback even while off. The reverse only holds through the enabled check above, as a
+            // loose mod has no claim on a collection's copy unless that copy is already going to load
             if (dependent.IsFromCollection)
             {
-                return Mods.FirstOrDefault(m => m.UniqueId.Equals(requirementUniqueId, StringComparison.OrdinalIgnoreCase) && m.IsFromCollection is false);
+                return candidates.FirstOrDefault(m => m.IsFromCollection is false);
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// The mods that would actually load the given mod as a requirement. The mirror of
+        /// <see cref="ResolveRequirement"/>: a mod naming this unique ID only counts as a dependent when this is
+        /// the copy its own source resolves to, so acting on a collection's copy leaves an identically named loose
+        /// copy and everything depending on that one alone.
+        /// </summary>
+        internal List<Mod> GetDependents(Mod mod)
+        {
+            var dependents = new List<Mod>();
+            foreach (var candidate in Mods.Where(m => m.Requirements.Any(r => r.IsRequired && r.UniqueID.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase))))
+            {
+                if (ReferenceEquals(ResolveRequirement(candidate, mod.UniqueId), mod))
+                {
+                    dependents.Add(candidate);
+                }
+            }
+
+            return dependents;
         }
 
         public void EvaluateRequirements()
@@ -934,8 +973,8 @@ namespace Stardrop.ViewModels
 
         /// <summary>
         /// Whether a mod belongs to what the user is currently looking at. A collection profile shows the mods it
-        /// references, including any it reuses from outside its own folder, while a plain profile shows everything
-        /// no collection owns.
+        /// references, including any it reuses from outside its own folder and anything the user has enabled since
+        /// it was applied, while a plain profile shows everything no collection owns.
         /// </summary>
         private bool PassesSourceFilter(Mod mod)
         {
@@ -1017,10 +1056,30 @@ namespace Stardrop.ViewModels
         {
             if (DataView is not null)
             {
+                TrackEnabledModsForSourceFilter();
                 UpdateDataGridGrouping();
 
                 DataView.Filter = null;
                 DataView.Filter = ModFilter;
+            }
+        }
+
+        /// <summary>
+        /// Folds whatever is currently enabled into the set the source filter shows. Done here rather than at each
+        /// place a mod is toggled, as this runs immediately before the filter is applied and so catches every path
+        /// that could have changed the enabled state. The set only grows within a session and is rebuilt from the
+        /// profile whenever one is applied, which is what keeps a mod on screen after the user disables it.
+        /// </summary>
+        private void TrackEnabledModsForSourceFilter()
+        {
+            if (_activeProfile is null || _activeProfile.IsFromCollection is false)
+            {
+                return;
+            }
+
+            foreach (var mod in Mods.Where(m => m.IsEnabled))
+            {
+                _activeProfileReferences.Add(mod.ToReference());
             }
         }
 

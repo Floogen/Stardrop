@@ -544,7 +544,7 @@
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="State" CanUserReorder="False" Header="{i18n:Translate ui.main_window.menu_headers.enabled}" Width="25" CanUserResize="False" CanUserSort="True" SortMemberPath="IsEnabled">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
-								<CheckBox Content="{Binding UniqueId}" IsChecked="{Binding IsEnabled}" Click="EnabledBox_Clicked" Margin="5 0 0 0"/>
+								<CheckBox IsChecked="{Binding IsEnabled}" Click="EnabledBox_Clicked" Margin="5 0 0 0"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>

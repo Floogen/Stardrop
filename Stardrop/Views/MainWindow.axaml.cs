@@ -1045,8 +1045,10 @@ namespace Stardrop.Views
                 return;
             }
 
-            // Get the mod based on the checkbox's content (which contains the UniqueId)
-            var clickedMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(checkBox.Content));
+            // Taken from the row the checkbox belongs to rather than looked up by unique ID. A collection can pin
+            // a mod the user also has installed loosely, so that ID matches more than one mod and the lookup was
+            // free to return the copy that was not clicked
+            var clickedMod = checkBox.DataContext as Mod;
             if (clickedMod is not null)
             {
                 // Add the selected mod into the selection list if shift or ctrl is held, otherwise clear the current selection
@@ -1056,7 +1058,13 @@ namespace Stardrop.Views
                     {
                         modGrid.SelectedItems.Clear();
                     }
-                    modGrid.SelectedItems.Add(clickedMod);
+
+                    // Guarded, as SelectedItems is validated against the filtered view rather than the mod list and
+                    // throws for anything the current filter is hiding
+                    if (_viewModel.DataView.Contains(clickedMod))
+                    {
+                        modGrid.SelectedItems.Add(clickedMod);
+                    }
                 }
 
                 // Enable / disable all selected mods based on the clicked mod
@@ -2448,7 +2456,9 @@ namespace Stardrop.Views
         {
             foreach (var requirement in mod.Requirements.Where(r => r.IsRequired))
             {
-                var requiredMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(requirement.UniqueID, StringComparison.OrdinalIgnoreCase));
+                // Resolved within the mod's own source first, so a collection mod enables the copy of the
+                // dependency that will actually load alongside it rather than an identically named loose one
+                var requiredMod = _viewModel.ResolveRequirement(mod, requirement.UniqueID);
                 if (requiredMod is not null)
                 {
                     requiredMod.IsEnabled = true;
@@ -2465,15 +2475,14 @@ namespace Stardrop.Views
         /// <param name="mod">The mod to look for in requirements.</param>
         private void DisableRequirements(Mod mod)
         {
-            foreach (var childMod in _viewModel.Mods.Where(m => m.Requirements.Any(r => r.IsRequired && r.UniqueID.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase))))
+            // Only the mods that would actually load this copy. Matching on the unique ID alone would disable
+            // everything depending on an identically named mod in another collection, or on a loose install
+            foreach (var childMod in _viewModel.GetDependents(mod))
             {
-                if (childMod is not null)
-                {
-                    childMod.IsEnabled = false;
+                childMod.IsEnabled = false;
 
-                    // Disable the requirement's requirements
-                    DisableRequirements(childMod);
-                }
+                // Disable the requirement's requirements
+                DisableRequirements(childMod);
             }
         }
 
