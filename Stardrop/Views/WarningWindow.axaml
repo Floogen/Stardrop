@@ -34,14 +34,14 @@
 			<Setter Property="MinHeight" Value="0"/>
 			<Setter Property="Cursor" Value="Hand"/>
 			<Setter Property="VerticalAlignment" Value="Center"/>
-			<Setter Property="Foreground" Value="{DynamicResource HighlightBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
 		</Style>
 		<Style Selector="Button.hyperlink /template/ ContentPresenter">
 			<Setter Property="Background" Value="Transparent"/>
 		</Style>
 		<Style Selector="Button.hyperlink:pointerover /template/ ContentPresenter">
 			<Setter Property="Background" Value="Transparent"/>
-			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
+			<Setter Property="TextBlock.Foreground" Value="White"/>
 		</Style>
 		<Style Selector="Button.hyperlink:pressed /template/ ContentPresenter">
 			<Setter Property="Background" Value="Transparent"/>
