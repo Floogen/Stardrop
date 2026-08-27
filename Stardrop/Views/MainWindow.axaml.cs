@@ -1083,6 +1083,13 @@ namespace Stardrop.Views
                         DisableRequirements(mod);
                     }
                 }
+
+                // Turning a copy on stands the others down rather than sitting alongside them, as only one folder
+                // per unique ID can be linked into the mods folder
+                if (clickedMod.IsEnabled)
+                {
+                    _viewModel.DisableDuplicatesOf(modGrid.SelectedItems.OfType<Mod>().ToList());
+                }
             }
 
             if (Program.settings.ShouldAutomaticallySaveProfileChanges)
@@ -1771,6 +1778,14 @@ namespace Stardrop.Views
                 foreach (var mod in _viewModel.Mods.Where(m => m.IsEnabled != enableState))
                 {
                     mod.IsEnabled = enableState;
+                }
+
+                // Every copy of a mod that a collection and the mod folder both provide has just been turned on,
+                // so the unique IDs have to be collapsed back down to one enabled copy each
+                if (enableState)
+                {
+                    _viewModel.ResolveEnabledDuplicates();
+                    _viewModel.RefreshModCounts();
                 }
 
                 if (Program.settings.ShouldAutomaticallySaveProfileChanges)
@@ -2936,12 +2951,26 @@ namespace Stardrop.Views
             // Link the enabled mods via a chained command
             List<string> arguments = new List<string>();
             List<string> usedLinkNames = new List<string>();
-            foreach (var mod in _viewModel.Mods.Where(m => m.IsEnabled))
+            List<string> linkedUniqueIds = new List<string>();
+
+            // Ordered so that a duplicated unique ID resolves to the copy this profile owns, as the guard below
+            // keeps whichever is reached first
+            var enabledMods = _viewModel.Mods.Where(m => m.IsEnabled).OrderByDescending(m => String.Equals(m.SourceId, profile.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
+            foreach (var mod in enabledMods)
             {
                 if (mod is null || mod.ModFileInfo is null || mod.ModFileInfo.Directory is null)
                 {
                     continue;
                 }
+
+                // The last gate before SMAPI. Two folders claiming one unique ID is an error SMAPI reports rather
+                // than resolves, and a profile saved while both copies were enabled still carries both
+                if (linkedUniqueIds.Any(id => id.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Program.helper.Log($"Skipping the link for {mod.Name} ({mod.ModFileInfo.DirectoryName}), as another copy of {mod.UniqueId} has already been linked", Helper.Status.Warning);
+                    continue;
+                }
+                linkedUniqueIds.Add(mod.UniqueId);
 
                 // SMAPI does not care about folder names, so a collision between a collection mod and a loose one can be resolved by suffixing
                 var linkName = mod.ModFileInfo.Directory.Name;

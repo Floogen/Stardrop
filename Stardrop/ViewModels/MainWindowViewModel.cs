@@ -1012,7 +1012,62 @@ namespace Stardrop.ViewModels
                 mod.IsEnabled = modEnableState;
             }
 
+            // Matched on the unique ID alone, so a mod a collection and the mod folder both provide has just had
+            // every copy turned on
+            if (modEnableState)
+            {
+                ResolveEnabledDuplicates();
+            }
+
             RefreshModCounts();
+        }
+
+        /// <summary>
+        /// Turns off every other enabled copy of the given mods' unique IDs. Each enabled mod is handed to SMAPI as
+        /// a junction of its own, so two folders claiming one unique ID is an error rather than a preference, and
+        /// the copy the user acted on is the one that stands.
+        /// </summary>
+        internal void DisableDuplicatesOf(IEnumerable<Mod> mods)
+        {
+            foreach (var mod in mods.Where(m => m.IsEnabled).ToList())
+            {
+                foreach (var duplicate in Mods.Where(m => m.IsEnabled && ReferenceEquals(m, mod) is false && m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).ToList())
+                {
+                    Program.helper.Log($"Disabling {duplicate.Name} ({duplicate.SourceId ?? "local"}), as another copy of {duplicate.UniqueId} has been enabled");
+                    duplicate.IsEnabled = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Collapses every unique ID down to one enabled copy. Used by the paths that turn mods on in bulk, where
+        /// there is no single mod the user acted on to keep, so the copy belonging to the active profile wins,
+        /// then a loose install, then whichever was found first.
+        /// </summary>
+        internal void ResolveEnabledDuplicates()
+        {
+            var preferredSourceId = _activeProfile is not null && _activeProfile.IsFromCollection ? _activeProfile.SourceId : null;
+            foreach (var group in Mods.Where(m => m.IsEnabled).GroupBy(m => m.UniqueId, StringComparer.OrdinalIgnoreCase).ToList())
+            {
+                var copies = group.ToList();
+                if (copies.Count < 2)
+                {
+                    continue;
+                }
+
+                var keptCopy = copies.FirstOrDefault(m => String.Equals(m.SourceId, preferredSourceId, StringComparison.OrdinalIgnoreCase));
+                if (keptCopy is null)
+                {
+                    keptCopy = copies.FirstOrDefault(m => m.IsFromCollection is false);
+                }
+
+                if (keptCopy is null)
+                {
+                    keptCopy = copies.First();
+                }
+
+                DisableDuplicatesOf(new List<Mod> { keptCopy });
+            }
         }
 
         internal void UpdateDataGridGrouping()
