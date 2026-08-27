@@ -29,6 +29,14 @@ namespace Stardrop.Models
         /// </summary>
         public string? SourceId { get; set; }
         public bool IsFromCollection { get { return String.IsNullOrEmpty(SourceId) is false; } }
+        private string? _collectionName;
+        /// <summary>
+        /// The display name of the collection this copy belongs to, or null for a loose install. SourceId is a
+        /// folder-safe slug rather than anything a user would recognise, so the readable name has to be resolved
+        /// from the collection's cache record. Filled in by DiscoverMods, which reads that cache once per pass
+        /// rather than once per mod.
+        /// </summary>
+        public string? CollectionName { get { return _collectionName; } set { _collectionName = value; NotifyPropertyChanged(); } }
         public SemVersion Version { get; set; }
         public string ParsedVersion { get { return Version.ToString(); } }
         public string SuggestedVersion { get; set; }

@@ -446,7 +446,7 @@
 							<Border Classes="collectionDivider" Classes.firstCollection="{Binding IsFirstCollectionProfile}" Background="{DynamicResource HighlightBrush}" Height="1" Margin="0 2 0 5"/>
 							<!-- A Grid rather than a horizontal StackPanel, which would hand the name unlimited width and leave it overrunning the dropdown instead of trimming -->
 							<Grid ColumnDefinitions="Auto,*">
-								<i:Icon Grid.Column="0" Value="mdi-package-variant-closed" IsVisible="{Binding IsFromCollection}" VerticalAlignment="Center" Margin="0 0 5 0"/>
+								<ContentControl Grid.Column="0" i:Attached.Icon="mdi-package-variant-closed" IsVisible="{Binding IsFromCollection}" VerticalAlignment="Center" Margin="0 0 5 0"/>
 								<TextBlock Grid.Column="1" Text="{Binding Path=Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
 							</Grid>
 						</StackPanel>
@@ -491,6 +491,7 @@
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.columns.show_hide}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.requirements}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.author}" Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.collection}" Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.install_timestamp}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.last_updated}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.version}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
@@ -550,7 +551,10 @@
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Name" Header="{i18n:Translate ui.main_window.menu_headers.mod_name}" CanUserReorder="False" SortMemberPath="Name">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
-								<TextBlock Text="{Binding Name}" TextAlignment="Left" VerticalAlignment="Center" Margin="7 0 0 0" />
+								<Grid ColumnDefinitions="20,*" Margin="7 0 0 0">
+									<ContentControl Grid.Column="0" i:Attached.Icon="mdi-package-variant-closed" Foreground="{DynamicResource HighlightBrush}" IsVisible="{Binding IsFromCollection}" ToolTip.Tip="{Binding CollectionName}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+									<TextBlock Grid.Column="1" Text="{Binding Name}" TextAlignment="Left" VerticalAlignment="Center" />
+								</Grid>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
@@ -564,6 +568,8 @@
 					<DataGridTextColumn ext:ColumnExtensions.Key="UniqueId" Header="{i18n:Translate ui.main_window.menu_headers.unique_id}" Binding="{Binding UniqueId}" IsVisible="False">
 					</DataGridTextColumn>
 					<DataGridTextColumn ext:ColumnExtensions.Key="Author" Header="{i18n:Translate ui.main_window.menu_headers.author}" Binding="{Binding Author}" CellStyleClasses="centered" IsVisible="False">
+					</DataGridTextColumn>
+					<DataGridTextColumn ext:ColumnExtensions.Key="Collection" Header="{i18n:Translate ui.main_window.menu_headers.collection}" Binding="{Binding CollectionName}" CellStyleClasses="centered" IsVisible="False">
 					</DataGridTextColumn>
 					<DataGridTextColumn ext:ColumnExtensions.Key="InstallTimestamp" Header="{i18n:Translate ui.main_window.menu_headers.install_timestamp}" Binding="{Binding InstallTimestamp}" IsVisible="False">
 					</DataGridTextColumn>

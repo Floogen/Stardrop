@@ -45,6 +45,7 @@
   "ui.main_window.menu_headers.mod_name": "Mod Name",
   "ui.main_window.menu_headers.unique_id": "Unique ID",
   "ui.main_window.menu_headers.author": "Author",
+  "ui.main_window.menu_headers.collection": "Collection",
   "ui.main_window.menu_headers.requirements": "Requirements",
   "ui.main_window.menu_headers.missing_requirements": "Missing Requirements",
   "ui.main_window.menu_headers.version": "Version",

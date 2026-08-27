@@ -242,6 +242,22 @@ namespace Stardrop.ViewModels
         }
 
         /// <summary>
+        /// The readable name of every installed collection, keyed by the source ID its mods carry. Name can be
+        /// empty on a record built from a collection that never reported one, so the slug stands in for it, which
+        /// is the same fallback GetAvailableProfileName uses when naming the generated profile.
+        /// </summary>
+        private static Dictionary<string, string> GetCollectionNamesBySourceId()
+        {
+            var namesBySourceId = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var collection in CollectionCache.LoadAll())
+            {
+                namesBySourceId[collection.SourceId] = String.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
+            }
+
+            return namesBySourceId;
+        }
+
+        /// <summary>
         /// The folders a discovery pass walks. Collections are installed outside the mod folder, so they are a root
         /// of their own rather than something the mod folder walk reaches on its way down.
         /// </summary>
@@ -479,6 +495,10 @@ namespace Stardrop.ViewModels
                 }
             }
 
+            // Read once for the whole pass rather than once per mod, as every mod in a collection resolves to the
+            // same record and CollectionCache.Load goes to disk each time it is called
+            var collectionNamesBySourceId = GetCollectionNamesBySourceId();
+
             foreach (var (scanRoot, fileInfo) in GetDiscoverableFiles(scanRoots, GetManifestFiles))
             {
                 if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(scanRoot, fileInfo.Directory)))
@@ -496,6 +516,13 @@ namespace Stardrop.ViewModels
                     }
 
                     var mod = new Mod(manifest, fileInfo, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
+                    if (mod.SourceId is not null)
+                    {
+                        // Falls back to the source ID where no record was found, which happens for a collection
+                        // folder whose cache record has been lost. Better a slug than an empty column
+                        mod.CollectionName = collectionNamesBySourceId.TryGetValue(mod.SourceId, out var collectionName) ? collectionName : mod.SourceId;
+                    }
+
                     if (manifest.ContentPackFor is not null && modKeysCache is not null)
                     {
                         var dependencyKey = modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(manifest.ContentPackFor.UniqueID, StringComparison.OrdinalIgnoreCase));
