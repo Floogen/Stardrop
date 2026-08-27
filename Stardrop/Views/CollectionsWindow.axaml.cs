@@ -22,6 +22,11 @@ namespace Stardrop.Views
     /// </summary>
     public partial class CollectionsWindow : Window
     {
+        // Past this many pages the browser is handed enough tabs to be worth asking about first
+        private const int _bulkOpenConfirmationThreshold = 5;
+        // A browser given several addresses in one go will drop some of them, so they are spaced out
+        private static readonly TimeSpan _bulkOpenDelay = TimeSpan.FromMilliseconds(250);
+
         private readonly CollectionsWindowViewModel _viewModel = new CollectionsWindowViewModel();
         private readonly ProfileEditorViewModel? _editorView;
         private readonly Action? _onCollectionRemoved;
@@ -50,6 +55,7 @@ namespace Stardrop.Views
             // Handle buttons
             this.FindControl<Button>("exitButton").Click += delegate { this.Close(); };
             this.FindControl<Button>("openPageButton").Click += OpenPageButton_Click;
+            this.FindControl<Button>("openMissingButton").Click += OpenMissingButton_Click;
             this.FindControl<Button>("removeButton").Click += RemoveButton_Click;
 
             // Skipped in the previewer, which has no paths set up to read the cache from
@@ -110,6 +116,44 @@ namespace Stardrop.Views
             }
 
             Toolkit.OpenBrowser(_viewModel.SelectedCollection.PageUri);
+        }
+
+        /// <summary>
+        /// Opens a tab for every entry the collection is still waiting on, so that a handful of manual downloads can
+        /// be worked through in one pass rather than a double click at a time. The pages follow the order the list is
+        /// sorted by and each is opened on its own, since a browser handed them all at once will lose some.
+        /// </summary>
+        private async void OpenMissingButton_Click(object? sender, RoutedEventArgs e)
+        {
+            var pageUris = _viewModel.GetMissingPageUris();
+            if (pageUris.Count == 0)
+            {
+                return;
+            }
+
+            // A large collection can leave dozens of entries outstanding, which is more than someone reaching for
+            // this button is likely to have meant
+            if (pageUris.Count > _bulkOpenConfirmationThreshold)
+            {
+                var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_open_missing_pages"), pageUris.Count))
+                {
+                    Topmost = true
+                };
+
+                if (await requestWindow.ShowDialog<bool>(this) is false)
+                {
+                    return;
+                }
+            }
+
+            Program.helper.Log($"Opening {pageUris.Count} page(s) for the entries the collection {_viewModel.SelectedCollection?.SourceId} is still waiting on");
+
+            foreach (var pageUri in pageUris)
+            {
+                Toolkit.OpenBrowser(pageUri);
+
+                await Task.Delay(_bulkOpenDelay);
+            }
         }
 
         /// <summary>

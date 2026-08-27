@@ -28,8 +28,7 @@
 			<Setter Property="Background" Value="{DynamicResource ButtonPressedBrush}"/>
 		</Style>
 		<Style Selector="Button[IsEnabled=False] /template/ ContentPresenter">
-			<Setter Property="Opacity" Value="0.5"/>
-			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Background" Value="{DynamicResource ButtonPressedBrush}"/>
 		</Style>
 		<Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
 			<Setter Property="Background" Value="Red"/>

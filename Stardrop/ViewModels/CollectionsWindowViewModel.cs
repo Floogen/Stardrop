@@ -3,6 +3,7 @@ using Semver;
 using Stardrop.Models;
 using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
+using Stardrop.Utilities;
 using Stardrop.Utilities.Internal;
 using System;
 using System.Collections.Generic;
@@ -126,6 +127,7 @@ namespace Stardrop.ViewModels
             {
                 this.RaiseAndSetIfChanged(ref _selectedCollection, value);
                 this.RaisePropertyChanged(nameof(HasSelection));
+                this.RaisePropertyChanged(nameof(HasMissingPages));
                 RefreshEntries();
             }
         }
@@ -164,6 +166,8 @@ namespace Stardrop.ViewModels
 
         public bool HasCollections { get { return Collections.Count > 0; } }
         public bool HasSelection { get { return _selectedCollection is not null; } }
+        /// <summary>Whether the selected collection has anything left for the bulk open button to send the user to</summary>
+        public bool HasMissingPages { get { return GetMissingPageUris().Count > 0; } }
 
         public string NameHeader { get { return BuildHeader("ui.collections_window.headers.mod_name", CollectionSortColumn.Name); } }
         public string VersionHeader { get { return BuildHeader("ui.collections_window.headers.version", CollectionSortColumn.Version); } }
@@ -198,6 +202,43 @@ namespace Stardrop.ViewModels
         public static List<Profile> GetDependentProfiles(IEnumerable<Profile> profiles, CollectionView collection)
         {
             return profiles.Where(p => p.Name.Equals(collection.ProfileName, StringComparison.OrdinalIgnoreCase) is false && p.EnabledModIds.Any(m => collection.SourceId.Equals(m.SourceId, StringComparison.OrdinalIgnoreCase))).ToList();
+        }
+
+        /// <summary>
+        /// The pages behind the entries the user still has to handle, in the order the list is currently sorted by,
+        /// so that opening them all lands the tabs in the order the rows are read. Addresses are deduplicated, as
+        /// two entries pinned to the same mod would otherwise open the same page twice, and anything that is not one
+        /// of the two sites Stardrop sends people to is left out rather than handed to the browser.
+        /// </summary>
+        public List<string> GetMissingPageUris()
+        {
+            var pageUris = new List<string>();
+            if (_selectedCollection is null)
+            {
+                return pageUris;
+            }
+
+            foreach (var entry in SortEntries(_selectedCollection.Entries.Where(e => e.IsMissing)))
+            {
+                if (entry.PageUri is not string pageUri || String.IsNullOrEmpty(pageUri))
+                {
+                    continue;
+                }
+
+                if (Toolkit.IsFromNexusMods(pageUri) is false && Toolkit.IsFromGitHub(pageUri) is false)
+                {
+                    continue;
+                }
+
+                if (pageUris.Contains(pageUri, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                pageUris.Add(pageUri);
+            }
+
+            return pageUris;
         }
 
         /// <summary>

@@ -147,6 +147,7 @@
 					<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0 0 0 6">
 						<CheckBox Name="missingOnlyCheckBox" IsChecked="{Binding ShowMissingOnly}" Content="{i18n:Translate ui.collections_window.checkbox.missing_only}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
 						<CheckBox Name="useNxmLinksCheckBox" Margin="20 0 0 0" IsChecked="{Binding UseNXMLinks}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.use_nxm_links}" Content="{i18n:Translate ui.collections_window.checkbox.use_nxm_links}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
+						<Button Name="openMissingButton" Margin="20 0 0 0" Padding="10 2" VerticalAlignment="Center" Cursor="Hand" IsEnabled="{Binding HasMissingPages}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.open_missing}" Content="{i18n:Translate ui.collections_window.button.open_missing}" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" />
 					</StackPanel>
 
 					<Grid DockPanel.Dock="Top" ColumnDefinitions="1.4* 0.5* 1.6*" Height="22">
