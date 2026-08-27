@@ -27,6 +27,9 @@ namespace Stardrop.Views
 
         /// <summary>How many entries a list in the install summary names before it gives a count instead</summary>
         private const int _maxListedEntries = 5;
+        // The lock window is opened from a timer, so a stretch of synchronous work has to hand the thread back for
+        // long enough to let that timer run. Sits above the sentinel's own interval
+        private const int _lockWindowYieldMilliseconds = 150;
 
         /// <summary>
         /// Handles an nxm collection link end to end: resolve the revision, pull the archive, read collection.json,
@@ -287,12 +290,21 @@ namespace Stardrop.Views
                 }
             }
 
+            // AddMods drops the lock as it finishes, and everything from here to the summary runs with nothing on
+            // screen: two passes over the mods folder, the overlays, the extracted archive being cleared out and the
+            // profile being built. On a large collection that is long enough to read as finished or as stuck
+            SetLockState(true, String.Format(Program.translation.Get("ui.message.collection_finalizing"), collection.Name));
+            await YieldToLockWindow();
+
             _viewModel.DiscoverMods(Pathing.defaultModPath);
 
             // The profile is built from what actually landed on disk rather than from what was requested, so a
             // partial install still produces a working profile
             var installedMods = _viewModel.Mods.Where(m => String.Equals(m.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
             RecordInstalledMods(entriesByArchive, installedModsByArchive, installedMods);
+
+            UpdateLockWindow(Program.translation.Get("ui.message.collection_finalizing_configuration"));
+            await YieldToLockWindow();
 
             // Last, as an overlay is copied into a mod folder that only exists once the mods above are installed and
             // their folder names have been recorded
@@ -309,8 +321,14 @@ namespace Stardrop.Views
             // installing has finished
             TryDeleteDirectory(extractedArchivePath);
 
+            UpdateLockWindow(Program.translation.Get("ui.message.collection_finalizing_profile"));
+            await YieldToLockWindow();
+
             var profile = CreateProfileForCollection(collection);
             CollectionCache.Save(collection);
+
+            // Handed straight over to the summary, so the two never overlap
+            SetLockState(false);
 
             await ReportCollectionResult(collection);
 
@@ -1314,6 +1332,16 @@ namespace Stardrop.Views
             {
                 _viewModel.EnableModsByProfile(profile);
             }
+        }
+
+        /// <summary>
+        /// Hands the UI thread back for long enough that the lock window can open and repaint. The sentinel that
+        /// opens it is a timer, so a run of synchronous work with no await in it never gives that timer a turn and
+        /// the window would either never appear or appear only once the work it was meant to cover had finished.
+        /// </summary>
+        private static async Task YieldToLockWindow()
+        {
+            await Task.Delay(_lockWindowYieldMilliseconds);
         }
 
         /// <summary>
