@@ -2258,6 +2258,20 @@ namespace Stardrop.Views
             // is keyed by unique ID alone, which a collection copy can share with a loose copy
             mods = mods.Where(m => m.IsFromCollection is false).ToList();
 
+            // Applied ahead of the version cache rather than inside the loop over it. An ignore lives in the client
+            // data cache and has no dependency on the mod having a version cache entry, so gating it behind one lost
+            // the ignore whenever the entry was missing
+            if (cachedClient is not null && cachedClient.IgnoredUpdates is not null)
+            {
+                foreach (var modItem in mods)
+                {
+                    if (String.IsNullOrEmpty(modItem.IgnoredVersion) && cachedClient.IgnoredUpdates.TryGetValue(modItem.UniqueId, out string? ignoredVersion))
+                    {
+                        modItem.IgnoredVersion = ignoredVersion;
+                    }
+                }
+            }
+
             if (File.Exists(Pathing.GetVersionCachePath()))
             {
                 oldUpdateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
@@ -2269,12 +2283,6 @@ namespace Stardrop.Views
                         if (modUpdateInfo is null)
                         {
                             continue;
-                        }
-
-                        // If we have a cached ignored version for the mod, apply it
-                        if (String.IsNullOrEmpty(modItem.IgnoredVersion) && cachedClient is not null && cachedClient.IgnoredUpdates is not null && cachedClient.IgnoredUpdates.ContainsKey(modItem.UniqueId))
-                        {
-                            modItem.IgnoredVersion = cachedClient.IgnoredUpdates[modItem.UniqueId];
                         }
 
                         // If an ignored version exists but a newer suggested version is now available, clear the ignored mapping
@@ -2482,9 +2490,18 @@ namespace Stardrop.Views
                     modItem.SuggestedVersion = recommendedVersion;
                     modItem.Status = status;
 
-                    if (!String.IsNullOrEmpty(modItem.ParsedStatus))
+                    // Deliberately not gated on ParsedStatus, which goes empty for an ignored update. Gating the
+                    // cache write on it dropped the very entry the ignore is later compared against, so a manual
+                    // check silently lost the ignore. Mirrors what ParsedStatus reports before that suppression
+                    bool hasUpdateData = modItem.IsModOutdated(recommendedVersion) || status == WikiCompatibilityStatus.Broken;
+                    if (hasUpdateData)
                     {
-                        Program.helper.Log($"Update available for {modItem.UniqueId} (v{modItem.SuggestedVersion}): {modItem.UpdateUri}");
+                        // The log line stays on ParsedStatus, as an ignored update is not one to report
+                        if (!String.IsNullOrEmpty(modItem.ParsedStatus))
+                        {
+                            Program.helper.Log($"Update available for {modItem.UniqueId} (v{modItem.SuggestedVersion}): {modItem.UpdateUri}");
+                        }
+
                         if (updateCache.Mods.FirstOrDefault(m => m.UniqueId.Equals(modItem.UniqueId)) is ModUpdateInfo modInfo && modInfo is not null)
                         {
                             modInfo.SuggestedVersion = recommendedVersion;
