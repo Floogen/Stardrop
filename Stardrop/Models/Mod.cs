@@ -40,7 +40,7 @@ namespace Stardrop.Models
         public SemVersion Version { get; set; }
         public string ParsedVersion { get { return Version.ToString(); } }
         private string _suggestedVersion { get; set; }
-        public string SuggestedVersion { get { return _suggestedVersion; } set { _suggestedVersion = value; NotifyPropertyChanged(nameof(SuggestedVersion)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasIgnorableUpdate)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
+        public string SuggestedVersion { get { return _suggestedVersion; } set { _suggestedVersion = value; NotifyPropertyChanged(nameof(SuggestedVersion)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasIgnorableUpdate)); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
         public string Name { get; set; }
         public string Path { get { return _path; } set { _path = value; RootPath = GetRootPath(value); } } // Whole mod path inside installed mods path for grouping mod components in the same mod
         private string _path { get; set; }
@@ -92,8 +92,8 @@ namespace Stardrop.Models
         public string ChangeWholeModGroupStateText { get { return IsEnabled ? Program.translation.Get("internal.disable_whole_mod") : Program.translation.Get("internal.enable_whole_mod"); } }
         /// <summary>
         /// Whether an update exists that the ignore toggle can act on, answered without reference to whether it is
-        /// currently ignored. The menu item's visibility hangs off this rather than ParsedStatus, which goes empty
-        /// the moment an update is ignored and so would hide the only control that could un-ignore it.
+        /// currently ignored. The menu item's visibility hangs off this rather than anything that folds the ignore
+        /// in, which would hide the only control capable of undoing it.
         /// </summary>
         public bool HasIgnorableUpdate
         {
@@ -114,16 +114,41 @@ namespace Stardrop.Models
         /// </summary>
         public bool IsUpdateIgnored { get { return !String.IsNullOrEmpty(SuggestedVersion) && !String.IsNullOrEmpty(IgnoredVersion) && IgnoredVersion.Equals(SuggestedVersion, StringComparison.OrdinalIgnoreCase); } }
         public string IgnoreUpdateText { get { return IsUpdateIgnored ? Program.translation.Get("internal.stop_ignoring_update") : Program.translation.Get("internal.ignore_update"); } }
+        /// <summary>
+        /// Whether the mod has something the user can still act on, which is what the updatable filter shows. An
+        /// ignored update does not qualify, though a compatibility warning does even when a version update sitting
+        /// alongside it has been ignored.
+        /// </summary>
+        public bool HasActionableStatus
+        {
+            get
+            {
+                if (_status == WikiCompatibilityStatus.Broken)
+                {
+                    return true;
+                }
+
+                return HasIgnorableUpdate && IsUpdateIgnored is false;
+            }
+        }
         private WikiCompatibilityStatus _status { get; set; }
-        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); NotifyPropertyChanged("InstallStatus"); } }
+        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); NotifyPropertyChanged("InstallStatus"); NotifyPropertyChanged(nameof(HasActionableStatus)); } }
         public string ParsedStatus
         {
             get
             {
-                // If the suggested version is the same as an ignored version, treat as no update
+                // Ahead of the ignore, as a compatibility warning is not version scoped and ignoring a version
+                // update is not a reason to stop reporting that the mod is broken
+                if (_status == WikiCompatibilityStatus.Broken)
+                {
+                    return Program.translation.Get("ui.main_window.hyperlinks.broken_compatibility_issue");
+                }
+
+                // Reported rather than blanked, as an ignored mod is otherwise indistinguishable from an up to date
+                // one and nothing would hint that the context menu can undo it
                 if (IsUpdateIgnored)
                 {
-                    return String.Empty;
+                    return String.Format(Program.translation.Get("ui.main_window.hyperlinks.update_ignored"), SuggestedVersion);
                 }
 
                 if (!String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
@@ -133,10 +158,6 @@ namespace Stardrop.Models
                         return String.Format(Program.translation.Get("ui.main_window.hyperlinks.unofficial_update_available"), SuggestedVersion);
                     }
                     return String.Format(Program.translation.Get("ui.main_window.hyperlinks.update_available"), SuggestedVersion);
-                }
-                else if (_status == WikiCompatibilityStatus.Broken)
-                {
-                    return Program.translation.Get("ui.main_window.hyperlinks.broken_compatibility_issue");
                 }
 
                 return String.Empty;
@@ -176,7 +197,7 @@ namespace Stardrop.Models
         private string _note { get; set; }
         public string Note { get { return _note; } set { _note = value; NotifyPropertyChanged("Note"); } }
         private string? _ignoredVersion { get; set; }
-        public string? IgnoredVersion { get { return _ignoredVersion; } set { _ignoredVersion = value; NotifyPropertyChanged(nameof(IgnoredVersion)); NotifyPropertyChanged(nameof(IsUpdateIgnored)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
+        public string? IgnoredVersion { get { return _ignoredVersion; } set { _ignoredVersion = value; NotifyPropertyChanged(nameof(IgnoredVersion)); NotifyPropertyChanged(nameof(IsUpdateIgnored)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

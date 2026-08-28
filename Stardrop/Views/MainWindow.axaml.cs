@@ -854,8 +854,8 @@ namespace Stardrop.Views
 
         /// <summary>
         /// Toggles whether the currently suggested update for a mod is ignored. A toggle rather than a one-way
-        /// action, as ParsedStatus goes empty once an update is ignored, so anything keyed off it would take the
-        /// only means of reversing a misclick away with it.
+        /// action, as gating the menu item on anything that folds the ignore in would take the only means of
+        /// reversing a misclick away with it.
         ///
         /// The ignore is version scoped and stored globally in the client data cache, keyed on unique ID. It lapses
         /// on its own once a version newer than the ignored one is suggested, which CheckForModUpdates handles.
@@ -2496,8 +2496,9 @@ namespace Stardrop.Views
                     bool hasUpdateData = modItem.IsModOutdated(recommendedVersion) || status == WikiCompatibilityStatus.Broken;
                     if (hasUpdateData)
                     {
-                        // The log line stays on ParsedStatus, as an ignored update is not one to report
-                        if (!String.IsNullOrEmpty(modItem.ParsedStatus))
+                        // An ignored update is not one to report. Checked directly rather than through
+                        // ParsedStatus, which now reports the ignore instead of coming back empty
+                        if (modItem.IsUpdateIgnored is false)
                         {
                             Program.helper.Log($"Update available for {modItem.UniqueId} (v{modItem.SuggestedVersion}): {modItem.UpdateUri}");
                         }

@@ -1243,7 +1243,7 @@ namespace Stardrop.ViewModels
                 return false;
             }
 
-            if (_showUpdatableMods && String.IsNullOrEmpty(mod.ParsedStatus))
+            if (_showUpdatableMods && mod.HasActionableStatus is false)
             {
                 return false;
             }

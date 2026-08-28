@@ -129,6 +129,11 @@
 		<Style Selector="Button.status">
 			<Setter Property="Foreground" Value="{DynamicResource UpdateAvailableBrush}" />
 		</Style>
+		<!-- Ahead of the Tag selectors, so a Broken or Unofficial mod keeps its own colour even when a version update alongside it is ignored -->
+		<Style Selector="Button.status.ignored">
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+			<Setter Property="Opacity" Value="0.5" />
+		</Style>
 		<Style Selector="Button.status[Tag=Broken]">
 			<Setter Property="Foreground" Value="{DynamicResource UpdateBrokenBrush}" />
 		</Style>
@@ -622,7 +627,7 @@
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Status" Header="{i18n:Translate ui.main_window.menu_headers.status}" SortMemberPath="ParsedStatus" CellStyleClasses="centered" >
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
-								<Button Name="statusButton" Tag="{Binding Status, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding UpdateUri}"/>
+								<Button Name="statusButton" Tag="{Binding Status, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Classes.ignored="{Binding IsUpdateIgnored}" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding UpdateUri}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>

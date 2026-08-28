@@ -72,6 +72,7 @@
   "ui.main_window.hyperlinks.click_to_open": "Click to open",
   "ui.main_window.hyperlinks.update_available": "Update Available ({0})",
   "ui.main_window.hyperlinks.unofficial_update_available": "Unofficial Update Available ({0})",
+  "ui.main_window.hyperlinks.update_ignored": "Update Ignored ({0})",
   "ui.main_window.hyperlinks.broken_compatibility_issue": "[Broken] Compatibility Issue",
   "ui.main_window.hyperlinks.install_update": "Install Update",
   "ui.main_window.hyperlinks.downloading": "Downloading...",
