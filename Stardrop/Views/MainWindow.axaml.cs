@@ -2605,6 +2605,18 @@ namespace Stardrop.Views
             _viewModel.IsCheckingForUpdates = false;
         }
 
+        /// <summary>Reapplies the visibility of columns that depend on a Nexus connection</summary>
+        private void RefreshGatedColumns(bool isNexusConnected)
+        {
+            var modGrid = this.FindControl<DataGrid>("modGrid");
+            if (modGrid is null)
+            {
+                return;
+            }
+
+            _viewModel.RefreshGatedColumns(modGrid, isNexusConnected);
+        }
+
         private async Task CheckForNexusConnection()
         {
             // Create the client and open access to Nexus if we haven't already done it
@@ -2631,8 +2643,8 @@ namespace Stardrop.Views
                 // Show endorsements
                 _viewModel.ShowEndorsements = true;
 
-                // Allow changelogs, which the user can still hide via the column context menu
-                _viewModel.AreChangelogsAvailable = true;
+                // Open the gate on Nexus only columns, which restores whatever the user last chose for them
+                RefreshGatedColumns(true);
 
                 // Show thumbnails
                 if (Program.settings.ShowModThumbnails)
@@ -2681,7 +2693,7 @@ namespace Stardrop.Views
                 _viewModel.NexusStatus = Program.translation.Get("internal.disconnected");
                 _viewModel.ShowEndorsements = false;
                 _viewModel.ShowInstalls = false;
-                _viewModel.AreChangelogsAvailable = false;
+                RefreshGatedColumns(false);
             }
 
             if (newClient is not null)
