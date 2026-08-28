@@ -83,7 +83,6 @@
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "可更新模组：点击刷新",
   "ui.main_window.button.update_status.updating": "正在更新...",
-  "ui.main_window.button.update_status.list_available_updates": "可更新模组：{0}",
   "ui.main_window.button.update_status.failed": "模组更新检查失败",
 
   // Main Window - Buttons - Downloads
@@ -150,13 +149,11 @@
   "ui.nexus_login.labels.note": "请注意",
   "ui.nexus_login.labels.get_key": "从 Nexus Mods 获取您的个人 API 密钥",
   "ui.nexus_login.labels.get_key_actual": "从 Nexus Mods 获取您的 Stardrop API 密钥",
-  "ui.nexus_login.labels.paste": "然后将密钥粘贴在下方",
   "ui.nexus_login.labels.share_warning": "请不要与他人分享您的个人 API 密钥，这样做可能会导致您的 Nexus 账户被封禁",
   "ui.nexus_login.labels.share_warning_actual": "请不要与他人分享您的个人 API 密钥，这样做可能会导致您的 Nexus 账户被封禁",
   "ui.nexus_login.labels.revoke": "您可以随时通过访问 https://www.nexusmods.com/settings/api-keys 来重置/撤销您的密钥",
   "ui.nexus_login.labels.revoke_actual": "您可以随时通过访问 https://www.nexusmods.com/settings/api-keys 来重置/撤销您的 Stardrop 密钥",
   "ui.nexus_login.labels.nexus_details": "Nexus Mods 用户信息",
-  "ui.nexus_login.labels.nexus_disconnect": "点击下方按钮，让 Stardrop 忘记您的个人密钥并断开与 Nexus Mods 的连接",
   "ui.nexus_login.labels.nexus_disconnect_actual": "点击下方按钮，让 Stardrop 忘记您的 Stardrop API 密钥并断开与 Nexus Mods 连接",
   "ui.nexus_login.labels.username": "用户名: {0}",
   "ui.nexus_login.labels.is_premium": "是否为高级会员: {0}",
@@ -198,8 +195,6 @@
   "ui.warning.stardrop_update_downloaded": "成功下载了最新版本\n\nStardrop 现在将重新启动",
   "ui.warning.SMAPI_unable_to_download_latest": "无法下载 SMAPI 的最新版本\n\n请手动下载最新版本",
   "ui.warning.SMAPI_unable_to_install_latest": "无法安装 SMAPI 的最新版本\n\n请手动下载最新版本",
-  "ui.warning.update_cooldown_minutes": "每5分钟只能请求一次更新\n\n请在{0}分钟后再次尝试",
-  "ui.warning.update_cooldown_seconds": "每5分钟只能请求一次更新\n\n请在{0}秒钟后再次尝试",
   "ui.warning.unable_to_locate_log": "无法定位 SMAPI-latest.txt！SMAPI 需要至少成功运行一次，以便 Stardrop 检测游戏详情",
   "ui.warning.unable_to_read_log": "无法通过读取 SMAPI 的日志文件来获取游戏版本\n\n将不会检查模组更新",
   "ui.warning.no_manifest": "在{0}中无法找到 manifest.json",
@@ -243,7 +238,6 @@
   "ui.window.settings.name": "设置",
   "ui.window.profiles.name": "个性化设置",
   "ui.window.profile_naming.name": "个性化设置名称",
-  "ui.window.nexus_login.name": "Nexus Mods 个人 API 密钥",
   "ui.window.nexus_login_actual.name": "Nexus Mods API 密钥",
   "ui.window.nexus_user.name": "Nexus Mods 用户信息",
 

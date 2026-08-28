@@ -89,7 +89,6 @@
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "Click To Check For Mod Updates",
   "ui.main_window.button.update_status.updating": "Updating...",
-  "ui.main_window.button.update_status.list_available_updates": "Mods Ready to Update: {0}",
   "ui.main_window.button.update_status.failed": "Mod Update Check Failed",
 
   // Main Window - Buttons - Downloads
@@ -169,13 +168,11 @@
   "ui.nexus_login.labels.note": "Please Note",
   "ui.nexus_login.labels.get_key": "Get your Personal API key from Nexus Mods",
   "ui.nexus_login.labels.get_key_actual": "Get your Stardrop API key from Nexus Mods",
-  "ui.nexus_login.labels.paste": "Then paste the key below",
   "ui.nexus_login.labels.share_warning": "Don't share your personal API key with others, doing so may result in actions against your Nexus account.",
   "ui.nexus_login.labels.share_warning_actual": "Don't share your API key with others, doing so may result in actions against your Nexus account.",
   "ui.nexus_login.labels.revoke": "You may reset / revoke your key at any time by going to My Nexus Account > API > Personal API Key.",
   "ui.nexus_login.labels.revoke_actual": "You may reset / revoke your Stardrop API key at any time by going to My Nexus Account > API > Stardrop.",
   "ui.nexus_login.labels.nexus_details": "Nexus Mods User Details",
-  "ui.nexus_login.labels.nexus_disconnect": "Click the button below to have Stardrop forget your personal key and disconnect from Nexus Mods.",
   "ui.nexus_login.labels.nexus_disconnect_actual": "Click the button below to have Stardrop forget your Stardrop API key and disconnect from Nexus Mods.",
   "ui.nexus_login.labels.username": "Username: {0}",
   "ui.nexus_login.labels.is_premium": "Is Premium Member: {0}",
@@ -219,8 +216,6 @@
   "ui.warning.stardrop_update_downloaded": "Downloaded the latest version successfully.\n\nStardrop will now restart.",
   "ui.warning.SMAPI_unable_to_download_latest": "Unable to download the latest release of SMAPI.\n\nPlease download the latest version manually.",
   "ui.warning.SMAPI_unable_to_install_latest": "Unable to install the latest release of SMAPI.\n\nPlease download the latest version manually.",
-  "ui.warning.update_cooldown_minutes": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} minute(s).",
-  "ui.warning.update_cooldown_seconds": "Updates can only be requested once every 5 minutes.\n\nPlease try again in {0} second(s).",
   "ui.warning.unable_to_locate_log": "Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.",
   "ui.warning.unable_to_read_log": "Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.",
   "ui.warning.no_manifest": "No manifest.json found in \"{0}\"",
@@ -268,7 +263,6 @@
   "ui.window.collections.name": "Collections",
   "ui.window.profiles_export.name": "Export Profile",
   "ui.window.profile_naming.name": "Profile Name",
-  "ui.window.nexus_login.name": "Nexus Mods Personal API Key",
   "ui.window.nexus_login_actual.name": "Nexus Mods API Key",
   "ui.window.nexus_user.name": "Nexus Mods User Details",
   "ui.window.missing_mods.name": "Missing Mods",
