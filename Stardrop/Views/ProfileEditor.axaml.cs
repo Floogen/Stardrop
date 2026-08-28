@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models;
@@ -6,6 +6,7 @@ using Stardrop.Models.Data.Enums;
 using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -18,6 +19,7 @@ namespace Stardrop.Views
         private readonly ProfileEditorViewModel _viewModel;
         private readonly Func<string, Task<List<Mod>>>? _addModDirectly;
         private readonly Func<Task>? _refreshModList;
+        private bool _hasAppliedChanges;
 
         public ProfileEditor()
         {
@@ -62,8 +64,9 @@ namespace Stardrop.Views
             var profile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
             if (profile is not null)
             {
-                this.FindControl<Button>("deleteButton").IsEnabled = !profile.IsProtected;
-                this.FindControl<Button>("renameButton").IsEnabled = !profile.IsProtected;
+                // A collection profile is protected against editing, though it still has to be removable
+                this.FindControl<Button>("deleteButton").IsEnabled = profile.IsProtected is false;
+                this.FindControl<Button>("renameButton").IsEnabled = profile.IsProtected is false;
             }
         }
 
@@ -181,6 +184,10 @@ namespace Stardrop.Views
         private void CopyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var selectedProfile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
+            if (selectedProfile is null)
+            {
+                return;
+            }
 
             int copyIndex = 1;
             var fileNameCopied = selectedProfile.Name + $" - Copy ({copyIndex})";
@@ -190,11 +197,7 @@ namespace Stardrop.Views
                 fileNameCopied = selectedProfile.Name + $" - Copy ({copyIndex})";
             }
 
-            var copiedProfile = selectedProfile.ShallowCopy();
-            copiedProfile.Name = fileNameCopied;
-            copiedProfile.IsProtected = false;
-
-            _viewModel.Profiles.Add(copiedProfile);
+            _viewModel.Profiles.Add(selectedProfile.CopyAsPlainProfile(fileNameCopied));
         }
 
         private void RenameButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -208,6 +211,11 @@ namespace Stardrop.Views
         private void DeleteButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var profile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
+            if (profile is null)
+            {
+                return;
+            }
+
             _viewModel.Profiles.Remove(profile);
         }
 
@@ -244,7 +252,24 @@ namespace Stardrop.Views
             }
 
             _viewModel.OldProfiles = currentProfileList.ToList();
+
+            _hasAppliedChanges = true;
             this.Close();
+        }
+
+        /// <summary>
+        /// Anything short of applying discards the changes. Handled here rather than on the cancel button so that
+        /// the exit button and the escape key behave the same way.
+        /// </summary>
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (_hasAppliedChanges is false && _viewModel is not null)
+            {
+                Program.helper.Log("Discarding unapplied profile editor changes");
+                _viewModel.RevertChanges();
+            }
+
+            base.OnClosing(e);
         }
 
         private void MainBar_DoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

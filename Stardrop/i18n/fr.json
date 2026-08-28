@@ -56,7 +56,6 @@
     // Main Window - Buttons - Update Status
     "ui.main_window.button.update_status.generic": "Mods Prêts À Mettre À Jour : Cliquer Pour Rafraîchir",
     "ui.main_window.button.update_status.updating": "Mises À Jour En Cours ...",
-    "ui.main_window.button.update_status.list_available_updates": "Mods Prêt À Mettre À Jour: {0}",
     "ui.main_window.button.update_status.failed": "Recherche De MAJ Échouée",
   
     // Main Window - ComboBox
@@ -103,8 +102,6 @@
     "ui.warning.stardrop_up_to_date": "Stardrop est à jour.\n\n{0} est la dernière version.",
     "ui.warning.stardrop_unable_to_download_latest": "Impossible de télécharger la dernière version de Stardrop.\n\nVeuillez la télécharger manuellement.",
     "ui.warning.stardrop_update_downloaded": "Le téléchargement de la dernière version est terminé.\n\nStardrop va maintenant redémarrer.",
-    "ui.warning.update_cooldown_minutes": "La recherche de MAJ ne peut se faire que toutes les 5 minutes.\n\nRéessayer dans {0} minute(s).",
-    "ui.warning.update_cooldown_seconds": "La recherche de MAJ ne peut se faire que toutes les 5 minutes.\n\nRéessayer dans {0} seconde(s).",
     "ui.warning.unable_to_locate_log": "Impossible de trouver SMAPI-latest.txt! Vous devez lancer SMAPI au moins une fois pour que Stardrop trouve les détails du jeu.",
     "ui.warning.unable_to_read_log": "Impossible de lire le log de SMAPI pour trouver le numéro de version.\n\nLes mods de rechercheront pas de mise à jours.",
     "ui.warning.no_manifest": "Pas de manifest.json trouvé dans \"{0}\"",

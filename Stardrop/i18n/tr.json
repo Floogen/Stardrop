@@ -55,7 +55,6 @@
 	// Main Window - Buttons - Update Status
 	"ui.main_window.button.update_status.generic": "Güncellenmeye Hazır Modlar: Tazelemek için Tıkla",
 	"ui.main_window.button.update_status.updating": "Güncelleniyor...",
-	"ui.main_window.button.update_status.list_available_updates": "Güncellenmeye Hazır Modlar: {0}",
 	"ui.main_window.button.update_status.failed": "Mod Güncelleme Kontrolü Başarısız",
 
 	// Main Window - ComboBox
@@ -96,8 +95,6 @@
 	"ui.warning.mod_config_saved_but_not_enabled": "Profil {0} için mod yapılandırma ayarları kaydedildi, yine de profile özel mod yapılandırma ayarları devre dışı.\n\nGörüntü > Ayarlar kısmına gidin ve Stardrop'un mod yapılandırma seçeneklerini otomatik olarak kaydetmesi ve uygulaması için \"Profile Özel Mod Yapılandırmalarını Etkinleştir\" seçeneğini işaretleyin.",
 	"ui.warning.unable_to_determine_profile": "Seçilen profil ayarlanamıyor.\n\nSMAPI başlatılmayacak.",
 	"ui.warning.stardrop_up_to_date": "Stardrop güncel.\n\nSon sürüm {0}.",
-	"ui.warning.update_cooldown_minutes": "Güncellemeler sadece 5 dakikada bir kez istenebilir.\n\nLütfen {0} dakika içerisinde tekrar deneyin.",
-	"ui.warning.update_cooldown_seconds": "Güncellemeler sadece 5 dakikada bir kez istenebilir.\n\nLütfen {0} saniye içerisinde tekrar deneyin.",
 	"ui.warning.unable_to_locate_log": "SMAPI-latest.txt dosyası bulunamıyor! Stardrop'un oyunla ilgili detayları tespit edebilmesi için SMAPI en az bir kez başarılı bir şekilde çalıştırılmak zorunda.",
 	"ui.warning.unable_to_read_log": "Oyun versiyonunu görmek için SMAPI'nin log dosyası okunamıyor.\n\nMod güncellemeleri kontrol edilmeyecek.",
 	"ui.warning.no_manifest": "\"{0}\" konumunda manifest.json bulunamadı.",

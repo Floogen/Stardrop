@@ -93,6 +93,7 @@ namespace Stardrop
                 Directory.CreateDirectory(Pathing.GetNexusPath());
                 Directory.CreateDirectory(Pathing.GetThumbnailsPath());
                 Directory.CreateDirectory(Pathing.GetSmapiUpgradeFolderPath());
+                Directory.CreateDirectory(Pathing.GetCollectionsCacheFolderPath());
 
                 // Verify the settings folder path is created
                 if (File.Exists(Pathing.GetSettingsPath()))
