@@ -56,7 +56,6 @@
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "Mods bereit zum Update: Zum Updaten klicken",
   "ui.main_window.button.update_status.updating": "Suche Update...",
-  "ui.main_window.button.update_status.list_available_updates": "Verfügbare Updates: {0}",
   "ui.main_window.button.update_status.failed": "Mod Update Check fehlgeschlagen",
 
   // Main Window - ComboBox
@@ -101,8 +100,6 @@
   "ui.warning.mod_config_saved_but_not_enabled": "Die Einstellungen der Mod Konfig wurden in Profil {0} gespeichert, aber die profilbezogene Mod Konfig sind nicht aktiviert.\n\n Geh zu Ansicht > Einstellungen und aktiviere \"Profilbezogene Mod Konfig aktivieren\" für Stardrop, um Änderungen an der Mod-Konfig automatisch zu speichern und anzuwenden.",
   "ui.warning.unable_to_determine_profile": "Ausgewähltes Profil kann nicht ermittelt werden.\n\nSMAPI wird nicht gestartet.",
   "ui.warning.stardrop_up_to_date": "Stardrop ist auf dem neuesten Stand.\n\n{0} ist die letzte Version.",
-  "ui.warning.update_cooldown_minutes": "Updates können nur einmal alle 5 Minuten angefordert werden.\n\nBitte versuche es in {0} Minute(n) erneut.",
-  "ui.warning.update_cooldown_seconds": "Updates können nur einmal alle 5 Minuten angefordert werden.\n\nBitte versuche es in {0} Sekunde(n) erneut.",
   "ui.warning.unable_to_locate_log": "Es kann keine SMAPI-latest.txt gefunden werden! SMAPI muss mindestens einmal erfolgreich ausgeführt werden, damit Stardrop die Spieldetails erkennen kann.",
   "ui.warning.unable_to_read_log": "Die SMAPI-Logdatei konnte nicht gelesen werden, um die Spielversion zu ermitteln.\n\nMods werden nicht auf Updates geprüft.",
   "ui.warning.no_manifest": "Keine manifest.json in \"{0}\" gefunden.",

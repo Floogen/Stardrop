@@ -79,7 +79,6 @@
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "Натисніть для перевірки модифікацій на наявність оновлень",
   "ui.main_window.button.update_status.updating": "Оновлення...",
-  "ui.main_window.button.update_status.list_available_updates": "Модифікацій готових до оновлення: {0}",
   "ui.main_window.button.update_status.failed": "Не вдалося перевірити на наявність оновлень",
 
   // Main Window - Buttons - Downloads
@@ -143,13 +142,11 @@
   "ui.nexus_login.labels.note": "Зауваження",
   "ui.nexus_login.labels.get_key": "Отримати свій особистий ключ API від Nexusmods",
   "ui.nexus_login.labels.get_key_actual": "Отримати API ключ Stardrop від Nexusmods",
-  "ui.nexus_login.labels.paste": "Потім вставте ключ нижче",
   "ui.nexus_login.labels.share_warning": "Не передавайте свій особистий ключ API іншим, це може призвести до зловмисних дій щодо вашої обліковки Nexusmods.",
   "ui.nexus_login.labels.share_warning_actual": "Не передавайте свій ключ API іншим, це може призвести до зловмисних дій щодо вашої обліковки Nexusmods.",
   "ui.nexus_login.labels.revoke": "Ви можете скинути / відкликати свій ключ у будь-який час, перейшовши в My Nexus Account > API > Personal API Key.",
   "ui.nexus_login.labels.revoke_actual": "Ви можете будь-коли скинути або відкликати свій API ключ\nStardrop, перейшовши в My Nexus Account > API > Stardrop.",
   "ui.nexus_login.labels.nexus_details": "Інформація про користувача Nexusmods",
-  "ui.nexus_login.labels.nexus_disconnect": "Натисніть на кнопку нижче, щоб Stardrop видалив зі своєї системи ваш особистий ключ та від’єднався від Nexusmods.",
   "ui.nexus_login.labels.nexus_disconnect_actual": "Натисніть на кнопку нижче, щоб Stardrop видалив зі своєї системи ваш особистий API ключ Stardrop та від’єднався від Nexusmods.",
   "ui.nexus_login.labels.username": "Ім’я користувача: {0}",
   "ui.nexus_login.labels.is_premium": "Користувач преміуму: {0}",
@@ -191,8 +188,6 @@
   "ui.warning.stardrop_update_downloaded": "Успішно завантажено останню версію.\n\nЗараз Stardrop перезапуститься.",
   "ui.warning.SMAPI_unable_to_download_latest": "Не вдалося завантажити останню версію SMAPI.\n\nБудь ласка, завантажте останню версію власноруч.",
   "ui.warning.SMAPI_unable_to_install_latest": "Не вдалося встановити останню версію SMAPI.\n\nБудь ласка, завантажте останню версію власноруч.",
-  "ui.warning.update_cooldown_minutes": "Запит на оновлення можна робити не частіше 5 хвилин.\n\nБудь ласка, спробуйте ще раз за {0} хв.",
-  "ui.warning.update_cooldown_seconds": "Запит на оновлення можна робити не частіше 5 хвилин.\n\nБудь ласка, спробуйте ще раз за {0} с.",
   "ui.warning.unable_to_locate_log": "Не вдалося виявити SMAPI-latest.txt! SMAPI необхідний для визначення додаткової інформації про гру.",
   "ui.warning.unable_to_read_log": "Не вдалося прочитати файл звіту SMAPI, аби отримати версію гри.\n\nМодифікації не будуть перевірятись на наявність оновлень.",
   "ui.warning.no_manifest": "Файл manifest.json не знайдено в {0}",
@@ -232,7 +227,6 @@
   "ui.window.settings.name": "Налаштування",
   "ui.window.profiles.name": "Профілі",
   "ui.window.profile_naming.name": "Назва профілю",
-  "ui.window.nexus_login.name": "Персональний API ключ Nexusmods",
   "ui.window.nexus_login_actual.name": "API ключ Nexusmods",
   "ui.window.nexus_user.name": "Інформація про користувача Nexusmods",
 

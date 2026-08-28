@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -36,10 +36,10 @@
             <Setter Property="BorderBrush" Value="{DynamicResource HighlightBrush}"/>
         </Style>
         <Style Selector="Button:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="LightGray"/>
+            <Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
         </Style>
         <Style Selector="Button:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource ButtonPressedBrush}"/>
         </Style>
     </UserControl.Styles>
     

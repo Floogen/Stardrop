@@ -28,6 +28,9 @@
         
         <!-- Need to look into why missing a SolidColorBrush causes Stardrop to not display them in styles -->
         <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource LightGray}" />
+        <SolidColorBrush x:Key="ButtonHoverBrush" Color="{DynamicResource IceRowAlt}" />
+        <SolidColorBrush x:Key="ButtonPressedBrush" Color="{DynamicResource IceRow}" />
+
     </Styles.Resources>
 
     <!-- DataGrid -->
