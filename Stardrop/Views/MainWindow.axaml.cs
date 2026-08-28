@@ -1494,7 +1494,7 @@ namespace Stardrop.Views
         {
             Program.helper.Log($"Opening collections window");
 
-            var collectionsWindow = new CollectionsWindow(_editorView, HandleCollectionRemoved, HandleCollectionFileDrop, HandleCollectionRefresh);
+            var collectionsWindow = new CollectionsWindow(_editorView, HandleCollectionRemoved, HandleCollectionFileDrop, HandleCollectionRefresh, HandleCollectionUpdate);
             collectionsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             // Held so that an arriving nxm link can tell this window apart from a dialog waiting on an answer, and
@@ -1523,6 +1523,15 @@ namespace Stardrop.Views
         private async Task HandleCollectionRefresh()
         {
             await CheckForCollectionUpdates(forceCheck: true);
+        }
+
+        /// <summary>
+        /// Applies a revision for the collections window's update button. Goes through the same path an nxm link
+        /// does, including the confirmation, so the two routes cannot drift apart.
+        /// </summary>
+        private async Task HandleCollectionUpdate(string domainName, string slug, int? revisionNumber)
+        {
+            await InstallOrUpdateCollection(domainName, slug, revisionNumber);
         }
 
         private void HandleCollectionRemoved()

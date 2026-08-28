@@ -112,6 +112,15 @@ namespace Stardrop.ViewModels
         public string UpdateMarker { get; }
         /// <summary>Where the update line sends the user, being the page for the revision they do not have yet</summary>
         public string UpdatePageUri { get; }
+        /// <summary>Carried so the update button can start one without the window having to reload the record</summary>
+        public string DomainName { get; }
+        public string Slug { get; }
+        /// <summary>
+        /// The revision an update should reach for. Null takes whatever the curator has published most recently,
+        /// while an unfinished update names the one it was already applying so that resuming finishes that rather
+        /// than jumping to a newer one the user has not agreed to.
+        /// </summary>
+        public int? TargetRevision { get; }
         public List<CollectionEntryView> Entries { get; }
 
         public CollectionView(CollectionInstall collection)
@@ -127,8 +136,12 @@ namespace Stardrop.ViewModels
             Progress = String.Format(Program.translation.Get("ui.collections_window.labels.installed"), InstalledModCount, collection.GetModCount());
             PageUri = collection.GetPageUri();
 
+            DomainName = collection.DomainName;
+            Slug = collection.Slug;
+
             IsUpdateInProgress = collection.IsUpdateInProgress();
             HasUpdate = collection.HasUpdate() || IsUpdateInProgress;
+            TargetRevision = IsUpdateInProgress ? collection.PendingRevisionNumber : null;
 
             // An update part way through is described as such rather than as one waiting to be started, since the
             // user has already agreed to it and is looking at what is left of it

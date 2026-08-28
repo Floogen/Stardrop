@@ -356,6 +356,7 @@
   "ui.collections_window.labels.update_marker": "Update available",
   "ui.collections_window.labels.update_in_progress": "Revision {0} is part way through installing",
   "ui.collections_window.labels.update_in_progress_marker": "Update unfinished",
+  "ui.collections_window.tooltips.apply_update": "Apply the newer revision of this collection",
   "ui.collections_window.tooltips.check_updates": "Check the installed collections for a newer revision",
   "ui.collections_window.tooltips.update_available": "The curator has published a newer revision. Click to open its page and see what changed.",
   "ui.collections_window.checkbox.missing_only": "Show Missing Only",

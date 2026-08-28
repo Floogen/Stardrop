@@ -32,6 +32,7 @@ namespace Stardrop.Views
         private readonly Action? _onCollectionRemoved;
         private readonly Func<string[], Task>? _onFilesDropped;
         private readonly Func<Task>? _onRefreshRequested;
+        private readonly Func<string, string, int?, Task>? _onUpdateRequested;
 
         public CollectionsWindow()
         {
@@ -59,6 +60,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("openMissingButton").Click += OpenMissingButton_Click;
             this.FindControl<Button>("removeButton").Click += RemoveButton_Click;
             this.FindControl<Button>("refreshButton").Click += RefreshButton_Click;
+            this.FindControl<Button>("updateButton").Click += UpdateButton_Click;
 
             // Skipped in the previewer, which has no paths set up to read the cache from
             if (Design.IsDesignMode is false)
@@ -67,12 +69,30 @@ namespace Stardrop.Views
             }
         }
 
-        public CollectionsWindow(ProfileEditorViewModel editorView, Action onCollectionRemoved, Func<string[], Task>? onFilesDropped = null, Func<Task>? onRefreshRequested = null) : this()
+        public CollectionsWindow(ProfileEditorViewModel editorView, Action onCollectionRemoved, Func<string[], Task>? onFilesDropped = null, Func<Task>? onRefreshRequested = null, Func<string, string, int?, Task>? onUpdateRequested = null) : this()
         {
             _editorView = editorView;
             _onCollectionRemoved = onCollectionRemoved;
             _onFilesDropped = onFilesDropped;
             _onRefreshRequested = onRefreshRequested;
+            _onUpdateRequested = onUpdateRequested;
+        }
+
+        /// <summary>
+        /// Hands the update to the main window, which owns the download and install machinery, then reloads so the
+        /// result lands in the list. The confirmation and the summary are raised there, so nothing is reported here.
+        /// </summary>
+        private async void UpdateButton_Click(object? sender, RoutedEventArgs e)
+        {
+            var collection = _viewModel.SelectedCollection;
+            if (_onUpdateRequested is null || collection is null || collection.HasUpdate is false)
+            {
+                return;
+            }
+
+            await _onUpdateRequested(collection.DomainName, collection.Slug, collection.TargetRevision);
+
+            RefreshCollections();
         }
 
         /// <summary>

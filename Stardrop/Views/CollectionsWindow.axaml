@@ -150,7 +150,7 @@
 					<!-- The buttons overlay the header rather than following it, so they sit in the corner of the
 					     panel they act on and the title still wraps across the full width beneath them -->
 					<Grid DockPanel.Dock="Top" Margin="0 0 0 8">
-						<StackPanel Margin="0 0 60 0">
+						<StackPanel Margin="0 0 90 0">
 							<TextBlock Classes="detail" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding SelectedCollection.Name}" />
 							<TextBlock Classes="subtle" IsVisible="{Binding SelectedCollection.HasCurator}" Text="{Binding SelectedCollection.Curator}" />
 							<TextBlock Classes="subtle" Text="{Binding SelectedCollection.Revision}" />
@@ -159,6 +159,7 @@
 							<TextBlock Classes="detail" Margin="0 6 0 0" Text="{Binding SelectedCollection.Progress}" />
 						</StackPanel>
 						<StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal">
+							<Button Name="updateButton" Cursor="Hand" IsVisible="{Binding SelectedCollection.HasUpdate}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.apply_update}" i:Attached.Icon="mdi-download" Foreground="{DynamicResource UpdateAvailableBrush}" BorderThickness="0" Background="Transparent" />
 							<Button Name="refreshButton" Cursor="Hand" IsEnabled="{Binding CanCheckForUpdates}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.check_updates}" i:Attached.Icon="mdi-refresh" Foreground="{DynamicResource ThemeForegroundBrush}" BorderThickness="0" Background="Transparent" />
 							<Button Name="removeButton" Cursor="Hand" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.remove}" i:Attached.Icon="mdi-delete" Foreground="{DynamicResource UpdateBrokenBrush}" BorderThickness="0" Background="Transparent" />
 						</StackPanel>

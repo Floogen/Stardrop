@@ -152,6 +152,10 @@ namespace Stardrop.Models.Data
             return $"{safeDomain}-{safeSlug}";
         }
 
+        /// <summary>
+        /// Whether nothing at all is left to fetch, optional entries included. Not what decides a revision has
+        /// landed, as an optional entry the user passed over would hold that open indefinitely.
+        /// </summary>
         public bool IsFullyInstalled()
         {
             return GetPendingCount() == 0;
@@ -174,13 +178,16 @@ namespace Stardrop.Models.Data
         }
 
         /// <summary>
-        /// Moves the record onto the revision being applied, once every entry of it has landed. Called both at the
-        /// end of an update and by the paths that satisfy a single entry afterwards, since the last manual download
-        /// a user drops in is what completes the update.
+        /// Moves the record onto the revision being applied, once every required entry of it has landed. Called both
+        /// at the end of an update and by the paths that satisfy a single entry afterwards, since the last manual
+        /// download a user drops in is what completes the update.
         /// </summary>
         public bool TryCompleteUpdate()
         {
-            if (PendingRevisionNumber is null || IsFullyInstalled() is false)
+            // Judged on the required entries alone. An optional one the user has not fetched is not an unfinished
+            // update, it is a mod they were offered and have not taken, and it may never be taken. Gating on every
+            // entry would leave the collection reporting the previous revision for good
+            if (PendingRevisionNumber is null || GetRequiredPendingCount() > 0)
             {
                 return false;
             }
@@ -193,7 +200,21 @@ namespace Stardrop.Models.Data
 
         public int GetPendingCount()
         {
-            return Mods.Count(m => m.Status is CollectionModStatus.Pending or CollectionModStatus.AwaitingManualDownload or CollectionModStatus.Downloading or CollectionModStatus.Failed);
+            return Mods.Count(m => IsOutstanding(m));
+        }
+
+        /// <summary>
+        /// Outstanding entries the curator did not mark optional. This is what says whether a revision has landed,
+        /// where GetPendingCount answers the broader question of what is left to fetch and drives the display.
+        /// </summary>
+        public int GetRequiredPendingCount()
+        {
+            return Mods.Count(m => m.IsOptional is false && IsOutstanding(m));
+        }
+
+        private static bool IsOutstanding(CollectionModEntry entry)
+        {
+            return entry.Status is CollectionModStatus.Pending or CollectionModStatus.AwaitingManualDownload or CollectionModStatus.Downloading or CollectionModStatus.Failed;
         }
 
         /// <summary>

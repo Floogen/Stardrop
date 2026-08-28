@@ -54,14 +54,37 @@ namespace Stardrop.Views
 
             Program.helper.Log($"Processing NXM link as a collection: {slug} revision {revisionNumber}");
 
-            // A collection keeps one identity across revisions, so a link for one already on disk is an update of it
-            // rather than a second install
+            return await InstallOrUpdateCollection(domainName, slug, revisionNumber, nxmLink.Link);
+        }
+
+        /// <summary>
+        /// Installs a collection, or applies a revision over the one already on disk. Split out from the nxm handler
+        /// so the collections window can start an update from a record it already holds, without a link to parse.
+        ///
+        /// A null revision takes whatever the curator has published most recently, which is what an update wants. A
+        /// stalled update passes the revision it was reaching for, so resuming finishes that one rather than jumping
+        /// to a newer one the user has not agreed to.
+        /// </summary>
+        private async Task<bool> InstallOrUpdateCollection(string domainName, string slug, int? revisionNumber, string? sourceDescription = null)
+        {
+            if (Nexus.Client is null)
+            {
+                await CreateWarningWindow(Program.translation.Get("ui.message.require_nexus_login"), Program.translation.Get("internal.ok"));
+                return false;
+            }
+
+            // Named in the failure messages, which read better pointing at the link the user clicked where there was
+            // one and at the collection otherwise
+            var failureSubject = String.IsNullOrEmpty(sourceDescription) ? slug : sourceDescription;
+
+            // A collection keeps one identity across revisions, so a request for one already on disk is an update of
+            // it rather than a second install
             var existingInstall = CollectionCache.Load(CollectionInstall.CreateSourceId(domainName, slug));
 
             var revision = await Nexus.Client.GetCollectionRevision(slug, revisionNumber, domainName);
             if (revision is null || String.IsNullOrEmpty(revision.DownloadLink))
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_get"), nxmLink.Link), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_get"), failureSubject), Program.translation.Get("internal.ok"));
                 return false;
             }
 
@@ -597,6 +620,10 @@ namespace Stardrop.Views
 
                 return;
             }
+
+            // The row the user pressed update on is still showing the previous revision, so the window behind is
+            // brought back in step before the summary lands over it
+            _collectionsWindow?.RefreshCollections();
 
             await ReportCollectionUpdateResult(collection, updatePlan);
 
