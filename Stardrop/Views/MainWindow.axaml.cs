@@ -852,6 +852,83 @@ namespace Stardrop.Views
             }
         }
 
+        /// <summary>
+        /// Toggles whether the currently suggested update for a mod is ignored. A toggle rather than a one-way
+        /// action, as gating the menu item on anything that folds the ignore in would take the only means of
+        /// reversing a misclick away with it.
+        ///
+        /// The ignore is version scoped and stored globally in the client data cache, keyed on unique ID. It lapses
+        /// on its own once a version newer than the ignored one is suggested, which CheckForModUpdates handles.
+        /// </summary>
+        private async void ModGridMenuRow_IgnoreUpdate(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if ((sender as MenuItem)?.DataContext is not Mod selectedMod)
+            {
+                return;
+            }
+
+            // Guarded rather than assumed, as the menu item is only offered when there is an update to act on
+            if (selectedMod.HasIgnorableUpdate is false)
+            {
+                return;
+            }
+
+            if (selectedMod.IsUpdateIgnored)
+            {
+                selectedMod.IgnoredVersion = null;
+            }
+            else
+            {
+                selectedMod.IgnoredVersion = selectedMod.SuggestedVersion;
+            }
+
+            // Persist the ignored version globally to the client data cache. Not to the profile, as an ignore is not
+            // profile scoped, so nothing here should mark the profile as having unsaved changes
+            try
+            {
+                ClientData clientData = new ClientData();
+                if (File.Exists(Pathing.GetDataCachePath()))
+                {
+                    try
+                    {
+                        clientData = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true }) ?? new ClientData();
+                    }
+                    catch
+                    {
+                        clientData = new ClientData();
+                    }
+                }
+
+                if (String.IsNullOrEmpty(selectedMod.IgnoredVersion))
+                {
+                    if (clientData.IgnoredUpdates.ContainsKey(selectedMod.UniqueId))
+                    {
+                        clientData.IgnoredUpdates.Remove(selectedMod.UniqueId);
+                    }
+                }
+                else
+                {
+                    clientData.IgnoredUpdates[selectedMod.UniqueId] = selectedMod.IgnoredVersion;
+                }
+
+                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(clientData, new JsonSerializerOptions() { WriteIndented = true }));
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to persist the ignored update for {selectedMod.UniqueId}: {ex}");
+            }
+
+            // Awaited rather than blocked on, as this runs on the UI thread
+            try
+            {
+                await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to refresh the update count after toggling the ignored update for {selectedMod.UniqueId}, so it will correct on the next update check: {ex}", Helper.Status.Warning);
+            }
+        }
+
         private void SearchBox_KeyUp(object? sender, KeyEventArgs e)
         {
             if (_searchBoxTimer is null)
@@ -2163,10 +2240,37 @@ namespace Stardrop.Views
         {
             int modsToUpdate = 0;
             UpdateCache? oldUpdateCache = null;
+            // Load client data once so we can consult and update ignored mappings
+            ClientData? cachedClient = null;
+            try
+            {
+                if (File.Exists(Pathing.GetDataCachePath()))
+                {
+                    cachedClient = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                }
+            }
+            catch
+            {
+                cachedClient = null;
+            }
 
             // Cached update data is never applied to a collection mod, as its collection owns the version. The cache
             // is keyed by unique ID alone, which a collection copy can share with a loose copy
             mods = mods.Where(m => m.IsFromCollection is false).ToList();
+
+            // Applied ahead of the version cache rather than inside the loop over it. An ignore lives in the client
+            // data cache and has no dependency on the mod having a version cache entry, so gating it behind one lost
+            // the ignore whenever the entry was missing
+            if (cachedClient is not null && cachedClient.IgnoredUpdates is not null)
+            {
+                foreach (var modItem in mods)
+                {
+                    if (String.IsNullOrEmpty(modItem.IgnoredVersion) && cachedClient.IgnoredUpdates.TryGetValue(modItem.UniqueId, out string? ignoredVersion))
+                    {
+                        modItem.IgnoredVersion = ignoredVersion;
+                    }
+                }
+            }
 
             if (File.Exists(Pathing.GetVersionCachePath()))
             {
@@ -2181,7 +2285,37 @@ namespace Stardrop.Views
                             continue;
                         }
 
-                        if (modItem.IsModOutdated(modUpdateInfo.SuggestedVersion))
+                        // If an ignored version exists but a newer suggested version is now available, clear the ignored mapping
+                        if (!String.IsNullOrEmpty(modItem.IgnoredVersion))
+                        {
+                            try
+                            {
+                                if (!String.IsNullOrEmpty(modUpdateInfo.SuggestedVersion) && Semver.SemVersion.TryParse(modUpdateInfo.SuggestedVersion, Semver.SemVersionStyles.Any, out var suggested) && Semver.SemVersion.TryParse(modItem.IgnoredVersion, Semver.SemVersionStyles.Any, out var ignoredVer))
+                                {
+                                    if (suggested.CompareSortOrderTo(ignoredVer) > 0)
+                                    {
+                                        // Newer version found, remove ignored mapping
+                                        try
+                                        {
+                                            if (cachedClient is not null && cachedClient.IgnoredUpdates is not null && cachedClient.IgnoredUpdates.ContainsKey(modItem.UniqueId))
+                                            {
+                                                cachedClient.IgnoredUpdates.Remove(modItem.UniqueId);
+                                                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(cachedClient, new JsonSerializerOptions() { WriteIndented = true }));
+                                            }
+                                        }
+                                        catch { }
+
+                                        modItem.IgnoredVersion = null;
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                // ignore parsing errors
+                            }
+                        }
+
+                        if (modItem.IsModOutdated(modUpdateInfo.SuggestedVersion) && (String.IsNullOrEmpty(modItem.IgnoredVersion) || !modItem.IgnoredVersion.Equals(modUpdateInfo.SuggestedVersion, StringComparison.OrdinalIgnoreCase)))
                         {
                             modItem.UpdateUri = modUpdateInfo.Link;
                             modItem.SuggestedVersion = modUpdateInfo.SuggestedVersion;
@@ -2189,11 +2323,16 @@ namespace Stardrop.Views
 
                             modsToUpdate++;
                         }
+
                         if (modUpdateInfo.Status != WikiCompatibilityStatus.Unknown && modUpdateInfo.Status != WikiCompatibilityStatus.Ok)
                         {
-                            modItem.UpdateUri = modUpdateInfo.Link;
-                            modItem.SuggestedVersion = modUpdateInfo.SuggestedVersion;
-                            modItem.Status = modUpdateInfo.Status;
+                            // Only apply status updates if the suggested version is not ignored
+                            if (String.IsNullOrEmpty(modItem.IgnoredVersion) || !modItem.IgnoredVersion.Equals(modUpdateInfo.SuggestedVersion, StringComparison.OrdinalIgnoreCase))
+                            {
+                                modItem.UpdateUri = modUpdateInfo.Link;
+                                modItem.SuggestedVersion = modUpdateInfo.SuggestedVersion;
+                                modItem.Status = modUpdateInfo.Status;
+                            }
                         }
                     }
                 }
@@ -2312,7 +2451,12 @@ namespace Stardrop.Views
                         }
                         recommendedVersion = suggestedUpdateData.Version;
 
-                        modsToUpdate++;
+                        // Only count this as an update if it's not ignored
+                        var existingMod = modItem;
+                        if (String.IsNullOrEmpty(existingMod.IgnoredVersion) || !existingMod.IgnoredVersion.Equals(recommendedVersion, StringComparison.OrdinalIgnoreCase))
+                        {
+                            modsToUpdate++;
+                        }
                     }
                     else if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
                     {
@@ -2346,9 +2490,19 @@ namespace Stardrop.Views
                     modItem.SuggestedVersion = recommendedVersion;
                     modItem.Status = status;
 
-                    if (!String.IsNullOrEmpty(modItem.ParsedStatus))
+                    // Deliberately not gated on ParsedStatus, which goes empty for an ignored update. Gating the
+                    // cache write on it dropped the very entry the ignore is later compared against, so a manual
+                    // check silently lost the ignore. Mirrors what ParsedStatus reports before that suppression
+                    bool hasUpdateData = modItem.IsModOutdated(recommendedVersion) || status == WikiCompatibilityStatus.Broken;
+                    if (hasUpdateData)
                     {
-                        Program.helper.Log($"Update available for {modItem.UniqueId} (v{modItem.SuggestedVersion}): {modItem.UpdateUri}");
+                        // An ignored update is not one to report. Checked directly rather than through
+                        // ParsedStatus, which now reports the ignore instead of coming back empty
+                        if (modItem.IsUpdateIgnored is false)
+                        {
+                            Program.helper.Log($"Update available for {modItem.UniqueId} (v{modItem.SuggestedVersion}): {modItem.UpdateUri}");
+                        }
+
                         if (updateCache.Mods.FirstOrDefault(m => m.UniqueId.Equals(modItem.UniqueId)) is ModUpdateInfo modInfo && modInfo is not null)
                         {
                             modInfo.SuggestedVersion = recommendedVersion;

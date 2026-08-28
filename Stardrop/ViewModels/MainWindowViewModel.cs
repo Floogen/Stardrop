@@ -577,6 +577,11 @@ namespace Stardrop.ViewModels
                         }
                     }
 
+                   if (localDataCache is not null && localDataCache.IgnoredUpdates is not null && localDataCache.IgnoredUpdates.TryGetValue(mod.UniqueId, out string? value))
+                    {
+                        mod.IgnoredVersion = value;
+                    }
+
                     // Check if any config file exists
                     var configPath = Path.Combine(fileInfo.DirectoryName, "config.json");
                     if (File.Exists(configPath) && new FileInfo(configPath) is FileInfo configInfo && configInfo is not null)
@@ -1238,7 +1243,7 @@ namespace Stardrop.ViewModels
                 return false;
             }
 
-            if (_showUpdatableMods && String.IsNullOrEmpty(mod.ParsedStatus))
+            if (_showUpdatableMods && mod.HasActionableStatus is false)
             {
                 return false;
             }
