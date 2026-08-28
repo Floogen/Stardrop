@@ -627,6 +627,13 @@ namespace Stardrop.Views
 
             await ReportCollectionUpdateResult(collection, updatePlan);
 
+            if (await OfferToRemoveDroppedEntries(collection, updatePlan, installPath))
+            {
+                _viewModel.DiscoverMods(Pathing.defaultModPath);
+                _viewModel.EvaluateRequirements();
+                _collectionsWindow?.RefreshCollections();
+            }
+
             // An update does not move the user, as they may well be sitting on a profile of their own. The grid is
             // put back in step only where the collection's own profile is the one on screen
             if (GetCurrentProfile() == profile)
@@ -1198,7 +1205,7 @@ namespace Stardrop.Views
         private Profile UpdateProfileForCollection(CollectionInstall collection, CollectionUpdatePlan plan)
         {
             // Matched on the source ID rather than the name, as the user is free to rename the profile
-            var profile = _editorView.Profiles.FirstOrDefault(p => String.Equals(p.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase));
+            var profile = _editorView.Profiles.FirstOrDefault(p => IsCollectionProfile(p, collection));
             if (profile is null)
             {
                 Program.helper.Log($"The profile for {collection.Name} could not be found, so one is generated for the revision being applied", Helper.Status.Warning);
@@ -1728,7 +1735,7 @@ namespace Stardrop.Views
         /// </summary>
         private void AddEntryToCollectionProfile(CollectionInstall collection, CollectionModEntry entry)
         {
-            var profile = _editorView.Profiles.FirstOrDefault(p => String.Equals(p.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase));
+            var profile = _editorView.Profiles.FirstOrDefault(p => IsCollectionProfile(p, collection));
             if (profile is null)
             {
                 Program.helper.Log($"Installed {entry.Name} into {collection.Name}, though its profile could not be found to enable the mod in", Helper.Status.Warning);
@@ -1879,6 +1886,128 @@ namespace Stardrop.Views
             }
 
             await CreateWarningWindow(summary, Program.translation.Get("internal.ok"), windowWidth: 560, enableHyperlinks: true);
+        }
+
+        /// <summary>
+        /// Offers to clear the folders left behind by entries the revision no longer lists. The update itself never
+        /// removes them, as a profile of the user's own may enable them and the curator dropping a mod is not the
+        /// same as the user wanting it gone. Asked after the summary, so the answer is given having just read which
+        /// mods were dropped.
+        /// </summary>
+        private async Task<bool> OfferToRemoveDroppedEntries(CollectionInstall collection, CollectionUpdatePlan plan, string installPath)
+        {
+            var droppedFolders = GetDroppedFolderNames(collection, plan);
+            if (droppedFolders.Count == 0)
+            {
+                return false;
+            }
+
+            // Named from the entries that actually lose a folder rather than from everything the revision dropped,
+            // so an entry whose mod another one still places is not offered up for deletion
+            var removableEntries = plan.Removed.Where(e => e.InstalledMods.Any(i => droppedFolders.Contains(i.FolderName!, StringComparer.OrdinalIgnoreCase))).ToList();
+
+            var message = String.Format(Program.translation.Get("ui.message.confirm_collection_remove_dropped"), removableEntries.Count);
+            message += Environment.NewLine + BuildPlainEntryLines(removableEntries);
+
+            // The collection dropping a mod says nothing about whether the user still wants it. A profile of their
+            // own may be the reason to keep the files, and they cannot answer this without being told
+            var dependentProfiles = GetProfilesUsingDroppedMods(collection, removableEntries);
+            if (dependentProfiles.Count > 0)
+            {
+                message += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_dropped_dependents"), dependentProfiles.Count);
+            }
+
+            var requestWindow = new MessageWindow(message);
+            KeepDialogAboveSiblings(requestWindow);
+
+            if (await requestWindow.ShowDialog<bool>(this) is false)
+            {
+                return false;
+            }
+
+            foreach (var folderName in droppedFolders)
+            {
+                Program.helper.Log($"Removing {folderName}, as revision {collection.RevisionNumber} of {collection.Name} no longer includes it");
+                TryDeleteDirectory(Path.Combine(installPath, folderName));
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// The profiles still enabling one of the mods about to be removed. The collection's own profile is left out
+        /// by source ID rather than by name, since the user is free to rename it, and its references to these mods
+        /// were dropped by the amendment further up.
+        /// </summary>
+        private List<Profile> GetProfilesUsingDroppedMods(CollectionInstall collection, List<CollectionModEntry> entries)
+        {
+            var references = new List<ModReference>();
+            foreach (var entry in entries)
+            {
+                foreach (var installedMod in entry.InstalledMods)
+                {
+                    references.Add(new ModReference(installedMod.UniqueId, collection.SourceId));
+                }
+            }
+
+            if (references.Count == 0)
+            {
+                return new List<Profile>();
+            }
+
+            return _editorView.Profiles.Where(p => IsCollectionProfile(p, collection) is false && p.EnabledModIds.Any(m => references.Contains(m))).ToList();
+        }
+
+        /// <summary>Whether a profile is the one generated for this collection</summary>
+        private static bool IsCollectionProfile(Profile profile, CollectionInstall collection)
+        {
+            return String.Equals(profile.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// The folders belonging to entries this revision dropped. A folder the revision still writes into is never
+        /// among them: a curator splitting one entry into two, or moving a mod between entries, leaves the survivor
+        /// holding a folder the dropped entry used to place.
+        /// </summary>
+        private static List<string> GetDroppedFolderNames(CollectionInstall collection, CollectionUpdatePlan plan)
+        {
+            var claimedFolders = collection.Mods.SelectMany(m => m.InstalledMods).Select(i => i.FolderName).Where(f => String.IsNullOrEmpty(f) is false).ToList();
+
+            var droppedFolders = new List<string>();
+            foreach (var entry in plan.Removed)
+            {
+                foreach (var installedMod in entry.InstalledMods)
+                {
+                    if (String.IsNullOrEmpty(installedMod.FolderName) || claimedFolders.Contains(installedMod.FolderName!, StringComparer.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    droppedFolders.Add(installedMod.FolderName!);
+                }
+            }
+
+            return droppedFolders.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        /// <summary>
+        /// Entry names one per line, capped the same way the summary caps its lists. Kept apart from BuildEntryLines,
+        /// which writes hyperlinks for a window that renders them, where this feeds a plain message box.
+        /// </summary>
+        private static string BuildPlainEntryLines(List<CollectionModEntry> entries)
+        {
+            var lines = String.Empty;
+            foreach (var entry in entries.Take(_maxListedEntries))
+            {
+                lines += Environment.NewLine + $"  {entry.Name}";
+            }
+
+            if (entries.Count > _maxListedEntries)
+            {
+                lines += Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_entries_truncated"), entries.Count - _maxListedEntries);
+            }
+
+            return lines;
         }
 
         /// <summary>
