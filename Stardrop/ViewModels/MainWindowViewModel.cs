@@ -54,7 +54,8 @@ namespace Stardrop.ViewModels
         public DisplayFilter DisabledModFilter { get { return _disabledModFilter; } set { _disabledModFilter = value; UpdateFilter(); } }
 
         private bool _showUpdatableMods;
-        public bool ShowUpdatableMods { get { return _showUpdatableMods; } set { _showUpdatableMods = value; UpdateFilter(); } }
+        // Refreshes the counts as well as the grid, as this now widens the source scope both of them read
+        public bool ShowUpdatableMods { get { return _showUpdatableMods; } set { _showUpdatableMods = value; UpdateFilter(); RefreshModCounts(); } }
         private ModSourceFilter _modSourceFilter = ModSourceFilter.ActiveProfile;
         public ModSourceFilter ModSourceFilter { get { return _modSourceFilter; } set { _modSourceFilter = value; UpdateFilter(); RefreshModCounts(); } }
         private bool _hasCollectionMods;
@@ -1032,9 +1033,20 @@ namespace Stardrop.ViewModels
         /// references, including any it reuses from outside its own folder and anything the user has enabled since
         /// it was applied, while a plain profile shows everything no collection owns.
         /// </summary>
+        /// <summary>
+        /// Whether the source scoping is set aside for the moment. Asking to see updatable mods is a request for the
+        /// mods that have updates, wherever they live. Left in place, a collection profile answers it with an empty
+        /// grid while the count beside the button reports several waiting, as collection mods never carry update
+        /// data and the profile shows nothing else.
+        /// </summary>
+        private bool IsSourceFilterOverridden()
+        {
+            return _showUpdatableMods;
+        }
+
         private bool PassesSourceFilter(Mod mod)
         {
-            if (_modSourceFilter is ModSourceFilter.All)
+            if (_modSourceFilter is ModSourceFilter.All || IsSourceFilterOverridden())
             {
                 return true;
             }
@@ -1049,7 +1061,8 @@ namespace Stardrop.ViewModels
 
         /// <summary>
         /// Recalculates the footer counts. These follow the source filter, otherwise the totals disagree with what
-        /// the grid is showing.
+        /// the grid is showing. That includes the override above, so turning on Show Updatable Mods widens the
+        /// counts alongside the grid rather than leaving them describing a scope the grid has stepped out of.
         /// </summary>
         public void RefreshModCounts()
         {
