@@ -39,6 +39,13 @@ namespace Stardrop.Views
 {
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// The name SMAPI reads a settings override from when it sits in the mods folder. The alternative,
+        /// smapi-internal/config.user.json, is shared across profiles and lives in the SMAPI install rather than in
+        /// a folder Stardrop already rebuilds.
+        /// </summary>
+        private const string _smapiConfigOverrideName = "SMAPI-config.json";
+
         private readonly MainWindowViewModel _viewModel;
         private readonly ProfileEditorViewModel _editorView;
         private DispatcherTimer _searchBoxTimer;
@@ -3010,6 +3017,11 @@ namespace Stardrop.Views
                 linkedModFolder.Delete(true);
             }
 
+            // Removed unconditionally, then written again below only where it has something to say. The setting can
+            // be turned off, the profile can stop holding collection mods, and either way a file left from a
+            // previous launch would keep suppressing checks nothing asked to suppress
+            TryDeleteSMAPIConfigOverride(enabledModsPath);
+
             string spacing = String.Concat(Environment.NewLine, "\t");
             Program.helper.Log($"Creating links for the following enabled mods from profile {profile.Name}:{spacing}{String.Join(spacing, profile.EnabledModIds.Select(r => r.ToString()))}");
 
@@ -3021,6 +3033,11 @@ namespace Stardrop.Views
             // Ordered so that a duplicated unique ID resolves to the copy this profile owns, as the guard below
             // keeps whichever is reached first
             var enabledMods = _viewModel.Mods.Where(m => m.IsEnabled).OrderByDescending(m => String.Equals(m.SourceId, profile.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            // Collected from the copies that actually get linked rather than from everything enabled. SMAPI knows a
+            // mod only by its unique ID, so suppressing one the user is running loosely would hide an update they
+            // do want, and the guard below is what decides which copy SMAPI ends up seeing
+            var linkedCollectionIds = new List<string>();
             foreach (var mod in enabledMods)
             {
                 if (mod is null || mod.ModFileInfo is null || mod.ModFileInfo.Directory is null)
@@ -3036,6 +3053,11 @@ namespace Stardrop.Views
                     continue;
                 }
                 linkedUniqueIds.Add(mod.UniqueId);
+
+                if (mod.IsFromCollection)
+                {
+                    linkedCollectionIds.Add(mod.UniqueId);
+                }
 
                 // SMAPI does not care about folder names, so a collision between a collection mod and a loose one can be resolved by suffixing
                 var linkName = mod.ModFileInfo.Directory.Name;
@@ -3106,7 +3128,56 @@ namespace Stardrop.Views
                 Program.helper.Log($"Failed to link all mod folders: {Environment.NewLine}{ex}");
             }
 
+            WriteSMAPIConfigOverride(enabledModsPath, linkedCollectionIds);
+
             Program.helper.Log($"Finished creating all linked mod folders");
+        }
+
+        /// <summary>
+        /// Writes the SMAPI-config.json that sits alongside the linked mods, listing the collection mods SMAPI
+        /// should leave out of its update checks. Stardrop already keeps these out of its own, since the collection
+        /// owns their versions, and SMAPI reporting an update the user is not meant to act on undoes that.
+        ///
+        /// This file rather than smapi-internal/config.json, which SMAPI resets on every update and which is shared
+        /// across profiles. The enabled mods folder is rebuilt from scratch on each launch, so a file written here
+        /// is scoped to the profile being started without anything having to keep it in step.
+        /// </summary>
+        private static void WriteSMAPIConfigOverride(string enabledModsPath, List<string> suppressedUniqueIds)
+        {
+            if (Program.settings.CollectionsSkipSMAPIUpdateCheck is false || suppressedUniqueIds.Count == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                // Only the one setting. SMAPI merges this over its defaults, so copying anything else across would
+                // pin values that are meant to follow whatever a future SMAPI ships
+                var overrides = new Dictionary<string, object>() { ["SuppressUpdateChecks"] = suppressedUniqueIds };
+
+                File.WriteAllText(Path.Combine(enabledModsPath, _smapiConfigOverrideName), JsonSerializer.Serialize(overrides, new JsonSerializerOptions() { WriteIndented = true }));
+                Program.helper.Log($"Told SMAPI to skip update checks for {suppressedUniqueIds.Count} collection mod(s)");
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to write {_smapiConfigOverrideName}, so SMAPI will check the collection's mods for updates: {ex}", Helper.Status.Warning);
+            }
+        }
+
+        private static void TryDeleteSMAPIConfigOverride(string enabledModsPath)
+        {
+            try
+            {
+                var configPath = Path.Combine(enabledModsPath, _smapiConfigOverrideName);
+                if (File.Exists(configPath))
+                {
+                    File.Delete(configPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to clear the previous {_smapiConfigOverrideName}: {ex}", Helper.Status.Warning);
+            }
         }
 
         private void OpenNativeExplorer(string folderPath)
