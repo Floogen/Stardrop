@@ -57,6 +57,9 @@
             <SolidColorBrush x:Key="UpdateBrokenBrush" Color="{DynamicResource NeonRed}" />
             <SolidColorBrush x:Key="UpdateUnofficialBrush" Color="{DynamicResource NeonYellow}" />
 
+            <SolidColorBrush x:Key="ButtonHoverBrush" Color="{DynamicResource LightGray}" />
+            <SolidColorBrush x:Key="ButtonPressedBrush" Color="{DynamicResource White}" />
+
         </Style.Resources>
     </Style>
 
