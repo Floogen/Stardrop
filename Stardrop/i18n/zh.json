@@ -82,8 +82,8 @@
   "ui.main_window.buttons.save_configs": "保存模组配置",
   "ui.main_window.buttons.save_profile": "保存配置方案",
   "ui.main_window.buttons.show_updatable_mods": "显示可更新模组",
-  "ui.main_window.buttons.active_search_filters": "已启用{0}个筛选器",
-  "ui.main_window.buttons.no_search_filters": "未启用筛选器",
+  "ui.main_window.buttons.active_search_filters": "搜索范围：{0} 项",
+  "ui.main_window.buttons.no_search_filters": "未指定搜索范围",
   "ui.main_window.buttons.mod_groups_state.expand": "展开分类",
   "ui.main_window.buttons.mod_groups_state.collapse": "折叠分类",
 
