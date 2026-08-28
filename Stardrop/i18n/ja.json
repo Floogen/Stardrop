@@ -80,7 +80,6 @@
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "クリックしてMod更新を確認",
   "ui.main_window.button.update_status.updating": "更新中...",
-  "ui.main_window.button.update_status.list_available_updates": "更新可能なMod: {0}",
   "ui.main_window.button.update_status.failed": "Mod更新チェックに失敗",
 
   // Main Window - Buttons - Downloads
@@ -144,13 +143,11 @@
   "ui.nexus_login.labels.note": "注意",
   "ui.nexus_login.labels.get_key": "Nexus Modsで個人用APIキーを取得してください",
   "ui.nexus_login.labels.get_key_actual": "Nexus ModsでStardrop APIキーを取得してください",
-  "ui.nexus_login.labels.paste": "次に、下にキーを貼り付けてください",
   "ui.nexus_login.labels.share_warning": "個人用APIキーを他人と共有しないでください。Nexusアカウントに対する措置が取られる可能性があります。",
   "ui.nexus_login.labels.share_warning_actual": "APIキーを他人と共有しないでください。Nexusアカウントに対する措置が取られる可能性があります。",
   "ui.nexus_login.labels.revoke": "キーはいつでも再発行／無効化できます（My Nexus Account > API > Personal API Key）。",
   "ui.nexus_login.labels.revoke_actual": "キーはいつでも再発行／無効化できます（My Nexus Account > API > Stardrop）。",
   "ui.nexus_login.labels.nexus_details": "Nexus Modsユーザー情報",
-  "ui.nexus_login.labels.nexus_disconnect": "下のボタンを押すと、Stardropが個人用キーを忘れてNexus Modsとの接続を解除します。",
   "ui.nexus_login.labels.nexus_disconnect_actual": "下のボタンを押すと、StardropがStardrop APIキーを忘れてNexus Modsとの接続を解除します。",
   "ui.nexus_login.labels.username": "ユーザー名: {0}",
   "ui.nexus_login.labels.is_premium": "プレミアム会員: {0}",
@@ -192,8 +189,6 @@
   "ui.warning.stardrop_update_downloaded": "最新バージョンのダウンロードに成功しました。\n\nStardropを再起動します。",
   "ui.warning.SMAPI_unable_to_download_latest": "SMAPIの最新リリースをダウンロードできません。\n\n手動で最新バージョンをダウンロードしてください。",
   "ui.warning.SMAPI_unable_to_install_latest": "SMAPIの最新リリースをインストールできません。\n\n手動で最新バージョンをダウンロードしてください。",
-  "ui.warning.update_cooldown_minutes": "更新のリクエストは5分に1回のみ可能です。\n\n{0} 分後に再試行してください。",
-  "ui.warning.update_cooldown_seconds": "更新のリクエストは5分に1回のみ可能です。\n\n{0} 秒後に再試行してください。",
   "ui.warning.unable_to_locate_log": "SMAPI-latest.txt が見つかりません。ゲーム情報を検出するには、SMAPIで正常に1回以上起動する必要があります。",
   "ui.warning.unable_to_read_log": "ゲームバージョン取得のためにSMAPIのログファイルを読めませんでした。\n\nMod更新チェックは行われません。",
   "ui.warning.no_manifest": "\"{0}\" に manifest.json が見つかりません",
@@ -233,7 +228,6 @@
   "ui.window.settings.name": "設定",
   "ui.window.profiles.name": "プロファイル",
   "ui.window.profile_naming.name": "プロファイル名",
-  "ui.window.nexus_login.name": "Nexus Mods 個人用APIキー",
   "ui.window.nexus_login_actual.name": "Nexus Mods APIキー",
   "ui.window.nexus_user.name": "Nexus Mods ユーザー情報",
 

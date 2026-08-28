@@ -36,6 +36,9 @@
         <SolidColorBrush x:Key="HighlightForegroundBrush"
                          Color="{DynamicResource GreenText}" />
 
+        <SolidColorBrush x:Key="ButtonHoverBrush" Color="{DynamicResource MintHover}" />
+        <SolidColorBrush x:Key="ButtonPressedBrush" Color="{DynamicResource SelectedGreen}" />
+
     </Styles.Resources>
 
     <!-- DataGrid -->
