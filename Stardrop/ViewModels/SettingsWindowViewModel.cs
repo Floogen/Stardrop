@@ -32,6 +32,7 @@ namespace Stardrop.ViewModels
         public string ToolTip_PreferredServer { get; set; }
         public string ToolTip_NXMAssociation { get; set; }
         public string ToolTip_AlwaysAskNXMFiles { get; set; }
+        public string ToolTip_AlwaysAskToDelete { get; set; }
         public string ToolTip_EnableProfileSpecificModConfigs { get; set; }
         public string ToolTip_EnableModsOnAdd { get; set; }
         public string ToolTip_ShouldAutomaticallySaveProfileChanges { get; set; }
@@ -56,6 +57,7 @@ namespace Stardrop.ViewModels
             ToolTip_PreferredServer = Program.translation.Get("ui.settings_window.tooltips.preferred_server");
             ToolTip_NXMAssociation = Program.translation.Get("ui.settings_window.tooltips.nxm_file_association");
             ToolTip_AlwaysAskNXMFiles = Program.translation.Get("ui.settings_window.tooltips.always_ask_nxm_files");
+            ToolTip_AlwaysAskToDelete = Program.translation.Get("ui.settings_window.tooltips.always_ask_to_delete");
             ToolTip_EnableProfileSpecificModConfigs = Program.translation.Get("ui.settings_window.tooltips.enable_profile_specific_configs");
             ToolTip_EnableModsOnAdd = Program.translation.Get("ui.settings_window.tooltips.enable_mods_on_add");
             ToolTip_ShouldAutomaticallySaveProfileChanges = Program.translation.Get("ui.settings_window.tooltips.automatically_save_profile_changes");
