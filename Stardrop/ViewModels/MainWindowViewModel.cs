@@ -67,8 +67,30 @@ namespace Stardrop.ViewModels
         public bool ShowEndorsements { get { return _showEndorsements; } set { this.RaiseAndSetIfChanged(ref _showEndorsements, value); } }
         private bool _showInstalls;
         public bool ShowInstalls { get { return _showInstalls; } set { this.RaiseAndSetIfChanged(ref _showInstalls, value); } }
-        private bool _showChangelogs;
-        public bool ShowChangelogs { get { return _showChangelogs; } set { this.RaiseAndSetIfChanged(ref _showChangelogs, value); } }
+        private bool _areChangelogsAvailable;
+        /// <summary>Whether Nexus Mods is connected, as changelogs are only obtainable through it</summary>
+        public bool AreChangelogsAvailable
+        {
+            get { return _areChangelogsAvailable; }
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _areChangelogsAvailable, value);
+                this.RaisePropertyChanged(nameof(ShowChangelogs));
+            }
+        }
+        private bool _isChangelogColumnEnabled = true;
+        /// <summary>The user's column context menu preference, layered on top of the Nexus availability gate</summary>
+        public bool IsChangelogColumnEnabled
+        {
+            get { return _isChangelogColumnEnabled; }
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _isChangelogColumnEnabled, value);
+                this.RaisePropertyChanged(nameof(ShowChangelogs));
+            }
+        }
+        /// <summary>Drives the changelog column, which requires both a Nexus connection and the user opting into it</summary>
+        public bool ShowChangelogs { get { return _areChangelogsAvailable && _isChangelogColumnEnabled; } }
         private string _filterText;
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }
         private List<string> _columnFilter;

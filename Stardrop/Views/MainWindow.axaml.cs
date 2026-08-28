@@ -2631,8 +2631,8 @@ namespace Stardrop.Views
                 // Show endorsements
                 _viewModel.ShowEndorsements = true;
 
-                // Show changelogs
-                _viewModel.ShowChangelogs = true;
+                // Allow changelogs, which the user can still hide via the column context menu
+                _viewModel.AreChangelogsAvailable = true;
 
                 // Show thumbnails
                 if (Program.settings.ShowModThumbnails)
@@ -2681,7 +2681,7 @@ namespace Stardrop.Views
                 _viewModel.NexusStatus = Program.translation.Get("internal.disconnected");
                 _viewModel.ShowEndorsements = false;
                 _viewModel.ShowInstalls = false;
-                _viewModel.ShowChangelogs = false;
+                _viewModel.AreChangelogsAvailable = false;
             }
 
             if (newClient is not null)
