@@ -26,6 +26,14 @@ namespace Stardrop.Models
         public bool ShowModThumbnails { get; set; }
         public NexusServers PreferredNexusServer { get; set; } = NexusServers.NexusCDN;
         public bool IsAskingBeforeAcceptingNXM { get; set; } = true;
+        /// <summary>Whether a collection entry's link asks Nexus Mods for the mod manager download rather than the plain file page</summary>
+        public bool UseNXMLinks { get; set; } = true;
+        /// <summary>
+        /// Whether SMAPI is told to leave a collection's mods out of its own update checks. Stardrop already keeps
+        /// them out of its, since the collection owns their versions, and without this SMAPI's console reports
+        /// updates the user is not meant to act on.
+        /// </summary>
+        public bool CollectionsSkipSMAPIUpdateCheck { get; set; } = true;
         public GameDetails GameDetails { get; set; }
         public NexusUser NexusDetails { get; set; }
 

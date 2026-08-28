@@ -93,7 +93,10 @@ namespace Stardrop.Utilities.External
         public async static Task<List<ModEntry>> GetModUpdateData(GameDetails gameDetails, List<Mod> mods)
         {
             List<ModSearchEntry> searchEntries = new List<ModSearchEntry>();
-            foreach (var mod in mods.Where(m => m.HasValidVersion() && m.HasUpdateKeys()))
+
+            // Mods installed by a collection are pinned to whatever version their collection asks for, so they are
+            // never sent to smapi.io. Their requirements below are still sent, as those feed the mod key name cache
+            foreach (var mod in mods.Where(m => m.IsFromCollection is false && m.HasValidVersion() && m.HasUpdateKeys()))
             {
                 searchEntries.Add(new ModSearchEntry(mod.UniqueId, mod.Version, mod.Manifest.UpdateKeys));
             }

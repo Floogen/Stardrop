@@ -67,7 +67,6 @@
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "Нажмите, чтобы проверить обновления модов",
   "ui.main_window.button.update_status.updating": "Обновление...",
-  "ui.main_window.button.update_status.list_available_updates": "Моды готовы к обновлению: {0}",
   "ui.main_window.button.update_status.failed": "Не удалось проверить обновления модов",
 
   // Main Window - ComboBox
@@ -117,13 +116,11 @@
   "ui.nexus_login.labels.note": "Пожалуйста, обратите внимание",
   "ui.nexus_login.labels.get_key": "Получите свой личный API-ключ от Nexus Mods",
   "ui.nexus_login.labels.get_key_actual": "Получите свой API-ключ Stardrop от Nexus Mods",
-  "ui.nexus_login.labels.paste": "Затем вставьте ключ ниже",
   "ui.nexus_login.labels.share_warning": "Не передавайте свой личный API-ключ другим, это может привести к действиям против вашей учетной записи Nexus.",
   "ui.nexus_login.labels.share_warning_actual": "Не передавайте свой API-ключ другим, это может привести к действиям против вашей учетной записи Nexus.",
   "ui.nexus_login.labels.revoke": "Вы можете сбросить / отозвать свой ключ в любое время, перейдя в Мой аккаунт Nexus> API> Личный API-ключ.",
   "ui.nexus_login.labels.revoke_actual": "Вы можете сбросить / отозвать свой API-ключ Stardrop в любое время, перейдя в Мой аккаунт Nexus> API> Stardrop.",
   "ui.nexus_login.labels.nexus_details": "Данные пользователя Nexus Mods",
-  "ui.nexus_login.labels.nexus_disconnect": "Нажмите кнопку ниже, чтобы Stardrop забыл ваш личный ключ и отключился от Nexus Mods.",
   "ui.nexus_login.labels.nexus_disconnect_actual": "Нажмите кнопку ниже, чтобы Stardrop забыл ваш API-ключ Stardrop и отключился от Nexus Mods.",
   "ui.nexus_login.labels.username": "Имя пользователя: {0}",
   "ui.nexus_login.labels.is_premium": "Является ли пользователь премиум-пользователем: {0}",
@@ -152,8 +149,6 @@
   "ui.warning.stardrop_update_downloaded": "Последняя версия успешно загружена.\n\nStardrop будет перезапущен.",
   "ui.warning.SMAPI_unable_to_download_latest": "Не удалось загрузить последнюю версию SMAPI.\n\nПожалуйста, загрузите последнюю версию вручную.",
   "ui.warning.SMAPI_unable_to_install_latest": "Не удалось установить последнюю версию SMAPI.\n\nПожалуйста, загрузите последнюю версию вручную.",
-  "ui.warning.update_cooldown_minutes": "Обновления можно запрашивать только раз в 5 минут.\n\nПожалуйста, повторите попытку через {0} минут(ы).",
-  "ui.warning.update_cooldown_seconds": "Обновления можно запрашивать только раз в 5 минут.\n\nПожалуйста, повторите попытку через {0} секунд(ы).",
   "ui.warning.unable_to_locate_log": "Не удалось найти файл SMAPI-latest.txt! SMAPI должен успешно запуститься хотя бы один раз, чтобы Stardrop мог обнаружить детали игры.",
   "ui.warning.unable_to_read_log": "Не удалось прочитать файл журнала SMAPI для получения версии игры.\n\nМодификации не будут проверяться на наличие обновлений.",
   "ui.warning.no_manifest": "В \"{0}\" не найден manifest.json",
@@ -193,7 +188,6 @@
   "ui.window.settings.name": "Настройки",
   "ui.window.profiles.name": "Профили",
   "ui.window.profile_naming.name": "Название профиля",
-  "ui.window.nexus_login.name": "Личный ключ API Nexus Mods",
   "ui.window.nexus_login_actual.name": "Ключ API Nexus Mods",
   "ui.window.nexus_user.name": "Данные пользователя Nexus Mods",
 
