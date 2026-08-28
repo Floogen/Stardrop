@@ -24,7 +24,7 @@ namespace Stardrop.Views
 #endif
         }
 
-        public FlexibleOptionWindow(string messageText, string? firstButtonText = null, string? secondButtonText = null, string? thirdButtonText = null) : this()
+        public FlexibleOptionWindow(string messageText, string? firstButtonText = null, string? secondButtonText = null, string? thirdButtonText = null, double? windowWidth = null) : this()
         {
             _viewModel.MessageText = messageText;
 
@@ -42,6 +42,11 @@ namespace Stardrop.Views
             {
                 _viewModel.ThirdButtonText = thirdButtonText;
                 _viewModel.IsThirdButtonVisible = true;
+            }
+
+            if (windowWidth is not null)
+            {
+                _viewModel.WindowWidth = windowWidth.Value;
             }
 
             this.WindowStartupLocation = WindowStartupLocation.CenterOwner;

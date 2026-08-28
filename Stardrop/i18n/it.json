@@ -21,7 +21,7 @@
   // Main Window - Menu Items - Context
   "ui.main_window.menu_items.context.columns.show_hide": "Mostra / Nascondi Colonne",
   "ui.main_window.menu_items.context.hide_requirements": "Nascondi Requisiti",
-  "ui.main_window.menu_items.context.cancel": "Cancella",
+  "ui.main_window.menu_items.context.cancel": "Annulla",
   "ui.main_window.menu_items.context.open_containing_folder": "Apri Cartella",
   "ui.main_window.menu_items.context.open_mod_page": "Apri Pagina Mod",
   "ui.main_window.menu_items.context.open_config": "Apri File Config",
@@ -32,7 +32,7 @@
   "ui.main_window.menu_items.context.filters": "Filtri",
   "ui.main_window.menu_items.context.options": "Opzioni",
   "ui.main_window.menu_items.context.clear_filter": "Pulisci",
-  "ui.main_window.menu_items.context.delete": "Cancella",
+  "ui.main_window.menu_items.context.delete": "Elimina",
 
   // Main Window - Menu Headers
   "ui.main_window.menu_headers.file": "File",
@@ -53,6 +53,8 @@
   "ui.main_window.menu_headers.nexus_install": "Aggiornamenti Nexus Mods",
   "ui.main_window.menu_headers.install_timestamp": "Data Installazione",
   "ui.main_window.menu_headers.last_updated": "Ultimo Aggiornamento",
+  "ui.main_window.menu_headers.notes": "Note",
+  "ui.main_window.menu_headers.link": "Link",
 
   // Main Window - Labels
   "ui.main_window.labels.profile": "Profilo",
@@ -83,7 +85,6 @@
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "Clicca per Controllare Aggiornamenti Mod",
   "ui.main_window.button.update_status.updating": "In Aggiornamento...",
-  "ui.main_window.button.update_status.list_available_updates": "Mod da Aggiornare: {0}",
   "ui.main_window.button.update_status.failed": "Controllo Aggiornamento Mod Fallito",
 
   // Main Window - Buttons - Downloads
@@ -101,6 +102,16 @@
   "ui.main_window.combobox.requirements": "Requisiti",
   "ui.main_window.combobox.group": "Gruppo Mod",
   "ui.main_window.combobox.top_level_group": "Cartella Principale",
+
+  // Missing Mods Window
+  "ui.missing_mods_window.textblock.drag_and_drop": "Trascina e rilascia le mod mancanti qui sopra",
+  "ui.missing_mods_window.button.continue": "Continua",
+
+  // Profile Export Window
+  "ui.profile_export_window.text.options": "Opzioni",
+  "ui.profile_export_window.checkbox.include_mod_configs": "Includi Configurazioni delle Mod",
+  "ui.profile_export_window.checkbox.include_disabled_mods": "Includi Mod Disabilitate",
+  "ui.profile_export_window.checkbox.include_mod_notes": "Includi Note delle Mod",
 
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "Percorso SMAPI",
@@ -140,7 +151,7 @@
   "ui.settings_window.tooltips.show_mod_thumbnails": "Se selezionato, mostra la miniatura della mod da Nexus Mods (ove applicabile).\n\nRichiede una chiave API Stardrop da Nexus Mods.",
   "ui.settings_window.tooltips.preferred_server": "Imposta il server preferito da utilizzare durante il download da Nexus Mods",
   "ui.settings_window.tooltips.save_changes": "Salva i Cambiamenti",
-  "ui.settings_window.tooltips.cancel_changes": "Cancella",
+  "ui.settings_window.tooltips.cancel_changes": "Annulla",
 
   // Nexus Login Window - Buttons
   "ui.nexus_login.buttons.nexus": "Vai a Nexus Mods",
@@ -150,13 +161,11 @@
   "ui.nexus_login.labels.note": "Prendere Nota",
   "ui.nexus_login.labels.get_key": "Ottieni la tua chiave API personale da Nexus Mods",
   "ui.nexus_login.labels.get_key_actual": "Ottieni la tua chiave API di Stardrop da Nexus Mods",
-  "ui.nexus_login.labels.paste": "Quindi incolla la chiave qui sotto",
   "ui.nexus_login.labels.share_warning": "Non condividere la tua chiave API personale con altri, potresti incorrere in azioni legali nei confronti del tuo account Nexus.",
   "ui.nexus_login.labels.share_warning_actual": "Non condividere la tua chiave API con altri, altrimenti potresti incorrere in azioni contro il tuo account Nexus.",
   "ui.nexus_login.labels.revoke": "Puoi reimpostare/revocare la tua chiave in qualsiasi momento su Nexus Mods andando su Settings > API Keys > Personal API Key.",
   "ui.nexus_login.labels.revoke_actual": "Puoi reimpostare/revocare la tua chiave in qualsiasi momento su Nexus Mods andando su Settings > API Keys > Stardrop.",
   "ui.nexus_login.labels.nexus_details": "Dettagli Utente Nexus Mods",
-  "ui.nexus_login.labels.nexus_disconnect": "Clicca il pulsante sotto per far dimenticare a Stardrop la tua chiave personale e disconnetterti da Nexus Mods.",
   "ui.nexus_login.labels.nexus_disconnect_actual": "Clicca il pulsante sotto per far dimenticare a Stardrop la tua chiave API di Stardrop e disconnetterti da Nexus Mods.",
   "ui.nexus_login.labels.username": "Nome Utente: {0}",
   "ui.nexus_login.labels.is_premium": "È un Utente Premium: {0}",
@@ -168,7 +177,7 @@
   "ui.downloads_panel.no_downloads_label": "Nessun download in corso",
 
   // Downloads Panel - Tooltips
-  "ui.downloads_panel.tooltips.cancel_button": "Cancella",
+  "ui.downloads_panel.tooltips.cancel_button": "Annulla",
   "ui.downloads_panel.tooltips.remove_button": "Elimina", // Tooltip for the button that clears out a completed or failed download
 
   // Warnings
@@ -198,8 +207,6 @@
   "ui.warning.stardrop_update_downloaded": "Downloaded dell'ultima versione riuscito.\n\nStardrop verrà riavviato.",
   "ui.warning.SMAPI_unable_to_download_latest": "Impossibile scaricare l'ultima versione di SMAPI.\n\nScarica l'ultima versione manualmente.",
   "ui.warning.SMAPI_unable_to_install_latest": "Impossibile installare l'ultima versione di SMAPI.\n\nScarica l'ultima versione manualmente.",
-  "ui.warning.update_cooldown_minutes": "Puoi controllare gli aggiornamenti una volta ogni 5 minuti.\n\nRiprova tra {0} minuto(i).",
-  "ui.warning.update_cooldown_seconds": "Puoi controllare gli aggiornamenti una volta ogni 5 minuti.\n\nRiprova tra {0} secondo(i).",
   "ui.warning.unable_to_locate_log": "Impossibile trovare il file SMAPI-latest.txt! SMAPI deve essere avviato con successo almeno una volta per permettere a Stardrop di rilevare i dettagli del gioco.",
   "ui.warning.unable_to_read_log": "Impossibile leggere il file log di SMAPI e controllare la versione di gioco.\n\nNon è possibile controllare gli aggiornamenti delle mod.",
   "ui.warning.no_manifest": "Nessuno file manifest.json trovato in \"{0}\"",
@@ -217,6 +224,9 @@
   "ui.warning.failed_to_get_download_link": "Impossibile recuperare l'url del download da Nexus Mods tramite il link NXM: {0}",
   "ui.warning.failed_to_set_association": "Impossibile registrare il protocollo NXM con Stardrop.\n\nVedi il file log per dettagli.",
   "ui.warning.already_associated": "Stardrop è già associato al protocollo NXM.",
+  "ui.warning.unsupported_platform": "Il protocollo NXM per il momento é supportato solo su Windows",
+  "ui.warning.failed_to_verify_mod_file": "Verifica dei risultati della scansione dei file di Nexus Mods fallita. Continuare lo stesso il download?",
+  "ui.warning.file_quarantined": "Impossibile scaricare la mod:\n\nIl file su Nexus Mods é in quarantena.",
 
   // Messages
   "ui.message.confirm_mod_deletion": "Sei sicuro di voler eliminare {0}? Questa azione non può essere annullata.",
@@ -235,21 +245,24 @@
   "ui.message.require_nexus_login": "Questa azione richiede l'accesso all'API di Nexus Mods.",
   "ui.message.succeeded_nexus_install": "La seguente mod è stata installata correttamente tramite Nexus Mods:\n\n{0}",
   "ui.message.confirm_mod_update_caution": "{0}\nMessaggio di Attenzione Aggiornamento:\n\n{1}\n\nProcedere con l'aggiornamento della mod?",
+  "ui.message.confirm_missing_mod_handling": "Le seguentie mod esistono nel profilo [{0}] ma non risultano installate:\n\n{1}\n\nVuoi installare manualmente le mod mancanti?",
+  "ui.message.missing_mod_extra_count": "\n+ {0} altre mod",
 
   // Window Names
   "ui.window.settings.name": "Impostazioni",
   "ui.window.profiles.name": "Profili",
+  "ui.window.profiles_export.name": "Esporta Profili",
   "ui.window.profile_naming.name": "Nome Profilo",
-  "ui.window.nexus_login.name": "Chiave API Personale di Nexus Mods",
   "ui.window.nexus_login_actual.name": "Chiave API di Nexus Mods",
   "ui.window.nexus_user.name": "Dettagli Utente Nexus Mods",
+  "ui.window.missing_mods.name": "Mod Mancanti",
 
   // Internals
   "internal.connected": "Connesso",
   "internal.disconnected": "Disconnesso",
   "internal.unknown": "Sconosciuto",
-  "internal.enable": "Abilitato",
-  "internal.disable": "Disabilitato",
+  "internal.enable": "Abilita",
+  "internal.disable": "Disabilita",
   "internal.enable_whole_mod": "Abilita Intero Gruppo Mod",
   "internal.disable_whole_mod": "Disabilita Intero Gruppo Mod",
   "internal.yes": "Si",
@@ -258,6 +271,8 @@
   "internal.no_all": "No a Tutto",
   "internal.ok": "OK",
   "internal.unlock": "Sblocca",
+  "internal.ignore": "Ignora",
+  "internal.cancel": "Annulla",
 
   // Internals - Measurements
   "internal.measurements.bytes_size": "B",

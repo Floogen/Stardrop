@@ -59,10 +59,10 @@ namespace Stardrop.Utilities.External
         }
 
         /// <summary>
-        /// Creates a new HttpClient configured with a Nexus API key, and validates it against the Nexus API.
+        /// Creates a new HttpClient configured with a Nexus API key and validates it against the Nexus API.
         /// If successfully validated, sets <see cref="Client"/>, as well as returning a reference to it.
         /// If called when a <see cref="Client"/> is already set, the Client will be replaced.<br/>
-        /// On success, fires <see cref="ClientChanged"/>, with the previous client (if any), and the new client.
+        /// On success, fires <see cref="ClientChanged"/>, with the previous client (if any) and the new client.
         /// </summary>
         /// <param name="apiKey">The API key from Nexus mods that will be included in the 'apiKey' header when making calls.</param>
         /// <returns>The created client, if successful. Null otherwise.</returns>
@@ -89,7 +89,7 @@ namespace Stardrop.Utilities.External
         }
 
         /// <summary>
-        /// Nulls out the <see cref="Client"/>, and fires a <see cref="ClientChanged"/> event
+        /// Nulls out the <see cref="Client"/> and fires a <see cref="ClientChanged"/> event
         /// to give consumers a chance to clean up their event handlers.
         /// </summary>
         public static void ClearClient()
@@ -99,10 +99,15 @@ namespace Stardrop.Utilities.External
         }
     }
 
-    public class NexusClient
+    public partial class NexusClient
     {
         private static readonly Uri _graphQLBaseUrl = new Uri("https://api.nexusmods.com/v2/graphql");
-        private const string _nxmPattern = @"nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>.*)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)";
+        internal const string NxmModPattern = @"nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>.*)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)";
+        internal const string NxmCollectionPattern = @"nxm:\/\/(?<domain>[a-z0-9]+)\/collections\/(?<slug>[a-z0-9]+)\/revisions\/(?<revision>[0-9]+)";
+        private const string _nxmPattern = NxmModPattern;
+
+        /// <summary>Nexus mod ID for SMAPI, which collections list as a mod but which Stardrop must never install into the mod folder</summary>
+        internal const int SmapiNexusModId = 2400;
 
         private readonly HttpClient _client;
         private NexusUser _settings = null!;
@@ -233,7 +238,51 @@ namespace Stardrop.Utilities.External
             return null;
         }
 
-        public async Task<ModFile?> GetFileByVersion(int modId, string version, string? modFlag = null)
+        /// <summary>
+        /// Looks a file up by its own ID rather than by matching on version. A mod can publish several files under
+        /// the same version number, so anything holding a file ID (a collection pin, an nxm link) has to ask for
+        /// that file directly or it risks being handed one of its siblings.
+        /// </summary>
+        public async Task<ModFile?> GetFile(int modId, int fileId)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"games/stardewvalley/mods/{modId}/files/{fileId}.json");
+                if (response.StatusCode != System.Net.HttpStatusCode.OK || response.Content is null)
+                {
+                    Program.helper.Log($"Bad status given from Nexus Mods for the file {fileId} of mod {modId}: {response.StatusCode}");
+                    if (response.Content is not null)
+                    {
+                        Program.helper.Log($"Response from Nexus Mods:\n{await response.Content.ReadAsStringAsync()}");
+                    }
+
+                    return null;
+                }
+
+                string content = await response.Content.ReadAsStringAsync();
+                ModFile? modFile = JsonSerializer.Deserialize<ModFile>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (modFile is null)
+                {
+                    Program.helper.Log($"Unable to get the file {fileId} of mod {modId} from Nexus Mods");
+                    Program.helper.Log($"Response from Nexus Mods:\n{content}");
+
+                    return null;
+                }
+
+                UpdateRequestCounts(response.Headers);
+
+                return modFile;
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to get the file {fileId} of mod {modId} from Nexus Mods: {ex}", Helper.Status.Alert);
+            }
+
+            return null;
+        }
+
+        public async Task<ModFile?> GetFileByVersion(int modId, string version, string? modFlag = null, bool ignoreCategory = false)
         {
             if (SemVersion.TryParse(version.Replace("v", String.Empty), SemVersionStyles.Any, out var targetVersion) is false)
             {
@@ -265,7 +314,7 @@ namespace Stardrop.Utilities.External
                             {
                                 selectedFile = file;
                             }
-                            else if (String.IsNullOrEmpty(modFlag) is true && String.IsNullOrEmpty(file.Category) is false && file.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase))
+                            else if (String.IsNullOrEmpty(modFlag) is true && String.IsNullOrEmpty(file.Category) is false && (ignoreCategory || file.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase)))
                             {
                                 selectedFile = file;
                             }
@@ -303,6 +352,32 @@ namespace Stardrop.Utilities.External
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Pulls the domain, mod ID and file ID out of an nxm mod link. The key and expiry the link also carries are
+        /// left to <see cref="GetFileDownloadLink(NXM, string?)"/>, as they only matter at the point of downloading.
+        /// </summary>
+        public static bool TryParseModNxmLink(string link, out string domainName, out int modId, out int fileId)
+        {
+            domainName = String.Empty;
+            modId = 0;
+            fileId = 0;
+
+            if (String.IsNullOrEmpty(link))
+            {
+                return false;
+            }
+
+            var match = Regex.Match(Regex.Unescape(link), NxmModPattern);
+            if (match.Success is false)
+            {
+                return false;
+            }
+
+            domainName = match.Groups["domain"].ToString().ToLower();
+
+            return Int32.TryParse(match.Groups["mod"].ToString(), out modId) && Int32.TryParse(match.Groups["file"].ToString(), out fileId);
         }
 
         public async Task<string?> GetFileDownloadLink(NXM nxmData, string? serverName = null)
@@ -383,11 +458,23 @@ namespace Stardrop.Utilities.External
             return null;
         }
 
-        public async Task<NexusDownloadResult> DownloadFileAndGetPath(string uri, string fileName)
+        /// <summary>
+        /// Downloads a file to the Nexus folder. Passing an external token lets a caller abort the download from
+        /// outside, such as a collection install being cancelled, without taking away the download panel's own
+        /// per-file cancel button.
+        /// </summary>
+        public async Task<NexusDownloadResult> DownloadFileAndGetPath(string uri, string fileName, CancellationToken externalCancellationToken = default)
         {
             var requestUri = new Uri(uri);
-            var downloadCancellationSource = new CancellationTokenSource();
+            var downloadCancellationSource = externalCancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(externalCancellationToken) : new CancellationTokenSource();
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, requestUri);
+            // Every caller here hands over a name that came from Nexus Mods, so the last chance to make it
+            // usable as a filename is on the way into the path rather than at any one of them
+            var filePath = Path.Combine(Pathing.GetNexusPath(), Pathing.GetSafePathSegment(fileName));
+
+            // FileMode.CreateNew throws on a name that is already taken, which would otherwise send a download that
+            // never started down the cleanup path below and delete whatever already held the name
+            bool hasCreatedFile = false;
             try
             {
 
@@ -398,7 +485,9 @@ namespace Stardrop.Utilities.External
                     return new(DownloadResultKind.Failed, null);
                 }
 
-                using var fileStream = new FileStream(Path.Combine(Pathing.GetNexusPath(), fileName), FileMode.CreateNew);
+                using var fileStream = new FileStream(filePath, FileMode.CreateNew);
+                hasCreatedFile = true;
+
                 using var downloadStream = await response.Content.ReadAsStreamAsync();
 
                 long? contentLength = response.Content.Headers.ContentLength;
@@ -415,12 +504,16 @@ namespace Stardrop.Utilities.External
                 }
 
                 DownloadCompleted?.Invoke(this, new ModDownloadCompletedEventArgs(requestUri));
-                return new(DownloadResultKind.Success, Path.Combine(Pathing.GetNexusPath(), fileName));
+                return new(DownloadResultKind.Success, filePath);
             }
             catch (Exception ex)
             {
-                // Delete partially downloaded file, if any.
-                File.Delete(Path.Combine(Pathing.GetNexusPath(), fileName));
+                // Delete partially downloaded file, if any
+                if (hasCreatedFile)
+                {
+                    File.Delete(filePath);
+                }
+
                 if (ex is TaskCanceledException)
                 {
                     Program.helper.Log($"The user canceled the download from Nexus from URL {uri}", Helper.Status.Info);

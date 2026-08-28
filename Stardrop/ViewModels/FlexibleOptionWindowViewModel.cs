@@ -21,6 +21,9 @@ namespace Stardrop.ViewModels
         private bool _isThirdButtonVisible;
         public bool IsThirdButtonVisible { get { return _isThirdButtonVisible; } set { this.RaiseAndSetIfChanged(ref _isThirdButtonVisible, value); } }
 
+        private double _windowWidth = 300;
+        public double WindowWidth { get { return _windowWidth; } set { this.RaiseAndSetIfChanged(ref _windowWidth, value); } }
+
         public FlexibleOptionWindowViewModel()
         {
             if (Design.IsDesignMode)
