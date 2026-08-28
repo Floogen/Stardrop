@@ -49,6 +49,11 @@ namespace Stardrop.Models
         public string Summary { get { return $"Author: {Author}\nVersion: {ParsedVersion}\nHas Config: {HasConfig}\n\n{Description}"; } }
         public string Author { get; set; }
         public DateTime? InstallTimestamp { get; set; }
+        /// <summary>
+        /// Left null for a mod installed by a collection. Nothing writes one, rather than the column hiding it, as
+        /// the date would only ever record when Stardrop replaced the folder during a collection update. Whether
+        /// such a mod is current is answered by its collection's revision.
+        /// </summary>
         public DateTime? LastUpdateTimestamp { get; set; }
         public Config? _config { get; set; }
         public Config? Config { get { return _config; } set { _config = value; NotifyPropertyChanged("Config"); NotifyPropertyChanged("HasConfig"); } }

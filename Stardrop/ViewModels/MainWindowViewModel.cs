@@ -563,10 +563,17 @@ namespace Stardrop.ViewModels
                         mod.ModPageUri = modKeysCache.First(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).PageUrl;
                     }
 
-                    if (localDataCache is not null && localDataCache.ModInstallData is not null && localDataCache.ModInstallData.Any(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)))
+                    // Matched on the copy rather than the unique ID, so a collection's pinned mod and the user's own
+                    // install of it keep their own dates. A record written before SourceId existed carries none, so
+                    // it matches the loose copy and a collection copy simply starts fresh
+                    if (localDataCache is not null && localDataCache.ModInstallData is not null)
                     {
-                        mod.InstallTimestamp = localDataCache.ModInstallData.First(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).InstallTimestamp;
-                        mod.LastUpdateTimestamp = localDataCache.ModInstallData.First(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).LastUpdateTimestamp;
+                        var installData = localDataCache.ModInstallData.FirstOrDefault(m => m.ToReference().Matches(mod));
+                        if (installData is not null)
+                        {
+                            mod.InstallTimestamp = installData.InstallTimestamp;
+                            mod.LastUpdateTimestamp = installData.LastUpdateTimestamp;
+                        }
                     }
 
                     // Check if any config file exists
@@ -610,7 +617,7 @@ namespace Stardrop.ViewModels
                     mod.InstallTimestamp = DateTime.Now;
                 }
 
-                modInstallData.Add(new ModInstallData() { UniqueId = mod.UniqueId, InstallTimestamp = mod.InstallTimestamp.Value, LastUpdateTimestamp = mod.LastUpdateTimestamp });
+                modInstallData.Add(new ModInstallData() { UniqueId = mod.UniqueId, SourceId = mod.SourceId, InstallTimestamp = mod.InstallTimestamp.Value, LastUpdateTimestamp = mod.LastUpdateTimestamp });
             }
             localDataCache.ModInstallData = modInstallData;
 

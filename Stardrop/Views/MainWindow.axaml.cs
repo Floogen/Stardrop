@@ -2815,12 +2815,15 @@ namespace Stardrop.Views
                                     isUpdate = true;
                                     installPath = mod.ModFileInfo.Directory.FullName;
 
-                                    // Set the LastUpdateTimestamp
-                                    if (localDataCache.ModInstallData is not null && localDataCache.ModInstallData.Any(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)))
+                                    // Set the LastUpdateTimestamp. Skipped for a collection's mod, where the date
+                                    // would say when Stardrop last rewrote the folder rather than anything the user
+                                    // did, and would read as a gap beside the entries an update left alone. The
+                                    // collection's revision is what answers whether such a mod is current
+                                    if (mod.IsFromCollection is false && localDataCache.ModInstallData is not null && localDataCache.ModInstallData.FirstOrDefault(m => m.ToReference().Matches(mod)) is ModInstallData installData)
                                     {
                                         var updatedTimestamp = DateTime.Now;
                                         mod.LastUpdateTimestamp = updatedTimestamp;
-                                        localDataCache.ModInstallData.First(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase)).LastUpdateTimestamp = updatedTimestamp;
+                                        installData.LastUpdateTimestamp = updatedTimestamp;
                                     }
                                 }
                                 else if (String.IsNullOrEmpty(manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase)))
