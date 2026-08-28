@@ -39,7 +39,8 @@ namespace Stardrop.Models
         public string? CollectionName { get { return _collectionName; } set { _collectionName = value; NotifyPropertyChanged(); } }
         public SemVersion Version { get; set; }
         public string ParsedVersion { get { return Version.ToString(); } }
-        public string SuggestedVersion { get; set; }
+        private string _suggestedVersion { get; set; }
+        public string SuggestedVersion { get { return _suggestedVersion; } set { _suggestedVersion = value; NotifyPropertyChanged(nameof(SuggestedVersion)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasIgnorableUpdate)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
         public string Name { get; set; }
         public string Path { get { return _path; } set { _path = value; RootPath = GetRootPath(value); } } // Whole mod path inside installed mods path for grouping mod components in the same mod
         private string _path { get; set; }
@@ -89,6 +90,30 @@ namespace Stardrop.Models
         public bool IsEndorsed { get { return _isEndorsement; } set { _isEndorsement = value; NotifyPropertyChanged("IsEndorsed"); } }
         public string ChangeStateText { get { return IsEnabled ? Program.translation.Get("internal.disable") : Program.translation.Get("internal.enable"); } }
         public string ChangeWholeModGroupStateText { get { return IsEnabled ? Program.translation.Get("internal.disable_whole_mod") : Program.translation.Get("internal.enable_whole_mod"); } }
+        /// <summary>
+        /// Whether an update exists that the ignore toggle can act on, answered without reference to whether it is
+        /// currently ignored. The menu item's visibility hangs off this rather than ParsedStatus, which goes empty
+        /// the moment an update is ignored and so would hide the only control that could un-ignore it.
+        /// </summary>
+        public bool HasIgnorableUpdate
+        {
+            get
+            {
+                // TryParse first, as IsModOutdated parses outright and this getter is reached from a binding
+                if (String.IsNullOrEmpty(SuggestedVersion) || SemVersion.TryParse(SuggestedVersion, SemVersionStyles.Any, out _) is false)
+                {
+                    return false;
+                }
+
+                return IsModOutdated(SuggestedVersion);
+            }
+        }
+        /// <summary>
+        /// Whether the currently suggested version is the one the user chose to ignore. A newer suggestion than the
+        /// ignored one leaves this false, which is what lets an ignore lapse on its own once the mod moves on.
+        /// </summary>
+        public bool IsUpdateIgnored { get { return !String.IsNullOrEmpty(SuggestedVersion) && !String.IsNullOrEmpty(IgnoredVersion) && IgnoredVersion.Equals(SuggestedVersion, StringComparison.OrdinalIgnoreCase); } }
+        public string IgnoreUpdateText { get { return IsUpdateIgnored ? Program.translation.Get("internal.stop_ignoring_update") : Program.translation.Get("internal.ignore_update"); } }
         private WikiCompatibilityStatus _status { get; set; }
         public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); NotifyPropertyChanged("InstallStatus"); } }
         public string ParsedStatus
@@ -96,7 +121,7 @@ namespace Stardrop.Models
             get
             {
                 // If the suggested version is the same as an ignored version, treat as no update
-                if (!String.IsNullOrEmpty(SuggestedVersion) && !String.IsNullOrEmpty(IgnoredVersion) && IgnoredVersion.Equals(SuggestedVersion, StringComparison.OrdinalIgnoreCase))
+                if (IsUpdateIgnored)
                 {
                     return String.Empty;
                 }
@@ -124,7 +149,7 @@ namespace Stardrop.Models
             get
             {
                 // If the suggested version is the same as an ignored version, treat as no update
-                if (!String.IsNullOrEmpty(SuggestedVersion) && !String.IsNullOrEmpty(IgnoredVersion) && IgnoredVersion.Equals(SuggestedVersion, StringComparison.OrdinalIgnoreCase))
+                if (IsUpdateIgnored)
                 {
                     return String.Empty;
                 }
@@ -151,7 +176,7 @@ namespace Stardrop.Models
         private string _note { get; set; }
         public string Note { get { return _note; } set { _note = value; NotifyPropertyChanged("Note"); } }
         private string? _ignoredVersion { get; set; }
-        public string? IgnoredVersion { get { return _ignoredVersion; } set { _ignoredVersion = value; NotifyPropertyChanged(nameof(IgnoredVersion)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); } }
+        public string? IgnoredVersion { get { return _ignoredVersion; } set { _ignoredVersion = value; NotifyPropertyChanged(nameof(IgnoredVersion)); NotifyPropertyChanged(nameof(IsUpdateIgnored)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

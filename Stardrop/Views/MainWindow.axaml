@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Stardrop.ViewModels"
         xmlns:view="using:Stardrop.Views"
@@ -520,7 +520,7 @@
 							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.clear_filter}" Click="ModGridMenuRow_ClearFilter" />
 						</MenuItem>
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.options}">
-							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.ignore_update}" Click="ModGridMenuRow_IgnoreUpdate" IsVisible="{Binding ParsedStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+							<MenuItem Header="{Binding IgnoreUpdateText}" Click="ModGridMenuRow_IgnoreUpdate" IsVisible="{Binding HasIgnorableUpdate}"/>
 							<MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" IsVisible="{Binding !$parent[DataGrid].DataContext.AreModGroupsEnabled}" />
 							<MenuItem Header="{Binding ChangeStateText}" IsVisible="{Binding $parent[DataGrid].DataContext.AreModGroupsEnabled}">
 								<MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" />

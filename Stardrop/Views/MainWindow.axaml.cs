@@ -852,20 +852,38 @@ namespace Stardrop.Views
             }
         }
 
-        private void ModGridMenuRow_IgnoreUpdate(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        /// <summary>
+        /// Toggles whether the currently suggested update for a mod is ignored. A toggle rather than a one-way
+        /// action, as ParsedStatus goes empty once an update is ignored, so anything keyed off it would take the
+        /// only means of reversing a misclick away with it.
+        ///
+        /// The ignore is version scoped and stored globally in the client data cache, keyed on unique ID. It lapses
+        /// on its own once a version newer than the ignored one is suggested, which CheckForModUpdates handles.
+        /// </summary>
+        private async void ModGridMenuRow_IgnoreUpdate(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if ((sender as MenuItem)?.DataContext is not Mod selectedMod)
             {
                 return;
             }
 
-            // Set the ignored version to the suggested version
-            if (!String.IsNullOrEmpty(selectedMod.SuggestedVersion))
+            // Guarded rather than assumed, as the menu item is only offered when there is an update to act on
+            if (selectedMod.HasIgnorableUpdate is false)
+            {
+                return;
+            }
+
+            if (selectedMod.IsUpdateIgnored)
+            {
+                selectedMod.IgnoredVersion = null;
+            }
+            else
             {
                 selectedMod.IgnoredVersion = selectedMod.SuggestedVersion;
             }
 
-            // Persist ignored version globally to client data cache
+            // Persist the ignored version globally to the client data cache. Not to the profile, as an ignore is not
+            // profile scoped, so nothing here should mark the profile as having unsaved changes
             try
             {
                 ClientData clientData = new ClientData();
@@ -897,36 +915,17 @@ namespace Stardrop.Views
             }
             catch (Exception ex)
             {
-                Program.helper.Log($"Failed to persist ignored update for {selectedMod.UniqueId}: {ex}");
+                Program.helper.Log($"Failed to persist the ignored update for {selectedMod.UniqueId}: {ex}");
             }
 
-            // Persist profile changes if needed
-            if (Program.settings.ShouldAutomaticallySaveProfileChanges)
-            {
-                UpdateProfile(GetCurrentProfile());
-            }
-            else
-            {
-                _viewModel.ShowSaveProfileChanges = true;
-            }
-
-            // Update viewmodel counts to reflect the ignored update immediately
+            // Awaited rather than blocked on, as this runs on the UI thread
             try
             {
-                // Recalculate cached updates count by re-reading the version cache quickly
-                var mods = _viewModel.Mods.ToList();
-                var cached = GetCachedModUpdates(mods, skipCacheCheck: true).Result;
-                // GetCachedModUpdates will set _viewModel.ModsWithCachedUpdates internally; if not, set conservatively
-                if (_viewModel.ModsWithCachedUpdates == 0)
-                {
-                    // fallback: recount mods that have SuggestedVersion and are outdated and not ignored
-                    int count = mods.Count(m => !String.IsNullOrEmpty(m.SuggestedVersion) && m.IsModOutdated(m.SuggestedVersion) && (String.IsNullOrEmpty(m.IgnoredVersion) || !m.IgnoredVersion.Equals(m.SuggestedVersion, StringComparison.OrdinalIgnoreCase)));
-                    _viewModel.ModsWithCachedUpdates = count;
-                }
+                await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
             }
-            catch
+            catch (Exception ex)
             {
-                // ignore any errors here; UI will refresh on next update check
+                Program.helper.Log($"Failed to refresh the update count after toggling the ignored update for {selectedMod.UniqueId}, so it will correct on the next update check: {ex}", Helper.Status.Warning);
             }
         }
 

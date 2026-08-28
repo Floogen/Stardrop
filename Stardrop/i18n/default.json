@@ -32,7 +32,6 @@
   "ui.main_window.menu_items.context.open": "Open...",
   "ui.main_window.menu_items.context.filters": "Filters",
   "ui.main_window.menu_items.context.options": "Options",
-  "ui.main_window.menu_items.context.ignore_update": "Ignore Update",
   "ui.main_window.menu_items.context.clear_filter": "Clear",
   "ui.main_window.menu_items.context.delete": "Delete",
 
@@ -278,6 +277,8 @@
   "internal.disable": "Disable",
   "internal.enable_whole_mod": "Enable Whole Mod Group",
   "internal.disable_whole_mod": "Disable Whole Mod Group",
+  "internal.ignore_update": "Ignore Update",
+  "internal.stop_ignoring_update": "Stop Ignoring Update",
   "internal.yes": "Yes",
   "internal.yes_all": "Yes to All",
   "internal.no": "No",
