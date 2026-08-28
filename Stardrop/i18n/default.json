@@ -209,6 +209,8 @@
   "ui.warning.failed_to_delete": "Failed to delete {0}.\n\nMod files may be locked, see log for details.",
   "ui.warning.failed_to_delete_during_update": "Failed to delete the old instance of {0}.\n\nThe mod may install incorrectly.",
   "ui.warning.unable_to_locate_smapi": "Unable to locate StardewModdingAPI.exe\n\nPlease set the correct file path under\nView > Settings",
+  "ui.warning.no_mod_configs_to_save": "There is no mod configuration to save for the profile {0}.\n\nNone of its enabled mods have a config.json yet. Most mods write one the first time the game runs with them enabled.",
+  "ui.warning.no_mod_configs_to_save_collection": "There is no mod configuration to save for the profile {0}.\n\nThe configuration of a collection's mods belongs to that collection, so it is left as the curator set it rather than being preserved against a profile. Editing those files directly still works, and your changes are kept until a new revision changes them.",
   "ui.warning.mod_config_saved_but_not_enabled": "Saved mod config settings to profile {0}, however profile specific mod configs are not enabled.\n\nGo to View > Settings and check \"Enable Profile Specific Mod Configs\" for Stardrop to automatically save and apply mod config changes.",
   "ui.warning.unable_to_determine_profile": "Unable to determine selected profile.\n\nSMAPI will not be started.",
   "ui.warning.stardrop_up_to_date": "Stardrop is up-to-date.\n\n{0} is the latest version.",

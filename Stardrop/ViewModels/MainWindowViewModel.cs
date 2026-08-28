@@ -813,6 +813,15 @@ namespace Stardrop.ViewModels
                     continue;
                 }
 
+                // A collection owns the configuration of the mods it installs, the same way it owns their versions.
+                // Its curator ships configuration as part of the curated result, and preserving a snapshot of that
+                // would merge it back over whatever they publish next. The file in the collection's folder is the
+                // configuration, with nothing shadowing it
+                if (mod.IsFromCollection)
+                {
+                    continue;
+                }
+
                 try
                 {
                     if (profile.PreservedModConfigs.ContainsKey(modId))
@@ -903,6 +912,30 @@ namespace Stardrop.ViewModels
                     mod.NexusModThumbnailPath = await Nexus.Client.DownloadThumbnail((int)mod.NexusModId);
                 }
             }
+        }
+
+        /// <summary>
+        /// Whether the profile enables mods whose configuration belongs to a collection. Lets an empty save be told
+        /// apart from one that found no configuration at all, since these mods are visibly carrying configuration in
+        /// the grid and their absence from a save needs explaining.
+        /// </summary>
+        internal bool HasCollectionOwnedConfigs(Profile profile)
+        {
+            foreach (var reference in profile.EnabledModIds)
+            {
+                var mod = Mods.FirstOrDefault(m => reference.Matches(m));
+                if (mod is null || mod.IsFromCollection is false)
+                {
+                    continue;
+                }
+
+                if (mod.HasConfig)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         internal void ReadModConfigs(Profile profile)

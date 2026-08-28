@@ -1131,19 +1131,34 @@ namespace Stardrop.Views
             var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
             var profile = profileComboBox.SelectedItem as Profile;
 
-            if (profile is not null)
+            if (profile is null)
             {
-                _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
-                _viewModel.ReadModConfigs(profile, _viewModel.GetPendingConfigUpdates(profile));
-                UpdateProfile(profile);
-
-                if (!Program.settings.EnableProfileSpecificModConfigs)
-                {
-                    CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.mod_config_saved_but_not_enabled"), profile.Name), Program.translation.Get("internal.ok"));
-                }
-
-                Program.settings.ShouldWriteToModConfigs = true;
+                return;
             }
+
+            _viewModel.DiscoverConfigs(Pathing.defaultModPath, useArchive: true);
+
+            // Nothing to preserve leaves the button looking broken rather than finished, so the two reasons a
+            // profile can come back empty are named apart. A collection owning every configuration on screen is the
+            // confusing one, as the grid plainly shows mods carrying configuration
+            var pendingConfigUpdates = _viewModel.GetPendingConfigUpdates(profile);
+            if (pendingConfigUpdates.Count == 0)
+            {
+                var reason = _viewModel.HasCollectionOwnedConfigs(profile) ? "ui.warning.no_mod_configs_to_save_collection" : "ui.warning.no_mod_configs_to_save";
+                CreateWarningWindow(String.Format(Program.translation.Get(reason), profile.Name), Program.translation.Get("internal.ok"));
+
+                return;
+            }
+
+            _viewModel.ReadModConfigs(profile, pendingConfigUpdates);
+            UpdateProfile(profile);
+
+            if (!Program.settings.EnableProfileSpecificModConfigs)
+            {
+                CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.mod_config_saved_but_not_enabled"), profile.Name), Program.translation.Get("internal.ok"));
+            }
+
+            Program.settings.ShouldWriteToModConfigs = true;
         }
 
         private void ModGroupStateButton(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -2655,7 +2670,12 @@ namespace Stardrop.Views
         /// <param name="filePaths">Archives to install from</param>
         /// <param name="installPathOverride">Where to install to. Defaults to Settings.ModInstallPath</param>
         /// <param name="installedModsByArchive">When supplied, is filled with the mods each archive produced. A single archive can hold several mods, so each entry is a list</param>
-        private async Task<List<Mod>> AddMods(string[]? filePaths, string? installPathOverride = null, IDictionary<string, List<Mod>>? installedModsByArchive = null)
+        /// <param name="replaceWithoutAsking">
+        /// Skips the prompt over how to handle a mod already installed at the target and always clears the previous
+        /// copy first. Used by the collection paths, where the collection decides the version and the user has
+        /// already agreed to it, so asking once per mod would be dozens of prompts with one possible answer.
+        /// </param>
+        private async Task<List<Mod>> AddMods(string[]? filePaths, string? installPathOverride = null, IDictionary<string, List<Mod>>? installedModsByArchive = null, bool replaceWithoutAsking = false)
         {
             Guid request = Guid.NewGuid();
 
@@ -2734,7 +2754,7 @@ namespace Stardrop.Views
                         }
 
                         int currentManifestIndex = 1;
-                        bool alwaysAskToDelete = Program.settings.AlwaysAskToDelete;
+                        bool alwaysAskToDelete = Program.settings.AlwaysAskToDelete && replaceWithoutAsking is false;
                         foreach (var manifestPath in pathToManifests.Keys)
                         {
                             var manifest = pathToManifests[manifestPath];

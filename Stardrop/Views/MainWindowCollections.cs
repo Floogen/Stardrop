@@ -513,7 +513,10 @@ namespace Stardrop.Views
             var installedModsByArchive = new Dictionary<string, List<Mod>>(StringComparer.OrdinalIgnoreCase);
             if (orderedArchives.Count > 0)
             {
-                await AddMods(orderedArchives.ToArray(), installPath, installedModsByArchive);
+                // Never asked how to handle a mod already sitting at the target. The collection owns the version, so
+                // the previous copy always goes, and the configuration the prompt exists to protect is carried
+                // across separately above
+                await AddMods(orderedArchives.ToArray(), installPath, installedModsByArchive, replaceWithoutAsking: true);
 
                 RestoreReplacedConfigs(replacedConfigs, installPath);
 
@@ -1673,7 +1676,7 @@ namespace Stardrop.Views
             }
 
             var installedModsByArchive = new Dictionary<string, List<Mod>>(StringComparer.OrdinalIgnoreCase);
-            await AddMods(new string[] { archivePath }, installPath, installedModsByArchive);
+            await AddMods(new string[] { archivePath }, installPath, installedModsByArchive, replaceWithoutAsking: true);
 
             _viewModel.DiscoverMods(Pathing.defaultModPath);
 
