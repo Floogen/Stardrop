@@ -26,7 +26,7 @@ namespace Stardrop.Models.SMAPI.Web
             /// <summary>The mod isn't compatible.</summary>
             Broken,
 
-            /// <summary>The mod is no longer maintained by the author, and an unofficial update or continuation is unlikely.</summary>
+            /// <summary>The mod is no longer maintained by the author and an unofficial update or continuation is unlikely.</summary>
             Abandoned,
 
             /// <summary>The mod is no longer needed and should be removed.</summary>

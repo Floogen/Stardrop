@@ -85,7 +85,6 @@
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "Clicca per Controllare Aggiornamenti Mod",
   "ui.main_window.button.update_status.updating": "In Aggiornamento...",
-  "ui.main_window.button.update_status.list_available_updates": "Mod da Aggiornare: {0}",
   "ui.main_window.button.update_status.failed": "Controllo Aggiornamento Mod Fallito",
 
   // Main Window - Buttons - Downloads
@@ -162,13 +161,11 @@
   "ui.nexus_login.labels.note": "Prendere Nota",
   "ui.nexus_login.labels.get_key": "Ottieni la tua chiave API personale da Nexus Mods",
   "ui.nexus_login.labels.get_key_actual": "Ottieni la tua chiave API di Stardrop da Nexus Mods",
-  "ui.nexus_login.labels.paste": "Quindi incolla la chiave qui sotto",
   "ui.nexus_login.labels.share_warning": "Non condividere la tua chiave API personale con altri, potresti incorrere in azioni legali nei confronti del tuo account Nexus.",
   "ui.nexus_login.labels.share_warning_actual": "Non condividere la tua chiave API con altri, altrimenti potresti incorrere in azioni contro il tuo account Nexus.",
   "ui.nexus_login.labels.revoke": "Puoi reimpostare/revocare la tua chiave in qualsiasi momento su Nexus Mods andando su Settings > API Keys > Personal API Key.",
   "ui.nexus_login.labels.revoke_actual": "Puoi reimpostare/revocare la tua chiave in qualsiasi momento su Nexus Mods andando su Settings > API Keys > Stardrop.",
   "ui.nexus_login.labels.nexus_details": "Dettagli Utente Nexus Mods",
-  "ui.nexus_login.labels.nexus_disconnect": "Clicca il pulsante sotto per far dimenticare a Stardrop la tua chiave personale e disconnetterti da Nexus Mods.",
   "ui.nexus_login.labels.nexus_disconnect_actual": "Clicca il pulsante sotto per far dimenticare a Stardrop la tua chiave API di Stardrop e disconnetterti da Nexus Mods.",
   "ui.nexus_login.labels.username": "Nome Utente: {0}",
   "ui.nexus_login.labels.is_premium": "È un Utente Premium: {0}",
@@ -210,8 +207,6 @@
   "ui.warning.stardrop_update_downloaded": "Downloaded dell'ultima versione riuscito.\n\nStardrop verrà riavviato.",
   "ui.warning.SMAPI_unable_to_download_latest": "Impossibile scaricare l'ultima versione di SMAPI.\n\nScarica l'ultima versione manualmente.",
   "ui.warning.SMAPI_unable_to_install_latest": "Impossibile installare l'ultima versione di SMAPI.\n\nScarica l'ultima versione manualmente.",
-  "ui.warning.update_cooldown_minutes": "Puoi controllare gli aggiornamenti una volta ogni 5 minuti.\n\nRiprova tra {0} minuto(i).",
-  "ui.warning.update_cooldown_seconds": "Puoi controllare gli aggiornamenti una volta ogni 5 minuti.\n\nRiprova tra {0} secondo(i).",
   "ui.warning.unable_to_locate_log": "Impossibile trovare il file SMAPI-latest.txt! SMAPI deve essere avviato con successo almeno una volta per permettere a Stardrop di rilevare i dettagli del gioco.",
   "ui.warning.unable_to_read_log": "Impossibile leggere il file log di SMAPI e controllare la versione di gioco.\n\nNon è possibile controllare gli aggiornamenti delle mod.",
   "ui.warning.no_manifest": "Nessuno file manifest.json trovato in \"{0}\"",
@@ -258,7 +253,6 @@
   "ui.window.profiles.name": "Profili",
   "ui.window.profiles_export.name": "Esporta Profili",
   "ui.window.profile_naming.name": "Nome Profilo",
-  "ui.window.nexus_login.name": "Chiave API Personale di Nexus Mods",
   "ui.window.nexus_login_actual.name": "Chiave API di Nexus Mods",
   "ui.window.nexus_user.name": "Dettagli Utente Nexus Mods",
   "ui.window.missing_mods.name": "Mod Mancanti",

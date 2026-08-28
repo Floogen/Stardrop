@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Stardrop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,7 +9,7 @@
         Title="Message"
         MinWidth="300"
         MinHeight="150"
-        Width="300"
+        Width="{Binding WindowWidth}"
         Height="150"
         Background="{DynamicResource ThemeBackgroundBrush}"
         HasSystemDecorations="false"
@@ -22,6 +22,14 @@
 		<Style Selector="Button:pressed /template/ ContentPresenter">
 			<Setter Property="Background" Value="{DynamicResource HighlightBrush}"/>
 		</Style>
+		<Style Selector="StackPanel#optionButtons > Button">
+			<Setter Property="MinWidth" Value="80"/>
+			<Setter Property="Margin" Value="8 0 8 0"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource HighlightBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
 	</Window.Styles>
 
 	<Border BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="1">
@@ -32,16 +40,14 @@
 				<RowDefinition Height="25" />
 			</Grid.RowDefinitions>
 
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="*" />
-			</Grid.ColumnDefinitions>
+			<TextBlock Grid.Row="0" Text="{Binding MessageText}" TextWrapping="Wrap" TextAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" HorizontalAlignment="Center" Margin="25 35 25 20"/>
 
-			<TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="{Binding MessageText}" TextWrapping="Wrap" TextAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" HorizontalAlignment="Center" Margin="25 35 25 20"/>
-			<Button Grid.Row="1"  Grid.Column="0" IsVisible="{Binding IsFirstButtonVisible}" Content="{Binding FirstButtonText}" Click="Button_Click" HorizontalAlignment="Center" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" Margin="0 0 0 0"/>
-			<Button Grid.Row="1"  Grid.Column="1" IsVisible="{Binding IsSecondButtonVisible}" IsCancel="true" Content="{Binding SecondButtonText}" Click="Button_Click" HorizontalAlignment="Center" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"  Margin="0 0 0 0"/>
-			<Button Grid.Row="1"  Grid.Column="2" IsVisible="{Binding IsThirdButtonVisible}" IsCancel="true" Content="{Binding ThirdButtonText}" Click="Button_Click" HorizontalAlignment="Center" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"  Margin="0 0 0 0"/>
+			<!-- One centred row rather than a column per button, so the gaps stay even whatever the labels say and a hidden button leaves no gap behind -->
+			<StackPanel Grid.Row="1" Name="optionButtons" Orientation="Horizontal" HorizontalAlignment="Center">
+				<Button IsVisible="{Binding IsFirstButtonVisible}" Content="{Binding FirstButtonText}" Click="Button_Click"/>
+				<Button IsVisible="{Binding IsSecondButtonVisible}" IsCancel="true" Content="{Binding SecondButtonText}" Click="Button_Click"/>
+				<Button IsVisible="{Binding IsThirdButtonVisible}" IsCancel="true" Content="{Binding ThirdButtonText}" Click="Button_Click"/>
+			</StackPanel>
 		</Grid>
 	</Border>
 </Window>

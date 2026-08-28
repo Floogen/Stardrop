@@ -1,0 +1,213 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Stardrop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="560"
+        x:Class="Stardrop.Views.CollectionsWindow"
+        Title="{i18n:Translate ui.window.collections.name}"
+        MinWidth="700"
+        MinHeight="450"
+        Width="900"
+        Height="560"
+        Background="{DynamicResource ThemeBackgroundBrush}"
+        HasSystemDecorations="true"
+        ExtendClientAreaToDecorationsHint="true"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        CanResize="True"
+        Icon="/Assets/icon.ico">
+
+	<Window.Styles>
+		<Style Selector="Button:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
+		</Style>
+		<Style Selector="Button:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource ButtonPressedBrush}"/>
+		</Style>
+		<Style Selector="Button[IsEnabled=False] /template/ ContentPresenter">
+			<Setter Property="Opacity" Value="0.5"/>
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+		<Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="Red"/>
+		</Style>
+		<Style Selector="Button#exitButton:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="Pink"/>
+		</Style>
+		<Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}"/>
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+		</Style>
+		<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
+		</Style>
+		<Style Selector="TextBlock.row">
+			<Setter Property="Foreground" Value="{DynamicResource DataGridRowForeground}" />
+		</Style>
+		<Style Selector="TextBlock.header">
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}" />
+		</Style>
+		<Style Selector="TextBlock.detail">
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+		</Style>
+		<Style Selector="TextBlock.subtle">
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
+			<Setter Property="FontSize" Value="11" />
+		</Style>
+		<Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+			<Setter Property="BorderBrush" Value="{DynamicResource ThemeBackgroundBrush}" />
+			<Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+		</Style>
+		<Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
+			<Setter Property="Fill" Value="{DynamicResource ThemeForegroundBrush}"/>
+		</Style>
+		<Style Selector="CheckBox.OptionClickbox:unchecked /template/ Border#NormalRectangle">
+			<Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
+		</Style>
+		<Style Selector="CheckBox.OptionClickbox:checked /template/ Border#NormalRectangle">
+			<Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
+		</Style>
+		<Style Selector="CheckBox.OptionClickbox:pointerover /template/ ContentPresenter#ContentPresenter">
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
+		</Style>
+		<Style Selector="TextBlock.sortable:pointerover">
+			<Setter Property="Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
+		</Style>
+		<Style Selector="TextBlock.status">
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+			<Setter Property="FontSize" Value="12" />
+		</Style>
+		<Style Selector="TextBlock.status.failure">
+			<Setter Property="Foreground" Value="{DynamicResource UpdateBrokenBrush}" />
+		</Style>
+		<Style Selector="TextBlock.update">
+			<Setter Property="Foreground" Value="{DynamicResource UpdateAvailableBrush}" />
+			<Setter Property="FontSize" Value="11" />
+		</Style>
+		<Style Selector="TextBlock.update.link:pointerover">
+			<Setter Property="Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
+			<Setter Property="TextDecorations" Value="Underline" />
+		</Style>
+		<Style Selector="ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}" />
+		</Style>
+		<Style Selector="ListBoxItem:nth-child(even)">
+			<Setter Property="Background" Value="{DynamicResource DataGridRowBackground}" />
+		</Style>
+	</Window.Styles>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="50" />
+		</Grid.RowDefinitions>
+
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="50" />
+		</Grid.ColumnDefinitions>
+
+		<Border Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
+			<Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
+				<Image Source="/Assets/icon.ico" Stretch="None"/>
+				<TextBlock Text="{i18n:Translate ui.window.collections.name}" Margin="-10 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+			</Menu>
+		</Border>
+		<Menu Name="windowMenu" HorizontalAlignment="Right" KeyboardNavigation.TabNavigation="None" Grid.Column="1">
+			<Button Name="exitButton" IsCancel="True" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+		</Menu>
+
+		<TextBlock Grid.Row="1" Grid.ColumnSpan="2" IsVisible="{Binding !HasCollections}" Classes="detail" TextWrapping="Wrap" MaxWidth="420" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Text="{i18n:Translate ui.collections_window.labels.no_collections}" />
+
+		<Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="20 20 20 0" IsVisible="{Binding HasCollections}">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="260" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
+			<Border Grid.Column="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
+				<ListBox Name="collectionList" Items="{Binding Collections}" SelectedItem="{Binding SelectedCollection}" Background="{DynamicResource DataGridRowBackground}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<StackPanel Margin="0 2 0 2">
+								<TextBlock Classes="row" Text="{Binding Name}" TextWrapping="Wrap" />
+								<TextBlock Classes="subtle" Text="{Binding Progress}" />
+								<TextBlock Classes="update" IsVisible="{Binding HasUpdate}" Text="{Binding UpdateMarker}" />
+							</StackPanel>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Border>
+
+			<Border Grid.Column="1" Margin="15 0 0 0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
+				<DockPanel Margin="10" DragDrop.AllowDrop="True" IsVisible="{Binding HasSelection}">
+					<!-- The buttons overlay the header rather than following it, so they sit in the corner of the
+					     panel they act on and the title still wraps across the full width beneath them -->
+					<Grid DockPanel.Dock="Top" Margin="0 0 0 8">
+						<StackPanel Margin="0 0 90 0">
+							<TextBlock Classes="detail" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding SelectedCollection.Name}" />
+							<TextBlock Classes="subtle" IsVisible="{Binding SelectedCollection.HasCurator}" Text="{Binding SelectedCollection.Curator}" />
+							<TextBlock Classes="subtle" Text="{Binding SelectedCollection.Revision}" />
+							<TextBlock Classes="update link" HorizontalAlignment="Left" Cursor="Hand" Tapped="OnUpdateStatusTapped" IsVisible="{Binding SelectedCollection.HasUpdate}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.update_available}" TextWrapping="Wrap" Text="{Binding SelectedCollection.UpdateStatus}" />
+							<TextBlock Classes="subtle" Text="{Binding SelectedCollection.Profile}" />
+							<TextBlock Classes="detail" Margin="0 6 0 0" Text="{Binding SelectedCollection.Progress}" />
+						</StackPanel>
+						<StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal">
+							<Button Name="updateButton" Cursor="Hand" IsVisible="{Binding SelectedCollection.HasUpdate}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.apply_update}" i:Attached.Icon="mdi-download" Foreground="{DynamicResource UpdateAvailableBrush}" BorderThickness="0" Background="Transparent" />
+							<Button Name="refreshButton" Cursor="Hand" IsEnabled="{Binding CanCheckForUpdates}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.check_updates}" i:Attached.Icon="mdi-refresh" Foreground="{DynamicResource ThemeForegroundBrush}" BorderThickness="0" Background="Transparent" />
+							<Button Name="removeButton" Cursor="Hand" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.remove}" i:Attached.Icon="mdi-delete" Foreground="{DynamicResource UpdateBrokenBrush}" BorderThickness="0" Background="Transparent" />
+						</StackPanel>
+					</Grid>
+
+					<Grid DockPanel.Dock="Top" ColumnDefinitions="* Auto" Margin="0 0 0 6">
+						<StackPanel Grid.Column="0" Orientation="Horizontal">
+							<CheckBox Name="missingOnlyCheckBox" IsChecked="{Binding ShowMissingOnly}" Content="{i18n:Translate ui.collections_window.checkbox.missing_only}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
+							<CheckBox Name="useNxmLinksCheckBox" Margin="20 0 0 0" IsChecked="{Binding UseNXMLinks}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.use_nxm_links}" Content="{i18n:Translate ui.collections_window.checkbox.use_nxm_links}" Foreground="{DynamicResource ThemeForegroundBrush}" Classes="OptionClickbox" />
+						</StackPanel>
+						<Button Name="openMissingButton" Height="26" Grid.Column="1" Margin="20 0 0 0" Padding="10 2" HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand" IsVisible="{Binding HasMissingPages}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.open_missing}" Content="{i18n:Translate ui.collections_window.button.open_missing}" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" />
+					</Grid>
+
+					<Grid DockPanel.Dock="Top" ColumnDefinitions="1.4* 0.5* 1.6*" Height="22">
+						<TextBlock Classes="header sortable" Grid.Column="0" Cursor="Hand" Tapped="OnNameHeaderTapped" Text="{Binding NameHeader}" FontWeight="Bold" />
+						<TextBlock Classes="header sortable" Grid.Column="1" Cursor="Hand" Tapped="OnVersionHeaderTapped" Text="{Binding VersionHeader}" FontWeight="Bold" />
+						<TextBlock Classes="header sortable" Grid.Column="2" Cursor="Hand" Tapped="OnStatusHeaderTapped" Text="{Binding StatusHeader}" FontWeight="Bold" />
+					</Grid>
+
+					<TextBlock DockPanel.Dock="Bottom" Classes="subtle" Margin="0 2 0 0" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Text="{i18n:Translate ui.collections_window.textblock.drop_entry_hint}" />
+					<TextBlock DockPanel.Dock="Bottom" Classes="subtle" Margin="0 6 0 0" HorizontalAlignment="Center" Text="{i18n:Translate ui.collections_window.textblock.open_entry_hint}" />
+
+					<ListBox Name="entryList" Items="{Binding Entries}">
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Grid ColumnDefinitions="1.4* 0.5* 1.6*" Background="Transparent" DoubleTapped="OnEntryDoubleTapped">
+									<TextBlock Classes="row" Grid.Column="0" Text="{Binding Name}" TextWrapping="Wrap" />
+									<TextBlock Classes="row" Grid.Column="1" Text="{Binding Version}" />
+									<TextBlock Classes="row" Grid.Column="2" Text="{Binding Status}" TextWrapping="Wrap" />
+								</Grid>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</DockPanel>
+			</Border>
+		</Grid>
+
+		<!-- Mirrors the content grid above, so the button lines up under the collection list -->
+		<Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="20 5 20 0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="260" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+			<Button Name="openPageButton" Grid.Column="0" HorizontalAlignment="Center" IsEnabled="{Binding HasSelection}" Content="{i18n:Translate ui.collections_window.button.open_page}" BorderBrush="{DynamicResource HighlightBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
+
+			<!-- Takes the place a per-mod dialog used to, so a user fetching a page of missing entries is told what
+			     landed without having anything to dismiss between one download and the next -->
+			<TextBlock Name="statusMessageBlock" Grid.Column="1" Classes="status" Classes.failure="{Binding IsStatusMessageFailure}" Margin="15 0 0 0" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" IsVisible="{Binding HasStatusMessage}" Text="{Binding StatusMessage}" />
+		</Grid>
+	</Grid>
+</Window>

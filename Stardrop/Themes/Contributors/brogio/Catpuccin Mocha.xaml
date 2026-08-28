@@ -1,4 +1,4 @@
-<Styles
+﻿<Styles
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:system="clr-namespace:System;assembly=System.Runtime">
@@ -73,6 +73,9 @@
             <SolidColorBrush x:Key="UpdateAvailableBrush" Color="{DynamicResource Green}" />
             <SolidColorBrush x:Key="UpdateBrokenBrush" Color="{DynamicResource Red}" />
             <SolidColorBrush x:Key="UpdateUnofficialBrush" Color="{DynamicResource Yellow}" />
+
+            <SolidColorBrush x:Key="ButtonHoverBrush" Color="{DynamicResource Surface0}" />
+            <SolidColorBrush x:Key="ButtonPressedBrush" Color="{DynamicResource Surface1}" />
 
         </Style.Resources>
     </Style>
