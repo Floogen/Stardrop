@@ -132,7 +132,7 @@ namespace Stardrop.Models
             }
         }
         private WikiCompatibilityStatus _status { get; set; }
-        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); NotifyPropertyChanged("InstallStatus"); NotifyPropertyChanged(nameof(HasActionableStatus)); } }
+        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); NotifyPropertyChanged("InstallStatus"); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(HasChangelog)); } }
         public string ParsedStatus
         {
             get
@@ -191,6 +191,17 @@ namespace Stardrop.Models
                 }
 
                 return String.Empty;
+            }
+        }
+
+        private ChangelogState _changelogState { get; set; }
+        public ChangelogState ChangelogState { get { return _changelogState; } set { _changelogState = value; NotifyPropertyChanged("ChangelogState"); } }
+
+        public bool HasChangelog
+        {
+            get
+            {
+                return !String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion) && GetNexusId() is not null;
             }
         }
 

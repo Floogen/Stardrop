@@ -1086,6 +1086,46 @@ namespace Stardrop.Views
             }
         }
 
+        private async void ChangelogButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var button = e.Source as Button;
+            if (button is null)
+            {
+                return;
+            }
+
+            var clickedMod = _viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(button.Tag));
+            if (clickedMod is null || clickedMod.ChangelogState is not ChangelogState.Unknown)
+            {
+                return;
+            }
+
+            var modId = clickedMod.GetNexusId();
+            if (modId is null || Nexus.Client is null)
+            {
+                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_nexus_changelog"), clickedMod.Name), Program.translation.Get("internal.ok"));
+                return;
+            }
+
+            clickedMod.ChangelogState = ChangelogState.Fetching;
+            try
+            {
+                // Show the window before fetching, so the user gets a loading spinner instead of a
+                // frozen-looking grid while Nexus responds.
+                var changelogWindow = new ChangelogWindow(clickedMod.Name, clickedMod.ModPageUri);
+                changelogWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+                var dialog = changelogWindow.ShowDialog(this);
+                changelogWindow.SetChangelogs(await Nexus.Client.GetModChangelogs(modId.Value));
+
+                await dialog;
+            }
+            finally
+            {
+                clickedMod.ChangelogState = ChangelogState.Unknown;
+            }
+        }
+
         private async void InstallButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var button = e.Source as Button;
@@ -2565,6 +2605,18 @@ namespace Stardrop.Views
             _viewModel.IsCheckingForUpdates = false;
         }
 
+        /// <summary>Reapplies the visibility of columns that depend on a Nexus connection</summary>
+        private void RefreshGatedColumns(bool isNexusConnected)
+        {
+            var modGrid = this.FindControl<DataGrid>("modGrid");
+            if (modGrid is null)
+            {
+                return;
+            }
+
+            _viewModel.RefreshGatedColumns(modGrid, isNexusConnected);
+        }
+
         private async Task CheckForNexusConnection()
         {
             // Create the client and open access to Nexus if we haven't already done it
@@ -2590,6 +2642,9 @@ namespace Stardrop.Views
 
                 // Show endorsements
                 _viewModel.ShowEndorsements = true;
+
+                // Open the gate on Nexus only columns, which restores whatever the user last chose for them
+                RefreshGatedColumns(true);
 
                 // Show thumbnails
                 if (Program.settings.ShowModThumbnails)
@@ -2638,6 +2693,7 @@ namespace Stardrop.Views
                 _viewModel.NexusStatus = Program.translation.Get("internal.disconnected");
                 _viewModel.ShowEndorsements = false;
                 _viewModel.ShowInstalls = false;
+                RefreshGatedColumns(false);
             }
 
             if (newClient is not null)

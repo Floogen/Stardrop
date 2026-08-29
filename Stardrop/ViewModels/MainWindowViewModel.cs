@@ -67,6 +67,9 @@ namespace Stardrop.ViewModels
         public bool ShowEndorsements { get { return _showEndorsements; } set { this.RaiseAndSetIfChanged(ref _showEndorsements, value); } }
         private bool _showInstalls;
         public bool ShowInstalls { get { return _showInstalls; } set { this.RaiseAndSetIfChanged(ref _showInstalls, value); } }
+        private bool _isNexusConnected;
+        /// <summary>Visibility preferences from the column context menu, keyed by ext:ColumnExtensions.Key</summary>
+        private Dictionary<string, bool> _columnPreferences = new Dictionary<string, bool>();
         private string _filterText;
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }
         private List<string> _columnFilter;
@@ -171,6 +174,17 @@ namespace Stardrop.ViewModels
 
         public void SetColumnVisibility(MenuItem column, DataGrid modGrid, bool isActive)
         {
+            if (column.Header is not string header)
+            {
+                return;
+            }
+
+            var targetColumn = modGrid.Columns.FirstOrDefault(c => c.Header is string text && text == header);
+            if (targetColumn is null)
+            {
+                return;
+            }
+
             // Get the local data
             ClientData localDataCache = new ClientData();
             if (File.Exists(Pathing.GetDataCachePath()))
@@ -180,29 +194,73 @@ namespace Stardrop.ViewModels
 
             if (isActive)
             {
-                if (modGrid.Columns.Any(c => c.Header is string text && text == (string)column.Header))
-                {
-                    column.Classes.Remove("ColumnInactive");
-                    column.Classes.Add("ColumnActive");
-
-                    modGrid.Columns.First(c => c.Header is string text && text == (string)column.Header).IsVisible = true;
-                    localDataCache.ColumnActiveStates[(string)column.Header] = true;
-                }
+                column.Classes.Remove("ColumnInactive");
+                column.Classes.Add("ColumnActive");
             }
             else
             {
-                if (modGrid.Columns.Any(c => c.Header is string text && text == (string)column.Header))
-                {
-                    column.Classes.Remove("ColumnActive");
-                    column.Classes.Add("ColumnInactive");
-
-                    modGrid.Columns.First(c => c.Header is string text && text == (string)column.Header).IsVisible = false;
-                    localDataCache.ColumnActiveStates[(string)column.Header] = false;
-                }
+                column.Classes.Remove("ColumnActive");
+                column.Classes.Add("ColumnInactive");
             }
+
+            ApplyColumnVisibility(targetColumn, isActive);
+            localDataCache.ColumnActiveStates[header] = isActive;
 
             // Cache the local data
             File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+        }
+
+        /// <summary>
+        /// Stores the user's choice for a column, then shows it only if its gate also allows it. Gated columns
+        /// stay hidden until the gate opens, at which point RefreshGatedColumns applies the stored choice.
+        /// </summary>
+        private void ApplyColumnVisibility(DataGridColumn targetColumn, bool isActive)
+        {
+            var columnKey = ColumnExtensions.GetKey(targetColumn);
+            if (String.IsNullOrEmpty(columnKey) is false)
+            {
+                _columnPreferences[columnKey] = isActive;
+            }
+
+            targetColumn.IsVisible = isActive && IsColumnGateOpen(targetColumn);
+        }
+
+        /// <summary>Whether anything outside the user's own preference is currently blocking a column</summary>
+        private bool IsColumnGateOpen(DataGridColumn targetColumn)
+        {
+            if (ColumnExtensions.GetRequiresNexus(targetColumn) is false)
+            {
+                return true;
+            }
+
+            return _isNexusConnected;
+        }
+
+        /// <summary>
+        /// Reapplies stored preferences for every column gated on Nexus, called when that connection is made or
+        /// lost. Columns with no stored preference default to visible, as the gate is what was hiding them.
+        /// </summary>
+        public void RefreshGatedColumns(DataGrid modGrid, bool isNexusConnected)
+        {
+            _isNexusConnected = isNexusConnected;
+
+            foreach (var targetColumn in modGrid.Columns)
+            {
+                if (ColumnExtensions.GetRequiresNexus(targetColumn) is false)
+                {
+                    continue;
+                }
+
+                var columnKey = ColumnExtensions.GetKey(targetColumn);
+                if (String.IsNullOrEmpty(columnKey))
+                {
+                    Program.helper.Log($"Failed to gate column {targetColumn.Header}: it lacks an ext:ColumnExtensions.Key value in the XAML.");
+                    continue;
+                }
+
+                bool isEnabled = _columnPreferences.TryGetValue(columnKey, out bool preference) ? preference : true;
+                targetColumn.IsVisible = isEnabled && isNexusConnected;
+            }
         }
 
         public void SetColumnOrder(DataGrid modGrid)

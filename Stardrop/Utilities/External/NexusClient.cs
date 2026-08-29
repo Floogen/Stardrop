@@ -637,6 +637,56 @@ namespace Stardrop.Utilities.External
             return EndorsementResponse.Unknown;
         }
 
+        /// <summary>
+        /// Gets every published changelog for the given mod, keyed by version string.
+        /// Returns null if the request fails; an empty dictionary means the mod publishes no changelogs.
+        /// </summary>
+        public async Task<Dictionary<string, List<string>>?> GetModChangelogs(int modId)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"games/stardewvalley/mods/{modId}/changelogs.json");
+                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+                    var changelogs = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    if (changelogs is null)
+                    {
+                        Program.helper.Log($"Unable to get the changelogs for the mod {modId} on Nexus Mods");
+                        Program.helper.Log($"Response from Nexus Mods:\n{content}");
+
+                        return null;
+                    }
+
+                    UpdateRequestCounts(response.Headers);
+
+                    return changelogs;
+                }
+                else
+                {
+                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    {
+                        Program.helper.Log($"Bad status given from Nexus Mods: {response.StatusCode}");
+                        if (response.Content is not null)
+                        {
+                            Program.helper.Log($"Response from Nexus Mods:\n{await response.Content.ReadAsStringAsync()}");
+                        }
+                    }
+                    else if (response.Content is null)
+                    {
+                        Program.helper.Log($"No response from Nexus Mods!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to get the changelogs for the mod {modId} on Nexus Mods: {ex}", Helper.Status.Alert);
+            }
+
+            return null;
+        }
+
         public async Task<string?> DownloadThumbnail(int modId)
         {
             try
