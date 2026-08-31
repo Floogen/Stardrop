@@ -528,7 +528,7 @@
 							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.clear_filter}" Click="ModGridMenuRow_ClearFilter" />
 						</MenuItem>
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.options}">
-							<MenuItem Header="{Binding IgnoreUpdateText}" Click="ModGridMenuRow_IgnoreUpdate" IsVisible="{Binding HasIgnorableUpdate}"/>
+							<MenuItem Header="{Binding IgnoreUpdateText}" Click="ModGridMenuRow_IgnoreUpdate" IsVisible="{Binding HasNewerVersion}"/>
 							<MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" IsVisible="{Binding !$parent[DataGrid].DataContext.AreModGroupsEnabled}" />
 							<MenuItem Header="{Binding ChangeStateText}" IsVisible="{Binding $parent[DataGrid].DataContext.AreModGroupsEnabled}">
 								<MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" />

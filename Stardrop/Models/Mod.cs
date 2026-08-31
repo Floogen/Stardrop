@@ -40,7 +40,7 @@ namespace Stardrop.Models
         public SemVersion Version { get; set; }
         public string ParsedVersion { get { return Version.ToString(); } }
         private string _suggestedVersion { get; set; }
-        public string SuggestedVersion { get { return _suggestedVersion; } set { _suggestedVersion = value; NotifyPropertyChanged(nameof(SuggestedVersion)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasIgnorableUpdate)); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
+        public string SuggestedVersion { get { return _suggestedVersion; } set { _suggestedVersion = value; NotifyPropertyChanged(nameof(SuggestedVersion)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasNewerVersion)); NotifyPropertyChanged(nameof(IsUpdateIgnored)); NotifyPropertyChanged(nameof(HasAvailableUpdate)); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(HasChangelog)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
         public string Name { get; set; }
         public string Path { get { return _path; } set { _path = value; RootPath = GetRootPath(value); } } // Whole mod path inside installed mods path for grouping mod components in the same mod
         private string _path { get; set; }
@@ -91,11 +91,12 @@ namespace Stardrop.Models
         public string ChangeStateText { get { return IsEnabled ? Program.translation.Get("internal.disable") : Program.translation.Get("internal.enable"); } }
         public string ChangeWholeModGroupStateText { get { return IsEnabled ? Program.translation.Get("internal.disable_whole_mod") : Program.translation.Get("internal.enable_whole_mod"); } }
         /// <summary>
-        /// Whether an update exists that the ignore toggle can act on, answered without reference to whether it is
-        /// currently ignored. The menu item's visibility hangs off this rather than anything that folds the ignore
-        /// in, which would hide the only control capable of undoing it.
+        /// Whether the suggested version is newer than the installed one.
+        /// This is the base the other update properties are built from and what 
+        /// the ignore toggle's visibility hangs off rather than anything that folds the ignore in, which would hide the
+        /// only control capable of undoing it.
         /// </summary>
-        public bool HasIgnorableUpdate
+        public bool HasNewerVersion
         {
             get
             {
@@ -115,6 +116,12 @@ namespace Stardrop.Models
         public bool IsUpdateIgnored { get { return !String.IsNullOrEmpty(SuggestedVersion) && !String.IsNullOrEmpty(IgnoredVersion) && IgnoredVersion.Equals(SuggestedVersion, StringComparison.OrdinalIgnoreCase); } }
         public string IgnoreUpdateText { get { return IsUpdateIgnored ? Program.translation.Get("internal.stop_ignoring_update") : Program.translation.Get("internal.ignore_update"); } }
         /// <summary>
+        /// Whether the mod counts towards the updatable total. This is the single rule that both a fresh smapi.io
+        /// response and the version cache are read through, so the reported number cannot differ between a manual
+        /// check and a restart without the underlying data differing with it.
+        /// </summary>
+        public bool HasAvailableUpdate { get { return HasNewerVersion && IsUpdateIgnored is false; } }
+        /// <summary>
         /// Whether the mod has something the user can still act on, which is what the updatable filter shows. An
         /// ignored update does not qualify, though a compatibility warning does even when a version update sitting
         /// alongside it has been ignored.
@@ -128,7 +135,7 @@ namespace Stardrop.Models
                     return true;
                 }
 
-                return HasIgnorableUpdate && IsUpdateIgnored is false;
+                return HasAvailableUpdate;
             }
         }
         private WikiCompatibilityStatus _status { get; set; }
@@ -208,7 +215,7 @@ namespace Stardrop.Models
         private string _note { get; set; }
         public string Note { get { return _note; } set { _note = value; NotifyPropertyChanged("Note"); } }
         private string? _ignoredVersion { get; set; }
-        public string? IgnoredVersion { get { return _ignoredVersion; } set { _ignoredVersion = value; NotifyPropertyChanged(nameof(IgnoredVersion)); NotifyPropertyChanged(nameof(IsUpdateIgnored)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
+        public string? IgnoredVersion { get { return _ignoredVersion; } set { _ignoredVersion = value; NotifyPropertyChanged(nameof(IgnoredVersion)); NotifyPropertyChanged(nameof(IsUpdateIgnored)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasAvailableUpdate)); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

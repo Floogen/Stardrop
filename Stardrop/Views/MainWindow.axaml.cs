@@ -869,7 +869,7 @@ namespace Stardrop.Views
             }
 
             // Guarded rather than assumed, as the menu item is only offered when there is an update to act on
-            if (selectedMod.HasIgnorableUpdate is false)
+            if (selectedMod.HasNewerVersion is false)
             {
                 return;
             }
@@ -1928,9 +1928,58 @@ namespace Stardrop.Views
                 return;
             }
 
-            if (_viewModel.IsCheckingForUpdates is false)
+            if (_viewModel.IsCheckingForUpdates is true)
             {
+                return;
+            }
+
+            // Ahead of the lock rather than left to CheckForModUpdates, which no longer runs before the lock window
+            // is up. An open menu sitting under a modal is not something the user can dismiss
+            CloseMainMenu();
+
+            // The rescan below and the work that follows the fetch both run on the dispatcher, so the window stops
+            // repainting for the duration. The lock window at least names what is happening rather than leaving a
+            // dead window behind, and it keeps an nxm link from starting an install underneath the rescan
+            SetLockState(true, Program.translation.Get("ui.warning.mod_update_scanning"));
+
+            // The lock window is opened by the lock sentinel rather than by SetLockState, so it needs a turn of the
+            // dispatcher to appear before the scan takes the thread
+            await YieldToLockWindow();
+
+            try
+            {
+                // A rescan rebuilds every Mod instance, so anything the user has toggled or noted without saving to
+                // their profile would be dropped on the way through. Captured and reapplied over the profile
+                // afterwards, as an update check has no business reverting a pending change
+                var pendingProfileState = _viewModel.ShowSaveProfileChanges ? _viewModel.Mods.Select(m => (Reference: m.ToReference(), m.IsEnabled, m.Note)).ToList() : null;
+
+                _viewModel.DiscoverMods(Pathing.defaultModPath);
+                _viewModel.EnableModsByProfile(GetCurrentProfile());
+
+                if (pendingProfileState is not null)
+                {
+                    foreach (var mod in _viewModel.Mods)
+                    {
+                        var pendingState = pendingProfileState.FirstOrDefault(p => p.Reference.Matches(mod));
+                        if (pendingState.Reference is null)
+                        {
+                            continue;
+                        }
+
+                        mod.IsEnabled = pendingState.IsEnabled;
+                        mod.Note = pendingState.Note;
+                    }
+
+                    _viewModel.RefreshModCounts();
+                }
+
                 await CheckForModUpdates(_viewModel.Mods.ToList());
+            }
+            finally
+            {
+                // In a finally, as CheckForModUpdates has early returns of its own and leaving the window locked
+                // would take the whole application with it
+                SetLockState(false);
             }
         }
 
@@ -2277,6 +2326,32 @@ namespace Stardrop.Views
             _lockWindow.UpdateProgress(lockReason, progress, maxProgress);
         }
 
+        /// <summary>Closes the main menu, which otherwise stays open for as long as the handler behind it runs</summary>
+        private void CloseMainMenu()
+        {
+            var mainMenu = this.FindControl<Menu>("mainMenu");
+            if (mainMenu is not null && mainMenu.IsOpen)
+            {
+                mainMenu.Close();
+            }
+        }
+
+        /// <summary>
+        /// Names the phase on the lock window and gives it a turn of the dispatcher to repaint before the next one
+        /// takes the thread. Does nothing when the window is not locked, which covers every caller of the update
+        /// check bar the manual one, so those pay neither the update nor the yield.
+        /// </summary>
+        private async Task ReportLockProgress(string lockReason)
+        {
+            if (_viewModel.IsLocked is false)
+            {
+                return;
+            }
+
+            UpdateLockWindow(lockReason);
+            await YieldToLockWindow();
+        }
+
         private async Task<UpdateCache?> GetCachedModUpdates(List<Mod> mods, bool skipCacheCheck = false)
         {
             int modsToUpdate = 0;
@@ -2356,24 +2431,15 @@ namespace Stardrop.Views
                             }
                         }
 
-                        if (modItem.IsModOutdated(modUpdateInfo.SuggestedVersion) && (String.IsNullOrEmpty(modItem.IgnoredVersion) || !modItem.IgnoredVersion.Equals(modUpdateInfo.SuggestedVersion, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            modItem.UpdateUri = modUpdateInfo.Link;
-                            modItem.SuggestedVersion = modUpdateInfo.SuggestedVersion;
-                            modItem.Status = modUpdateInfo.Status;
+                        // Applied whether or not the update is ignored, so an ignored mod can report the ignore
+                        // rather than reading as though nothing was ever found for it. Leaving it out of the count is HasAvailableUpdate's job, not this assignment's
+                        modItem.UpdateUri = modUpdateInfo.Link;
+                        modItem.SuggestedVersion = modUpdateInfo.SuggestedVersion;
+                        modItem.Status = modUpdateInfo.Status;
 
+                        if (modItem.HasAvailableUpdate)
+                        {
                             modsToUpdate++;
-                        }
-
-                        if (modUpdateInfo.Status != WikiCompatibilityStatus.Unknown && modUpdateInfo.Status != WikiCompatibilityStatus.Ok)
-                        {
-                            // Only apply status updates if the suggested version is not ignored
-                            if (String.IsNullOrEmpty(modItem.IgnoredVersion) || !modItem.IgnoredVersion.Equals(modUpdateInfo.SuggestedVersion, StringComparison.OrdinalIgnoreCase))
-                            {
-                                modItem.UpdateUri = modUpdateInfo.Link;
-                                modItem.SuggestedVersion = modUpdateInfo.SuggestedVersion;
-                                modItem.Status = modUpdateInfo.Status;
-                            }
                         }
                     }
                 }
@@ -2401,12 +2467,7 @@ namespace Stardrop.Views
                 Program.helper.Log($"Attempting to check for mod updates {(useCache ? "via cache" : "via smapi.io")}");
                 _viewModel.IsCheckingForUpdates = true;
 
-                // Close the menu, as it will remain open until the process is complete
-                var mainMenu = this.FindControl<Menu>("mainMenu");
-                if (mainMenu.IsOpen)
-                {
-                    mainMenu.Close();
-                }
+                CloseMainMenu();
 
                 // Update the status to let the user know the update is polling
                 _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.updating");
@@ -2440,6 +2501,10 @@ namespace Stardrop.Views
                     }
                     else
                     {
+                        // Dropped ahead of the dialog rather than left to the caller, as a lock window sitting under
+                        // a message the user has to answer reads as though Stardrop is still working
+                        SetLockState(false);
+
                         await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_locate_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
                         Program.helper.Log($"Unable to locate SMAPI-latest.txt", Helper.Status.Alert);
 
@@ -2450,6 +2515,8 @@ namespace Stardrop.Views
 
                 if (Program.settings.GameDetails is null || String.IsNullOrEmpty(Program.settings.GameDetails.SmapiVersion))
                 {
+                    SetLockState(false);
+
                     await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_read_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
                     Program.helper.Log($"SMAPI started but Stardrop was unable to read SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
 
@@ -2469,7 +2536,11 @@ namespace Stardrop.Views
 
                 int modsToUpdate = 0;
                 var updateCache = useCache && oldUpdateCache is not null ? oldUpdateCache : new UpdateCache(DateTime.Now);
+
+                await ReportLockProgress(Program.translation.Get("ui.warning.mod_update_checking"));
                 var modUpdateData = await SMAPI.GetModUpdateData(Program.settings.GameDetails, mods);
+
+                await ReportLockProgress(Program.translation.Get("ui.warning.mod_update_applying"));
 
                 // The full list still goes to GetModUpdateData so requirement names keep resolving, but only mods
                 // outside a collection take update data back out of it
@@ -2491,13 +2562,6 @@ namespace Stardrop.Views
                             status = metaData.CompatibilityStatus;
                         }
                         recommendedVersion = suggestedUpdateData.Version;
-
-                        // Only count this as an update if it's not ignored
-                        var existingMod = modItem;
-                        if (String.IsNullOrEmpty(existingMod.IgnoredVersion) || !existingMod.IgnoredVersion.Equals(recommendedVersion, StringComparison.OrdinalIgnoreCase))
-                        {
-                            modsToUpdate++;
-                        }
                     }
                     else if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
                     {
@@ -2506,8 +2570,6 @@ namespace Stardrop.Views
                         {
                             updateLink = metaData.Unofficial.Url;
                             recommendedVersion = metaData.Unofficial.Version;
-
-                            modsToUpdate++;
                         }
                         else if (metaData.Main is not null)
                         {
@@ -2531,10 +2593,19 @@ namespace Stardrop.Views
                     modItem.SuggestedVersion = recommendedVersion;
                     modItem.Status = status;
 
+                    // Counted off the mod rather than off the response, so this pass and the version cache report
+                    // the same number. Reading it from the response counted suggestions that were not actually
+                    // newer than the installed version, counted an ignored unofficial update and missed a newer
+                    // main version on a mod flagged as anything other than Ok
+                    if (modItem.HasAvailableUpdate)
+                    {
+                        modsToUpdate++;
+                    }
+
                     // Deliberately not gated on ParsedStatus, which goes empty for an ignored update. Gating the
                     // cache write on it dropped the very entry the ignore is later compared against, so a manual
                     // check silently lost the ignore. Mirrors what ParsedStatus reports before that suppression
-                    bool hasUpdateData = modItem.IsModOutdated(recommendedVersion) || status == WikiCompatibilityStatus.Broken;
+                    bool hasUpdateData = modItem.HasNewerVersion || modItem.Status == WikiCompatibilityStatus.Broken;
                     if (hasUpdateData)
                     {
                         // An ignored update is not one to report. Checked directly rather than through
