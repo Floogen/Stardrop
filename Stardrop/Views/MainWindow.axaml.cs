@@ -29,6 +29,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -2701,17 +2702,57 @@ namespace Stardrop.Views
                 newClient.DailyRequestLimitsChanged += NexusDailyLimitsChanged;
 
                 // Verify NXM protocol usage
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NXMProtocol.Validate(Program.executablePath) is false)
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
-                    if (await requestWindow.ShowDialog<bool>(this))
-                    {
-                        if (NXMProtocol.Register(Program.executablePath) is false)
-                        {
-                            await new WarningWindow(Program.translation.Get("ui.warning.failed_to_set_association"), Program.translation.Get("internal.ok")).ShowDialog(this);
-                        }
-                    }
+                    await VerifyNXMAssociation();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Checks how Windows will actually route NXM links, then repairs or reports Stardrop's registration as needed.
+        /// </summary>
+        [SupportedOSPlatform("windows")]
+        private async Task VerifyNXMAssociation()
+        {
+            NXMAssociationState state = NXMProtocol.GetState(Program.executablePath);
+            if (state.Status is NXMAssociationStatus.Registered)
+            {
+                return;
+            }
+
+            if (state.Status is NXMAssociationStatus.Incomplete)
+            {
+                Program.helper.Log($"Repairing Stardrop's incomplete NXM protocol registration");
+                if (NXMProtocol.Register(Program.executablePath) is false)
+                {
+                    Program.helper.Log($"Failed to repair Stardrop's NXM protocol registration", Helper.Status.Alert);
+                }
+
+                return;
+            }
+
+            if (state.Status is NXMAssociationStatus.Overridden && state.IsStardropRegistered)
+            {
+                Program.helper.Log($"NXM links are currently handled by {state.HandlerName} (ProgId: {state.UserChoiceProgId}) rather than Stardrop", Helper.Status.Warning);
+                return;
+            }
+
+            var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
+            if (await requestWindow.ShowDialog<bool>(this) is false)
+            {
+                return;
+            }
+
+            if (NXMProtocol.Register(Program.executablePath) is false)
+            {
+                await new WarningWindow(Program.translation.Get("ui.warning.failed_to_set_association"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                return;
+            }
+
+            if (state.Status is NXMAssociationStatus.Overridden)
+            {
+                await new WarningWindow(String.Format(Program.translation.Get("ui.warning.nxm_association_overridden"), state.HandlerName), Program.translation.Get("internal.ok")).ShowDialog(this);
             }
         }
 

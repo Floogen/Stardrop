@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using Avalonia.Shared.PlatformSupport;
@@ -84,6 +84,12 @@ namespace Stardrop
                     onBootStartSMAPI = o.StartSmapi;
                     nxmLink = o.NXMLink;
                 });
+
+                // Log which application Windows will hand NXM links to
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    NXMProtocol.LogDiagnostics(executablePath);
+                }
 
                 // Verify the folder paths are created
                 Directory.CreateDirectory(Pathing.GetCacheFolderPath());

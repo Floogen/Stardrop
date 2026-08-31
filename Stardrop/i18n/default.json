@@ -239,6 +239,7 @@
   "ui.warning.failed_to_get_download_link": "Failed to get the download url from Nexus Mods via the NXM link: {0}",
   "ui.warning.failed_to_set_association": "Failed to register the NXM protocol with Stardrop.\n\nSee log for details.",
   "ui.warning.already_associated": "Stardrop is already associated with the NXM protocol.",
+  "ui.warning.nxm_association_overridden": "NXM links are currently being handled by {0} instead of Stardrop.\n\nWindows protects this choice, so Stardrop can't change it for you. Open Settings > Apps > Default apps > Choose default apps by protocol, search for NXM and then set to Stardrop.\n\nThe choice can also be cleared by deleting this registry key:\n\nHKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\nxm",
   "ui.warning.unsupported_platform": "NXM protocol is currently only supported on Windows",
   "ui.warning.failed_to_verify_mod_file": "Failed to verify the Nexus Mods file scan results. Continue with download?",
   "ui.warning.file_quarantined": "Unable to download mod:\n\nFile is quarantined on Nexus Mods.",

@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -184,20 +184,38 @@ namespace Stardrop.Views
                 return;
             }
 
-            if (NXMProtocol.Validate(Program.executablePath) is false)
+            NXMAssociationState state = NXMProtocol.GetState(Program.executablePath);
+            if (state.Status is NXMAssociationStatus.Registered)
             {
-                var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
-                if (await requestWindow.ShowDialog<bool>(this))
+                await new WarningWindow(Program.translation.Get("ui.warning.already_associated"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                return;
+            }
+
+            if (state.Status is NXMAssociationStatus.Overridden)
+            {
+                // Registering still matters here, as the capability keys are what list Stardrop in Windows' picker
+                if (state.IsStardropRegistered is false)
                 {
                     if (NXMProtocol.Register(Program.executablePath) is false)
                     {
                         await new WarningWindow(Program.translation.Get("ui.warning.failed_to_set_association"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                        return;
                     }
                 }
+
+                await new WarningWindow(String.Format(Program.translation.Get("ui.warning.nxm_association_overridden"), state.HandlerName), Program.translation.Get("internal.ok")).ShowDialog(this);
+                return;
             }
-            else
+
+            var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
+            if (await requestWindow.ShowDialog<bool>(this) is false)
             {
-                await new WarningWindow(Program.translation.Get("ui.warning.already_associated"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                return;
+            }
+
+            if (NXMProtocol.Register(Program.executablePath) is false)
+            {
+                await new WarningWindow(Program.translation.Get("ui.warning.failed_to_set_association"), Program.translation.Get("internal.ok")).ShowDialog(this);
             }
         }
 
