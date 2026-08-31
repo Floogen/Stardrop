@@ -131,8 +131,18 @@ namespace Stardrop.Utilities
         /// its own copy of every mod it pins, so leaving these under Mods would show a SMAPI run started without
         /// Stardrop two copies of each, and SMAPI skips every copy of a duplicated unique ID rather than picking one.
         /// Discovery walks this as a root of its own instead.
+        ///
+        /// Configurable, as this is the folder that grows. The collection records under GetCollectionsCacheFolderPath
+        /// deliberately stay where they are: they are small, they are keyed by source ID rather than by path, and
+        /// keeping them beside the profiles means a relocated mods folder still reconciles against them.
         /// </summary>
         public static string GetCollectionsFolderPath()
+        {
+            return String.IsNullOrWhiteSpace(Program.settings.CollectionInstallPath) ? GetDefaultCollectionsFolderPath() : Program.settings.CollectionInstallPath;
+        }
+
+        /// <summary>Where collections install to before the setting has been given a value of its own</summary>
+        public static string GetDefaultCollectionsFolderPath()
         {
             return Path.Combine(GetCollectionsRootPath(), "Mods");
         }
@@ -187,13 +197,25 @@ namespace Stardrop.Utilities
                 return null;
             }
 
-            var collectionsRoot = GetCollectionsFolderPath();
-            if (modDirectoryPath.StartsWith(collectionsRoot, StringComparison.OrdinalIgnoreCase) is false)
+            // Both sides are resolved before they are measured against each other, as the collections folder can now
+            // come from a path the user typed. A trailing separator, a mixed one or a relative segment would otherwise
+            // fail the comparison and leave every collection mod reading as a loose install
+            var modPath = TryGetFullPath(modDirectoryPath);
+            var collectionsRoot = TryGetFullPath(GetCollectionsFolderPath());
+            if (modPath is null || collectionsRoot is null)
             {
                 return null;
             }
 
-            var relativePath = modDirectoryPath.Substring(collectionsRoot.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            // The trailing separator is what keeps a sibling that merely shares the start of the name, such as a
+            // "Collections Backup" sitting next to "Collections", from reading as though it were inside it
+            collectionsRoot = AppendSeparator(collectionsRoot);
+            if (modPath.StartsWith(collectionsRoot, StringComparison.OrdinalIgnoreCase) is false)
+            {
+                return null;
+            }
+
+            var relativePath = modPath.Substring(collectionsRoot.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             if (String.IsNullOrEmpty(relativePath))
             {
                 return null;
@@ -201,6 +223,71 @@ namespace Stardrop.Utilities
 
             var separatorIndex = relativePath.IndexOfAny(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
             return separatorIndex == -1 ? relativePath : relativePath.Substring(0, separatorIndex);
+        }
+
+        /// <summary>
+        /// Whether two paths point at the same folder. Both sides are resolved first, so that how a path happened to
+        /// be written is not what decides the answer.
+        /// </summary>
+        public static bool IsSamePath(string? first, string? second)
+        {
+            var fullFirst = TryGetFullPath(first);
+            var fullSecond = TryGetFullPath(second);
+            if (fullFirst is null || fullSecond is null)
+            {
+                return false;
+            }
+
+            return String.Equals(AppendSeparator(fullFirst), AppendSeparator(fullSecond), StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Whether a path is the same folder as another or sits underneath it. The parent is measured with a trailing
+        /// separator, so that a sibling sharing the start of its name is not taken for a child.
+        /// </summary>
+        public static bool IsSameOrUnder(string? path, string? potentialParent)
+        {
+            if (IsSamePath(path, potentialParent))
+            {
+                return true;
+            }
+
+            var fullPath = TryGetFullPath(path);
+            var fullParent = TryGetFullPath(potentialParent);
+            if (fullPath is null || fullParent is null)
+            {
+                return false;
+            }
+
+            return fullPath.StartsWith(AppendSeparator(fullParent), StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Resolves a path to its full form, or null where the platform will not have it. Comparing a path from the
+        /// settings file against one that came off the file system needs both in the same form to mean anything.
+        /// </summary>
+        private static string? TryGetFullPath(string? path)
+        {
+            if (String.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            try
+            {
+                return Path.GetFullPath(path);
+            }
+            catch (Exception)
+            {
+                // A path the platform will not resolve is not one that can be judged, so the caller treats it as no match
+                return null;
+            }
+        }
+
+        /// <summary>Appends a directory separator where the path does not already end in one</summary>
+        private static string AppendSeparator(string path)
+        {
+            return Path.EndsInDirectorySeparator(path) ? path : path + Path.DirectorySeparatorChar;
         }
     }
 }

@@ -346,7 +346,7 @@ namespace Stardrop.ViewModels
 
             // Skipped when the mod folder already contains it, which would otherwise walk every collection twice
             var collectionsPath = Pathing.GetCollectionsFolderPath();
-            if (Directory.Exists(collectionsPath) && roots.Any(r => collectionsPath.StartsWith(r, StringComparison.OrdinalIgnoreCase)) is false)
+            if (Directory.Exists(collectionsPath) && roots.Any(r => Pathing.IsSameOrUnder(collectionsPath, r)) is false)
             {
                 roots.Add(collectionsPath);
             }

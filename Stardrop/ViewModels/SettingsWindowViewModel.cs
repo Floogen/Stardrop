@@ -12,6 +12,7 @@ namespace Stardrop.ViewModels
         public string SMAPIPath { get { return Program.settings.SMAPIFolderPath; } set { Program.settings.SMAPIFolderPath = value; Pathing.SetSmapiPath(Program.settings.SMAPIFolderPath, String.IsNullOrEmpty(Program.settings.ModFolderPath)); } }
         public string ModFolderPath { get { return Program.settings.ModFolderPath; } set { Program.settings.ModFolderPath = value; Pathing.SetModPath(Program.settings.ModFolderPath); } }
         public string ModInstallPath { get { return Program.settings.ModInstallPath; } set { Program.settings.ModInstallPath = value; } }
+        public string CollectionInstallPath { get { return Program.settings.CollectionInstallPath; } set { Program.settings.CollectionInstallPath = value; } }
         public bool IgnoreHiddenFolders { get { return Program.settings.IgnoreHiddenFolders; } set { Program.settings.IgnoreHiddenFolders = value; } }
         public bool IsAskingBeforeAcceptingNXM { get { return Program.settings.IsAskingBeforeAcceptingNXM; } set { Program.settings.IsAskingBeforeAcceptingNXM = value; } }
         public bool EnableProfileSpecificModConfigs { get { return Program.settings.EnableProfileSpecificModConfigs; } set { Program.settings.EnableProfileSpecificModConfigs = value; } }
@@ -26,6 +27,7 @@ namespace Stardrop.ViewModels
         public string ToolTip_SMAPI { get; set; }
         public string ToolTip_ModFolder { get; set; }
         public string ToolTip_ModInstall { get; set; }
+        public string ToolTip_CollectionInstall { get; set; }
         public string ToolTip_Theme { get; set; }
         public string ToolTip_Language { get; set; }
         public string ToolTip_Grouping { get; set; }
@@ -52,6 +54,7 @@ namespace Stardrop.ViewModels
             ToolTip_SMAPI = Program.translation.Get("ui.settings_window.tooltips.smapi");
             ToolTip_ModFolder = Program.translation.Get("ui.settings_window.tooltips.mod_folder_path");
             ToolTip_ModInstall = Program.translation.Get("ui.settings_window.tooltips.mod_install_path");
+            ToolTip_CollectionInstall = Program.translation.Get("ui.settings_window.tooltips.collection_install_path");
             ToolTip_Theme = Program.translation.Get("ui.settings_window.tooltips.theme");
             ToolTip_Language = Program.translation.Get("ui.settings_window.tooltips.language");
             ToolTip_Grouping = Program.translation.Get("ui.settings_window.tooltips.grouping");

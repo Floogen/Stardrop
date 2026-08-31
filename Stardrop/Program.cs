@@ -133,6 +133,14 @@ namespace Stardrop
                     settings.ModInstallPath = Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods");
                 }
 
+                // Set the default collection install path (for mods that are installed by a collection). Unlike the
+                // mod install path this does not depend on where the mod folder points, as collections deliberately
+                // live outside it
+                if (String.IsNullOrEmpty(settings.CollectionInstallPath))
+                {
+                    settings.CollectionInstallPath = Pathing.GetDefaultCollectionsFolderPath();
+                }
+
                 // Set the default Nexus Mods information
                 if (settings.NexusDetails is null)
                 {

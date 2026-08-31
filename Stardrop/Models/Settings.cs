@@ -14,6 +14,14 @@ namespace Stardrop.Models
         public string SMAPIFolderPath { get; set; }
         public string ModFolderPath { get; set; }
         public string ModInstallPath { get; set; }
+        /// <summary>
+        /// Where a collection installs the mods it pins. Kept outside the mod folder, as a collection installs its
+        /// own copy of every mod and SMAPI skips every copy of a duplicated unique ID rather than picking one. An
+        /// empty value falls back to <see cref="Utilities.Pathing.GetDefaultCollectionsFolderPath"/>. Only the mods
+        /// follow this: the collection records stay alongside the profiles under the data folder, as they are small
+        /// and are keyed by source ID rather than by path.
+        /// </summary>
+        public string CollectionInstallPath { get; set; }
         public bool IgnoreHiddenFolders { get; set; } = true;
         public bool EnableProfileSpecificModConfigs { get; set; }
         public bool ShouldWriteToModConfigs { get; set; }

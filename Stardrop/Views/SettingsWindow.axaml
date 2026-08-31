@@ -191,6 +191,10 @@
 					<TextBlock Text="{i18n:Translate ui.settings_window.labels.mod_install}" Margin="0 10 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 					<TextBox Name="modInstallPathBox" Text="{Binding ModInstallPath}" ToolTip.Tip="{Binding ToolTip_ModInstall}" Margin="10 10 0 0" Height="10" Width="350" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
 					<Button Name="modInstallButton" Margin="360 -32 0 0" i:Attached.Icon="mdi-folder" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" HorizontalAlignment="Left" />
+
+					<TextBlock Text="{i18n:Translate ui.settings_window.labels.collection_install}" Margin="0 10 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+					<TextBox Name="collectionInstallPathBox" Text="{Binding CollectionInstallPath}" ToolTip.Tip="{Binding ToolTip_CollectionInstall}" Margin="10 10 0 0" Height="10" Width="350" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
+					<Button Name="collectionInstallButton" Margin="360 -32 0 0" i:Attached.Icon="mdi-folder" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" HorizontalAlignment="Left" />
 				</StackPanel>
 
 				<StackPanel Margin="10 10 0 0">
