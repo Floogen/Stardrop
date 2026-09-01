@@ -196,6 +196,7 @@
 
   // Warnings
   "ui.warning.unable_to_add_profile": "Unable to add {0}, a profile already exists under that name!",
+  "ui.warning.no_mods_to_change": "There are no mods to change.\n\nEnable All Mods and Disable All Mods only affect the mods currently shown.",
   "ui.warning.given_mod_folder_does_not_exist": "The given mod folder path doesn't exist.\n\nReverting to previous path.",
   "ui.warning.given_collection_folder_does_not_exist": "The given collection installed mods path doesn't exist.\n\nReverting to previous path.",
   "ui.warning.given_collection_folder_conflicts_with_mod_folder": "The collection installed mods path can't be inside {0}, and that folder can't be inside it either.\n\nA collection installs its own copy of every mod it pins. With the two overlapping, starting SMAPI outside Stardrop would show it two copies of each mod, and SMAPI skips every copy of a duplicated unique ID rather than picking one.\n\nReverting to previous path.",
@@ -260,8 +261,8 @@
   "ui.message.SMAPI_update_available": "An update (v{0}) is available for SMAPI.\n\nWould you like to download it now?",
   "ui.message.stardrop_update_complete": "Stardrop updated successfully.\n\nWould you like to see the release notes?",
   "ui.message.SMAPI_update_complete": "SMAPI updated successfully.\n\nWould you like to see the release notes?",
-  "ui.message.confirm_bulk_change_mod_states_enable": "Enable all mods?\n\nNote: This cannot be undone.",
-  "ui.message.confirm_bulk_change_mod_states_disable": "Disable all mods?\n\nNote: This cannot be undone.",
+  "ui.message.confirm_bulk_change_mod_states_enable": "Enable {0} mod(s)?\n\nOnly the mods currently shown are affected.\n\nNote: This cannot be undone.",
+  "ui.message.confirm_bulk_change_mod_states_disable": "Disable {0} mod(s)?\n\nOnly the mods currently shown are affected.\n\nNote: This cannot be undone.",
   "ui.message.confirm_mod_update_method": "A previous version of {0} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended, however any config files will be lost.",
   "ui.message.confirm_mod_update_method_no_config": "A previous version of {0} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended.",
   "ui.message.confirm_mod_update_method_preserved": "A previous version of {0} has been detected. Would you like to clear the previous install?\n\nNote: Clearing previous versions is usually recommended and your config files will be restored.",

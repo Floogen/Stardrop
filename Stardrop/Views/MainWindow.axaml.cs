@@ -1985,30 +1985,47 @@ namespace Stardrop.Views
 
         private async Task HandleBulkModStateChange(bool enableState)
         {
-            var requestWindow = new MessageWindow(enableState ? Program.translation.Get("ui.message.confirm_bulk_change_mod_states_enable") : Program.translation.Get("ui.message.confirm_bulk_change_mod_states_disable"));
-            if (await requestWindow.ShowDialog<bool>(this))
+            // Scoped to what the grid is showing rather than to every discovered mod, so a collection profile, a
+            // search term or an enabled filter each narrow this the same way they narrow the view
+            var targetMods = _viewModel.GetVisibleMods().Where(m => m.IsEnabled != enableState).ToList();
+            if (targetMods.Count == 0)
             {
-                foreach (var mod in _viewModel.Mods.Where(m => m.IsEnabled != enableState))
-                {
-                    mod.IsEnabled = enableState;
-                }
+                await CreateWarningWindow(Program.translation.Get("ui.warning.no_mods_to_change"), Program.translation.Get("internal.ok"));
+                return;
+            }
 
-                // Every copy of a mod that a collection and the mod folder both provide has just been turned on,
-                // so the unique IDs have to be collapsed back down to one enabled copy each
-                if (enableState)
-                {
-                    _viewModel.ResolveEnabledDuplicates();
-                    _viewModel.RefreshModCounts();
-                }
+            // The count is of the mods that will actually change rather than of everything on screen, as confirming
+            // against a total that is mostly already in the requested state says nothing useful
+            var requestWindow = new MessageWindow(String.Format(Program.translation.Get(enableState ? "ui.message.confirm_bulk_change_mod_states_enable" : "ui.message.confirm_bulk_change_mod_states_disable"), targetMods.Count));
+            if (await requestWindow.ShowDialog<bool>(this) is false)
+            {
+                return;
+            }
 
-                if (Program.settings.ShouldAutomaticallySaveProfileChanges)
-                {
-                    UpdateProfile(GetCurrentProfile());
-                }
-                else
-                {
-                    _viewModel.ShowSaveProfileChanges = true;
-                }
+            foreach (var mod in targetMods)
+            {
+                mod.IsEnabled = enableState;
+            }
+
+            // Every copy of a mod that a collection and the mod folder both provide has just been turned on,
+            // so the unique IDs have to be collapsed back down to one enabled copy each
+            if (enableState)
+            {
+                _viewModel.ResolveEnabledDuplicates();
+            }
+
+            // Outside the branch above, as the footer follows the enabled count in both directions. Only the enable
+            // path refreshed it before, which left the count stale after a disable whenever the profile was not being
+            // saved automatically, since saving is what otherwise reaches RefreshModCounts
+            _viewModel.RefreshModCounts();
+
+            if (Program.settings.ShouldAutomaticallySaveProfileChanges)
+            {
+                UpdateProfile(GetCurrentProfile());
+            }
+            else
+            {
+                _viewModel.ShowSaveProfileChanges = true;
             }
         }
 

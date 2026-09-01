@@ -1092,11 +1092,6 @@ namespace Stardrop.ViewModels
         }
 
         /// <summary>
-        /// Whether a mod belongs to what the user is currently looking at. A collection profile shows the mods it
-        /// references, including any it reuses from outside its own folder and anything the user has enabled since
-        /// it was applied, while a plain profile shows everything no collection owns.
-        /// </summary>
-        /// <summary>
         /// Whether the source scoping is set aside for the moment. Asking to see updatable mods is a request for the
         /// mods that have updates, wherever they live. Left in place, a collection profile answers it with an empty
         /// grid while the count beside the button reports several waiting, as collection mods never carry update
@@ -1107,6 +1102,11 @@ namespace Stardrop.ViewModels
             return _showUpdatableMods;
         }
 
+        /// <summary>
+        /// Whether a mod belongs to what the user is currently looking at. A collection profile shows everything the
+        /// collection installed, plus anything it reuses from outside its own folder, while a plain profile shows
+        /// everything no collection owns.
+        /// </summary>
         private bool PassesSourceFilter(Mod mod)
         {
             if (_modSourceFilter is ModSourceFilter.All || IsSourceFilterOverridden())
@@ -1116,6 +1116,17 @@ namespace Stardrop.ViewModels
 
             if (_activeProfile is not null && _activeProfile.IsFromCollection)
             {
+                // A mod this collection installed belongs on screen whether or not it is currently enabled, as the
+                // collection is what defines the profile's contents. Answered from SourceId, which comes off the
+                // folder path and so outlives the profile being saved without the mod in it. Reading membership from
+                // the references alone made disabling a mod remove it from the view at the next profile pass
+                if (String.Equals(mod.SourceId, _activeProfile.SourceId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                // Anything else is on screen because the profile reaches outside the collection for it, which is not
+                // recorded anywhere but the references
                 return _activeProfileReferences.Contains(mod.ToReference());
             }
 
@@ -1239,6 +1250,17 @@ namespace Stardrop.ViewModels
             }
         }
 
+        /// <summary>
+        /// The mods the grid is showing. Bulk actions run through this so that what the user is looking at is what
+        /// they act on, which takes in the source filter, the search box, the enabled and disabled filters and the
+        /// hidden mods under one rule. Evaluated against the current state rather than read back off DataView, so a
+        /// mod toggled since the last filter pass is judged on where it stands now.
+        /// </summary>
+        public List<Mod> GetVisibleMods()
+        {
+            return Mods.Where(m => ModFilter(m)).ToList();
+        }
+
         internal void UpdateFilter()
         {
             if (DataView is not null)
@@ -1255,7 +1277,9 @@ namespace Stardrop.ViewModels
         /// Folds whatever is currently enabled into the set the source filter shows. Done here rather than at each
         /// place a mod is toggled, as this runs immediately before the filter is applied and so catches every path
         /// that could have changed the enabled state. The set only grows within a session and is rebuilt from the
-        /// profile whenever one is applied, which is what keeps a mod on screen after the user disables it.
+        /// profile whenever one is applied, which is what keeps a mod the profile reached outside the collection for
+        /// on screen after the user disables it. A mod the collection installed no longer relies on this, as
+        /// <see cref="PassesSourceFilter"/> answers for those from SourceId.
         /// </summary>
         private void TrackEnabledModsForSourceFilter()
         {
