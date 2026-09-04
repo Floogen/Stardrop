@@ -110,10 +110,10 @@
 			</Setter>
 		</Style>
 		<Style Selector="Button:pointerover /template/ ContentPresenter">
-			<Setter Property="Background" Value="LightGray"/>
+			<Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
 		</Style>
 		<Style Selector="Button:pressed /template/ ContentPresenter">
-			<Setter Property="Background" Value="White"/>
+			<Setter Property="Background" Value="{DynamicResource ButtonPressedBrush}"/>
 		</Style>
 		<Style Selector="Button[IsEnabled=false] /template/ ContentPresenter">
 			<Setter Property="Opacity" Value="0.5"/>
@@ -128,6 +128,11 @@
 		</Style>
 		<Style Selector="Button.status">
 			<Setter Property="Foreground" Value="{DynamicResource UpdateAvailableBrush}" />
+		</Style>
+		<!-- Ahead of the Tag selectors, so a Broken or Unofficial mod keeps its own colour even when a version update alongside it is ignored -->
+		<Style Selector="Button.status.ignored">
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+			<Setter Property="Opacity" Value="0.5" />
 		</Style>
 		<Style Selector="Button.status[Tag=Broken]">
 			<Setter Property="Foreground" Value="{DynamicResource UpdateBrokenBrush}" />
@@ -161,6 +166,13 @@
 			<Setter Property="FontWeight" Value="Bold"/>
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
 			<Setter Property="Background" Value="{DynamicResource ComboBoxItemBackgroundBrush}"/>
+		</Style>
+		<!-- Hidden by default, as a ComboBox draws its closed state with the same ItemTemplate as its rows and the divider has nothing to divide there -->
+		<Style Selector="Border.collectionDivider">
+			<Setter Property="IsVisible" Value="False"/>
+		</Style>
+		<Style Selector="ComboBoxItem Border.collectionDivider.firstCollection">
+			<Setter Property="IsVisible" Value="True"/>
 		</Style>
 		<Style Selector="ComboBox">
 			<Setter Property="Background" Value="Transparent" />
@@ -272,11 +284,13 @@
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
 			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
 			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="Padding" Value="26 0 0 0"/>
 		</Style>
 		<Style Selector="DataGridColumnHeader[Content=Enabled]">
 			<Setter Property="Margin" Value="-13 0 0 0"/>
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
 			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
+			<Setter Property="Padding" Value="0"/>
 		</Style>
 		<Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
 			<Setter Property="Fill" Value="{DynamicResource HighlightForegroundBrush}"/>
@@ -358,8 +372,11 @@
 			<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_headers.nexus}">
 				<NativeMenu>
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_connection}" Click="NexusConnection_Click" />
+					<NativeMenuItemSeparator/>
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_install_all}" Click="NexusModBulkInstall_Click" />
 					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_install_enabled}" Click="NexusModBulkInstallEnabledOnly_Click" />
+					<NativeMenuItemSeparator/>
+					<NativeMenuItem Header="{i18n:Translate ui.main_window.menu_items.collections}" Click="Collections_Click" />
 				</NativeMenu>
 			</NativeMenuItem>
 		</NativeMenu>
@@ -410,8 +427,11 @@
 				</MenuItem>
 				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.nexus}" Margin="-10 0 0 0" Classes="Bar">
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_connection}" Click="NexusConnection_Click" Classes="Bar"/>
+					<Separator/>
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_install_all}" Click="NexusModBulkInstall_Click" Classes="Bar" />
 					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.nexus_install_enabled}" Click="NexusModBulkInstallEnabledOnly_Click" Classes="Bar" />
+					<Separator/>
+					<MenuItem Header="{i18n:Translate ui.main_window.menu_items.collections}" Click="Collections_Click" Classes="Bar"/>
 				</MenuItem>
 			</Menu>
 		</Border>
@@ -430,7 +450,12 @@
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
 						<StackPanel>
-							<TextBlock Text="{Binding Path=Name}"/>
+							<Border Classes="collectionDivider" Classes.firstCollection="{Binding IsFirstCollectionProfile}" Background="{DynamicResource HighlightBrush}" Height="1" Margin="0 2 0 5"/>
+							<!-- A Grid rather than a horizontal StackPanel, which would hand the name unlimited width and leave it overrunning the dropdown instead of trimming -->
+							<Grid ColumnDefinitions="Auto,*">
+								<ContentControl Grid.Column="0" i:Attached.Icon="mdi-package-variant-closed" IsVisible="{Binding IsFromCollection}" VerticalAlignment="Center" Margin="0 0 5 0"/>
+								<TextBlock Grid.Column="1" Text="{Binding Path=Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+							</Grid>
 						</StackPanel>
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
@@ -454,6 +479,14 @@
 					<TextBlock Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center" Margin="0 0 0 2"/>
 					<TextBlock Text="{i18n:Translate ui.main_window.labels.updatable_mods}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
 					<TextBlock Text="{Binding ModsWithCachedUpdates}" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+
+					<!-- Points at the collections window, which is where a collection update is described and acted on.
+					     Hidden outright rather than showing a zero, as most users have no collections at all -->
+					<StackPanel Orientation="Horizontal" IsVisible="{Binding HasCollectionUpdates}" ToolTip.Tip="{i18n:Translate ui.main_window.tooltips.updatable_collections}">
+						<TextBlock Text=" | " Foreground="{DynamicResource ThemeForegroundBrush}"/>
+						<TextBlock Text="{i18n:Translate ui.main_window.labels.updatable_collections}" Foreground="{DynamicResource UpdateAvailableBrush}"/>
+						<TextBlock Text="{Binding CollectionsWithUpdates}" Foreground="{DynamicResource UpdateAvailableBrush}"/>
+					</StackPanel>
 				</StackPanel>
 			</Grid>
 		</DockPanel>
@@ -473,10 +506,12 @@
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.columns.show_hide}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.requirements}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.author}" Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.collection}" Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.install_timestamp}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.last_updated}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.version}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.configuration}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
+						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.changelog}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.notes}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
 					</ContextMenu>
@@ -493,6 +528,7 @@
 							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.clear_filter}" Click="ModGridMenuRow_ClearFilter" />
 						</MenuItem>
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.options}">
+							<MenuItem Header="{Binding IgnoreUpdateText}" Click="ModGridMenuRow_IgnoreUpdate" IsVisible="{Binding HasNewerVersion}"/>
 							<MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" IsVisible="{Binding !$parent[DataGrid].DataContext.AreModGroupsEnabled}" />
 							<MenuItem Header="{Binding ChangeStateText}" IsVisible="{Binding $parent[DataGrid].DataContext.AreModGroupsEnabled}">
 								<MenuItem Header="{Binding ChangeStateText}" Click="ModGridMenuRow_ChangeState" />
@@ -525,14 +561,17 @@
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="State" CanUserReorder="False" Header="{i18n:Translate ui.main_window.menu_headers.enabled}" Width="25" CanUserResize="False" CanUserSort="True" SortMemberPath="IsEnabled">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
-								<CheckBox Content="{Binding UniqueId}" IsChecked="{Binding IsEnabled}" Click="EnabledBox_Clicked" Margin="5 0 0 0"/>
+								<CheckBox IsChecked="{Binding IsEnabled}" Click="EnabledBox_Clicked" Margin="5 0 0 0"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Name" Header="{i18n:Translate ui.main_window.menu_headers.mod_name}" CanUserReorder="False" SortMemberPath="Name">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
-								<TextBlock Text="{Binding Name}" TextAlignment="Left" VerticalAlignment="Center" Margin="7 0 0 0" />
+								<Grid ColumnDefinitions="20,*" Margin="7 0 0 0">
+									<ContentControl Grid.Column="0" i:Attached.Icon="mdi-package-variant-closed" Foreground="{DynamicResource HighlightBrush}" IsVisible="{Binding IsFromCollection}" ToolTip.Tip="{Binding CollectionName}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+									<TextBlock Grid.Column="1" Text="{Binding Name}" TextAlignment="Left" VerticalAlignment="Center" />
+								</Grid>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
@@ -546,6 +585,8 @@
 					<DataGridTextColumn ext:ColumnExtensions.Key="UniqueId" Header="{i18n:Translate ui.main_window.menu_headers.unique_id}" Binding="{Binding UniqueId}" IsVisible="False">
 					</DataGridTextColumn>
 					<DataGridTextColumn ext:ColumnExtensions.Key="Author" Header="{i18n:Translate ui.main_window.menu_headers.author}" Binding="{Binding Author}" CellStyleClasses="centered" IsVisible="False">
+					</DataGridTextColumn>
+					<DataGridTextColumn ext:ColumnExtensions.Key="Collection" Header="{i18n:Translate ui.main_window.menu_headers.collection}" Binding="{Binding CollectionName}" CellStyleClasses="centered" IsVisible="False">
 					</DataGridTextColumn>
 					<DataGridTextColumn ext:ColumnExtensions.Key="InstallTimestamp" Header="{i18n:Translate ui.main_window.menu_headers.install_timestamp}" Binding="{Binding InstallTimestamp}" IsVisible="False">
 					</DataGridTextColumn>
@@ -589,7 +630,7 @@
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Status" Header="{i18n:Translate ui.main_window.menu_headers.status}" SortMemberPath="ParsedStatus" CellStyleClasses="centered" >
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
-								<Button Name="statusButton" Tag="{Binding Status, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding UpdateUri}"/>
+								<Button Name="statusButton" Tag="{Binding Status, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Classes.ignored="{Binding IsUpdateIgnored}" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding UpdateUri}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
@@ -597,6 +638,13 @@
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<Button Name="installButton" Classes="hyperlink status" Content="{Binding InstallStatus}" Click="InstallButton_Click" Tag="{Binding UniqueId}" Foreground="{DynamicResource HighlightForegroundBrush}" />
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+					<DataGridTemplateColumn ext:ColumnExtensions.Key="Changelog" ext:ColumnExtensions.RequiresNexus="True" Header="{i18n:Translate ui.main_window.menu_headers.changelog}" CellStyleClasses="centered" IsVisible="False" CanUserSort="False">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<Button Name="changelogButton" Classes="hyperlink status" Content="{i18n:Translate ui.main_window.hyperlinks.view_changelog}" IsVisible="{Binding HasChangelog}" Click="ChangelogButton_Click" Tag="{Binding UniqueId}" Foreground="{DynamicResource HighlightForegroundBrush}" />
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
@@ -639,6 +687,7 @@
 				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.show_enabled_mods}" />
 			</ComboBox>
 			<CheckBox Name="showUpdatableMods" Content="{i18n:Translate ui.main_window.buttons.show_updatable_mods}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
+			<CheckBox Name="showAllModSources" Content="{i18n:Translate ui.main_window.buttons.show_all_mod_sources}" ToolTip.Tip="{i18n:Translate ui.main_window.tooltips.show_all_mod_sources}" IsVisible="{Binding HasCollectionMods}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
 		</DockPanel>
 		<Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 2 0 0">
 			<Grid>

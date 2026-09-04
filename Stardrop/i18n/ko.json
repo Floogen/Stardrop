@@ -79,7 +79,6 @@
   // Main Window - Buttons - Update Status
   "ui.main_window.button.update_status.generic": "모드 업데이트 확인",
   "ui.main_window.button.update_status.updating": "업데이트 중...",
-  "ui.main_window.button.update_status.list_available_updates": "업데이트 있는 모드: {0}",
   "ui.main_window.button.update_status.failed": "모드 업데이트 확인 실패",
 
   // Main Window - Buttons - Downloads
@@ -143,13 +142,11 @@
   "ui.nexus_login.labels.note": "참고 부탁드립니다.",
   "ui.nexus_login.labels.get_key": "Nexus Mods 사이트에서 계정 > Site preferences > API KEYS를 누르고,\nPersonal API Key를 찾아 복사합니다.",
   "ui.nexus_login.labels.get_key_actual": "Nexus Mods 사이트에서 계정 > Site preferences > API KEYS를 누르고,\nStardrop API Key를 찾아 복사합니다.",
-  "ui.nexus_login.labels.paste": "API 키를 하단에 붙여넣으시길 바랍니다.",
   "ui.nexus_login.labels.share_warning": "개인 API 키를 타인에게 공유하지 마십시오. Nexus 계정 보안에 문제가 발생할 수 있습니다.",
   "ui.nexus_login.labels.share_warning_actual": "Stardrop API 키를 타인에게 공유하지 마십시오. Nexus 계정 보안에 문제가 발생할 수 있습니다.",
   "ui.nexus_login.labels.revoke": "개인 키를 리셋 / 폐기하려면 언제든 Nexus Mods 사이트에서 계정 > Site preferences > API KEYS > Personal API Key를 통해 확인하시면 됩니다.",
   "ui.nexus_login.labels.revoke_actual": "Stardrop 키를 리셋 / 폐기하려면 언제든 Nexus Mods 사이트에서 계정 > Site preferences > API KEYS > Stardrop을 통해 확인하시면 됩니다.",
   "ui.nexus_login.labels.nexus_details": "Nexus Mods 사용자 정보",
-  "ui.nexus_login.labels.nexus_disconnect": "하단 버튼을 누르면, 개인 키 정보를 폐기하고 Nexus Mods와 연동을 해제합니다.",
   "ui.nexus_login.labels.nexus_disconnect_actual": "하단 버튼을 누르면, Stardrop 키 정보를 폐기하고 Nexus Mods와 연동을 해제합니다.",
   "ui.nexus_login.labels.username": "사용자 이름: {0}",
   "ui.nexus_login.labels.is_premium": "프리미엄 멤버십: {0}",
@@ -191,8 +188,6 @@
   "ui.warning.stardrop_update_downloaded": "최신 버전을 다운로드하는 데 성공했습니다.\n\nStardrop을 재시작합니다.",
   "ui.warning.SMAPI_unable_to_download_latest": "SMAPI의 최신 버전을 다운로드할 수 없습니다.\n\n최신 버전을 수동으로 다운로드하십시오.",
   "ui.warning.SMAPI_unable_to_install_latest": "SMAPI의 최신 버전을 설치할 수 없습니다.\n\n최신 버전을 수동으로 다운로드하십시오.",
-  "ui.warning.update_cooldown_minutes": "업데이트는 5분에 한 번씩만 요청할 수 있습니다.\n\n{0}분 뒤에 다시 시도해주십시오.",
-  "ui.warning.update_cooldown_seconds": "업데이트는 5분에 한 번씩만 요청할 수 있습니다.\n\n{0}초 뒤에 다시 시도해주십시오.",
   "ui.warning.unable_to_locate_log": "SMAPI-latest.txt를 찾을 수 없습니다! SMAPI를 한 번이라도 정상적으로 실행해야, Stardrop에서 게임 정보를 읽을 수 있습니다.",
   "ui.warning.unable_to_read_log": "SMAPI 로그 파일을 읽을 수 없어, 게임 버전을 확인할 수 없습니다.\n\n모드 업데이트 확인을 중단합니다.",
   "ui.warning.no_manifest": "\"{0}\"에서 manifest.json을 찾을 수 없습니다.",
@@ -232,7 +227,6 @@
   "ui.window.settings.name": "설정",
   "ui.window.profiles.name": "프로필",
   "ui.window.profile_naming.name": "프로필 이름",
-  "ui.window.nexus_login.name": "Nexus Mods 개인 API 키",
   "ui.window.nexus_login_actual.name": "Nexus Mods API 키",
   "ui.window.nexus_user.name": "Nexus Mods 사용자 정보",
 

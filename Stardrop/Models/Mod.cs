@@ -1,8 +1,10 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Semver;
+using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.SMAPI;
+using Stardrop.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,9 +23,24 @@ namespace Stardrop.Models
         internal readonly Manifest Manifest;
 
         public string UniqueId { get; set; }
+        /// <summary>
+        /// The collection this copy of the mod belongs to, or null for a loose install. Paired with UniqueId this
+        /// forms the mod's real identity, as a collection can pin a version the user also has installed loosely.
+        /// </summary>
+        public string? SourceId { get; set; }
+        public bool IsFromCollection { get { return String.IsNullOrEmpty(SourceId) is false; } }
+        private string? _collectionName;
+        /// <summary>
+        /// The display name of the collection this copy belongs to, or null for a loose install. SourceId is a
+        /// folder-safe slug rather than anything a user would recognise, so the readable name has to be resolved
+        /// from the collection's cache record. Filled in by DiscoverMods, which reads that cache once per pass
+        /// rather than once per mod.
+        /// </summary>
+        public string? CollectionName { get { return _collectionName; } set { _collectionName = value; NotifyPropertyChanged(); } }
         public SemVersion Version { get; set; }
         public string ParsedVersion { get { return Version.ToString(); } }
-        public string SuggestedVersion { get; set; }
+        private string _suggestedVersion { get; set; }
+        public string SuggestedVersion { get { return _suggestedVersion; } set { _suggestedVersion = value; NotifyPropertyChanged(nameof(SuggestedVersion)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasNewerVersion)); NotifyPropertyChanged(nameof(IsUpdateIgnored)); NotifyPropertyChanged(nameof(HasAvailableUpdate)); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(HasChangelog)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
         public string Name { get; set; }
         public string Path { get { return _path; } set { _path = value; RootPath = GetRootPath(value); } } // Whole mod path inside installed mods path for grouping mod components in the same mod
         private string _path { get; set; }
@@ -33,6 +50,11 @@ namespace Stardrop.Models
         public string Summary { get { return $"Author: {Author}\nVersion: {ParsedVersion}\nHas Config: {HasConfig}\n\n{Description}"; } }
         public string Author { get; set; }
         public DateTime? InstallTimestamp { get; set; }
+        /// <summary>
+        /// Left null for a mod installed by a collection. Nothing writes one, rather than the column hiding it, as
+        /// the date would only ever record when Stardrop replaced the folder during a collection update. Whether
+        /// such a mod is current is answered by its collection's revision.
+        /// </summary>
         public DateTime? LastUpdateTimestamp { get; set; }
         public Config? _config { get; set; }
         public Config? Config { get { return _config; } set { _config = value; NotifyPropertyChanged("Config"); NotifyPropertyChanged("HasConfig"); } }
@@ -68,12 +90,74 @@ namespace Stardrop.Models
         public bool IsEndorsed { get { return _isEndorsement; } set { _isEndorsement = value; NotifyPropertyChanged("IsEndorsed"); } }
         public string ChangeStateText { get { return IsEnabled ? Program.translation.Get("internal.disable") : Program.translation.Get("internal.enable"); } }
         public string ChangeWholeModGroupStateText { get { return IsEnabled ? Program.translation.Get("internal.disable_whole_mod") : Program.translation.Get("internal.enable_whole_mod"); } }
+        /// <summary>
+        /// Whether the suggested version is newer than the installed one.
+        /// This is the base the other update properties are built from and what 
+        /// the ignore toggle's visibility hangs off rather than anything that folds the ignore in, which would hide the
+        /// only control capable of undoing it.
+        /// </summary>
+        public bool HasNewerVersion
+        {
+            get
+            {
+                // TryParse first, as IsModOutdated parses outright and this getter is reached from a binding
+                if (String.IsNullOrEmpty(SuggestedVersion) || SemVersion.TryParse(SuggestedVersion, SemVersionStyles.Any, out _) is false)
+                {
+                    return false;
+                }
+
+                return IsModOutdated(SuggestedVersion);
+            }
+        }
+        /// <summary>
+        /// Whether the currently suggested version is the one the user chose to ignore. A newer suggestion than the
+        /// ignored one leaves this false, which is what lets an ignore lapse on its own once the mod moves on.
+        /// </summary>
+        public bool IsUpdateIgnored { get { return !String.IsNullOrEmpty(SuggestedVersion) && !String.IsNullOrEmpty(IgnoredVersion) && IgnoredVersion.Equals(SuggestedVersion, StringComparison.OrdinalIgnoreCase); } }
+        public string IgnoreUpdateText { get { return IsUpdateIgnored ? Program.translation.Get("internal.stop_ignoring_update") : Program.translation.Get("internal.ignore_update"); } }
+        /// <summary>
+        /// Whether the mod counts towards the updatable total. This is the single rule that both a fresh smapi.io
+        /// response and the version cache are read through, so the reported number cannot differ between a manual
+        /// check and a restart without the underlying data differing with it.
+        /// </summary>
+        public bool HasAvailableUpdate { get { return HasNewerVersion && IsUpdateIgnored is false; } }
+        /// <summary>
+        /// Whether the mod has something the user can still act on, which is what the updatable filter shows. An
+        /// ignored update does not qualify, though a compatibility warning does even when a version update sitting
+        /// alongside it has been ignored.
+        /// </summary>
+        public bool HasActionableStatus
+        {
+            get
+            {
+                if (_status == WikiCompatibilityStatus.Broken)
+                {
+                    return true;
+                }
+
+                return HasAvailableUpdate;
+            }
+        }
         private WikiCompatibilityStatus _status { get; set; }
-        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); NotifyPropertyChanged("InstallStatus"); } }
+        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); NotifyPropertyChanged("InstallStatus"); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(HasChangelog)); } }
         public string ParsedStatus
         {
             get
             {
+                // Ahead of the ignore, as a compatibility warning is not version scoped and ignoring a version
+                // update is not a reason to stop reporting that the mod is broken
+                if (_status == WikiCompatibilityStatus.Broken)
+                {
+                    return Program.translation.Get("ui.main_window.hyperlinks.broken_compatibility_issue");
+                }
+
+                // Reported rather than blanked, as an ignored mod is otherwise indistinguishable from an up to date
+                // one and nothing would hint that the context menu can undo it
+                if (IsUpdateIgnored)
+                {
+                    return String.Format(Program.translation.Get("ui.main_window.hyperlinks.update_ignored"), SuggestedVersion);
+                }
+
                 if (!String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
                 {
                     if (_status == WikiCompatibilityStatus.Unofficial)
@@ -81,10 +165,6 @@ namespace Stardrop.Models
                         return String.Format(Program.translation.Get("ui.main_window.hyperlinks.unofficial_update_available"), SuggestedVersion);
                     }
                     return String.Format(Program.translation.Get("ui.main_window.hyperlinks.update_available"), SuggestedVersion);
-                }
-                else if (_status == WikiCompatibilityStatus.Broken)
-                {
-                    return Program.translation.Get("ui.main_window.hyperlinks.broken_compatibility_issue");
                 }
 
                 return String.Empty;
@@ -96,6 +176,12 @@ namespace Stardrop.Models
         {
             get
             {
+                // If the suggested version is the same as an ignored version, treat as no update
+                if (IsUpdateIgnored)
+                {
+                    return String.Empty;
+                }
+
                 if (!String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
                 {
                     var nexusModId = GetNexusId();
@@ -115,8 +201,21 @@ namespace Stardrop.Models
             }
         }
 
+        private ChangelogState _changelogState { get; set; }
+        public ChangelogState ChangelogState { get { return _changelogState; } set { _changelogState = value; NotifyPropertyChanged("ChangelogState"); } }
+
+        public bool HasChangelog
+        {
+            get
+            {
+                return !String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion) && GetNexusId() is not null;
+            }
+        }
+
         private string _note { get; set; }
         public string Note { get { return _note; } set { _note = value; NotifyPropertyChanged("Note"); } }
+        private string? _ignoredVersion { get; set; }
+        public string? IgnoredVersion { get { return _ignoredVersion; } set { _ignoredVersion = value; NotifyPropertyChanged(nameof(IgnoredVersion)); NotifyPropertyChanged(nameof(IsUpdateIgnored)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasAvailableUpdate)); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -125,6 +224,7 @@ namespace Stardrop.Models
             Manifest = manifest;
             ModFileInfo = modFileInfo;
             UniqueId = uniqueId;
+            SourceId = Pathing.GetCollectionSourceId(modFileInfo.DirectoryName);
             Version = SemVersion.TryParse(version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : SemVersion.ParsedFrom(0, 0, 0, "bad-version");
             Name = String.IsNullOrEmpty(name) ? uniqueId : name;
             Path = ComputeModPath(modFileInfo);
@@ -155,27 +255,21 @@ namespace Stardrop.Models
 
 
         /// <summary>
-        /// Compute relative path to a mod from the installed mods path or default Stardew Valley mods path.
+        /// Compute relative path to a mod from the root it was discovered under, which is what mods are grouped by.
+        /// The mod folder is tested first so that grouping there is unchanged, then the collections folder, which
+        /// sits outside the mod folder and would otherwise match neither.
         /// </summary>
         private string ComputeModPath(FileInfo modFileInfo)
         {
             // Set whole mod path for grouping with other mods from the same mod.
-            var commonNameInstalledFolder = Program.settings.ModInstallPath;
-            var commonNameModsFolder = Program.settings.ModFolderPath;
-            string modNamePath;
-            if (System.IO.Path.EndsInDirectorySeparator(commonNameInstalledFolder))
-            {
-                commonNameInstalledFolder += System.IO.Path.DirectorySeparatorChar;
-            }
+            var modNamePath = GetPathUnderRoot(modFileInfo.DirectoryName, Program.settings.ModFolderPath) ?? GetPathUnderRoot(modFileInfo.DirectoryName, Pathing.GetCollectionsFolderPath());
 
-            if (modFileInfo.DirectoryName.Contains(commonNameModsFolder))
+            // Grouped as unknown rather than thrown over. This runs from the constructor, so throwing takes down
+            // whatever was building the mod, which for an install is the whole archive
+            if (String.IsNullOrEmpty(modNamePath))
             {
-                // Mod inside default Stardew Valley mods folder.
-                modNamePath = modFileInfo.DirectoryName.Substring(commonNameModsFolder.Length + 1);
-            }
-            else
-            {
-                throw new Exception($"Invalid mod folder path: {modFileInfo.DirectoryName}");
+                Program.helper.Log($"The mod at {modFileInfo.DirectoryName} sits under neither the mod folder nor the collections folder, so it has no group", Helper.Status.Warning);
+                return Program.translation.Get("internal.unknown");
             }
 
             // TODO: Add program config option to switch between both approaches? And to disable grouping entirely?
@@ -191,6 +285,27 @@ namespace Stardrop.Models
             var nameLength = foundIndex == -1 ? modNamePath.Length : foundIndex;
             var finalPath = modNamePath.Substring(0, nameLength);
             return String.IsNullOrEmpty(finalPath) ? Program.translation.Get("internal.unknown") : finalPath;
+        }
+
+        /// <summary>
+        /// The part of a mod's folder below the given root, or null when the mod does not sit under it. Matched as a
+        /// prefix ending in a separator, rather than by the old Contains test, which also accepted a root appearing
+        /// anywhere in the path and one that merely shared a name prefix with the folder the mod is really in.
+        /// </summary>
+        private static string? GetPathUnderRoot(string? modDirectoryName, string? root)
+        {
+            if (String.IsNullOrEmpty(modDirectoryName) || String.IsNullOrEmpty(root))
+            {
+                return null;
+            }
+
+            var prefix = System.IO.Path.EndsInDirectorySeparator(root) ? root : root + System.IO.Path.DirectorySeparatorChar;
+            if (modDirectoryName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) is false)
+            {
+                return null;
+            }
+
+            return modDirectoryName.Substring(prefix.Length);
         }
 
         private string GetRootPath(string path)
@@ -302,6 +417,14 @@ namespace Stardrop.Models
         internal PortableModData GetPortableData()
         {
             return new PortableModData(UniqueId, ParsedVersion, Name, Author, ModPageUri);
+        }
+
+        /// <summary>
+        /// Builds the identity used by profiles to reference this specific copy of the mod.
+        /// </summary>
+        public ModReference ToReference()
+        {
+            return new ModReference(UniqueId, SourceId);
         }
 
         internal void NotifyPropertyChanged([CallerMemberName] String propertyName = "")

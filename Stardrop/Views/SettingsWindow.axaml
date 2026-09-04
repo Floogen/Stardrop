@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Stardrop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -21,13 +21,14 @@
 
 	<Window.Styles>
 		<Style Selector="Button:pointerover /template/ ContentPresenter">
-			<Setter Property="Background" Value="LightGray"/>
+			<Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
 		</Style>
 		<Style Selector="Button:pressed /template/ ContentPresenter">
-			<Setter Property="Background" Value="White"/>
+			<Setter Property="Background" Value="{DynamicResource ButtonPressedBrush}"/>
 		</Style>
 		<Style Selector="Button[IsEnabled=False] /template/ ContentPresenter">
-			<Setter Property="Background" Value="Gray"/>
+			<Setter Property="Opacity" Value="0.5"/>
+			<Setter Property="Background" Value="Transparent"/>
 		</Style>
 		<Style Selector="Button#exitButton:pointerover /template/ ContentPresenter">
 			<Setter Property="Background" Value="Red"/>
@@ -190,6 +191,10 @@
 					<TextBlock Text="{i18n:Translate ui.settings_window.labels.mod_install}" Margin="0 10 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 					<TextBox Name="modInstallPathBox" Text="{Binding ModInstallPath}" ToolTip.Tip="{Binding ToolTip_ModInstall}" Margin="10 10 0 0" Height="10" Width="350" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
 					<Button Name="modInstallButton" Margin="360 -32 0 0" i:Attached.Icon="mdi-folder" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" HorizontalAlignment="Left" />
+
+					<TextBlock Text="{i18n:Translate ui.settings_window.labels.collection_install}" Margin="0 10 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+					<TextBox Name="collectionInstallPathBox" Text="{Binding CollectionInstallPath}" ToolTip.Tip="{Binding ToolTip_CollectionInstall}" Margin="10 10 0 0" Height="10" Width="350" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
+					<Button Name="collectionInstallButton" Margin="360 -32 0 0" i:Attached.Icon="mdi-folder" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" HorizontalAlignment="Left" />
 				</StackPanel>
 
 				<StackPanel Margin="10 10 0 0">
@@ -228,6 +233,7 @@
 					<CheckBox Name="alwaysAskToDelete" IsChecked="{Binding AlwaysAskToDelete}" Content="{i18n:Translate ui.settings_window.buttons.always_ask_to_delete}" ToolTip.Tip="{Binding ToolTip_AlwaysAskToDelete}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 					<CheckBox Name="automaticallySaveProfileChanges" IsChecked="{Binding ShouldAutomaticallySaveProfileChanges}" Content="{i18n:Translate ui.settings_window.buttons.automatically_save_profile_changes}" ToolTip.Tip="{Binding ToolTip_ShouldAutomaticallySaveProfileChanges}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 					<CheckBox Name="showModThumbnails" IsChecked="{Binding ShowModThumbnails}" Content="{i18n:Translate ui.settings_window.buttons.show_mod_thumbnails}" ToolTip.Tip="{Binding ToolTip_ShowModThumbnails}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
+					<CheckBox Name="collectionsSkipSMAPIUpdateCheck" IsChecked="{Binding CollectionsSkipSMAPIUpdateCheck}" Content="{i18n:Translate ui.settings_window.buttons.collections_skip_smapi_update_check}" ToolTip.Tip="{Binding ToolTip_CollectionsSkipSMAPIUpdateCheck}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource ThemeForegroundBrush}" />
 				</StackPanel>
 			</StackPanel>
 		</ScrollViewer>

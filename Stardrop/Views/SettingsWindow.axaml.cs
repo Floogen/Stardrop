@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -36,6 +36,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("smapiFolderButton").Click += SmapiFolderButton_Click;
             this.FindControl<Button>("modFolderButton").Click += ModFolderButton_Click;
             this.FindControl<Button>("modInstallButton").Click += ModInstallButton_Click;
+            this.FindControl<Button>("collectionInstallButton").Click += CollectionInstallButton_Click;
             this.FindControl<Button>("registerNXMButton").Click += RegisterNXMButton_Click;
             this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
 
@@ -43,9 +44,11 @@ namespace Stardrop.Views
             var smapiTextBox = this.FindControl<TextBox>("smapiFolderPathBox");
             var modFolderTextBox = this.FindControl<TextBox>("modFolderPathBox");
             var modInstallTextBox = this.FindControl<TextBox>("modInstallPathBox");
+            var collectionInstallTextBox = this.FindControl<TextBox>("collectionInstallPathBox");
             SetTextboxTextFocusToEnd(smapiTextBox, smapiTextBox.Text);
             SetTextboxTextFocusToEnd(modFolderTextBox, modFolderTextBox.Text);
             SetTextboxTextFocusToEnd(modInstallTextBox, modInstallTextBox.Text);
+            SetTextboxTextFocusToEnd(collectionInstallTextBox, collectionInstallTextBox.Text);
 
             // Handle adding the themes
             string? lastContributorName = null;
@@ -184,20 +187,38 @@ namespace Stardrop.Views
                 return;
             }
 
-            if (NXMProtocol.Validate(Program.executablePath) is false)
+            NXMAssociationState state = NXMProtocol.GetState(Program.executablePath);
+            if (state.Status is NXMAssociationStatus.Registered)
             {
-                var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
-                if (await requestWindow.ShowDialog<bool>(this))
+                await new WarningWindow(Program.translation.Get("ui.warning.already_associated"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                return;
+            }
+
+            if (state.Status is NXMAssociationStatus.Overridden)
+            {
+                // Registering still matters here, as the capability keys are what list Stardrop in Windows' picker
+                if (state.IsStardropRegistered is false)
                 {
                     if (NXMProtocol.Register(Program.executablePath) is false)
                     {
                         await new WarningWindow(Program.translation.Get("ui.warning.failed_to_set_association"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                        return;
                     }
                 }
+
+                await new WarningWindow(String.Format(Program.translation.Get("ui.warning.nxm_association_overridden"), state.HandlerName), Program.translation.Get("internal.ok")).ShowDialog(this);
+                return;
             }
-            else
+
+            var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_nxm_association"));
+            if (await requestWindow.ShowDialog<bool>(this) is false)
             {
-                await new WarningWindow(Program.translation.Get("ui.warning.already_associated"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                return;
+            }
+
+            if (NXMProtocol.Register(Program.executablePath) is false)
+            {
+                await new WarningWindow(Program.translation.Get("ui.warning.failed_to_set_association"), Program.translation.Get("internal.ok")).ShowDialog(this);
             }
         }
 
@@ -286,7 +307,45 @@ namespace Stardrop.Views
             }
         }
 
-        private void ApplyButton_Click(object? sender, RoutedEventArgs e)
+        private async void CollectionInstallButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            OpenFolderDialog dialog = new OpenFolderDialog()
+            {
+                Title = "Select the folder that collections install their mods to"
+            };
+
+            var collectionInstallPathBox = this.FindControl<TextBox>("collectionInstallPathBox");
+            if (!String.IsNullOrEmpty(collectionInstallPathBox.Text))
+            {
+                dialog.Directory = collectionInstallPathBox.Text;
+            }
+
+            var folderPath = await dialog.ShowAsync(this);
+            if (!String.IsNullOrEmpty(folderPath))
+            {
+                SetTextboxTextFocusToEnd(collectionInstallPathBox, folderPath);
+            }
+        }
+
+        /// <summary>
+        /// Whether the given folder holds anything that changing the collection path would strand. Only the presence
+        /// of a subfolder is checked, since a source ID folder is the unit the user has to move and the collection
+        /// records that describe it live elsewhere.
+        /// </summary>
+        private static bool HasInstalledCollections(string collectionPath)
+        {
+            try
+            {
+                return Directory.Exists(collectionPath) && Directory.EnumerateDirectories(collectionPath).Any();
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to check {collectionPath} for installed collections: {ex}", Helper.Status.Warning);
+                return false;
+            }
+        }
+
+        private async void ApplyButton_Click(object? sender, RoutedEventArgs e)
         {
             var smapiFolderPathBox = this.FindControl<TextBox>("smapiFolderPathBox");
             var smapiPath = String.IsNullOrEmpty(smapiFolderPathBox.Text) || smapiFolderPathBox.Text.Contains(GetTargetSmapiName(), StringComparison.OrdinalIgnoreCase) ? smapiFolderPathBox.Text : Path.Combine(smapiFolderPathBox.Text, GetTargetSmapiName());
@@ -299,7 +358,7 @@ namespace Stardrop.Views
             var modFolderPathBox = this.FindControl<TextBox>("modFolderPathBox");
             if (String.IsNullOrEmpty(modFolderPathBox.Text) || !Directory.Exists(modFolderPathBox.Text))
             {
-                new WarningWindow(Program.translation.Get("ui.warning.given_mod_folder_does_not_exist"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                await new WarningWindow(Program.translation.Get("ui.warning.given_mod_folder_does_not_exist"), Program.translation.Get("internal.ok")).ShowDialog(this);
                 SetTextboxTextFocusToEnd(modFolderPathBox, _oldSettings.ModFolderPath);
                 return;
             }
@@ -312,26 +371,71 @@ namespace Stardrop.Views
                     _oldSettings.ModInstallPath = Path.Combine(modFolderPathBox.Text, "Stardrop Installed Mods");
                     Directory.CreateDirectory(_oldSettings.ModInstallPath);
 
-                    new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist_default"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
+                    await new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist_default"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
                     SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
                     return;
                 }
                 else
                 {
-                    new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
+                    await new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
                     SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
                     return;
                 }
             }
             else if (!modInstallPathBox.Text.Contains(modFolderPathBox.Text, StringComparison.OrdinalIgnoreCase))
             {
-                new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_under_mod_folder"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
+                await new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_under_mod_folder"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
                 SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
                 return;
             }
 
+            var collectionInstallPathBox = this.FindControl<TextBox>("collectionInstallPathBox");
+            if (String.IsNullOrWhiteSpace(collectionInstallPathBox.Text) || !Directory.Exists(collectionInstallPathBox.Text))
+            {
+                await new WarningWindow(Program.translation.Get("ui.warning.given_collection_folder_does_not_exist"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                SetTextboxTextFocusToEnd(collectionInstallPathBox, _oldSettings.CollectionInstallPath);
+                return;
+            }
+
+            // A collection installs its own copy of every mod it pins, so under the mod folder a SMAPI run started
+            // outside Stardrop would see two copies of each and skip every duplicated unique ID rather than picking
+            // one. The other direction is no better: the mod folder underneath this one would hand every loose mod a
+            // source ID it does not have, which is what profiles match copies of a mod on. The install path is not
+            // checked separately, as it is already required to sit under the mod folder
+            if (Pathing.IsSameOrUnder(collectionInstallPathBox.Text, modFolderPathBox.Text) || Pathing.IsSameOrUnder(modFolderPathBox.Text, collectionInstallPathBox.Text))
+            {
+                await new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_collection_folder_conflicts_with_mod_folder"), modFolderPathBox.Text), Program.translation.Get("internal.ok"), windowWidth: 500).ShowDialog(this);
+                SetTextboxTextFocusToEnd(collectionInstallPathBox, _oldSettings.CollectionInstallPath);
+                return;
+            }
+
+            // Both of these are rebuilt or written by Stardrop, so a collection installed into either would be
+            // cleared out from under itself
+            if (Pathing.IsSameOrUnder(collectionInstallPathBox.Text, Pathing.GetSelectedModsFolderPath()) || Pathing.IsSameOrUnder(collectionInstallPathBox.Text, Pathing.GetCollectionsCacheFolderPath()))
+            {
+                await new WarningWindow(Program.translation.Get("ui.warning.given_collection_folder_reserved"), Program.translation.Get("internal.ok"), windowWidth: 500).ShowDialog(this);
+                SetTextboxTextFocusToEnd(collectionInstallPathBox, _oldSettings.CollectionInstallPath);
+                return;
+            }
+
+            // Nothing is moved on the user's behalf, so this notice is the only thing standing between them and a
+            // set of collections that quietly stops being found. Raised only where the old folder still holds one,
+            // and worked out before the settings file is written so it can still name where the mods are now
+            var oldCollectionPath = String.IsNullOrWhiteSpace(_oldSettings.CollectionInstallPath) ? Pathing.GetDefaultCollectionsFolderPath() : _oldSettings.CollectionInstallPath;
+            string? collectionMoveNotice = null;
+            if (Pathing.IsSamePath(collectionInstallPathBox.Text, oldCollectionPath) is false && HasInstalledCollections(oldCollectionPath))
+            {
+                collectionMoveNotice = String.Format(Program.translation.Get("ui.warning.collection_folder_changed"), oldCollectionPath, collectionInstallPathBox.Text);
+            }
+
             // Write the settings cache
             File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, new JsonSerializerOptions() { WriteIndented = true }));
+
+            // Awaited, unlike the warnings above, as those leave the window open behind them and this one is the last thing before it closes
+            if (collectionMoveNotice is not null)
+            {
+                await new WarningWindow(collectionMoveNotice, Program.translation.Get("internal.ok"), windowWidth: 500).ShowDialog(this);
+            }
 
             this.Close(true);
         }

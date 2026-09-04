@@ -1,11 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Stardrop.Utilities
 {
     public static class Pathing
     {
+        // Used when a name is nothing but characters that had to be taken out, so that a path segment is still
+        // produced rather than one that collapses into its parent folder
+        private const string _fallbackPathSegment = "unnamed";
+
         internal static string defaultGamePath;
         internal static string defaultModPath;
         internal static string defaultHomePath;
@@ -114,6 +119,175 @@ namespace Stardrop.Utilities
         public static string GetSmapiUpgradeFolderPath()
         {
             return Path.Combine(defaultHomePath, "SMAPI");
+        }
+
+        public static string GetCollectionsRootPath()
+        {
+            return Path.Combine(defaultHomePath, "Collections");
+        }
+
+        /// <summary>
+        /// Root folder for collection installs. Deliberately outside the scanned mod folder: a collection installs
+        /// its own copy of every mod it pins, so leaving these under Mods would show a SMAPI run started without
+        /// Stardrop two copies of each, and SMAPI skips every copy of a duplicated unique ID rather than picking one.
+        /// Discovery walks this as a root of its own instead.
+        ///
+        /// Configurable, as this is the folder that grows. The collection records under GetCollectionsCacheFolderPath
+        /// deliberately stay where they are: they are small, they are keyed by source ID rather than by path, and
+        /// keeping them beside the profiles means a relocated mods folder still reconciles against them.
+        /// </summary>
+        public static string GetCollectionsFolderPath()
+        {
+            return String.IsNullOrWhiteSpace(Program.settings.CollectionInstallPath) ? GetDefaultCollectionsFolderPath() : Program.settings.CollectionInstallPath;
+        }
+
+        /// <summary>Where collections install to before the setting has been given a value of its own</summary>
+        public static string GetDefaultCollectionsFolderPath()
+        {
+            return Path.Combine(GetCollectionsRootPath(), "Mods");
+        }
+
+        public static string GetCollectionInstallPath(string sourceId)
+        {
+            return Path.Combine(GetCollectionsFolderPath(), sourceId);
+        }
+
+        public static string GetCollectionsCacheFolderPath()
+        {
+            return Path.Combine(GetCollectionsRootPath(), "Cache");
+        }
+
+        public static string GetCollectionCachePath(string sourceId)
+        {
+            return Path.Combine(GetCollectionsCacheFolderPath(), $"{sourceId}.json");
+        }
+
+        /// <summary>
+        /// Turns a name from an outside source, such as a collection or a file on Nexus Mods, into something usable
+        /// as a single path segment. Invalid characters are replaced, and leading whitespace along with trailing
+        /// whitespace and periods are removed: Windows silently drops those when it writes the file, so a path built
+        /// from the untrimmed name stops pointing at what actually landed on disk.
+        /// </summary>
+        public static string GetSafePathSegment(string? name, char replacement = '_')
+        {
+            if (String.IsNullOrWhiteSpace(name))
+            {
+                return _fallbackPathSegment;
+            }
+
+            var invalidCharacters = Path.GetInvalidFileNameChars();
+            var builder = new StringBuilder(name.Length);
+            foreach (var character in name)
+            {
+                builder.Append(Array.IndexOf(invalidCharacters, character) >= 0 ? replacement : character);
+            }
+
+            var safeName = builder.ToString().Trim().TrimEnd('.', ' ');
+
+            return String.IsNullOrEmpty(safeName) ? _fallbackPathSegment : safeName;
+        }
+
+        /// <summary>
+        /// Returns the collection SourceId owning the given mod folder, or null when the mod is a loose install.
+        /// </summary>
+        public static string? GetCollectionSourceId(string? modDirectoryPath)
+        {
+            if (String.IsNullOrEmpty(modDirectoryPath) || String.IsNullOrEmpty(defaultHomePath))
+            {
+                return null;
+            }
+
+            // Both sides are resolved before they are measured against each other, as the collections folder can now
+            // come from a path the user typed. A trailing separator, a mixed one or a relative segment would otherwise
+            // fail the comparison and leave every collection mod reading as a loose install
+            var modPath = TryGetFullPath(modDirectoryPath);
+            var collectionsRoot = TryGetFullPath(GetCollectionsFolderPath());
+            if (modPath is null || collectionsRoot is null)
+            {
+                return null;
+            }
+
+            // The trailing separator is what keeps a sibling that merely shares the start of the name, such as a
+            // "Collections Backup" sitting next to "Collections", from reading as though it were inside it
+            collectionsRoot = AppendSeparator(collectionsRoot);
+            if (modPath.StartsWith(collectionsRoot, StringComparison.OrdinalIgnoreCase) is false)
+            {
+                return null;
+            }
+
+            var relativePath = modPath.Substring(collectionsRoot.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (String.IsNullOrEmpty(relativePath))
+            {
+                return null;
+            }
+
+            var separatorIndex = relativePath.IndexOfAny(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+            return separatorIndex == -1 ? relativePath : relativePath.Substring(0, separatorIndex);
+        }
+
+        /// <summary>
+        /// Whether two paths point at the same folder. Both sides are resolved first, so that how a path happened to
+        /// be written is not what decides the answer.
+        /// </summary>
+        public static bool IsSamePath(string? first, string? second)
+        {
+            var fullFirst = TryGetFullPath(first);
+            var fullSecond = TryGetFullPath(second);
+            if (fullFirst is null || fullSecond is null)
+            {
+                return false;
+            }
+
+            return String.Equals(AppendSeparator(fullFirst), AppendSeparator(fullSecond), StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Whether a path is the same folder as another or sits underneath it. The parent is measured with a trailing
+        /// separator, so that a sibling sharing the start of its name is not taken for a child.
+        /// </summary>
+        public static bool IsSameOrUnder(string? path, string? potentialParent)
+        {
+            if (IsSamePath(path, potentialParent))
+            {
+                return true;
+            }
+
+            var fullPath = TryGetFullPath(path);
+            var fullParent = TryGetFullPath(potentialParent);
+            if (fullPath is null || fullParent is null)
+            {
+                return false;
+            }
+
+            return fullPath.StartsWith(AppendSeparator(fullParent), StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Resolves a path to its full form, or null where the platform will not have it. Comparing a path from the
+        /// settings file against one that came off the file system needs both in the same form to mean anything.
+        /// </summary>
+        private static string? TryGetFullPath(string? path)
+        {
+            if (String.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            try
+            {
+                return Path.GetFullPath(path);
+            }
+            catch (Exception)
+            {
+                // A path the platform will not resolve is not one that can be judged, so the caller treats it as no match
+                return null;
+            }
+        }
+
+        /// <summary>Appends a directory separator where the path does not already end in one</summary>
+        private static string AppendSeparator(string path)
+        {
+            return Path.EndsInDirectorySeparator(path) ? path : path + Path.DirectorySeparatorChar;
         }
     }
 }

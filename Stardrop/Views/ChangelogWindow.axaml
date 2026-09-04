@@ -1,0 +1,165 @@
+<Window
+	x:Class="Stardrop.Views.ChangelogWindow"
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+	xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Stardrop.ViewModels"
+	Title="{i18n:Translate ui.window.changelog.name}"
+	Width="600"
+	Height="500"
+	MinWidth="500"
+	MinHeight="400"
+	d:DesignHeight="500"
+	d:DesignWidth="600"
+	Background="{DynamicResource ThemeBackgroundBrush}"
+	CanResize="True"
+	ExtendClientAreaChromeHints="NoChrome"
+	ExtendClientAreaTitleBarHeightHint="-1"
+	ExtendClientAreaToDecorationsHint="true"
+	HasSystemDecorations="true"
+	Icon="/Assets/icon.ico"
+	mc:Ignorable="d">
+
+	<Window.DataContext>
+		<vm:ChangelogWindowViewModel />
+	</Window.DataContext>
+
+	<Window.Styles>
+		<Style Selector="Button:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="LightGray" />
+		</Style>
+		<Style Selector="Button:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="White" />
+		</Style>
+		<Style Selector="TextBlock.row">
+			<Setter Property="Foreground" Value="{DynamicResource DataGridRowForeground}" />
+		</Style>
+		<Style Selector="TextBlock.version">
+			<Setter Property="Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
+			<Setter Property="FontWeight" Value="Bold" />
+			<Setter Property="FontSize" Value="15" />
+		</Style>
+	</Window.Styles>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="Auto" />
+		</Grid.ColumnDefinitions>
+
+		<Border
+			Grid.Row="0"
+			Grid.ColumnSpan="2"
+			BorderBrush="{DynamicResource HighlightBrush}"
+			BorderThickness="0,0,0,2">
+			<Menu Name="menuBar" KeyboardNavigation.TabNavigation="None">
+				<Image Source="/Assets/icon.ico" Stretch="None" />
+				<TextBlock
+					Margin="-10,0,0,0"
+					HorizontalAlignment="Left"
+					VerticalAlignment="Center"
+					Foreground="{DynamicResource ThemeForegroundBrush}"
+					Text="{Binding ModName}" />
+			</Menu>
+		</Border>
+		<ScrollViewer
+			Grid.Row="1"
+			Grid.ColumnSpan="2"
+			AllowAutoHide="True">
+			<StackPanel Margin="10,10,10,0">
+				<ProgressBar
+					Height="20"
+					Margin="0,20,0,0"
+					Foreground="{DynamicResource HighlightForegroundBrush}"
+					IsIndeterminate="True"
+					IsVisible="{Binding IsLoading}" />
+
+				<TextBlock
+					Margin="0,10,0,0"
+					Classes="row"
+					IsVisible="{Binding ShowEmptyMessage}"
+					Text="{Binding EmptyMessage}"
+					TextWrapping="Wrap" />
+
+				<ItemsControl IsVisible="{Binding HasChanges}" Items="{Binding Versions}">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<StackPanel Margin="0,0,0,16">
+								<TextBlock
+									Margin="0,0,0,6"
+									Classes="version"
+									Text="{Binding Version}" />
+								<ItemsControl Items="{Binding Changes}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Grid Margin="4,2,4,2" ColumnDefinitions="Auto *">
+												<TextBlock
+													Grid.Column="0"
+													Margin="0,0,6,0"
+													VerticalAlignment="Top"
+													Classes="row"
+													Text="&#8226;" />
+												<TextBlock
+													Grid.Column="1"
+													Classes="row"
+													Text="{Binding}"
+													TextWrapping="Wrap" />
+											</Grid>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</StackPanel>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</StackPanel>
+		</ScrollViewer>
+
+		<Border
+			Grid.Row="2"
+			Grid.ColumnSpan="2"
+			Height="4"
+			BorderBrush="{DynamicResource HighlightBrush}"
+			BorderThickness="0,0,0,2" />
+		<Grid
+			Grid.Row="3"
+			Grid.ColumnSpan="2"
+			Margin="0,15,0,15"
+			HorizontalAlignment="Right"
+			ColumnDefinitions="Auto, Auto"
+			RowDefinitions="Auto">
+			<Button
+				Name="modPageButton"
+				Grid.Column="0"
+				Margin="0,0,15,0"
+				HorizontalAlignment="Right"
+				Background="Transparent"
+				BorderBrush="{DynamicResource HighlightBrush}"
+				Content="{i18n:Translate ui.window.changelog.view_on_nexus}"
+				Foreground="{DynamicResource ThemeForegroundBrush}"
+				IsVisible="{Binding HasModPage}"
+				ToolTip.Tip="{i18n:Translate ui.window.changelog.view_on_nexus_tooltip}" />
+			<Button
+				Name="closeButton"
+				Grid.Column="1"
+				Margin="0,0,15,0"
+				HorizontalAlignment="Right"
+				i:Attached.Icon="mdi-check"
+				Background="Transparent"
+				BorderBrush="{DynamicResource HighlightBrush}"
+				Foreground="Green"
+				IsCancel="True"
+				ToolTip.Tip="{i18n:Translate internal.ok}" />
+		</Grid>
+	</Grid>
+</Window>

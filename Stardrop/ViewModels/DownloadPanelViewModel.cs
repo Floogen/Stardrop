@@ -42,7 +42,7 @@ namespace Stardrop.ViewModels
                 // Cancel all downloads and clear the dictionary, so we don't have zombie downloads from an old client lingering
                 foreach (var download in Downloads)
                 {
-                    // Trigger the cancel command, and ignore any return values (as it has none)
+                    // Trigger the cancel command and ignore any return values (as it has none)
                     download.CancelCommand.Execute().Subscribe();
                 }
                 ClearEventHandlers(oldClient);
@@ -85,7 +85,7 @@ namespace Stardrop.ViewModels
                     return;
                 }
 
-                // If it does exist, and isn't in a progress state, they're probably trying to redownload a failed download.
+                // If it does exist and isn't in a progress state, they're probably trying to redownload a failed download.
                 // Since we use the URI as our unique ID, we shouldn't have two items with the same URI in the list,
                 // so clear out the old one.
                 Downloads.Remove(existingDownload);

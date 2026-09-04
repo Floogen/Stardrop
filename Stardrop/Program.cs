@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using Avalonia.Shared.PlatformSupport;
@@ -85,6 +85,12 @@ namespace Stardrop
                     nxmLink = o.NXMLink;
                 });
 
+                // Log which application Windows will hand NXM links to
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    NXMProtocol.LogDiagnostics(executablePath);
+                }
+
                 // Verify the folder paths are created
                 Directory.CreateDirectory(Pathing.GetCacheFolderPath());
                 Directory.CreateDirectory(Pathing.GetLogFolderPath());
@@ -93,6 +99,7 @@ namespace Stardrop
                 Directory.CreateDirectory(Pathing.GetNexusPath());
                 Directory.CreateDirectory(Pathing.GetThumbnailsPath());
                 Directory.CreateDirectory(Pathing.GetSmapiUpgradeFolderPath());
+                Directory.CreateDirectory(Pathing.GetCollectionsCacheFolderPath());
 
                 // Verify the settings folder path is created
                 if (File.Exists(Pathing.GetSettingsPath()))
@@ -124,6 +131,14 @@ namespace Stardrop
                 if (!String.IsNullOrEmpty(Pathing.defaultModPath) && String.IsNullOrEmpty(settings.ModInstallPath))
                 {
                     settings.ModInstallPath = Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods");
+                }
+
+                // Set the default collection install path (for mods that are installed by a collection). Unlike the
+                // mod install path this does not depend on where the mod folder points, as collections deliberately
+                // live outside it
+                if (String.IsNullOrEmpty(settings.CollectionInstallPath))
+                {
+                    settings.CollectionInstallPath = Pathing.GetDefaultCollectionsFolderPath();
                 }
 
                 // Set the default Nexus Mods information
