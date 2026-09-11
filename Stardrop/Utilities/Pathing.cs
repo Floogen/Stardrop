@@ -175,6 +175,18 @@ namespace Stardrop.Utilities
                 return _fallbackPathSegment;
             }
 
+            var safeName = ReplaceInvalidFileNameCharacters(name, replacement).Trim().TrimEnd('.', ' ');
+
+            return String.IsNullOrEmpty(safeName) ? _fallbackPathSegment : safeName;
+        }
+
+        /// <summary>
+        /// Replaces every character a file name can't hold and leaves everything else as it is. Unlike
+        /// <see cref="GetSafePathSegment"/> nothing is trimmed, which suits a name that always has an extension
+        /// appended: the edges trimming guards against are then no longer the edges of the file name.
+        /// </summary>
+        public static string ReplaceInvalidFileNameCharacters(string name, char replacement = '_')
+        {
             var invalidCharacters = Path.GetInvalidFileNameChars();
             var builder = new StringBuilder(name.Length);
             foreach (var character in name)
@@ -182,9 +194,7 @@ namespace Stardrop.Utilities
                 builder.Append(Array.IndexOf(invalidCharacters, character) >= 0 ? replacement : character);
             }
 
-            var safeName = builder.ToString().Trim().TrimEnd('.', ' ');
-
-            return String.IsNullOrEmpty(safeName) ? _fallbackPathSegment : safeName;
+            return builder.ToString();
         }
 
         /// <summary>

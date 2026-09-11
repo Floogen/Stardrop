@@ -67,20 +67,32 @@ namespace Stardrop.Models
         /// </summary>
         public Profile CopyAsPlainProfile(string name)
         {
-            var copy = (Profile)this.MemberwiseClone();
+            var copy = CopyWithName(name);
 
-            copy.Name = name;
             copy.IsProtected = false;
             copy.SourceId = null;
 
-            // Rebuilt rather than shared. MemberwiseClone hands over the same instances, so an in-place write such
-            // as the one in ReadModConfigs would go straight through into the profile that was copied
+            return copy;
+        }
+
+        /// <summary>
+        /// A copy of this profile under a new name, carrying everything else across: enabled mods, notes, preserved
+        /// configuration, protection and any tie to a collection. The profile editor handles a rename as the old
+        /// profile being replaced by this copy until the editor is applied, which leaves the original intact for a
+        /// cancel to restore.
+        /// </summary>
+        public Profile CopyWithName(string name)
+        {
+            var copy = (Profile)MemberwiseClone();
+
+            copy.Name = name;
+
+            // Rebuilt rather than shared, as writing in place would otherwise reach the original
             copy.EnabledModIds = new List<ModReference>(EnabledModIds);
             copy.PreservedModConfigs = new Dictionary<string, JsonDocument>(PreservedModConfigs);
             copy.Notes = new List<ModNote>(Notes);
 
-            // MemberwiseClone hands over the subscriber list along with everything else, which would have the copy
-            // raising its changes at the lists bound to the profile it was copied from
+            // MemberwiseClone also hands over the subscribers, which would raise the copy's changes at the original's bindings
             copy.PropertyChanged = null;
             copy.IsFirstCollectionProfile = false;
 

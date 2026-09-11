@@ -1,5 +1,6 @@
 ﻿using Avalonia.Threading;
 using Stardrop.Models;
+using Stardrop.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -167,9 +168,29 @@ namespace Stardrop.ViewModels
             CreateProfile(profile, force);
         }
 
+        internal string GetProfileFilePath(string profileName)
+        {
+            return Path.Combine(_profileFilePath, GetProfileFileName(profileName));
+        }
+
+        internal static string GetProfileFileName(string profileName)
+        {
+            return Pathing.ReplaceInvalidFileNameCharacters(profileName) + ".json";
+        }
+
+        /// <summary>
+        /// Whether a name would clash with a profile already in the list. Compared on the file each name is written
+        /// to rather than on the name alone, since two names can differ only in characters that get replaced / ignored.
+        /// </summary>
+        internal bool IsProfileNameTaken(string profileName)
+        {
+            var fileName = GetProfileFileName(profileName);
+            return Profiles.Any(p => GetProfileFileName(p.Name).Equals(fileName, StringComparison.OrdinalIgnoreCase));
+        }
+
         internal void CreateProfile(Profile profile, bool force = false)
         {
-            string fileFullName = Path.Combine(_profileFilePath, profile.Name + ".json");
+            string fileFullName = GetProfileFilePath(profile.Name);
             if (File.Exists(fileFullName) && !force)
             {
                 Program.helper.Log($"Attempted to create an already existing profile file ({profile.Name}) at the path {fileFullName}", Utilities.Helper.Status.Warning);
@@ -194,7 +215,7 @@ namespace Stardrop.ViewModels
 
         internal void DeleteProfile(Profile profile)
         {
-            string fileFullName = Path.Combine(_profileFilePath, profile.Name + ".json");
+            string fileFullName = GetProfileFilePath(profile.Name);
             if (File.Exists(fileFullName) is false)
             {
                 Program.helper.Log($"Attempted to delete a non-existent profile file ({profile.Name}) at the path {fileFullName}", Utilities.Helper.Status.Warning);

@@ -99,7 +99,7 @@ namespace Stardrop.Views
                     }
 
                     // Adjust the name if a copy of the name already exists
-                    if (_viewModel.Profiles.Any(p => p.Name.Equals(externalProfile.Name, StringComparison.OrdinalIgnoreCase)))
+                    if (_viewModel.IsProfileNameTaken(externalProfile.Name))
                     {
                         externalProfile.Name = $"{externalProfile.Name} (Copy)";
                     }
@@ -191,7 +191,7 @@ namespace Stardrop.Views
 
             int copyIndex = 1;
             var fileNameCopied = selectedProfile.Name + $" - Copy ({copyIndex})";
-            while (_viewModel.Profiles.Any(p => p.Name == fileNameCopied))
+            while (_viewModel.IsProfileNameTaken(fileNameCopied))
             {
                 copyIndex += 1;
                 fileNameCopied = selectedProfile.Name + $" - Copy ({copyIndex})";
@@ -225,7 +225,8 @@ namespace Stardrop.Views
             namingWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             var profile = await namingWindow.ShowDialog<Profile>(this);
-            if (profile is not null && _viewModel.OldProfiles.Any(p => p.Name == profile.Name))
+            // Checked against the live list, as the naming window also rejects names clashing on their file name
+            if (profile is not null && _viewModel.Profiles.Contains(profile) is false)
             {
                 await new WarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_add_profile"), profile.Name), Program.translation.Get("internal.ok")).ShowDialog(this);
             }

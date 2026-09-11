@@ -333,6 +333,34 @@ namespace Stardrop.ViewModels
         }
 
         /// <summary>
+        /// Falls back to the source ID where no record was found, which happens for a collection folder whose cache
+        /// record has been lost.
+        /// </summary>
+        private static string ResolveCollectionName(Dictionary<string, string> collectionNamesBySourceId, string sourceId)
+        {
+            return collectionNamesBySourceId.TryGetValue(sourceId, out var collectionName) ? collectionName : sourceId;
+        }
+
+        /// <summary>
+        /// Reassigns every collection mod's name from the cached records without a rescan. DiscoverMods reads the
+        /// records once per pass, and a first install rescans before its record is saved, so those passes can only
+        /// give the mods it installed the source ID fallback.
+        /// </summary>
+        internal void RefreshCollectionNames()
+        {
+            var collectionNamesBySourceId = GetCollectionNamesBySourceId();
+            foreach (var mod in Mods)
+            {
+                if (mod.SourceId is null)
+                {
+                    continue;
+                }
+
+                mod.CollectionName = ResolveCollectionName(collectionNamesBySourceId, mod.SourceId);
+            }
+        }
+
+        /// <summary>
         /// The folders a discovery pass walks. Collections are installed outside the mod folder, so they are a root
         /// of their own rather than something the mod folder walk reaches on its way down.
         /// </summary>
@@ -593,9 +621,7 @@ namespace Stardrop.ViewModels
                     var mod = new Mod(manifest, fileInfo, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
                     if (mod.SourceId is not null)
                     {
-                        // Falls back to the source ID where no record was found, which happens for a collection
-                        // folder whose cache record has been lost. Better a slug than an empty column
-                        mod.CollectionName = collectionNamesBySourceId.TryGetValue(mod.SourceId, out var collectionName) ? collectionName : mod.SourceId;
+                        mod.CollectionName = ResolveCollectionName(collectionNamesBySourceId, mod.SourceId);
                     }
 
                     if (manifest.ContentPackFor is not null && modKeysCache is not null)
