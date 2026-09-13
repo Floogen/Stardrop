@@ -129,13 +129,18 @@ namespace Stardrop.Views
 
             // Handle adding the languages
             var languageComboBox = this.FindControl<ComboBox>("languageComboBox");
-            languageComboBox.Items = Program.translation.GetAvailableTranslations();
-            languageComboBox.SelectedItem = String.IsNullOrEmpty(Program.settings.Language) ? Program.translation.GetAvailableTranslations().First() : Program.translation.GetLanguage(Program.settings.Language);
+            var availableLanguages = Program.translation.GetAvailableTranslations();
+            languageComboBox.Items = availableLanguages;
+            languageComboBox.SelectedItem = String.IsNullOrEmpty(Program.settings.Language)
+                ? availableLanguages.First()
+                : availableLanguages.FirstOrDefault(language => String.Equals(language.Code, Program.translation.NormalizeLanguage(Program.settings.Language), StringComparison.OrdinalIgnoreCase)) ?? availableLanguages.First();
             languageComboBox.SelectionChanged += (sender, e) =>
             {
-                var language = languageComboBox.SelectedItem.ToString();
-                Program.translation.SetLanguage(language);
-                Program.settings.Language = language;
+                if (languageComboBox.SelectedItem is Translation.LanguageOption language)
+                {
+                    Program.translation.SetLanguage(language.Code);
+                    Program.settings.Language = language.Code;
+                }
             };
 
             // Handle adding the mod grouping methods
@@ -231,7 +236,7 @@ namespace Stardrop.Views
             }
 
             Program.settings = _oldSettings;
-            Program.translation.SetLanguage(String.IsNullOrEmpty(Program.settings.Language) ? Program.translation.GetAvailableTranslations().First() : Program.translation.GetLanguage(Program.settings.Language));
+            Program.translation.SetLanguage(Program.settings.Language);
 
             this.Close(false);
         }

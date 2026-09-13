@@ -158,12 +158,14 @@ namespace Stardrop
                     dir.Delete(true);
                 }
 
-                // Load the translations
+                // Load the translations before selecting one, since the available languages are discovered from i18n.
+                translation.LoadTranslations();
                 if (String.IsNullOrEmpty(settings.Language))
                 {
                     settings.Language = translation.GetLanguageFromAbbreviation(CultureInfo.CurrentCulture.TwoLetterISOLanguageName);
                 }
-                translation.LoadTranslations(translation.GetLanguage(settings.Language));
+                settings.Language = translation.NormalizeLanguage(settings.Language);
+                translation.SetLanguage(settings.Language);
 
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
             }
