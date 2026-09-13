@@ -10,7 +10,7 @@ namespace Stardrop.Utilities.Internal
 {
     /// <summary>
     /// Loads theme files from the Themes folder, backfilling any Stardrop brush the theme does not define
-    /// from Defaults.xaml. Without this a theme that omits a key leaves the binding unresolved,
+    /// from Themes/Defaults.xaml. Without this a theme that omits a key leaves the binding unresolved,
     /// which fails silently rather than falling back to anything.
     /// </summary>
     public static class ThemeManager
@@ -25,6 +25,15 @@ namespace Stardrop.Utilities.Internal
 
         private static string? _defaultsFileText;
         private static bool _hasCheckedForDefaultsFile;
+
+        /// <summary>
+        /// Drops the cached defaults file, so the next load reads it from disk again
+        /// </summary>
+        public static void ClearCache()
+        {
+            _defaultsFileText = null;
+            _hasCheckedForDefaultsFile = false;
+        }
 
         public static string GetThemesFolderPath()
         {
