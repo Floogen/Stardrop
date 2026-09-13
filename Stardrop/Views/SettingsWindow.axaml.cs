@@ -52,7 +52,7 @@ namespace Stardrop.Views
 
             // Handle adding the themes
             string? lastContributorName = null;
-            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Themes"), "*.xaml", SearchOption.AllDirectories))
+            foreach (string fileFullName in ThemeManager.GetThemeFilePaths())
             {
                 try
                 {
@@ -74,7 +74,7 @@ namespace Stardrop.Views
                     lastContributorName = contributorName;
 
                     var themeName = Path.GetFileNameWithoutExtension(fileFullName);
-                    var style = AvaloniaRuntimeXamlLoader.Parse<Styles>(File.ReadAllText(fileFullName));
+                    var style = ThemeManager.Load(fileFullName);
 
                     _viewModel.Themes.Add(new Theme()
                     {
@@ -104,7 +104,7 @@ namespace Stardrop.Views
                 Theme? theme = themeComboBox.SelectedItem as Theme;
                 if (theme is not null && theme.Style is not null)
                 {
-                    Application.Current.Styles[0] = theme.Style;
+                    Application.Current.Styles[ThemeManager.THEME_STYLE_INDEX] = theme.Style;
                     Program.settings.Theme = theme.Name;
                 }
             };
@@ -227,7 +227,7 @@ namespace Stardrop.Views
             var oldTheme = _viewModel.Themes.FirstOrDefault(t => t.Name.Equals(_oldSettings.Theme));
             if (oldTheme is not null && oldTheme.Style is not null)
             {
-                Application.Current.Styles[0] = oldTheme.Style;
+                Application.Current.Styles[ThemeManager.THEME_STYLE_INDEX] = oldTheme.Style;
             }
 
             Program.settings = _oldSettings;

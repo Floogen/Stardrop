@@ -16,6 +16,11 @@
         <Color x:Key="StemBorder">#3E7F62</Color>
         <Color x:Key="DeepGreen">#2E5F4B</Color>
 
+        <!-- Status Colors -->
+        <Color x:Key="Gold">#FFD34E</Color>
+        <Color x:Key="AlertRed">#C0392B</Color>
+        <Color x:Key="AlertAmber">#E67E22</Color>
+
         <Color x:Key="SystemAccentColor">#6AB892</Color>
 
         <!-- Avalonia Brushes -->
@@ -36,8 +41,22 @@
         <SolidColorBrush x:Key="HighlightForegroundBrush"
                          Color="{DynamicResource GreenText}" />
 
+        <SolidColorBrush x:Key="ThemeForegroundHighBrush"
+                         Color="{DynamicResource GreenText}" />
+
         <SolidColorBrush x:Key="ButtonHoverBrush" Color="{DynamicResource MintHover}" />
         <SolidColorBrush x:Key="ButtonPressedBrush" Color="{DynamicResource SelectedGreen}" />
+
+        <!-- Stardrop Brushes -->
+        <SolidColorBrush x:Key="DataGridHeaderBrush" Color="{DynamicResource DeepGreen}" />
+        <SolidColorBrush x:Key="DataGridRowBackground" Color="{DynamicResource GreenRow}" />
+        <SolidColorBrush x:Key="DataGridRowForeground" Color="{DynamicResource GreenText}" />
+        <SolidColorBrush x:Key="AlternativeDataGridRowBackground" Color="{DynamicResource GreenRowAlt}" />
+        <SolidColorBrush x:Key="ComboBoxItemBackgroundBrush" Color="{DynamicResource DeepGreen}" />
+        <SolidColorBrush x:Key="ComboBoxItemSelectedBackgroundBrush" Color="{DynamicResource MintHover}" />
+        <SolidColorBrush x:Key="UpdateAvailableBrush" Color="{DynamicResource Gold}" />
+        <SolidColorBrush x:Key="UpdateBrokenBrush" Color="{DynamicResource AlertRed}" />
+        <SolidColorBrush x:Key="UpdateUnofficialBrush" Color="{DynamicResource AlertAmber}" />
 
     </Styles.Resources>
 
@@ -46,15 +65,6 @@
         <Setter Property="Background" Value="{DynamicResource GreenBg}" />
         <Setter Property="BorderBrush" Value="{DynamicResource StemBorder}" />
         <Setter Property="Foreground" Value="{DynamicResource GreenText}" />
-    </Style>
-
-    <Style Selector="DataGridRow">
-        <Setter Property="Background" Value="{DynamicResource GreenRow}" />
-        <Setter Property="Foreground" Value="{DynamicResource GreenText}" />
-    </Style>
-
-    <Style Selector="DataGridRow:nth-child(even)">
-        <Setter Property="Background" Value="{DynamicResource GreenRowAlt}" />
     </Style>
 
     <Style Selector="DataGridRow:selected">
