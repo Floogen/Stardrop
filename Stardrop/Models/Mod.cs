@@ -36,7 +36,19 @@ namespace Stardrop.Models
         /// from the collection's cache record. Filled in by DiscoverMods, which reads that cache once per pass
         /// rather than once per mod.
         /// </summary>
-        public string? CollectionName { get { return _collectionName; } set { _collectionName = value; NotifyPropertyChanged(); } }
+        public string? CollectionName { get { return _collectionName; } set { _collectionName = value; NotifyPropertyChanged(); NotifyPropertyChanged(nameof(CollectionLabel)); } }
+        private bool _isCollectionAddOn;
+        /// <summary>
+        /// Whether this copy sits in a collection's folder without the collection pinning it, which is a mod the
+        /// user added alongside the collection rather (add-on) than one its curator chose. Nothing behaves differently for
+        /// one, as an add-on belongs to the collection exactly as the rest do. It is marked because a revision will
+        /// never replace it.
+        /// </summary>
+        public bool IsCollectionAddOn { get { return _isCollectionAddOn; } set { _isCollectionAddOn = value; NotifyPropertyChanged(); NotifyPropertyChanged(nameof(IsCuratedByCollection)); NotifyPropertyChanged(nameof(CollectionLabel)); } }
+        /// <summary>Whether the collection's curator pinned this copy, which is true of every collection mod but an add-on</summary>
+        public bool IsCuratedByCollection { get { return IsFromCollection && IsCollectionAddOn is false; } }
+        /// <summary>What the collection icon says on hover: the collection's name, and for an add-on what being one means</summary>
+        public string? CollectionLabel { get { return IsCollectionAddOn ? String.Format(Program.translation.Get("ui.main_window.tooltips.collection_add_on"), CollectionName) : CollectionName; } }
         public SemVersion Version { get; set; }
         public string ParsedVersion { get { return Version.ToString(); } }
         private string _suggestedVersion { get; set; }

@@ -372,6 +372,7 @@
   "ui.message.confirm_open_missing_pages": "Open {0} browser tabs, one for each mod this collection is still waiting on?",
   "ui.main_window.buttons.show_all_mod_sources": "Show All Sources",
   "ui.main_window.tooltips.show_all_mod_sources": "Show mods belonging to collections you are not currently using.",
+  "ui.main_window.tooltips.collection_add_on": "{0}\n\nAdded by you rather than by the collection, so no revision of it will update or replace this mod.",
 
   "ui.collections_window.labels.no_collections": "No collections are installed yet. Open a collection on Nexus Mods with Stardrop set as your mod manager to install one.",
   "ui.collections_window.labels.curator": "Curated by {0}",

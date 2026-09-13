@@ -226,6 +226,15 @@ namespace Stardrop.Models.Data
             return Mods.Count(m => m.Status is CollectionModStatus.Installed);
         }
 
+        /// <summary>
+        /// Whether this collection pins the given mod. Read from the entries instead of the folder, which 
+        /// is what tells a copy the curator chose apart from one the user added into the same folder afterwards.
+        /// </summary>
+        public bool IsModPinned(string uniqueId)
+        {
+            return Mods.Any(m => m.InstalledMods.Any(i => i.UniqueId.Equals(uniqueId, StringComparison.OrdinalIgnoreCase)));
+        }
+
         /// <summary>The number of mods the collection pins, leaving out the configuration entries among them</summary>
         public int GetModCount()
         {

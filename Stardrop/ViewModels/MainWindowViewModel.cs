@@ -317,46 +317,58 @@ namespace Stardrop.ViewModels
         }
 
         /// <summary>
-        /// The readable name of every installed collection, keyed by the source ID its mods carry. Name can be
-        /// empty on a record built from a collection that never reported one, so the slug stands in for it, which
-        /// is the same fallback GetAvailableProfileName uses when naming the generated profile.
+        /// Every installed collection's record, keyed by the source ID its mods carry. Read once per pass, as the
+        /// cache goes to disk on every call and every mod in a collection resolves to the same record.
         /// </summary>
-        private static Dictionary<string, string> GetCollectionNamesBySourceId()
+        private static Dictionary<string, CollectionInstall> GetCollectionsBySourceId()
         {
-            var namesBySourceId = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var collectionsBySourceId = new Dictionary<string, CollectionInstall>(StringComparer.OrdinalIgnoreCase);
             foreach (var collection in CollectionCache.LoadAll())
             {
-                namesBySourceId[collection.SourceId] = String.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
+                collectionsBySourceId[collection.SourceId] = collection;
             }
 
-            return namesBySourceId;
+            return collectionsBySourceId;
         }
 
         /// <summary>
-        /// Falls back to the source ID where no record was found, which happens for a collection folder whose cache
-        /// record has been lost.
+        /// Fills in what a collection mod shows about the collection it belongs to. Name can be empty on a record
+        /// built from a collection that never reported one, so the slug stands in for it, which is the same
+        /// fallback GetAvailableProfileName uses when naming the generated profile.
+        ///
+        /// A copy the record does not pin is one the user added into the collection's folder. Where the record
+        /// itself is missing nothing is marked, since a collection whose record has been lost pins nothing at all
+        /// and would otherwise report every mod it installed as an addition of the user's.
         /// </summary>
-        private static string ResolveCollectionName(Dictionary<string, string> collectionNamesBySourceId, string sourceId)
+        private static void ApplyCollectionDetails(Mod mod, Dictionary<string, CollectionInstall> collectionsBySourceId)
         {
-            return collectionNamesBySourceId.TryGetValue(sourceId, out var collectionName) ? collectionName : sourceId;
+            if (String.IsNullOrEmpty(mod.SourceId))
+            {
+                return;
+            }
+
+            if (collectionsBySourceId.TryGetValue(mod.SourceId, out var collection) is false)
+            {
+                mod.CollectionName = mod.SourceId;
+                mod.IsCollectionAddOn = false;
+                return;
+            }
+
+            mod.CollectionName = String.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
+            mod.IsCollectionAddOn = collection.IsModPinned(mod.UniqueId) is false;
         }
 
         /// <summary>
-        /// Reassigns every collection mod's name from the cached records without a rescan. DiscoverMods reads the
-        /// records once per pass, and a first install rescans before its record is saved, so those passes can only
-        /// give the mods it installed the source ID fallback.
+        /// Reassigns what every collection mod shows from the cached records without a rescan. DiscoverMods reads
+        /// the records once per pass and an install rescans before its record is saved. Those passes can only
+        /// give the mods it installed the source ID fallback and would read them all as the user's add-ons.
         /// </summary>
-        internal void RefreshCollectionNames()
+        internal void RefreshCollectionDetails()
         {
-            var collectionNamesBySourceId = GetCollectionNamesBySourceId();
+            var collectionsBySourceId = GetCollectionsBySourceId();
             foreach (var mod in Mods)
             {
-                if (mod.SourceId is null)
-                {
-                    continue;
-                }
-
-                mod.CollectionName = ResolveCollectionName(collectionNamesBySourceId, mod.SourceId);
+                ApplyCollectionDetails(mod, collectionsBySourceId);
             }
         }
 
@@ -600,7 +612,7 @@ namespace Stardrop.ViewModels
 
             // Read once for the whole pass rather than once per mod, as every mod in a collection resolves to the
             // same record and CollectionCache.Load goes to disk each time it is called
-            var collectionNamesBySourceId = GetCollectionNamesBySourceId();
+            var collectionsBySourceId = GetCollectionsBySourceId();
 
             foreach (var (scanRoot, fileInfo) in GetDiscoverableFiles(scanRoots, GetManifestFiles))
             {
@@ -619,10 +631,7 @@ namespace Stardrop.ViewModels
                     }
 
                     var mod = new Mod(manifest, fileInfo, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
-                    if (mod.SourceId is not null)
-                    {
-                        mod.CollectionName = ResolveCollectionName(collectionNamesBySourceId, mod.SourceId);
-                    }
+                    ApplyCollectionDetails(mod, collectionsBySourceId);
 
                     if (manifest.ContentPackFor is not null && modKeysCache is not null)
                     {

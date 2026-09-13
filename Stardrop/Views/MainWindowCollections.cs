@@ -603,7 +603,7 @@ namespace Stardrop.Views
             CollectionCache.Save(collection);
 
             // The rescans above ran before a first install's record existed, which left its mods showing the source ID
-            _viewModel.RefreshCollectionNames();
+            _viewModel.RefreshCollectionDetails();
 
             // An nxm collection link is the one thing not held back while this window is open, so a collection can
             // finish installing behind it. Without this the window keeps showing the list it read when it opened,
@@ -1415,7 +1415,7 @@ namespace Stardrop.Views
         /// at that collection, so a mod added there is treated as an add-on to it and installed into its folder.
         /// Anywhere else this answers with the ordinary install, leaving the rest of the add paths as they were.
         ///
-        /// An add-on is the collection's from that point on, in that it takes the
+        /// An add-on is the collection's from that point on, the same as anything the curator pinned: it takes the
         /// collection's SourceId from its folder, which is what keeps Stardrop, the profile and the SMAPI update
         /// suppression all describing it the same way.
         /// </summary>
@@ -1526,6 +1526,9 @@ namespace Stardrop.Views
             }
 
             TryDelete(archivePath);
+
+            // Each entry's rescan ran before the record above was saved, so until this the mods it placed are treated as add-ons rather than as the pins they are
+            _viewModel.RefreshCollectionDetails();
 
             return summary;
         }

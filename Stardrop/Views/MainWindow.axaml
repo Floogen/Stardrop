@@ -569,7 +569,8 @@
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<Grid ColumnDefinitions="20,*" Margin="7 0 0 0">
-									<ContentControl Grid.Column="0" i:Attached.Icon="mdi-package-variant-closed" Foreground="{DynamicResource HighlightBrush}" IsVisible="{Binding IsFromCollection}" ToolTip.Tip="{Binding CollectionName}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+									<ContentControl Grid.Column="0" i:Attached.Icon="mdi-package-variant-closed" Foreground="{DynamicResource HighlightBrush}" IsVisible="{Binding IsCuratedByCollection}" ToolTip.Tip="{Binding CollectionLabel}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+									<ContentControl Grid.Column="0" i:Attached.Icon="mdi-package-variant-closed-plus" Foreground="{DynamicResource ThemeForegroundBrush}" IsVisible="{Binding IsCollectionAddOn}" ToolTip.Tip="{Binding CollectionLabel}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
 									<TextBlock Grid.Column="1" Text="{Binding Name}" TextAlignment="Left" VerticalAlignment="Center" />
 								</Grid>
 							</DataTemplate>
