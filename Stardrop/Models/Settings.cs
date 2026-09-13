@@ -34,6 +34,11 @@ namespace Stardrop.Models
         public bool ShowModThumbnails { get; set; }
         public NexusServers PreferredNexusServer { get; set; } = NexusServers.NexusCDN;
         public bool IsAskingBeforeAcceptingNXM { get; set; } = true;
+        /// <summary>
+        /// Whether adding a mod while a collection profile is active asks where it should go. When this is off the
+        /// mod is installed into that collection's folder without asking.
+        /// </summary>
+        public bool AlwaysAskForCollectionInstallTarget { get; set; } = true;
         /// <summary>Whether a collection entry's link asks Nexus Mods for the mod manager download rather than the plain file page</summary>
         public bool UseNXMLinks { get; set; } = true;
         /// <summary>

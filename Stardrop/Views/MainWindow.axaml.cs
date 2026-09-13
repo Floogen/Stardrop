@@ -463,7 +463,14 @@ namespace Stardrop.Views
                 return;
             }
 
-            var addedMods = await AddMods(e.Data.GetFileNames()?.ToArray());
+            var installTarget = await ResolveModInstallTarget();
+            if (installTarget.Proceed is false)
+            {
+                _viewModel.DragOverColor = "#ff9f2a";
+                return;
+            }
+
+            var addedMods = await AddMods(e.Data.GetFileNames()?.ToArray(), installTarget.InstallPathOverride);
 
             // TODO: Add optional setting to disable checking for updates when a new mod is installed?
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
@@ -1584,7 +1591,20 @@ namespace Stardrop.Views
             dialog.Filters.Add(new FileDialogFilter() { Name = "Mod Archive (*.zip, *.7z, *.rar)", Extensions = { "zip", "7z", "rar" } });
             dialog.AllowMultiple = true;
 
-            var addedMods = await AddMods(await dialog.ShowAsync(this));
+            // Resolved after the files are chosen
+            var filePaths = await dialog.ShowAsync(this);
+            if (filePaths is null || filePaths.Length == 0)
+            {
+                return;
+            }
+
+            var installTarget = await ResolveModInstallTarget();
+            if (installTarget.Proceed is false)
+            {
+                return;
+            }
+
+            var addedMods = await AddMods(filePaths, installTarget.InstallPathOverride);
 
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
@@ -2186,7 +2206,8 @@ namespace Stardrop.Views
 
             // A file that a collection is still waiting on installs into that collection rather than loose, which is
             // the only route a non-premium account has into one Stardrop could not fetch on its behalf
-            if (await TryProcessCollectionEntryLink(nxmLink))
+            var entryLinkResult = await TryProcessCollectionEntryLink(nxmLink);
+            if (entryLinkResult is CollectionEntryLinkResult.Handled)
             {
                 return NXMLinkResult.Success;
             }
@@ -2228,6 +2249,14 @@ namespace Stardrop.Views
             var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
             if (Program.settings.IsAskingBeforeAcceptingNXM is false || await requestWindow.ShowDialog<bool>(this))
             {
+                // Asked before the download rather than after, so backing out costs nothing. A link the
+                // user has already declined capturing into a collection skips the question
+                var installTarget = await ResolveModInstallTarget(skipPrompt: entryLinkResult is CollectionEntryLinkResult.Declined);
+                if (installTarget.Proceed is false)
+                {
+                    return NXMLinkResult.Canceled;
+                }
+
                 var downloadResult = await Nexus.Client.DownloadFileAndGetPath(processedDownloadLink, modDetails.Name);
                 if (downloadResult.ResultKind is DownloadResultKind.Failed)
                 {
@@ -2241,7 +2270,7 @@ namespace Stardrop.Views
                 }
                 string downloadedFilePath = downloadResult.DownloadedModFilePath!;
 
-                var addedMods = await AddMods(new string[] { downloadedFilePath });
+                var addedMods = await AddMods(new string[] { downloadedFilePath }, installTarget.InstallPathOverride);
                 await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
                 await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 

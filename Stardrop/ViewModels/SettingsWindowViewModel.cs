@@ -18,6 +18,7 @@ namespace Stardrop.ViewModels
         public bool EnableProfileSpecificModConfigs { get { return Program.settings.EnableProfileSpecificModConfigs; } set { Program.settings.EnableProfileSpecificModConfigs = value; } }
         public bool EnableModsOnAdd { get { return Program.settings.EnableModsOnAdd; } set { Program.settings.EnableModsOnAdd = value; } }
         public bool AlwaysAskToDelete { get { return Program.settings.AlwaysAskToDelete; } set { Program.settings.AlwaysAskToDelete = value; } }
+        public bool AlwaysAskForCollectionInstallTarget { get { return Program.settings.AlwaysAskForCollectionInstallTarget; } set { Program.settings.AlwaysAskForCollectionInstallTarget = value; } }
         public bool CollectionsSkipSMAPIUpdateCheck { get { return Program.settings.CollectionsSkipSMAPIUpdateCheck; } set { Program.settings.CollectionsSkipSMAPIUpdateCheck = value; } }
         public bool ShouldAutomaticallySaveProfileChanges { get { return Program.settings.ShouldAutomaticallySaveProfileChanges; } set { Program.settings.ShouldAutomaticallySaveProfileChanges = value; } }
         public bool ShowModThumbnails { get { return Program.settings.ShowModThumbnails; } set { Program.settings.ShowModThumbnails = value; } }
@@ -36,6 +37,7 @@ namespace Stardrop.ViewModels
         public string ToolTip_NXMAssociation { get; set; }
         public string ToolTip_AlwaysAskNXMFiles { get; set; }
         public string ToolTip_AlwaysAskToDelete { get; set; }
+        public string ToolTip_AlwaysAskForCollectionInstallTarget { get; set; }
         public string ToolTip_CollectionsSkipSMAPIUpdateCheck { get; set; }
         public string ToolTip_EnableProfileSpecificModConfigs { get; set; }
         public string ToolTip_EnableModsOnAdd { get; set; }
@@ -63,6 +65,7 @@ namespace Stardrop.ViewModels
             ToolTip_NXMAssociation = Program.translation.Get("ui.settings_window.tooltips.nxm_file_association");
             ToolTip_AlwaysAskNXMFiles = Program.translation.Get("ui.settings_window.tooltips.always_ask_nxm_files");
             ToolTip_AlwaysAskToDelete = Program.translation.Get("ui.settings_window.tooltips.always_ask_to_delete");
+            ToolTip_AlwaysAskForCollectionInstallTarget = Program.translation.Get("ui.settings_window.tooltips.always_ask_for_collection_install_target");
             ToolTip_CollectionsSkipSMAPIUpdateCheck = Program.translation.Get("ui.settings_window.tooltips.collections_skip_smapi_update_check");
             ToolTip_EnableProfileSpecificModConfigs = Program.translation.Get("ui.settings_window.tooltips.enable_profile_specific_configs");
             ToolTip_EnableModsOnAdd = Program.translation.Get("ui.settings_window.tooltips.enable_mods_on_add");

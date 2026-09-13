@@ -1247,10 +1247,18 @@ namespace Stardrop.Views
             var previouslyInstalled = plan.GetPreviouslyInstalledIds();
             var disabledByUser = previouslyInstalled.Where(id => profile.EnabledModIds.Any(r => IsCollectionReference(r, collection) && String.Equals(r.UniqueId, id, StringComparison.OrdinalIgnoreCase)) is false).ToList();
 
+            var updatedReferences = collection.GetEnabledModReferences();
+
+            // A reference pointing at this collection that neither the previous revision nor this one accounts for
+            // is a mod the user added into the collection's folder themselves. The record knows nothing about it,
+            // so rebuilding the collection's references from the record alone would turn it off on every revision
+            var addOns = profile.EnabledModIds.Where(r => IsCollectionReference(r, collection) && previouslyInstalled.Contains(r.UniqueId, StringComparer.OrdinalIgnoreCase) is false && updatedReferences.Contains(r) is false).ToList();
+
             // References pointing anywhere but this collection are the user's own additions and are left as they are
             var references = profile.EnabledModIds.Where(r => IsCollectionReference(r, collection) is false).ToList();
+            references.AddRange(addOns);
 
-            foreach (var reference in collection.GetEnabledModReferences())
+            foreach (var reference in updatedReferences)
             {
                 if (disabledByUser.Contains(reference.UniqueId, StringComparer.OrdinalIgnoreCase))
                 {
@@ -1260,7 +1268,7 @@ namespace Stardrop.Views
                 references.Add(reference);
             }
 
-            Program.helper.Log($"Amending the profile {profile.Name}: {references.Count} mod(s) enabled, with {disabledByUser.Count} left off as the user had disabled them");
+            Program.helper.Log($"Amending the profile {profile.Name}: {references.Count} mod(s) enabled, with {disabledByUser.Count} left off as the user had disabled them and {addOns.Count} kept as add-on(s) the collection does not pin");
 
             // Notes, PreservedModConfigs, Name and IsProtected are deliberately untouched
             profile.EnabledModIds = references;
@@ -1322,23 +1330,23 @@ namespace Stardrop.Views
         /// link carries the key and expiry pair that authorises the download, so this is the one route a non-premium
         /// account has into a collection Stardrop could not fetch on its behalf.
         /// </summary>
-        /// <returns>True when the link was handled here, false when it should install as an ordinary mod</returns>
-        private async Task<bool> TryProcessCollectionEntryLink(NXM nxmLink)
+        /// <returns>Whether the link was handled here, declined in favour of an ordinary install, or matched nothing</returns>
+        private async Task<CollectionEntryLinkResult> TryProcessCollectionEntryLink(NXM nxmLink)
         {
             if (Nexus.Client is null || String.IsNullOrEmpty(nxmLink.Link))
             {
-                return false;
+                return CollectionEntryLinkResult.NotMatched;
             }
 
             if (NexusClient.TryParseModNxmLink(nxmLink.Link, out _, out var modId, out var fileId) is false)
             {
-                return false;
+                return CollectionEntryLinkResult.NotMatched;
             }
 
             var matches = FindUnsatisfiedCollectionEntries(modId, fileId);
             if (matches.Count == 0)
             {
-                return false;
+                return CollectionEntryLinkResult.NotMatched;
             }
 
             var entryName = matches[0].Entry.Name;
@@ -1355,7 +1363,7 @@ namespace Stardrop.Views
                 // Declining asks for the ordinary install rather than cancelling, so the caller carries on from here
                 if (await requestWindow.ShowDialog<bool>(this) is false)
                 {
-                    return false;
+                    return CollectionEntryLinkResult.Declined;
                 }
             }
 
@@ -1363,7 +1371,7 @@ namespace Stardrop.Views
             if (fileSafetyResult is false)
             {
                 await ReportCollectionEntryResult(Program.translation.Get("ui.warning.file_quarantined"), isFailure: true);
-                return true;
+                return CollectionEntryLinkResult.Handled;
             }
 
             if (fileSafetyResult is null)
@@ -1373,7 +1381,7 @@ namespace Stardrop.Views
 
                 if (await safetyWindow.ShowDialog<bool>(this) is false)
                 {
-                    return true;
+                    return CollectionEntryLinkResult.Handled;
                 }
             }
 
@@ -1381,7 +1389,7 @@ namespace Stardrop.Views
             if (String.IsNullOrEmpty(archivePath))
             {
                 await ReportCollectionEntryResult(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), entryName), isFailure: true);
-                return true;
+                return CollectionEntryLinkResult.Handled;
             }
 
             // The count of what a collection still needs is dropped while its window is open, as the details panel
@@ -1399,7 +1407,64 @@ namespace Stardrop.Views
 
             await ReportCollectionEntryResult(String.Join(Environment.NewLine, summary), hasFailure);
 
-            return true;
+            return CollectionEntryLinkResult.Handled;
+        }
+
+        /// <summary>
+        /// Decides where a newly added mod is written. A collection profile being active means the user is looking
+        /// at that collection, so a mod added there is treated as an add-on to it and installed into its folder.
+        /// Anywhere else this answers with the ordinary install, leaving the rest of the add paths as they were.
+        ///
+        /// An add-on is the collection's from that point on, in that it takes the
+        /// collection's SourceId from its folder, which is what keeps Stardrop, the profile and the SMAPI update
+        /// suppression all describing it the same way.
+        /// </summary>
+        /// <param name="skipPrompt">Installs into the ordinary folder without asking, for a path that has already put the question to the user</param>
+        private async Task<ModInstallTarget> ResolveModInstallTarget(bool skipPrompt = false)
+        {
+            var profile = GetCurrentProfile();
+            if (profile is null || profile.IsFromCollection is false || String.IsNullOrEmpty(profile.SourceId))
+            {
+                return ModInstallTarget.Default();
+            }
+
+            if (skipPrompt)
+            {
+                return ModInstallTarget.Default();
+            }
+
+            // A profile outlives the collection that generated it, since removing one can keep its mods and leave
+            // the profile behind. There is no folder to add to in that case, so the ordinary install is the answer
+            var collection = CollectionCache.Load(profile.SourceId);
+            if (collection is null)
+            {
+                Program.helper.Log($"The profile {profile.Name} names the collection {profile.SourceId}, which has no record, so the mod installs as an ordinary one");
+                return ModInstallTarget.Default();
+            }
+
+            var installPath = Pathing.GetCollectionInstallPath(collection.SourceId);
+            if (Program.settings.AlwaysAskForCollectionInstallTarget is false)
+            {
+                return new ModInstallTarget(true, installPath);
+            }
+
+            var requestWindow = new FlexibleOptionWindow(String.Format(Program.translation.Get("ui.message.confirm_collection_install_target"), collection.Name), Program.translation.Get("internal.add_to_collection"), Program.translation.Get("internal.install_normally"), Program.translation.Get("internal.cancel"), windowWidth: 450);
+            KeepDialogAboveSiblings(requestWindow);
+
+            var response = await requestWindow.ShowDialog<Choice>(this);
+            if (response is Choice.Third)
+            {
+                return ModInstallTarget.Cancelled();
+            }
+
+            if (response is Choice.Second)
+            {
+                return ModInstallTarget.Default();
+            }
+
+            Program.helper.Log($"Installing into {collection.Name} as an add-on, at the user's request");
+
+            return new ModInstallTarget(true, installPath);
         }
 
         /// <summary>
