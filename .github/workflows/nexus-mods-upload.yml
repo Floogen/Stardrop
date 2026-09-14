@@ -23,7 +23,8 @@ env:
 run-name: "Uploading to Nexus Mods"
 
 jobs:
-  upload-windows:
+  upload-macos-arm:
+    needs: [ upload-windows, upload-macos, upload-linux ]
     runs-on: ubuntu-latest
     steps:
       - name: Clean version
@@ -39,13 +40,13 @@ jobs:
         uses: Nexus-Mods/upload-action@main
         with:
           api_key: ${{ secrets.NEXUS_API_KEY }}
-          file_id: ${{ vars.NEXUS_WINDOWS_FILE_GROUP_ID }}
+          file_id: ${{ vars.NEXUS_MAC_ARM_FILE_GROUP_ID }}
           archive_existing_version: false
           primary_mod_manager_download: false
           allow_mod_manager_download: false
-          filename: Stardrop-win-x64.zip
-          display_name: "Stardrop - Windows"
-          description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop."
+          filename: Stardrop-osx-arm64.zip
+          display_name: "Stardrop - macOS (ARM)"
+          description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop. A temporary workaround is required to getting it running on macOS by going to Security & Privacy settings and click Open Anyway."
           version: ${{ env.CLEANED_VERSION }}
   upload-macos:
     needs: [ upload-windows ]
@@ -97,8 +98,7 @@ jobs:
           display_name: "Stardrop - Linux"
           description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop."
           version: ${{ env.CLEANED_VERSION }}
-  upload-macos-arm:
-    needs: [ upload-windows, upload-macos, upload-linux ]
+  upload-windows:
     runs-on: ubuntu-latest
     steps:
       - name: Clean version
@@ -114,11 +114,11 @@ jobs:
         uses: Nexus-Mods/upload-action@main
         with:
           api_key: ${{ secrets.NEXUS_API_KEY }}
-          file_id: ${{ vars.NEXUS_MAC_ARM_FILE_GROUP_ID }}
+          file_id: ${{ vars.NEXUS_WINDOWS_FILE_GROUP_ID }}
           archive_existing_version: false
           primary_mod_manager_download: false
           allow_mod_manager_download: false
-          filename: Stardrop-osx-arm64.zip
-          display_name: "Stardrop - macOS (ARM)"
-          description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop. A temporary workaround is required to getting it running on macOS by going to Security & Privacy settings and click Open Anyway."
+          filename: Stardrop-win-x64.zip
+          display_name: "Stardrop - Windows"
+          description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop."
           version: ${{ env.CLEANED_VERSION }}
