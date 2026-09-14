@@ -102,26 +102,30 @@ namespace Stardrop.Views
                 }
             };
 
-            // Handle adding the mod grouping methods
-            var descriptionToModGroupingEnum = new Dictionary<string, ModGrouping>()
+            // Handle adding the mod grouping methods.
+            // Keep the enum as the item's value, so localization cannot affect the saved setting.
+            var modGroupingOptions = new Dictionary<ModGrouping, string>()
             {
-                { "None", ModGrouping.None }
+                { ModGrouping.None, Program.translation.Get("ui.settings_window.mod_grouping.none") },
+                { ModGrouping.ContentPack, Program.translation.Get("ui.settings_window.mod_grouping.content_pack") },
+                { ModGrouping.Folder, Program.translation.Get("ui.settings_window.mod_grouping.folder") },
+                { ModGrouping.FolderCondensed, Program.translation.Get("ui.settings_window.mod_grouping.folder_condensed") }
             };
 
-            foreach (ModGrouping modGrouping in Enum.GetValues(typeof(ModGrouping)).Cast<ModGrouping>().OrderBy(g => EnumParser.GetDescription(g)))
-            {
-                if (modGrouping != ModGrouping.None && EnumParser.GetDescription(modGrouping) is not null)
-                {
-                    descriptionToModGroupingEnum[EnumParser.GetDescription(modGrouping)] = modGrouping;
-                }
-            }
-
             var groupingComboBox = this.FindControl<ComboBox>("groupingComboBox");
-            groupingComboBox.Items = descriptionToModGroupingEnum.Keys;
-            groupingComboBox.SelectedItem = EnumParser.GetDescription(Program.settings.ModGroupingMethod);
+            groupingComboBox.Items = modGroupingOptions.Select(option => new ComboBoxItem
+            {
+                Content = option.Value,
+                Tag = option.Key
+            }).ToList();
+            groupingComboBox.SelectedItem = groupingComboBox.Items.Cast<ComboBoxItem>()
+                .First(option => option.Tag is ModGrouping grouping && grouping == Program.settings.ModGroupingMethod);
             groupingComboBox.SelectionChanged += (sender, e) =>
             {
-                Program.settings.ModGroupingMethod = descriptionToModGroupingEnum[groupingComboBox.SelectedItem.ToString()];
+                if (groupingComboBox.SelectedItem is ComboBoxItem { Tag: ModGrouping grouping })
+                {
+                    Program.settings.ModGroupingMethod = grouping;
+                }
             };
 
             this.FontFamily = new Avalonia.Media.FontFamily("Segoe UI Symbol");

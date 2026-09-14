@@ -135,6 +135,12 @@
   "ui.settings_window.labels.nexus": "Nexus Mods",
   "ui.settings_window.labels.preferred_server": "Preferred Server:",
 
+  // Settings Window - Mod Grouping
+  "ui.settings_window.mod_grouping.none": "None",
+  "ui.settings_window.mod_grouping.content_pack": "Content Pack",
+  "ui.settings_window.mod_grouping.folder": "Folder",
+  "ui.settings_window.mod_grouping.folder_condensed": "Folder (Condensed)",
+
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "Ignore Hidden Folders",
   "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Enable Profile Specific Mod Configs",
