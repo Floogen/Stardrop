@@ -36,6 +36,11 @@ namespace Stardrop.Utilities
         /// </summary>
         public bool IsStardropRegistered { get; init; }
 
+        /// <summary>
+        /// Whether any registry entry written by Stardrop is still present, even a partial or stale one.
+        /// </summary>
+        public bool HasStardropRegistration { get; init; }
+
         public string? UserChoiceProgId { get; init; }
         public string? UserChoiceCommand { get; init; }
 
@@ -45,11 +50,30 @@ namespace Stardrop.Utilities
         public string HandlerName { get; init; } = String.Empty;
     }
 
+    internal sealed class NXMUnregistrationResult
+    {
+        /// <summary>
+        /// Whether the removal ran to completion without hitting an unexpected registry error
+        /// </summary>
+        public bool Succeeded { get; init; }
+
+        /// <summary>
+        /// Whether at least one of Stardrop's own entries was actually removed
+        /// </summary>
+        public bool RemovedRegistration { get; init; }
+
+        /// <summary>
+        /// Whether Windows' UserChoice still points at Stardrop, as that key is not always deletable
+        /// </summary>
+        public bool RetainedUserChoice { get; init; }
+    }
+
     internal static class NXMProtocol
     {
         private const string ProtocolName = "nxm";
         private const string ProgId = "Stardrop.nxm";
         private const string ClassesPath = @"Software\Classes";
+        private const string StardropSoftwarePath = @"Software\Stardrop";
         private const string CapabilitiesPath = @"Software\Stardrop\Capabilities";
         private const string RegisteredApplicationsPath = @"Software\RegisteredApplications";
         private const string RegisteredApplicationName = "Stardrop";
@@ -131,6 +155,66 @@ namespace Stardrop.Utilities
         }
 
         /// <summary>
+        /// Removes Stardrop's own NXM registration. Keys that another application owns are left untouched, so a
+        /// removal here never takes the protocol away from a different mod manager.
+        /// </summary>
+        [SupportedOSPlatform("windows")]
+        public static NXMUnregistrationResult Unregister(string applicationPath)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false)
+            {
+                Program.helper.Log($"Attempted to modify registery keys for NXM protocol on a non-Windows system!");
+                return new NXMUnregistrationResult() { Succeeded = false };
+            }
+
+            bool removedRegistration = false;
+            bool retainedUserChoice = false;
+
+            try
+            {
+                string expectedCommand = GetExpectedCommand(applicationPath);
+
+                // Windows resolves UserChoice ahead of the class keys, so one left pointing at Stardrop would break NXM links outright
+                string? userChoiceProgId = GetUserChoiceProgId();
+                if (String.IsNullOrEmpty(userChoiceProgId) is false && IsStardropHandler(userChoiceProgId, expectedCommand))
+                {
+                    if (TryDeleteUserChoice())
+                    {
+                        removedRegistration = true;
+                    }
+                    else
+                    {
+                        retainedUserChoice = true;
+                    }
+                }
+
+                // The dedicated ProgId belongs to Stardrop alone, so it needs no ownership check
+                if (DeleteUserSubKeyTree($@"{ClassesPath}\{ProgId}"))
+                {
+                    removedRegistration = true;
+                }
+
+                // The bare protocol key is shared ground, so it only goes when it still points at this install
+                if (IsExpectedCommand(GetUserCommandForProgId(ProtocolName), expectedCommand) && DeleteUserSubKeyTree($@"{ClassesPath}\{ProtocolName}"))
+                {
+                    removedRegistration = true;
+                }
+
+                if (RemoveCapabilities())
+                {
+                    removedRegistration = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to remove Stardrop's association with the NXM protocol: {ex}", Helper.Status.Alert);
+                return new NXMUnregistrationResult() { Succeeded = false, RemovedRegistration = removedRegistration, RetainedUserChoice = retainedUserChoice };
+            }
+
+            return new NXMUnregistrationResult() { Succeeded = true, RemovedRegistration = removedRegistration, RetainedUserChoice = retainedUserChoice };
+        }
+
+        /// <summary>
         /// Determines how Windows will actually route NXM links. Note that a correct Stardrop registration is not
         /// enough on its own, as a UserChoice belonging to another mod manager takes priority over it.
         /// </summary>
@@ -149,6 +233,7 @@ namespace Stardrop.Utilities
                 bool hasProgIdKey = IsExpectedCommand(GetCommandForProgId(ProgId), expectedCommand);
                 bool hasProtocolKey = IsExpectedCommand(GetCommandForProgId(ProtocolName), expectedCommand);
                 bool isStardropRegistered = hasProgIdKey && hasProtocolKey && HasCapabilities();
+                bool hasStardropRegistration = HasStardropRegistryEntries(expectedCommand);
 
                 NXMAssociationStatus localStatus = NXMAssociationStatus.Unregistered;
                 if (isStardropRegistered)
@@ -168,6 +253,7 @@ namespace Stardrop.Utilities
                     {
                         Status = localStatus,
                         IsStardropRegistered = isStardropRegistered,
+                        HasStardropRegistration = hasStardropRegistration,
                         HandlerName = RegisteredApplicationName
                     };
                 }
@@ -179,6 +265,7 @@ namespace Stardrop.Utilities
                     {
                         Status = localStatus,
                         IsStardropRegistered = isStardropRegistered,
+                        HasStardropRegistration = hasStardropRegistration,
                         UserChoiceProgId = userChoiceProgId,
                         UserChoiceCommand = userChoiceCommand,
                         HandlerName = RegisteredApplicationName
@@ -189,6 +276,7 @@ namespace Stardrop.Utilities
                 {
                     Status = NXMAssociationStatus.Overridden,
                     IsStardropRegistered = isStardropRegistered,
+                    HasStardropRegistration = hasStardropRegistration,
                     UserChoiceProgId = userChoiceProgId,
                     UserChoiceCommand = userChoiceCommand,
                     HandlerName = GetDisplayName(userChoiceProgId, userChoiceCommand)
@@ -227,6 +315,7 @@ namespace Stardrop.Utilities
                 report.AppendLine($"Protocol Key Command: {GetLoggableValue(GetCommandForProgId(ProtocolName))}");
                 report.AppendLine($"Machine Protocol Key Command: {GetLoggableValue(GetMachineCommandForProgId(ProtocolName))}");
                 report.AppendLine($"Capabilities Registered: {HasCapabilities()}");
+                report.AppendLine($"Stardrop Entries Present: {state.HasStardropRegistration}");
                 report.Append($"Resolved Handler: {state.HandlerName}{Environment.NewLine}------------------{Environment.NewLine}");
 
                 Program.helper.Log(report.ToString());
@@ -263,14 +352,25 @@ namespace Stardrop.Utilities
         [SupportedOSPlatform("windows")]
         private static string? GetCommandForProgId(string progId)
         {
-            using RegistryKey? userKey = Registry.CurrentUser.OpenSubKey($@"{ClassesPath}\{progId}\shell\open\command");
-            string? command = userKey?.GetValue(String.Empty)?.ToString();
+            string? command = GetUserCommandForProgId(progId);
             if (String.IsNullOrEmpty(command) is false)
             {
                 return command;
             }
 
             return GetMachineCommandForProgId(progId);
+        }
+
+        /// <summary>
+        /// Reads the handler command from the current user's hive only. Removal decisions use this rather than
+        /// GetCommandForProgId, as Stardrop only ever writes to HKCU and must not act on a machine-wide entry.
+        /// </summary>
+        [SupportedOSPlatform("windows")]
+        private static string? GetUserCommandForProgId(string progId)
+        {
+            using RegistryKey? userKey = Registry.CurrentUser.OpenSubKey($@"{ClassesPath}\{progId}\shell\open\command");
+
+            return userKey?.GetValue(String.Empty)?.ToString();
         }
 
         [SupportedOSPlatform("windows")]
@@ -293,6 +393,150 @@ namespace Stardrop.Utilities
             using RegistryKey? registeredApplicationsKey = Registry.CurrentUser.OpenSubKey(RegisteredApplicationsPath);
 
             return String.Equals(registeredApplicationsKey?.GetValue(RegisteredApplicationName)?.ToString(), CapabilitiesPath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Whether any registry entry written by Register is still present for the current user.
+        /// </summary>
+        [SupportedOSPlatform("windows")]
+        private static bool HasStardropRegistryEntries(string expectedCommand)
+        {
+            if (HasUserSubKey($@"{ClassesPath}\{ProgId}") || HasUserSubKey(CapabilitiesPath))
+            {
+                return true;
+            }
+
+            if (IsExpectedCommand(GetUserCommandForProgId(ProtocolName), expectedCommand))
+            {
+                return true;
+            }
+
+            // A UserChoice can outlive the keys it points at, so a dangling one still counts as something to clean up
+            string? userChoiceProgId = GetUserChoiceProgId();
+            if (String.IsNullOrEmpty(userChoiceProgId) is false && IsStardropHandler(userChoiceProgId, expectedCommand))
+            {
+                return true;
+            }
+
+            using RegistryKey? registeredApplicationsKey = Registry.CurrentUser.OpenSubKey(RegisteredApplicationsPath);
+
+            return String.Equals(registeredApplicationsKey?.GetValue(RegisteredApplicationName)?.ToString(), CapabilitiesPath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Whether the given ProgId resolves to this Stardrop install, covering both the dedicated ProgId and the
+        /// bare protocol key that Windows may have recorded instead.
+        /// </summary>
+        [SupportedOSPlatform("windows")]
+        private static bool IsStardropHandler(string progId, string expectedCommand)
+        {
+            if (String.Equals(progId, ProgId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return IsExpectedCommand(GetUserCommandForProgId(progId), expectedCommand);
+        }
+
+        /// <summary>
+        /// Clears Stardrop's NXM capability entry, dropping the surrounding keys only once nothing is left in them.
+        /// </summary>
+        [SupportedOSPlatform("windows")]
+        private static bool RemoveCapabilities()
+        {
+            bool removedCapabilities = false;
+
+            using (RegistryKey? urlAssociationsKey = Registry.CurrentUser.OpenSubKey($@"{CapabilitiesPath}\UrlAssociations", true))
+            {
+                if (urlAssociationsKey is not null && urlAssociationsKey.GetValue(ProtocolName) is not null)
+                {
+                    urlAssociationsKey.DeleteValue(ProtocolName, false);
+                    removedCapabilities = true;
+                }
+            }
+
+            // Other protocols could be registered here later, so the shared capability keys stay until they are empty
+            if (IsUserSubKeyEmpty($@"{CapabilitiesPath}\UrlAssociations") is false)
+            {
+                return removedCapabilities;
+            }
+
+            if (DeleteUserSubKeyTree(CapabilitiesPath))
+            {
+                removedCapabilities = true;
+            }
+
+            using (RegistryKey? registeredApplicationsKey = Registry.CurrentUser.OpenSubKey(RegisteredApplicationsPath, true))
+            {
+                // Only the entry pointing at Stardrop's own capabilities path is removed
+                if (registeredApplicationsKey is not null && String.Equals(registeredApplicationsKey.GetValue(RegisteredApplicationName)?.ToString(), CapabilitiesPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    registeredApplicationsKey.DeleteValue(RegisteredApplicationName, false);
+                    removedCapabilities = true;
+                }
+            }
+
+            // Software\Stardrop exists purely to hold the capabilities, so it goes once nothing else has moved in
+            if (IsUserSubKeyEmpty(StardropSoftwarePath))
+            {
+                DeleteUserSubKeyTree(StardropSoftwarePath);
+            }
+
+            return removedCapabilities;
+        }
+
+        /// <summary>
+        /// Deletes a key under the current user's hive, reporting whether there was anything there to delete.
+        /// </summary>
+        [SupportedOSPlatform("windows")]
+        private static bool DeleteUserSubKeyTree(string path)
+        {
+            if (HasUserSubKey(path) is false)
+            {
+                return false;
+            }
+
+            Registry.CurrentUser.DeleteSubKeyTree(path, false);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to clear the protocol's UserChoice. Windows guards this key, so a denial is an expected outcome
+        /// rather than an error worth failing the whole removal over.
+        /// </summary>
+        [SupportedOSPlatform("windows")]
+        private static bool TryDeleteUserChoice()
+        {
+            try
+            {
+                return DeleteUserSubKeyTree(UserChoicePath);
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to clear the NXM UserChoice registry key: {ex}", Helper.Status.Alert);
+                return false;
+            }
+        }
+
+        [SupportedOSPlatform("windows")]
+        private static bool HasUserSubKey(string path)
+        {
+            using RegistryKey? key = Registry.CurrentUser.OpenSubKey(path);
+
+            return key is not null;
+        }
+
+        [SupportedOSPlatform("windows")]
+        private static bool IsUserSubKeyEmpty(string path)
+        {
+            using RegistryKey? key = Registry.CurrentUser.OpenSubKey(path);
+            if (key is null)
+            {
+                return true;
+            }
+
+            return key.SubKeyCount is 0 && key.ValueCount is 0;
         }
 
         /// <summary>

@@ -38,6 +38,7 @@ namespace Stardrop.Views
             this.FindControl<Button>("modInstallButton").Click += ModInstallButton_Click;
             this.FindControl<Button>("collectionInstallButton").Click += CollectionInstallButton_Click;
             this.FindControl<Button>("registerNXMButton").Click += RegisterNXMButton_Click;
+            this.FindControl<Button>("removeNXMButton").Click += RemoveNXMButton_Click;
             this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
 
             // Push the focus for the textboxes to the end of their strings
@@ -182,6 +183,44 @@ namespace Stardrop.Views
             if (NXMProtocol.Register(Program.executablePath) is false)
             {
                 await new WarningWindow(Program.translation.Get("ui.warning.failed_to_set_association"), Program.translation.Get("internal.ok")).ShowDialog(this);
+            }
+        }
+
+        private async void RemoveNXMButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false)
+            {
+                await new WarningWindow(
+                        Program.translation.Get("ui.warning.unsupported_platform"),
+                        Program.translation.Get("internal.ok"))
+                    .ShowDialog(this);
+                return;
+            }
+
+            NXMAssociationState state = NXMProtocol.GetState(Program.executablePath);
+            if (state.HasStardropRegistration is false)
+            {
+                await new WarningWindow(Program.translation.Get("ui.warning.not_associated"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                return;
+            }
+
+            var requestWindow = new MessageWindow(Program.translation.Get("ui.message.confirm_remove_nxm_association"));
+            if (await requestWindow.ShowDialog<bool>(this) is false)
+            {
+                return;
+            }
+
+            NXMUnregistrationResult result = NXMProtocol.Unregister(Program.executablePath);
+            if (result.Succeeded is false)
+            {
+                await new WarningWindow(Program.translation.Get("ui.warning.failed_to_remove_association"), Program.translation.Get("internal.ok")).ShowDialog(this);
+                return;
+            }
+
+            // Windows can refuse to give up the UserChoice key, which would leave NXM links pointing at a handler that no longer exists
+            if (result.RetainedUserChoice)
+            {
+                await new WarningWindow(Program.translation.Get("ui.warning.nxm_user_choice_retained"), Program.translation.Get("internal.ok")).ShowDialog(this);
             }
         }
 

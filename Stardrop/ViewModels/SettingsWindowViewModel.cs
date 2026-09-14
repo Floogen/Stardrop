@@ -36,6 +36,7 @@ namespace Stardrop.ViewModels
         public string ToolTip_IgnoreHiddenFolders { get; set; }
         public string ToolTip_PreferredServer { get; set; }
         public string ToolTip_NXMAssociation { get; set; }
+        public string ToolTip_RemoveNXMAssociation { get; set; }
         public string ToolTip_AlwaysAskNXMFiles { get; set; }
         public string ToolTip_AlwaysAskToDelete { get; set; }
         public string ToolTip_AlwaysAskForCollectionInstallTarget { get; set; }
@@ -65,6 +66,7 @@ namespace Stardrop.ViewModels
             ToolTip_IgnoreHiddenFolders = Program.translation.Get("ui.settings_window.tooltips.ignore_hidden_folders");
             ToolTip_PreferredServer = Program.translation.Get("ui.settings_window.tooltips.preferred_server");
             ToolTip_NXMAssociation = Program.translation.Get("ui.settings_window.tooltips.nxm_file_association");
+            ToolTip_RemoveNXMAssociation = Program.translation.Get("ui.settings_window.tooltips.remove_nxm_file_association");
             ToolTip_AlwaysAskNXMFiles = Program.translation.Get("ui.settings_window.tooltips.always_ask_nxm_files");
             ToolTip_AlwaysAskToDelete = Program.translation.Get("ui.settings_window.tooltips.always_ask_to_delete");
             ToolTip_AlwaysAskForCollectionInstallTarget = Program.translation.Get("ui.settings_window.tooltips.always_ask_for_collection_install_target");
