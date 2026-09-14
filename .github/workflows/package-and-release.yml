@@ -10,6 +10,10 @@ on:
       is-prerelease:
         required: true
         type: string
+      is-rolling-tag:
+        required: false
+        type: boolean
+        default: false
       generate-release-notes:
         required: true
         type: boolean
@@ -25,6 +29,10 @@ on:
         options:
         - 'true'
         - 'false'
+      is-rolling-tag:
+        required: false
+        type: boolean
+        default: false
       generate-release-notes:
         required: true
         type: boolean
@@ -61,6 +69,11 @@ jobs:
     - uses: actions/download-artifact@v4    
       with:
         merge-multiple: true
+    - name: Retarget rolling tag
+      if: ${{ inputs.is-rolling-tag }}
+      run: |
+        git tag --force "${TAG}" "${GITHUB_SHA}"
+        git push --force origin "refs/tags/${TAG}"
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
@@ -78,7 +91,7 @@ jobs:
                 
           <br/>
         generate_release_notes: ${{ inputs.generate-release-notes }}
-        make_latest: true
+        make_latest: ${{ inputs.is-prerelease != 'true' }}
         fail_on_unmatched_files: true
         files: |
           Stardrop-win-x64.zip

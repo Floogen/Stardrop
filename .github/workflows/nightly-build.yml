@@ -11,7 +11,9 @@ permissions:
 jobs:
     package-and-release:
       uses: ./.github/workflows/package-and-release.yml
+      secrets: inherit
       with:
         tag: nightly
         is-prerelease: 'true'
+        is-rolling-tag: true
         generate-release-notes: false
