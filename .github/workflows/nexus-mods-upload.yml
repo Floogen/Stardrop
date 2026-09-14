@@ -48,6 +48,7 @@ jobs:
           display_name: "Stardrop - macOS (ARM)"
           description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop. A temporary workaround is required to getting it running on macOS by going to Security & Privacy settings and click Open Anyway."
           version: ${{ env.CLEANED_VERSION }}
+          update_mod_version: true
   upload-macos:
     needs: [ upload-windows ]
     runs-on: ubuntu-latest
@@ -73,6 +74,7 @@ jobs:
           display_name: "Stardrop - macOS"
           description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop. A temporary workaround is required to getting it running on macOS by going to Security & Privacy settings and click Open Anyway."
           version: ${{ env.CLEANED_VERSION }}
+          update_mod_version: true
   upload-linux:
     needs: [ upload-windows, upload-macos ]
     runs-on: ubuntu-latest
@@ -98,6 +100,7 @@ jobs:
           display_name: "Stardrop - Linux"
           description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop."
           version: ${{ env.CLEANED_VERSION }}
+          update_mod_version: true
   upload-windows:
     runs-on: ubuntu-latest
     steps:
@@ -122,3 +125,4 @@ jobs:
           display_name: "Stardrop - Windows"
           description: "See the [url=https://floogen.gitbook.io/stardrop/]GitBook pages[/url] for detailed documentation on how to use Stardrop."
           version: ${{ env.CLEANED_VERSION }}
+          update_mod_version: true
