@@ -17,3 +17,14 @@ jobs:
         is-prerelease: 'true'
         is-rolling-tag: true
         generate-release-notes: false
+        release-body: |
+          > **This is the nightly pre-release based on the [latest commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }}).**
+
+          ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/nightly/Stardrop-linux-x64.zip?label=Linux+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/nightly/Stardrop-osx-x64.zip?label=macOS+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/nightly/Stardrop-win-x64.zip?label=Windows+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/nightly/Stardrop-linux-arm64.zip?label=Linux+ARM+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/nightly/Stardrop-osx-arm64.zip?label=macOS+ARM+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/nightly/Stardrop-win-arm64.zip?label=Windows+ARM+Downloads)
+
+          Documentation can be [found here](https://floogen.gitbook.io/stardrop/).
+
+          **User Note:**
+          Download the respective ZIP file relating to the host's operating system (Stardrop-win-x64 if using a Window x64 OS and so on).
+
+          <br/>
