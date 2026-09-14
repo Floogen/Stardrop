@@ -74,6 +74,10 @@
             <SolidColorBrush x:Key="UpdateBrokenBrush" Color="{DynamicResource Red}" />
             <SolidColorBrush x:Key="UpdateUnofficialBrush" Color="{DynamicResource Yellow}" />
 
+            <!-- Collection icons -->
+            <SolidColorBrush x:Key="CollectionCuratedBrush" Color="{DynamicResource Mauve}" />
+            <SolidColorBrush x:Key="CollectionAddOnBrush" Color="{DynamicResource Text}" />
+
             <SolidColorBrush x:Key="ButtonHoverBrush" Color="{DynamicResource Surface0}" />
             <SolidColorBrush x:Key="ButtonPressedBrush" Color="{DynamicResource Surface1}" />
 

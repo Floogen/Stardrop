@@ -9,6 +9,7 @@
         <Color x:Key="IceRow">#EEF3FF</Color>
         <Color x:Key="IceRowAlt">#E6EDFF</Color>
         <Color x:Key="IceText">#1E2433</Color>
+        <Color x:Key="LightGray">#D5DEF0</Color>
 
         <!-- Accent / UI Colors -->
         <Color x:Key="RRed">#FF5F5F</Color>
@@ -19,6 +20,11 @@
         <Color x:Key="RBlue">#5C7CFA</Color>
         <Color x:Key="RPurple">#B197FC</Color>
 
+        <!-- Status Colors -->
+        <Color x:Key="StatusGreen">#1F9D6B</Color>
+        <Color x:Key="StatusRed">#D64545</Color>
+        <Color x:Key="StatusAmber">#C98A00</Color>
+
         <!-- Avalonia Brushes -->
         <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource IceBg}" />
         <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource IceText}" />
@@ -26,10 +32,26 @@
         <SolidColorBrush x:Key="ThemeControlHighBrush" Color="{DynamicResource IceText}" Opacity="0.65" />
         <SolidColorBrush x:Key="ThemeForegroundLowBrush" Color="{DynamicResource IceText}" Opacity="0.6" />
         
-        <!-- Need to look into why missing a SolidColorBrush causes Stardrop to not display them in styles -->
         <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource LightGray}" />
+        <SolidColorBrush x:Key="HighlightForegroundBrush" Color="{DynamicResource IceText}" />
+        <SolidColorBrush x:Key="ThemeForegroundHighBrush" Color="{DynamicResource IceText}" />
         <SolidColorBrush x:Key="ButtonHoverBrush" Color="{DynamicResource IceRowAlt}" />
         <SolidColorBrush x:Key="ButtonPressedBrush" Color="{DynamicResource IceRow}" />
+
+        <!-- Stardrop Brushes -->
+        <SolidColorBrush x:Key="DataGridHeaderBrush" Color="{DynamicResource IceRowAlt}" />
+        <SolidColorBrush x:Key="DataGridRowBackground" Color="{DynamicResource IceRow}" />
+        <SolidColorBrush x:Key="DataGridRowForeground" Color="{DynamicResource IceText}" />
+        <SolidColorBrush x:Key="AlternativeDataGridRowBackground" Color="{DynamicResource IceRowAlt}" />
+        <SolidColorBrush x:Key="ComboBoxItemBackgroundBrush" Color="{DynamicResource IceRow}" />
+        <SolidColorBrush x:Key="ComboBoxItemSelectedBackgroundBrush" Color="{DynamicResource RCyan}" />
+        <SolidColorBrush x:Key="UpdateAvailableBrush" Color="{DynamicResource StatusGreen}" />
+        <SolidColorBrush x:Key="UpdateBrokenBrush" Color="{DynamicResource StatusRed}" />
+        <SolidColorBrush x:Key="UpdateUnofficialBrush" Color="{DynamicResource StatusAmber}" />
+
+        <!-- Collection icons -->
+        <SolidColorBrush x:Key="CollectionCuratedBrush" Color="{DynamicResource RBlue}" />
+        <SolidColorBrush x:Key="CollectionAddOnBrush" Color="{DynamicResource IceText}" />
 
     </Styles.Resources>
 
@@ -38,15 +60,6 @@
         <Setter Property="Background" Value="{DynamicResource IceBg}" />
         <Setter Property="BorderBrush" Value="{DynamicResource RCyan}" />
         <Setter Property="Foreground" Value="{DynamicResource IceText}" />
-    </Style>
-
-    <Style Selector="DataGridRow">
-        <Setter Property="Background" Value="{DynamicResource IceRow}" />
-        <Setter Property="Foreground" Value="{DynamicResource IceText}" />
-    </Style>
-
-    <Style Selector="DataGridRow:nth-child(even)">
-        <Setter Property="Background" Value="{DynamicResource IceRowAlt}" />
     </Style>
 
     <Style Selector="DataGridRow:selected">

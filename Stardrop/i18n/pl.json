@@ -62,7 +62,7 @@
   "ui.main_window.labels.unknown_SMAPI": "Nieznana wersja SMAPI",
 
   // Main Window - Hyperlinks
-  "ui.main_window.hyperlinks.click_to_open": "Kliknij, aby otworzyć"
+  "ui.main_window.hyperlinks.click_to_open": "Kliknij, aby otworzyć",
   "ui.main_window.hyperlinks.update_available": "Dostępna aktualizacja ({0})",
   "ui.main_window.hyperlinks.unofficial_update_available": "Dostępna nieoficjalna aktualizacja ({0})",
   "ui.main_window.hyperlinks.broken_compatibility_issue": "[Broken] Niekompatybilny",

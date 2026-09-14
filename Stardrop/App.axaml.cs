@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Stardrop.Models.Nexus.Web;
 using Stardrop.Utilities;
+using Stardrop.Utilities.Internal;
 using Stardrop.Views;
 using System;
 using System.Collections.Generic;
@@ -29,12 +30,12 @@ namespace Stardrop
 
             // Handle adding the themes
             Dictionary<string, IStyle> themes = new Dictionary<string, IStyle>();
-            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Themes"), "*.xaml", SearchOption.AllDirectories))
+            foreach (string fileFullName in ThemeManager.GetThemeFilePaths())
             {
                 try
                 {
                     var themeName = Path.GetFileNameWithoutExtension(fileFullName);
-                    themes[themeName] = AvaloniaRuntimeXamlLoader.Parse<Styles>(File.ReadAllText(fileFullName));
+                    themes[themeName] = ThemeManager.Load(fileFullName);
                     Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
                 }
                 catch (Exception ex)
@@ -43,7 +44,7 @@ namespace Stardrop
                 }
             }
 
-            Current.Styles.Insert(0, !themes.ContainsKey(Program.settings.Theme) ? themes.Values.First() : themes[Program.settings.Theme]);
+            Current.Styles.Insert(ThemeManager.THEME_STYLE_INDEX, !themes.ContainsKey(Program.settings.Theme) ? themes.Values.First() : themes[Program.settings.Theme]);
         }
 
         private async void OnUrlsOpen(object? sender, UrlOpenedEventArgs e, MainWindow mainWindow)

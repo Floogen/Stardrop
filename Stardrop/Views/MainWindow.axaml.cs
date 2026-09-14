@@ -463,7 +463,14 @@ namespace Stardrop.Views
                 return;
             }
 
-            var addedMods = await AddMods(e.Data.GetFileNames()?.ToArray());
+            var installTarget = await ResolveModInstallTarget();
+            if (installTarget.Proceed is false)
+            {
+                _viewModel.DragOverColor = "#ff9f2a";
+                return;
+            }
+
+            var addedMods = await AddMods(e.Data.GetFileNames()?.ToArray(), installTarget.InstallPathOverride);
 
             // TODO: Add optional setting to disable checking for updates when a new mod is installed?
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
@@ -583,7 +590,7 @@ namespace Stardrop.Views
 
         private async void _lockSentinelTimer_Tick(object? sender, EventArgs e)
         {
-            if (_lockWindow is not null || this.OwnedWindows.Any(w => w is WarningWindow) || _viewModel.IsLocked is false || String.IsNullOrEmpty(_lockReason))
+            if (_lockWindow is not null || HasOpenDialog() || _viewModel.IsLocked is false || String.IsNullOrEmpty(_lockReason))
             {
                 return;
             }
@@ -1584,7 +1591,20 @@ namespace Stardrop.Views
             dialog.Filters.Add(new FileDialogFilter() { Name = "Mod Archive (*.zip, *.7z, *.rar)", Extensions = { "zip", "7z", "rar" } });
             dialog.AllowMultiple = true;
 
-            var addedMods = await AddMods(await dialog.ShowAsync(this));
+            // Resolved after the files are chosen
+            var filePaths = await dialog.ShowAsync(this);
+            if (filePaths is null || filePaths.Length == 0)
+            {
+                return;
+            }
+
+            var installTarget = await ResolveModInstallTarget();
+            if (installTarget.Proceed is false)
+            {
+                return;
+            }
+
+            var addedMods = await AddMods(filePaths, installTarget.InstallPathOverride);
 
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
@@ -2186,7 +2206,8 @@ namespace Stardrop.Views
 
             // A file that a collection is still waiting on installs into that collection rather than loose, which is
             // the only route a non-premium account has into one Stardrop could not fetch on its behalf
-            if (await TryProcessCollectionEntryLink(nxmLink))
+            var entryLinkResult = await TryProcessCollectionEntryLink(nxmLink);
+            if (entryLinkResult is CollectionEntryLinkResult.Handled)
             {
                 return NXMLinkResult.Success;
             }
@@ -2228,6 +2249,14 @@ namespace Stardrop.Views
             var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
             if (Program.settings.IsAskingBeforeAcceptingNXM is false || await requestWindow.ShowDialog<bool>(this))
             {
+                // Asked before the download rather than after, so backing out costs nothing. A link the
+                // user has already declined capturing into a collection skips the question
+                var installTarget = await ResolveModInstallTarget(skipPrompt: entryLinkResult is CollectionEntryLinkResult.Declined);
+                if (installTarget.Proceed is false)
+                {
+                    return NXMLinkResult.Canceled;
+                }
+
                 var downloadResult = await Nexus.Client.DownloadFileAndGetPath(processedDownloadLink, modDetails.Name);
                 if (downloadResult.ResultKind is DownloadResultKind.Failed)
                 {
@@ -2241,7 +2270,7 @@ namespace Stardrop.Views
                 }
                 string downloadedFilePath = downloadResult.DownloadedModFilePath!;
 
-                var addedMods = await AddMods(new string[] { downloadedFilePath });
+                var addedMods = await AddMods(new string[] { downloadedFilePath }, installTarget.InstallPathOverride);
                 await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
                 await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
@@ -2302,7 +2331,37 @@ namespace Stardrop.Views
         /// </summary>
         private void KeepDialogAboveSiblings(Window dialog)
         {
-            dialog.Topmost = this.OwnedWindows.Any(w => ReferenceEquals(w, dialog) is false);
+            dialog.Topmost = OwnedWindows.Any(w => ReferenceEquals(w, dialog) is false);
+        }
+
+        private bool HasOpenDialog()
+        {
+            return OwnedWindows.Any(w => ReferenceEquals(w, _collectionsWindow) is false);
+        }
+
+        /// <summary>
+        /// Shows a dialog over the lock window.
+        /// </summary>
+        private async Task<T> ShowDialogOverLock<T>(Window dialog)
+        {
+            var lockWindow = _lockWindow;
+            if (lockWindow is not null)
+            {
+                lockWindow.Topmost = false;
+            }
+
+            try
+            {
+                return await dialog.ShowDialog<T>(this);
+            }
+            finally
+            {
+                // Only where it is still the current one, as SetLockState may have closed it while the dialog was open
+                if (lockWindow is not null && ReferenceEquals(_lockWindow, lockWindow))
+                {
+                    KeepDialogAboveSiblings(lockWindow);
+                }
+            }
         }
 
         /// <summary>
@@ -3094,7 +3153,7 @@ namespace Stardrop.Views
                         foreach (var manifest in pathToManifests.Values.Where(m => m is not null && _viewModel.HasModInstalled(m.UniqueID) is true && string.IsNullOrEmpty(m.UpdateCautionMessage) is false))
                         {
                             var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_mod_update_caution"), manifest!.Name, manifest!.UpdateCautionMessage)) { Topmost = true };
-                            if (await requestWindow.ShowDialog<bool>(this) is false)
+                            if (await ShowDialogOverLock<bool>(requestWindow) is false)
                             {
                                 Program.helper.Log($"User elected to skip mod update due to given Manifest.UpdateCautionMessage message for mod {manifest!.UniqueID}:{manifest!.UpdateCautionMessage}");
                                 shouldProceedWithUpdate = false;
@@ -3141,7 +3200,7 @@ namespace Stardrop.Views
                                         {
                                             Topmost = true
                                         };
-                                        Choice response = await requestWindow.ShowDialog<Choice>(this);
+                                        Choice response = await ShowDialogOverLock<Choice>(requestWindow);
                                         if (response == Choice.First || response == Choice.Second)
                                         {
                                             if (response == Choice.Second)

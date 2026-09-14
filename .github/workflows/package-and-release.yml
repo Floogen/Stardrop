@@ -10,6 +10,14 @@ on:
       is-prerelease:
         required: true
         type: string
+      is-rolling-tag:
+        required: false
+        type: boolean
+        default: false
+      release-body:
+        required: false
+        type: string
+        default: ''
       generate-release-notes:
         required: true
         type: boolean
@@ -25,6 +33,14 @@ on:
         options:
         - 'true'
         - 'false'
+      is-rolling-tag:
+        required: false
+        type: boolean
+        default: false
+      release-body:
+        required: false
+        type: string
+        default: ''
       generate-release-notes:
         required: true
         type: boolean
@@ -61,6 +77,28 @@ jobs:
     - uses: actions/download-artifact@v4    
       with:
         merge-multiple: true
+    - name: Retarget rolling tag
+      if: ${{ inputs.is-rolling-tag }}
+      run: |
+        git tag --force "${TAG}" "${GITHUB_SHA}"
+        git push --force origin "refs/tags/${TAG}"
+    # Skipped entirely when the caller supplies its own body, in which case the output is never read
+    - name: Compose default release body
+      id: default-body
+      if: ${{ inputs.release-body == '' }}
+      run: |
+        {
+          echo "body<<RELEASE_BODY_EOF"
+          echo "![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-linux-x64.zip?label=Linux+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-osx-x64.zip?label=macOS+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-win-x64.zip?label=Windows+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-linux-arm64.zip?label=Linux+ARM+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-osx-arm64.zip?label=macOS+ARM+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-win-arm64.zip?label=Windows+ARM+Downloads)"
+          echo ""
+          echo "Documentation can be [found here](https://floogen.gitbook.io/stardrop/)."
+          echo ""
+          echo "**User Note:**"
+          echo "Download the respective ZIP file relating to the host's operating system (Stardrop-win-x64 if using a Window x64 OS and so on)."
+          echo ""
+          echo "<br/>"
+          echo "RELEASE_BODY_EOF"
+        } >> "$GITHUB_OUTPUT"
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
@@ -68,17 +106,9 @@ jobs:
         prerelease: ${{ inputs.is-prerelease }}
         name: "Stardrop ${{ env.TAG }}"
         append_body: false
-        body: |
-          ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-linux-x64.zip?label=Linux+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-osx-x64.zip?label=macOS+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-win-x64.zip?label=Windows+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-linux-arm64.zip?label=Linux+ARM+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-osx-arm64.zip?label=macOS+ARM+Downloads) ![Downloads](https://img.shields.io/github/downloads/Floogen/Stardrop/${{ env.TAG }}/Stardrop-win-arm64.zip?label=Windows+ARM+Downloads)
-          
-          Documentation can be [found here](https://floogen.gitbook.io/stardrop/).
-          
-          **User Note:**
-          Download the respective ZIP file relating to the host's operating system (Stardrop-win-x64 if using a Window x64 OS and so on).
-                
-          <br/>
+        body: ${{ inputs.release-body != '' && inputs.release-body || steps.default-body.outputs.body }}
         generate_release_notes: ${{ inputs.generate-release-notes }}
-        make_latest: true
+        make_latest: ${{ inputs.is-prerelease != 'true' }}
         fail_on_unmatched_files: true
         files: |
           Stardrop-win-x64.zip
@@ -87,6 +117,14 @@ jobs:
           Stardrop-linux-arm64.zip
           Stardrop-osx-x64.zip
           Stardrop-osx-arm64.zip
+    # published_at is read-only and only stamped on the draft to published transition, so toggle draft to re-stamp it
+    - name: Refresh rolling release timestamp
+      if: ${{ inputs.is-rolling-tag }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release edit "${TAG}" --repo "${GITHUB_REPOSITORY}" --draft=true
+        gh release edit "${TAG}" --repo "${GITHUB_REPOSITORY}" --draft=false --prerelease=${{ inputs.is-prerelease }}
   upload-to-nexusmods:
     if: ${{ inputs.is-prerelease != 'true' }}
     needs: [ verify-build, package, release ]
