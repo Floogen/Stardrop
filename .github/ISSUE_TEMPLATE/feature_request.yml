@@ -1,0 +1,29 @@
+name: Feature Request
+description: Suggest a new feature or improvement for Stardrop
+title: "[Feature Request]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check the existing issues first to see whether your request has already been raised. Adding to an existing thread is more useful than opening a duplicate.
+
+        If you're reporting something that doesn't work as intended, open a bug report instead.
+
+  - type: input
+    id: stardrop-version
+    attributes:
+      label: Stardrop version
+      description: Shown in the title bar and in Stardrop's settings window. Please confirm you are on the latest release before requesting a feature.
+      placeholder: 1.0.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to see?
+      description: Describe how you picture this working.
+    validations:
+      required: true

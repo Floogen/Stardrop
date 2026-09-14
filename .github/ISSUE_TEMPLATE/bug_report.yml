@@ -1,0 +1,61 @@
+name: Bug Report
+description: Report a problem with Stardrop
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+
+        A Stardrop log file is required when reporting issues. Reports without one cannot be investigated and will be marked `needs log` until a link is added.
+
+        If your bug relates to SMAPI itself (such as mods not loading when starting the game from Stardrop), please include a SMAPI log as well.
+
+  - type: input
+    id: stardrop-version
+    attributes:
+      label: Stardrop version
+      description: Shown in the title bar and in Stardrop's settings window
+      placeholder: 1.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What's the issue?
+      description: Describe the problem and what you expected to happen instead. Include the steps to reproduce the issue, if possible.
+    validations:
+      required: true
+
+  - type: input
+    id: stardrop-log
+    attributes:
+      label: Stardrop log
+      description: |
+        Follow https://floogen.gitbook.io/stardrop/resources/reporting-issues to locate your Stardrop log, upload the contents to https://pastebin.com then paste the resulting link below.
+      placeholder: https://pastebin.com/stardropLogLink
+    validations:
+      required: true
+
+  - type: input
+    id: smapi-log
+    attributes:
+      label: SMAPI log (optional)
+      description: Upload your SMAPI log to https://smapi.io/log then paste the resulting link below
+      placeholder: https://smapi.io/log/smapiLogLink
+    validations:
+      required: false
