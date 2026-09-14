@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -9,98 +10,94 @@ namespace Stardrop.Utilities
 {
     internal class Translation : INotifyPropertyChanged
     {
-        public enum Language
+        public sealed class LanguageOption
         {
-            English,
-            Chinese,
-            French,
-            German,
-            Hungarian,
-            Italian,
-            Japanese,
-            Korean,
-            Portuguese,
-            Russian,
-            Spanish,
-            Thai,
-            Turkish,
-            Ukrainian,
-            Dutch
+            public string Code { get; }
+            public string DisplayName { get; }
+
+            public LanguageOption(string code)
+            {
+                Code = code;
+                DisplayName = GetDisplayName(code);
+            }
+
+            public override string ToString()
+            {
+                return DisplayName;
+            }
+
+            private static string GetDisplayName(string code)
+            {
+                if (String.Equals(code, "default", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "English";
+                }
+
+                try
+                {
+                    return CultureInfo.GetCultureInfo(code).EnglishName;
+                }
+                catch (CultureNotFoundException)
+                {
+                    return code;
+                }
+            }
         }
 
-        public enum LanguageAbbreviation
+        private static readonly Dictionary<string, string> LegacyLanguageNames = new(StringComparer.OrdinalIgnoreCase)
         {
-            @default,
-            zh,
-            fr,
-            de,
-            hu,
-            it,
-            ja,
-            ko,
-            pt,
-            ru,
-            es,
-            th,
-            tr,
-            uk,
-            nl
-        }
-        public Dictionary<Language, LanguageAbbreviation> LanguageNameToAbbreviations = new();
-        public Dictionary<LanguageAbbreviation, Language> AbbreviationsToLanguageName = new();
+            ["English"] = "default",
+            ["Chinese"] = "zh",
+            ["French"] = "fr",
+            ["German"] = "de",
+            ["Hungarian"] = "hu",
+            ["Italian"] = "it",
+            ["Japanese"] = "ja",
+            ["Korean"] = "ko",
+            ["Portuguese"] = "pt",
+            ["Russian"] = "ru",
+            ["Spanish"] = "es",
+            ["Thai"] = "th",
+            ["Turkish"] = "tr",
+            ["Ukrainian"] = "uk",
+            ["Dutch"] = "nl"
+        };
 
-        private Language _selectedLanguage = Language.English;
-        private Dictionary<LanguageAbbreviation, Dictionary<string, string>> _languageTranslations = new();
+        private string _selectedLanguage = "default";
+        private readonly Dictionary<string, Dictionary<string, string>> _languageTranslations = new(StringComparer.OrdinalIgnoreCase);
         private const string IndexerName = "Item";
         private const string IndexerArrayName = "Item[]";
 
-
-        public Translation()
-        {
-            int index = 0;
-            foreach (Language language in Enum.GetValues(typeof(Language)))
-            {
-                LanguageNameToAbbreviations[language] = (LanguageAbbreviation)index;
-                AbbreviationsToLanguageName[(LanguageAbbreviation)index] = language;
-
-                index++;
-            }
-        }
-
         public string GetLanguageFromAbbreviation(string abbreviation)
         {
-            if (Enum.TryParse(typeof(LanguageAbbreviation), abbreviation, out var languageAbbreviation))
+            if (_languageTranslations.ContainsKey(abbreviation))
             {
-                if (AbbreviationsToLanguageName.ContainsKey((LanguageAbbreviation)languageAbbreviation))
-                {
-                    return AbbreviationsToLanguageName[(LanguageAbbreviation)languageAbbreviation].ToString();
-                }
+                return GetCanonicalLanguageCode(abbreviation);
             }
 
-            return Language.English.ToString();
+            return "default";
         }
 
-        public Language GetLanguage(string language)
+        public string NormalizeLanguage(string language)
         {
-            if (Enum.TryParse(typeof(Language), language, out var parsedLanguage))
+            if (String.IsNullOrWhiteSpace(language))
             {
-                return (Language)parsedLanguage;
+                return "default";
             }
 
-            return Language.English;
+            if (LegacyLanguageNames.TryGetValue(language, out var legacyCode))
+            {
+                language = legacyCode;
+            }
+
+            return _languageTranslations.ContainsKey(language)
+                ? GetCanonicalLanguageCode(language)
+                : "default";
         }
 
         public void SetLanguage(string language)
         {
-            if (Enum.TryParse(typeof(Language), language, out var parsedLanguage))
-            {
-                SetLanguage((Language)parsedLanguage);
-            }
-        }
-
-        public void SetLanguage(Language language)
-        {
-            _selectedLanguage = language;
+            _selectedLanguage = NormalizeLanguage(language);
 
             Invalidate();
         }
@@ -113,11 +110,8 @@ namespace Stardrop.Utilities
                 try
                 {
                     var fileName = Path.GetFileNameWithoutExtension(fileFullName);
-                    if (Enum.TryParse(typeof(LanguageAbbreviation), fileName, out var language))
-                    {
-                        _languageTranslations[(LanguageAbbreviation)language] = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(fileFullName), new JsonSerializerOptions { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
-                        Program.helper.Log($"Loaded language {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
-                    }
+                    _languageTranslations[fileName] = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(fileFullName), new JsonSerializerOptions { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
+                    Program.helper.Log($"Loaded language {fileName}", Helper.Status.Debug);
                 }
                 catch (Exception ex)
                 {
@@ -126,35 +120,24 @@ namespace Stardrop.Utilities
             }
         }
 
-        public void LoadTranslations(Language language)
+        public List<LanguageOption> GetAvailableTranslations()
         {
-            // Set the language
-            SetLanguage(language);
-
-            LoadTranslations();
-        }
-
-        public List<Language> GetAvailableTranslations()
-        {
-            List<Language> availableLanguages = new();
-            foreach (var abbreviation in _languageTranslations.Keys.Where(l => AbbreviationsToLanguageName.ContainsKey(l)))
-            {
-                availableLanguages.Add(AbbreviationsToLanguageName[abbreviation]);
-            }
-
-            return availableLanguages;
+            return _languageTranslations.Keys
+                .OrderBy(code => String.Equals(code, "default", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                .ThenBy(code => new LanguageOption(code).DisplayName, StringComparer.CurrentCultureIgnoreCase)
+                .Select(code => new LanguageOption(code))
+                .ToList();
         }
 
         public string Get(string key)
         {
-            var languageAbbreviation = LanguageNameToAbbreviations[_selectedLanguage];
-            if (_languageTranslations.ContainsKey(languageAbbreviation) && _languageTranslations[languageAbbreviation].ContainsKey(key))
+            if (_languageTranslations.ContainsKey(_selectedLanguage) && _languageTranslations[_selectedLanguage].ContainsKey(key))
             {
-                return _languageTranslations[languageAbbreviation][key];
+                return _languageTranslations[_selectedLanguage][key];
             }
-            else if (_languageTranslations.ContainsKey(LanguageAbbreviation.@default) && _languageTranslations[LanguageAbbreviation.@default].ContainsKey(key))
+            else if (_languageTranslations.ContainsKey("default") && _languageTranslations["default"].ContainsKey(key))
             {
-                return _languageTranslations[LanguageAbbreviation.@default][key];
+                return _languageTranslations["default"][key];
             }
 
             return $"(No translation provided for key {key})";
@@ -173,6 +156,11 @@ namespace Stardrop.Utilities
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(IndexerName));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(IndexerArrayName));
+        }
+
+        private string GetCanonicalLanguageCode(string code)
+        {
+            return _languageTranslations.Keys.First(key => String.Equals(key, code, StringComparison.OrdinalIgnoreCase));
         }
     }
 }
