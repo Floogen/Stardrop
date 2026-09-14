@@ -414,21 +414,56 @@ namespace Stardrop.ViewModels
             return found;
         }
 
-        public List<FileInfo> GetManifestFiles(DirectoryInfo modDirectory)
+        /// <summary>
+        /// The mod folder equivalent of <see cref="GetDiscoverableFiles"/>, carrying the root for the same reason.
+        /// </summary>
+        private List<(string Root, FileInfo Manifest, FileInfo? Config)> GetDiscoverableModFolders(List<string> scanRoots)
         {
-            List<FileInfo> manifests = new List<FileInfo>();
+            var found = new List<(string Root, FileInfo Manifest, FileInfo? Config)>();
+            foreach (var root in scanRoots)
+            {
+                foreach (var (manifest, config) in GetModFolders(new DirectoryInfo(root)))
+                {
+                    found.Add((root, manifest, config));
+                }
+            }
+
+            return found;
+        }
+
+        /// <summary>
+        /// Finds every mod folder below the given directory, taking a folder that holds a manifest.json as a mod
+        /// and not descending past it. The config.json is picked out of the same enumeration that finds the
+        /// manifest, as walking for it separately reads every directory on disk a second time.
+        /// </summary>
+        public List<(FileInfo Manifest, FileInfo? Config)> GetModFolders(DirectoryInfo modDirectory)
+        {
+            List<(FileInfo Manifest, FileInfo? Config)> modFolders = new List<(FileInfo Manifest, FileInfo? Config)>();
             foreach (var directory in modDirectory.EnumerateDirectories())
             {
                 try
                 {
-                    var localManifest = directory.EnumerateFiles().FirstOrDefault(file => file.Name.Equals("manifest.json", StringComparison.OrdinalIgnoreCase));
+                    FileInfo? localManifest = null;
+                    FileInfo? localConfig = null;
+                    foreach (var file in directory.EnumerateFiles())
+                    {
+                        if (file.Name.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+                        {
+                            localManifest = file;
+                        }
+                        else if (file.Name.Equals("config.json", StringComparison.OrdinalIgnoreCase))
+                        {
+                            localConfig = file;
+                        }
+                    }
+
                     if (localManifest is null)
                     {
-                        manifests.AddRange(GetManifestFiles(directory));
+                        modFolders.AddRange(GetModFolders(directory));
                     }
                     else
                     {
-                        manifests.Add(localManifest);
+                        modFolders.Add((localManifest, localConfig));
                     }
                 }
                 catch (Exception ex)
@@ -437,7 +472,7 @@ namespace Stardrop.ViewModels
                 }
             }
 
-            return manifests;
+            return modFolders;
         }
 
         public bool HasModInstalled(string uniqueID)
@@ -614,32 +649,80 @@ namespace Stardrop.ViewModels
             // same record and CollectionCache.Load goes to disk each time it is called
             var collectionsBySourceId = GetCollectionsBySourceId();
 
-            foreach (var (scanRoot, fileInfo) in GetDiscoverableFiles(scanRoots, GetManifestFiles))
+            // Indexed once for the pass. The key cache holds thousands of entries and was previously scanned in
+            // full for every dependency of every mod
+            var modKeysByUniqueId = new Dictionary<string, ModKeyInfo>(StringComparer.OrdinalIgnoreCase);
+            if (modKeysCache is not null)
             {
-                if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(scanRoot, fileInfo.Directory)))
+                foreach (var modKey in modKeysCache)
+                {
+                    if (modKey is null || String.IsNullOrEmpty(modKey.UniqueId))
+                    {
+                        continue;
+                    }
+
+                    modKeysByUniqueId.TryAdd(modKey.UniqueId, modKey);
+                }
+            }
+
+            // ModReference is a record whose Equals and GetHashCode already compare the (UniqueId, SourceId) pair
+            // case-insensitively, which is exactly what Matches does, so it serves as the key directly
+            var installDataByReference = new Dictionary<ModReference, ModInstallData>();
+            if (localDataCache is not null && localDataCache.ModInstallData is not null)
+            {
+                foreach (var installData in localDataCache.ModInstallData)
+                {
+                    if (installData is null || String.IsNullOrEmpty(installData.UniqueId))
+                    {
+                        continue;
+                    }
+
+                    installDataByReference.TryAdd(installData.ToReference(), installData);
+                }
+            }
+
+            // Where each reference landed in Mods, so a duplicate is found without scanning a collection that
+            // grows as the loop runs. Mods is cleared above and only appended to below
+            var modIndexByReference = new Dictionary<ModReference, int>();
+
+            ModKeyInfo? GetModKey(string? uniqueId)
+            {
+                if (String.IsNullOrEmpty(uniqueId))
+                {
+                    return null;
+                }
+
+                return modKeysByUniqueId.TryGetValue(uniqueId, out var modKey) ? modKey : null;
+            }
+
+            foreach (var (scanRoot, manifestInfo, configInfo) in GetDiscoverableModFolders(scanRoots))
+            {
+                if (manifestInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(scanRoot, manifestInfo.Directory)))
                 {
                     continue;
                 }
 
                 try
                 {
-                    var manifest = ManifestParser.GetData(File.ReadAllText(fileInfo.FullName));
+                    var manifest = ManifestParser.GetData(File.ReadAllText(manifestInfo.FullName));
                     if (manifest is null || String.IsNullOrEmpty(manifest.UniqueID))
                     {
-                        Program.helper.Log($"The manifest.json was empty or not deserializable from {fileInfo.DirectoryName}", Helper.Status.Alert);
+                        Program.helper.Log($"The manifest.json was empty or not deserializable from {manifestInfo.DirectoryName}", Helper.Status.Alert);
                         continue;
                     }
 
-                    var mod = new Mod(manifest, fileInfo, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
+                    var mod = new Mod(manifest, manifestInfo, manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
                     ApplyCollectionDetails(mod, collectionsBySourceId);
 
-                    if (manifest.ContentPackFor is not null && modKeysCache is not null)
+                    // Identity is (SourceId, UniqueId), so a collection's pinned copy never displaces a loose install of the same mod
+                    var modReference = mod.ToReference();
+                    if (manifest.ContentPackFor is not null)
                     {
-                        var dependencyKey = modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(manifest.ContentPackFor.UniqueID, StringComparison.OrdinalIgnoreCase));
+                        var dependencyKey = GetModKey(manifest.ContentPackFor.UniqueID);
                         mod.FrameworkID = manifest.ContentPackFor.UniqueID;
                         mod.Requirements.Add(new ManifestDependency(manifest.ContentPackFor.UniqueID, manifest.ContentPackFor.MinimumVersion, true) { Name = dependencyKey is null ? manifest.ContentPackFor.UniqueID : dependencyKey.Name });
                     }
-                    if (manifest.Dependencies is not null && modKeysCache is not null)
+                    if (manifest.Dependencies is not null)
                     {
                         foreach (var dependency in manifest.Dependencies)
                         {
@@ -648,57 +731,52 @@ namespace Stardrop.ViewModels
                                 continue;
                             }
 
-                            var dependencyKey = modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(dependency.UniqueID, StringComparison.OrdinalIgnoreCase));
+                            var dependencyKey = GetModKey(dependency.UniqueID);
                             mod.Requirements.Add(new ManifestDependency(dependency.UniqueID, dependency.MinimumVersion, dependency.IsRequired) { Name = dependencyKey is null ? dependency.UniqueID : dependencyKey.Name });
                         }
                     }
-                    if (modKeysCache is not null && modKeysCache.Any(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)))
+
+                    var modKey = GetModKey(mod.UniqueId);
+                    if (modKey is not null)
                     {
-                        mod.ModPageUri = modKeysCache.First(m => m.UniqueId.Equals(mod.UniqueId, StringComparison.OrdinalIgnoreCase)).PageUrl;
+                        mod.ModPageUri = modKey.PageUrl;
                     }
 
                     // Matched on the copy rather than the unique ID, so a collection's pinned mod and the user's own
                     // install of it keep their own dates. A record written before SourceId existed carries none, so
                     // it matches the loose copy and a collection copy simply starts fresh
-                    if (localDataCache is not null && localDataCache.ModInstallData is not null)
+                    if (installDataByReference.TryGetValue(modReference, out var installData))
                     {
-                        var installData = localDataCache.ModInstallData.FirstOrDefault(m => m.ToReference().Matches(mod));
-                        if (installData is not null)
-                        {
-                            mod.InstallTimestamp = installData.InstallTimestamp;
-                            mod.LastUpdateTimestamp = installData.LastUpdateTimestamp;
-                        }
+                        mod.InstallTimestamp = installData.InstallTimestamp;
+                        mod.LastUpdateTimestamp = installData.LastUpdateTimestamp;
                     }
 
-                   if (localDataCache is not null && localDataCache.IgnoredUpdates is not null && localDataCache.IgnoredUpdates.TryGetValue(mod.UniqueId, out string? value))
+                    if (localDataCache is not null && localDataCache.IgnoredUpdates is not null && localDataCache.IgnoredUpdates.TryGetValue(mod.UniqueId, out string? value))
                     {
                         mod.IgnoredVersion = value;
                     }
 
-                    // Check if any config file exists
-                    var configPath = Path.Combine(fileInfo.DirectoryName, "config.json");
-                    if (File.Exists(configPath) && new FileInfo(configPath) is FileInfo configInfo && configInfo is not null)
+                    // Taken from the walk that found the manifest, rather than a second pass over the tree
+                    if (configInfo is not null)
                     {
                         mod.Config = new Config() { UniqueId = mod.UniqueId, FilePath = configInfo.FullName, LastWriteTimeUtc = configInfo.LastWriteTimeUtc, Data = File.ReadAllText(configInfo.FullName) };
                     }
 
                     // Add or update the mod
-                    // Identity is (SourceId, UniqueId), so a collection's pinned copy never displaces a loose install of the same mod
-                    var modReference = mod.ToReference();
-                    var existingMod = Mods.FirstOrDefault(m => modReference.Matches(m));
-                    if (existingMod is null)
+                    if (modIndexByReference.TryGetValue(modReference, out var existingIndex) is false)
                     {
+                        modIndexByReference[modReference] = Mods.Count;
                         Mods.Add(mod);
                     }
-                    else if (existingMod.Version.CompareSortOrderTo(mod.Version) < 0)
+                    else if (Mods[existingIndex].Version.CompareSortOrderTo(mod.Version) < 0)
                     {
                         // Replace old mod with newer one
-                        Mods[Mods.IndexOf(existingMod)] = mod;
+                        Mods[existingIndex] = mod;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Program.helper.Log($"Unable to load the manifest.json from {fileInfo.DirectoryName}: {ex}", Helper.Status.Alert);
+                    Program.helper.Log($"Unable to load the manifest.json from {manifestInfo.DirectoryName}: {ex}", Helper.Status.Alert);
                 }
             }
 
@@ -724,7 +802,7 @@ namespace Stardrop.ViewModels
             File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
 
             EvaluateRequirements();
-            DiscoverConfigs(modsFilePath, useArchive: true);
+
             HideRequiredMods();
 
             HasCollectionMods = Mods.Any(m => m.IsFromCollection);
@@ -877,6 +955,17 @@ namespace Stardrop.ViewModels
 
         public void DiscoverConfigs(string modsFilePath, bool useArchive = false)
         {
+            var modsByDirectory = new Dictionary<string, Mod>(StringComparer.Ordinal);
+            foreach (var knownMod in Mods)
+            {
+                if (knownMod.ModFileInfo is null || knownMod.ModFileInfo.DirectoryName is null)
+                {
+                    continue;
+                }
+
+                modsByDirectory.TryAdd(knownMod.ModFileInfo.DirectoryName, knownMod);
+            }
+
             foreach (var (scanRoot, fileInfo) in GetDiscoverableFiles(GetScanRoots(modsFilePath), GetConfigFiles))
             {
                 if (fileInfo.DirectoryName is null || (Program.settings.IgnoreHiddenFolders && ParentFolderContainsPeriod(scanRoot, fileInfo.Directory)))
@@ -884,8 +973,7 @@ namespace Stardrop.ViewModels
                     continue;
                 }
 
-                var mod = Mods.FirstOrDefault(m => m.ModFileInfo is not null && m.ModFileInfo.DirectoryName == fileInfo.DirectoryName);
-                if (mod is null)
+                if (modsByDirectory.TryGetValue(fileInfo.DirectoryName, out var mod) is false)
                 {
                     continue;
                 }
