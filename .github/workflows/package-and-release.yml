@@ -100,6 +100,14 @@ jobs:
           Stardrop-linux-arm64.zip
           Stardrop-osx-x64.zip
           Stardrop-osx-arm64.zip
+    # published_at is read-only and only stamped on the draft to published transition, so toggle draft to re-stamp it
+    - name: Refresh rolling release timestamp
+      if: ${{ inputs.is-rolling-tag }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release edit "${TAG}" --repo "${GITHUB_REPOSITORY}" --draft=true
+        gh release edit "${TAG}" --repo "${GITHUB_REPOSITORY}" --draft=false --prerelease=${{ inputs.is-prerelease }}
   upload-to-nexusmods:
     if: ${{ inputs.is-prerelease != 'true' }}
     needs: [ verify-build, package, release ]
