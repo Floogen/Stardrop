@@ -1,0 +1,34 @@
+﻿<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Fallback values for the various brushes.
+        A brush here is only used when the selected theme does not define that key at all, so a theme
+        never loses a colour it has set. This file is not offered as a selectable theme.
+
+        The neutral entries are translucent black rather than a fixed colour, so they tint whatever
+        background the theme has set.
+
+        DataGridRowForeground is deliberately absent. An unresolved Foreground falls through to the
+        inherited value, which is already a working fallback.
+    -->
+    <Styles.Resources>
+
+        <!-- Neutral surfaces -->
+        <SolidColorBrush x:Key="DataGridHeaderBrush" Color="#26000000" />
+        <SolidColorBrush x:Key="DataGridRowBackground" Color="#00000000" />
+        <SolidColorBrush x:Key="AlternativeDataGridRowBackground" Color="#18000000" />
+        <SolidColorBrush x:Key="ComboBoxItemBackgroundBrush" Color="#00000000" />
+        <SolidColorBrush x:Key="ComboBoxItemSelectedBackgroundBrush" Color="#26000000" />
+        <SolidColorBrush x:Key="ButtonHoverBrush" Color="#18000000" />
+        <SolidColorBrush x:Key="ButtonPressedBrush" Color="#26000000" />
+
+        <!-- Update status -->
+        <SolidColorBrush x:Key="UpdateAvailableBrush" Color="#1CFF96" />
+        <SolidColorBrush x:Key="UpdateBrokenBrush" Color="#F74040" />
+        <SolidColorBrush x:Key="UpdateUnofficialBrush" Color="#FDFD2E" />
+
+    </Styles.Resources>
+
+</Styles>

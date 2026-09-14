@@ -78,6 +78,10 @@
             <SolidColorBrush x:Key="UpdateUnofficialBrush"
                              Color="{DynamicResource NeonYellow}" />
 
+            <!-- Collection icons -->
+            <SolidColorBrush x:Key="CollectionCuratedBrush" Color="{DynamicResource CalmBlue}" />
+            <SolidColorBrush x:Key="CollectionAddOnBrush" Color="{DynamicResource White}" />
+
             <SolidColorBrush x:Key="ButtonHoverBrush" Color="{DynamicResource OffBlack}" />
             <SolidColorBrush x:Key="ButtonPressedBrush" Color="{DynamicResource OffGray}" />
 

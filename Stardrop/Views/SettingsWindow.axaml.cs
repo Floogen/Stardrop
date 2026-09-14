@@ -51,63 +51,21 @@ namespace Stardrop.Views
             SetTextboxTextFocusToEnd(collectionInstallTextBox, collectionInstallTextBox.Text);
 
             // Handle adding the themes
-            string? lastContributorName = null;
-            foreach (string fileFullName in Directory.EnumerateFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Themes"), "*.xaml", SearchOption.AllDirectories))
-            {
-                try
-                {
-                    var contributorName = new DirectoryInfo(Path.GetDirectoryName(fileFullName)).Name;
-                    if (contributorName is not null && contributorName.Equals("Themes", StringComparison.OrdinalIgnoreCase))
-                    {
-                        contributorName = null;
-                    }
-
-                    if (lastContributorName != contributorName)
-                    {
-                        // Add separator
-                        _viewModel.Themes.Add(new Theme()
-                        {
-                            Name = "------------",
-                            IsEnabled = false
-                        });
-                    }
-                    lastContributorName = contributorName;
-
-                    var themeName = Path.GetFileNameWithoutExtension(fileFullName);
-                    var style = AvaloniaRuntimeXamlLoader.Parse<Styles>(File.ReadAllText(fileFullName));
-
-                    _viewModel.Themes.Add(new Theme()
-                    {
-                        Author = contributorName is not null ? $"by {contributorName}" : "",
-                        Name = themeName,
-                        Style = style,
-                        IsEnabled = true
-                    });
-
-                    Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
-                }
-                catch (Exception ex)
-                {
-                    Program.helper.Log($"Unable to load theme on {Path.GetFileNameWithoutExtension(fileFullName)}: {ex}", Helper.Status.Warning);
-                }
-            }
+            LoadThemes();
 
             var themeComboBox = this.FindControl<ComboBox>("themeComboBox");
             themeComboBox.Items = _viewModel.Themes;
-            var currentTheme = _viewModel.Themes.FirstOrDefault(t => t.Name.Equals(Program.settings.Theme, StringComparison.OrdinalIgnoreCase));
-            if (currentTheme is not null)
-            {
-                themeComboBox.SelectedItem = currentTheme;
-            }
+            themeComboBox.SelectedItem = GetThemeByName(Program.settings.Theme);
             themeComboBox.SelectionChanged += (sender, e) =>
             {
                 Theme? theme = themeComboBox.SelectedItem as Theme;
                 if (theme is not null && theme.Style is not null)
                 {
-                    Application.Current.Styles[0] = theme.Style;
+                    Application.Current.Styles[ThemeManager.THEME_STYLE_INDEX] = theme.Style;
                     Program.settings.Theme = theme.Name;
                 }
             };
+            this.FindControl<Button>("refreshThemesButton").Click += RefreshThemesButton_Click;
 
             // Handle Nexus Mods preferred server
             var descriptionToServerEnum = new Dictionary<string, NexusServers>();
@@ -227,12 +185,86 @@ namespace Stardrop.Views
             }
         }
 
+        /// <summary>
+        /// Reads every theme file from disk into the view model, replacing whatever was there before
+        /// </summary>
+        private void LoadThemes()
+        {
+            // Built as a new list rather than cleared in place, as the combo box only notices a changed reference
+            var themes = new List<Theme>();
+
+            string? lastContributorName = null;
+            foreach (string fileFullName in ThemeManager.GetThemeFilePaths())
+            {
+                try
+                {
+                    var contributorName = new DirectoryInfo(Path.GetDirectoryName(fileFullName)).Name;
+                    if (contributorName is not null && contributorName.Equals(ThemeManager.THEMES_FOLDER_NAME, StringComparison.OrdinalIgnoreCase))
+                    {
+                        contributorName = null;
+                    }
+
+                    if (lastContributorName != contributorName)
+                    {
+                        // Add separator
+                        themes.Add(new Theme()
+                        {
+                            Name = "------------",
+                            IsEnabled = false
+                        });
+                    }
+                    lastContributorName = contributorName;
+
+                    var themeName = Path.GetFileNameWithoutExtension(fileFullName);
+                    var style = ThemeManager.Load(fileFullName);
+
+                    themes.Add(new Theme()
+                    {
+                        Author = contributorName is not null ? $"by {contributorName}" : "",
+                        Name = themeName,
+                        Style = style,
+                        IsEnabled = true
+                    });
+
+                    Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Unable to load theme on {Path.GetFileNameWithoutExtension(fileFullName)}: {ex}", Helper.Status.Warning);
+                }
+            }
+
+            _viewModel.Themes = themes;
+        }
+
+        private Theme? GetThemeByName(string themeName)
+        {
+            return _viewModel.Themes.FirstOrDefault(theme => theme.IsEnabled && theme.Name.Equals(themeName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private void RefreshThemesButton_Click(object? sender, RoutedEventArgs e)
+        {
+            var themeComboBox = this.FindControl<ComboBox>("themeComboBox");
+            var selectedTheme = themeComboBox.SelectedItem as Theme;
+            var selectedThemeName = selectedTheme is null ? Program.settings.Theme : selectedTheme.Name;
+
+            // Drop the cached defaults file too, otherwise edits to Themes/Defaults.xaml would be missed
+            ThemeManager.ClearCache();
+            LoadThemes();
+
+            // Swapping the list clears the selection, which fires SelectionChanged with a null theme and is ignored
+            themeComboBox.Items = _viewModel.Themes;
+
+            // Reselecting is what pushes the freshly parsed style into the application
+            themeComboBox.SelectedItem = GetThemeByName(selectedThemeName) ?? _viewModel.Themes.FirstOrDefault(theme => theme.IsEnabled);
+        }
+
         private void Exit_Click(object? sender, RoutedEventArgs e)
         {
             var oldTheme = _viewModel.Themes.FirstOrDefault(t => t.Name.Equals(_oldSettings.Theme));
             if (oldTheme is not null && oldTheme.Style is not null)
             {
-                Application.Current.Styles[0] = oldTheme.Style;
+                Application.Current.Styles[ThemeManager.THEME_STYLE_INDEX] = oldTheme.Style;
             }
 
             Program.settings = _oldSettings;
