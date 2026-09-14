@@ -39,8 +39,8 @@ jobs:
         uses: Nexus-Mods/upload-action@main
         with:
           api_key: ${{ secrets.NEXUS_API_KEY }}
-          file_group_id: ${{ vars.NEXUS_WINDOWS_FILE_GROUP_ID }}
-          archive_existing_file: true
+          file_id: ${{ vars.NEXUS_WINDOWS_FILE_GROUP_ID }}
+          archive_existing_version: false
           primary_mod_manager_download: false
           allow_mod_manager_download: false
           filename: Stardrop-win-x64.zip
@@ -64,8 +64,8 @@ jobs:
         uses: Nexus-Mods/upload-action@main
         with:
           api_key: ${{ secrets.NEXUS_API_KEY }}
-          file_group_id: ${{ vars.NEXUS_MAC_FILE_GROUP_ID }}
-          archive_existing_file: true
+          file_id: ${{ vars.NEXUS_MAC_FILE_GROUP_ID }}
+          archive_existing_version: false
           primary_mod_manager_download: false
           allow_mod_manager_download: false
           filename: Stardrop-osx-x64.zip
@@ -89,8 +89,8 @@ jobs:
         uses: Nexus-Mods/upload-action@main
         with:
           api_key: ${{ secrets.NEXUS_API_KEY }}
-          file_group_id: ${{ vars.NEXUS_LINUX_FILE_GROUP_ID }}
-          archive_existing_file: true
+          file_id: ${{ vars.NEXUS_LINUX_FILE_GROUP_ID }}
+          archive_existing_version: false
           primary_mod_manager_download: false
           allow_mod_manager_download: false
           filename: Stardrop-linux-x64.zip
@@ -114,8 +114,8 @@ jobs:
         uses: Nexus-Mods/upload-action@main
         with:
           api_key: ${{ secrets.NEXUS_API_KEY }}
-          file_group_id: ${{ vars.NEXUS_MAC_ARM_FILE_GROUP_ID }}
-          archive_existing_file: true
+          file_id: ${{ vars.NEXUS_MAC_ARM_FILE_GROUP_ID }}
+          archive_existing_version: false
           primary_mod_manager_download: false
           allow_mod_manager_download: false
           filename: Stardrop-osx-arm64.zip
