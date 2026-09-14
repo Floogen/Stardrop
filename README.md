@@ -18,6 +18,7 @@ See the [release page](https://github.com/Floogen/Stardrop/releases/latest) for 
 ## Translations
 Stardrop has been generously translated into several languages by the following users:
 
+* **Bulgarian** - AcTePuKc
 * **Chinese** - guanyintu, PIut02, Z2549, CuteCat233
 * **Dutch** - JvTeylingen
 * **French** - xynerorias
