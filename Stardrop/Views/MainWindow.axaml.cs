@@ -2212,10 +2212,7 @@ namespace Stardrop.Views
                 return NXMLinkResult.Success;
             }
 
-            Program.helper.Log($"Processing NXM link: {nxmLink.Link}");
             var processedDownloadLink = await Nexus.Client.GetFileDownloadLink(nxmLink, EnumParser.GetDescription(Program.settings.PreferredNexusServer));
-            Program.helper.Log($"Processed link: {processedDownloadLink}");
-
             if (String.IsNullOrEmpty(processedDownloadLink))
             {
                 await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_get_download_link"), nxmLink.Link), Program.translation.Get("internal.ok"));

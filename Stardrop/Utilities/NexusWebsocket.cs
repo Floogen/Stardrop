@@ -81,8 +81,6 @@ namespace Stardrop.Utilities
                     if (recv.MessageType == WebSocketMessageType.Close) break;
 
                     var msg = Encoding.UTF8.GetString(buffer, 0, recv.Count);
-                    Program.helper.Log($"[Nexus SSO] Received data: {msg}", Helper.Status.Debug);
-
                     var response = JsonSerializer.Deserialize<WebsocketResponse>(msg);
                     if (response != null && response.Success && response.Data != null)
                     {

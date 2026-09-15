@@ -156,7 +156,6 @@ namespace Stardrop.Utilities.External
                 if (validationModel is null || String.IsNullOrEmpty(validationModel.Message) is false)
                 {
                     Program.helper.Log($"Unable to validate given API key for Nexus Mods");
-                    Program.helper.Log($"Response from Nexus Mods:\n{content}");
 
                     return false;
                 }
@@ -420,7 +419,6 @@ namespace Stardrop.Utilities.External
                     if (downloadLinks is null || downloadLinks.Count == 0)
                     {
                         Program.helper.Log($"Unable to get the download link for Nexus Mods");
-                        Program.helper.Log($"Response from Nexus Mods:\n{content}");
                     }
                     else
                     {
@@ -516,7 +514,7 @@ namespace Stardrop.Utilities.External
 
                 if (ex is TaskCanceledException)
                 {
-                    Program.helper.Log($"The user canceled the download from Nexus from URL {uri}", Helper.Status.Info);
+                    Program.helper.Log($"The user canceled the download of {fileName} from Nexus", Helper.Status.Info);
                     return new(DownloadResultKind.UserCanceled, null);
                 }
                 else
