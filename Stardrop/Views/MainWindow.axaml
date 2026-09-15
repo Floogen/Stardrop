@@ -286,10 +286,7 @@
 			<Setter Property="HorizontalContentAlignment" Value="Center"/>
 			<Setter Property="Padding" Value="26 0 0 0"/>
 		</Style>
-		<Style Selector="DataGridColumnHeader[Content=Enabled]">
-			<Setter Property="Margin" Value="-13 0 0 0"/>
-			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
-			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
+		<Style Selector="DataGridColumnHeader[Content=]">
 			<Setter Property="Padding" Value="0"/>
 		</Style>
 		<Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
@@ -558,7 +555,8 @@
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTemplateColumn ext:ColumnExtensions.Key="State" CanUserReorder="False" Header="{i18n:Translate ui.main_window.menu_headers.enabled}" Width="25" CanUserResize="False" CanUserSort="True" SortMemberPath="IsEnabled">
+					<!-- Header is left empty on purpose -->
+					<DataGridTemplateColumn ext:ColumnExtensions.Key="State" CanUserReorder="False" Header="" Width="32" CanUserResize="False" CanUserSort="True" SortMemberPath="IsEnabled">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<CheckBox IsChecked="{Binding IsEnabled}" Click="EnabledBox_Clicked" Margin="5 0 0 0"/>

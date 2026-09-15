@@ -24,7 +24,6 @@ run-name: "Uploading to Nexus Mods"
 
 jobs:
   upload-macos-arm:
-    needs: [ upload-windows, upload-macos, upload-linux ]
     runs-on: ubuntu-latest
     steps:
       - name: Clean version
@@ -50,7 +49,7 @@ jobs:
           version: ${{ env.CLEANED_VERSION }}
           update_mod_version: true
   upload-macos:
-    needs: [ upload-windows ]
+    needs: [ upload-macos-arm ]
     runs-on: ubuntu-latest
     steps:
       - name: Clean version
@@ -76,7 +75,7 @@ jobs:
           version: ${{ env.CLEANED_VERSION }}
           update_mod_version: true
   upload-linux:
-    needs: [ upload-windows, upload-macos ]
+    needs: [ upload-macos-arm, upload-macos ]
     runs-on: ubuntu-latest
     steps:
       - name: Clean version
@@ -102,6 +101,7 @@ jobs:
           version: ${{ env.CLEANED_VERSION }}
           update_mod_version: true
   upload-windows:
+    needs: [ upload-macos-arm, upload-macos, upload-linux ]
     runs-on: ubuntu-latest
     steps:
       - name: Clean version

@@ -101,7 +101,7 @@ namespace Stardrop.Utilities.External
                 var downloadLinks = JsonSerializer.Deserialize<CollectionRevisionDownloadResult>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 if (downloadLinks is null || downloadLinks.DownloadLinks is null || downloadLinks.DownloadLinks.Count == 0)
                 {
-                    Program.helper.Log($"Unable to get the collection archive link. Response from Nexus Mods:\n{content}", Helper.Status.Alert);
+                    Program.helper.Log($"Unable to get the collection archive link from Nexus Mods", Helper.Status.Alert);
                     return null;
                 }
 

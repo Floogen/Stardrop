@@ -76,7 +76,6 @@ namespace Stardrop
             {
                 var operatingSystem = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" : RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Unix" : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "macOS" : "Unknown";
                 helper.Log($"{Environment.NewLine}-- Startup Data --{Environment.NewLine}Time: {DateTime.Now}{Environment.NewLine}OS: [{operatingSystem}] {RuntimeInformation.OSDescription}{Environment.NewLine}Settings Directory: {Pathing.defaultHomePath}{Environment.NewLine}Active Directory: {Directory.GetCurrentDirectory()}{Environment.NewLine}Version: v{ApplicationVersion}{Environment.NewLine}----------------------{Environment.NewLine}");
-                helper.Log($"Started with the following arguments: {String.Join('|', args)}");
 
                 // Set the argument values
                 Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(o =>
