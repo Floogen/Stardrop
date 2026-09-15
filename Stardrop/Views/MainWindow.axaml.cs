@@ -3277,6 +3277,17 @@ namespace Stardrop.Views
                                     }
                                     outputPath = Regex.Replace(outputPath, @"\s+\/", "/");
 
+                                    // Entry keys are whatever the packer wrote, so they can hold characters this file
+                                    // system rejects or a segment aiming above the install path. Rebuilding the path
+                                    // below installPath keeps both out, at the cost of a folder named slightly differently
+                                    var safeOutputPath = Pathing.GetSafeDestinationPath(installPath, Path.GetRelativePath(installPath, outputPath));
+                                    if (String.IsNullOrEmpty(safeOutputPath))
+                                    {
+                                        Program.helper.Log($"Skipping {entry.Key}, as it does not resolve to a path inside {installPath}", Helper.Status.Warning);
+                                        continue;
+                                    }
+                                    outputPath = safeOutputPath;
+
                                     // Create the default location if it doesn't existe
                                     var outputFolder = Path.GetDirectoryName(outputPath);
                                     if (String.IsNullOrEmpty(outputFolder))
@@ -3295,7 +3306,9 @@ namespace Stardrop.Views
                                     }
                                 }
 
-                                var addedMod = new Mod(manifest, new FileInfo(Path.Join(installPath, manifestFolderPath)), manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
+                                // Built the same way the entries above were, so that it points at the folder they created
+                                var modFolderPath = Pathing.GetSafeDestinationPath(installPath, manifestFolderPath) ?? installPath;
+                                var addedMod = new Mod(manifest, new FileInfo(modFolderPath), manifest.UniqueID, manifest.Version, manifest.Name, manifest.Description, manifest.Author);
                                 addedMods.Add(addedMod);
 
                                 // Record which archive produced this mod, so callers do not have to guess afterwards

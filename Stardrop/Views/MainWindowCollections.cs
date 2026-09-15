@@ -387,7 +387,27 @@ namespace Stardrop.Views
                 {
                     foreach (var entry in archive.Entries.Where(e => e.IsDirectory is false))
                     {
-                        entry.WriteToDirectory(targetFolder, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
+                        if (String.IsNullOrEmpty(entry.Key) || entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) || entry.Key.Contains(".DS_Store", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        // The destination is built here rather than by ExtractFullPath, which writes the entry's key
+                        // as it was recorded. Characters in the keys can contain values that Windows rejects, so they need to be parsed out
+                        var outputPath = Pathing.GetSafeDestinationPath(targetFolder, entry.Key);
+                        if (String.IsNullOrEmpty(outputPath))
+                        {
+                            Program.helper.Log($"Skipping {entry.Key} in the collection archive, as it does not resolve to a path inside {targetFolder}", Helper.Status.Warning);
+                            continue;
+                        }
+
+                        var outputFolder = Path.GetDirectoryName(outputPath);
+                        if (String.IsNullOrEmpty(outputFolder) is false)
+                        {
+                            Directory.CreateDirectory(outputFolder);
+                        }
+
+                        entry.WriteToFile(outputPath, new ExtractionOptions() { ExtractFullPath = false, Overwrite = true });
                     }
                 }
             }
@@ -1112,12 +1132,12 @@ namespace Stardrop.Views
         {
             try
             {
-                if (root.GetFiles(searchName, SearchOption.AllDirectories).FirstOrDefault() is FileInfo exact)
+                var safeName = Pathing.GetSafePathSegment(searchName);
+                var candidates = root.GetFiles("*", SearchOption.AllDirectories).Where(f => IsBundleNameMatch(f.Name, safeName)).ToList();
+                if (candidates.FirstOrDefault(f => f.Name.Equals(safeName, StringComparison.OrdinalIgnoreCase)) is FileInfo exact)
                 {
                     return exact;
                 }
-
-                var candidates = root.GetFiles($"{searchName}.*", SearchOption.AllDirectories);
 
                 return candidates.FirstOrDefault(f => IsArchiveFile(f.FullName)) ?? candidates.FirstOrDefault();
             }
@@ -1133,7 +1153,10 @@ namespace Stardrop.Views
         {
             try
             {
-                return root.GetDirectories(searchName, SearchOption.AllDirectories).FirstOrDefault();
+                var safeName = Pathing.GetSafePathSegment(searchName);
+                var candidates = root.GetDirectories("*", SearchOption.AllDirectories).Where(d => IsBundleNameMatch(d.Name, safeName)).ToList();
+
+                return candidates.FirstOrDefault(d => d.Name.Equals(safeName, StringComparison.OrdinalIgnoreCase)) ?? candidates.FirstOrDefault();
             }
             catch (Exception ex)
             {
@@ -1141,6 +1164,20 @@ namespace Stardrop.Views
 
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Whether something on disk answers to the name collection.json recorded for a bundled entry. The names are
+        /// compared rather than handed to a search pattern (due to bundled entries possibly containing wildcard characters)
+        /// </summary>
+        private static bool IsBundleNameMatch(string candidateName, string safeSearchName)
+        {
+            if (candidateName.Equals(safeSearchName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return Path.GetFileNameWithoutExtension(candidateName).Equals(Path.GetFileNameWithoutExtension(safeSearchName), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

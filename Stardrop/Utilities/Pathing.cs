@@ -198,6 +198,40 @@ namespace Stardrop.Utilities
         }
 
         /// <summary>
+        /// Combines a destination folder with a relative path that came from an outside source, such as the key of
+        /// an archive entry, sanitizing every segment on the way. Archive entries carry whatever the packer wrote,
+        /// which can include invalid file name characters, so a write built straight from the key fails
+        /// outright. Returns null when the relative path climbs out of the destination folder, which is the caller's
+        /// signal to skip the entry rather than write outside the folder it asked for.
+        /// </summary>
+        public static string? GetSafeDestinationPath(string destinationFolder, string? relativePath)
+        {
+            if (String.IsNullOrWhiteSpace(relativePath))
+            {
+                return destinationFolder;
+            }
+
+            var safePath = destinationFolder;
+            foreach (var segment in relativePath.Split(new char[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (segment == ".")
+                {
+                    continue;
+                }
+
+                // Only ever produced by an entry aiming outside the destination, as a real name cannot be ".."
+                if (segment == "..")
+                {
+                    return null;
+                }
+
+                safePath = Path.Combine(safePath, GetSafePathSegment(segment));
+            }
+
+            return IsSameOrUnder(safePath, destinationFolder) ? safePath : null;
+        }
+
+        /// <summary>
         /// Returns the collection SourceId owning the given mod folder, or null when the mod is a loose install.
         /// </summary>
         public static string? GetCollectionSourceId(string? modDirectoryPath)
