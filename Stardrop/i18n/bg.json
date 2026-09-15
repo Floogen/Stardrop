@@ -121,6 +121,12 @@
   "ui.settings_window.labels.preferred_server": "Предпочитан сървър:",
   "ui.settings_window.labels.collection_install": "Път до модовете, инсталирани от колекции",
 
+  // Settings Window - Mod Grouping
+  "ui.settings_window.mod_grouping.none": "Без групиране",
+  "ui.settings_window.mod_grouping.content_pack": "Пакет със съдържание",
+  "ui.settings_window.mod_grouping.folder": "Папка",
+  "ui.settings_window.mod_grouping.folder_condensed": "Папка (съкратено)",
+
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "Игнориране на скрити папки",
   "ui.settings_window.buttons.enable_profile_specific_mod_configs": "Настройки на модовете спрямо профила",
@@ -129,8 +135,10 @@
   "ui.settings_window.buttons.automatically_save_profile_changes": "Автоматично запазване на промените по профила",
   "ui.settings_window.buttons.show_mod_thumbnails": "Показване на изображения (thumbnails) за модовете",
   "ui.settings_window.buttons.always_ask_for_NXM_installs": "Запитване преди инсталиране на NXM файлове",
-  "ui.settings_window.buttons.register_nxm_association": "Асоцииране с NXM връзки",
+  "ui.settings_window.buttons.register_nxm_association": "Асоцииране с NXM",
   "ui.settings_window.buttons.collections_skip_smapi_update_check": "Колекциите пропускат проверката за обновления на SMAPI",
+  "ui.settings_window.buttons.always_ask_for_collection_install_target": "Питай при добавяне към колекция",
+  "ui.settings_window.buttons.remove_nxm_association": "Премахване на NXM асоциацията",
 
   // Settings Window - Tooltips
   "ui.settings_window.tooltips.smapi": "Пътят до файла на StardewModdingAPI",
@@ -152,6 +160,9 @@
   "ui.settings_window.tooltips.cancel_changes": "Отказ",
   "ui.settings_window.tooltips.collection_install_path": "Папката, в която колекциите поставят модовете, които инсталират. Тя трябва да е извън папката, зададена в „Път до папката с модове“, защото всяка колекция инсталира собствено копие на всеки фиксиран мод. Промяната не мести вече инсталираните модове.",
   "ui.settings_window.tooltips.collections_skip_smapi_update_check": "Указва на SMAPI да не проверява за обновления на модовете от колекции, за да не съобщава в конзолата за обновления, които се управляват от самата колекция.",
+  "ui.settings_window.tooltips.refresh_themes": "Презарежда всички файлове с теми от папката Themes и прилага отново избраната, така че промените по темите да се виждат без рестартиране.",
+  "ui.settings_window.tooltips.remove_nxm_file_association": "Премахва само регистрацията на Stardrop за NXM протокола.",
+  "ui.settings_window.tooltips.always_ask_for_collection_install_target": "Ако е отметнато, Stardrop ще попита дали модът, добавен при използване на профил с колекция, да бъде добавен към нея.\n\nАко не е отметнато, модът се добавя към колекцията без въпрос.",
 
   // Missing Mods Window
   "ui.missing_mods_window.textblock.drag_and_drop": "Плъзни и пусни липсващите модове по-горе.",
@@ -205,6 +216,9 @@
   "ui.warning.no_mod_configs_to_save_collection": "Няма настройки на модове за запазване в профил {0}.\n\nНастройките на модовете от колекцията принадлежат на самата колекция, затова се оставят в състоянието, зададено от нейния създател, вместо да се запазват към профил. Все още можеш да редактираш файловете директно и промените ти се пазят, докато нова версия на колекцията не ги промени.",
   "ui.warning.unable_nexus_changelog": "Неуспешно зареждане на промените за мода {0}.",
   "ui.warning.nxm_association_overridden": "NXM връзките в момента се обработват от {0}, а не от Stardrop.\n\nWindows защитава този избор, затова Stardrop не може да го промени вместо теб. Отвори Настройки > Приложения > Приложения по подразбиране > Избиране на приложения по подразбиране според протокола, потърси NXM и избери Stardrop.\n\nИзборът може да се изчисти и чрез изтриване на този ключ от регистъра:\n\nHKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\nxm",
+  "ui.warning.not_associated": "Stardrop в момента не е асоцииран с NXM протокола, затова няма какво да се премахне.",
+  "ui.warning.failed_to_remove_association": "Неуспешно премахване на регистрацията на Stardrop за NXM протокола.\n\nВиж дневника за подробности.",
+  "ui.warning.nxm_user_choice_retained": "Регистрацията на Stardrop за NXM е премахната, но Windows не позволи да се премахне запазеният избор на приложение по подразбиране.\n\nNXM връзките може да спрат да работят, докато не избереш друг обработчик. Отвори Настройки > Приложения > Приложения по подразбиране > Избиране на приложения по подразбиране според протокола, потърси NXM и избери желаната програма.\n\nИзборът може да се изчисти и чрез изтриване на този ключ от регистъра:\n\nHKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\nxm",
   "ui.warning.unsupported_platform": "Протоколът NXM в момента се поддържа само в Windows.",
   "ui.warning.failed_to_verify_mod_file": "Неуспешна проверка на резултатите от сканирането на файла в Nexus Mods. Продължаване с изтеглянето?",
   "ui.warning.file_quarantined": "Неуспешно изтегляне на мод:\n\nФайлът е поставен под карантина в Nexus Mods.",
@@ -312,7 +326,8 @@
   "ui.message.confirm_mod_update_method": "Засечена е предишна версия на {0}. Желаете ли да изчистите старата инсталация?\n\nЗабележка: Препоръчително е старите версии да се премахват, но това ще изтрие конфигурационните файлове на мода.",
   "ui.message.confirm_mod_update_method_no_config": "Засечена е предишна версия на {0}. Желаете ли да изчистите старата инсталация?\n\nЗабележка: Препоръчително е старите версии да се премахват.",
   "ui.message.confirm_mod_update_method_preserved": "Засечена е предишна версия на {0}. Желаете ли да изчистите старата инсталация?\n\nЗабележка: Препоръчително е старите версии да се премахват; Вашите конфигурационни файлове ще бъдат възстановени.",
-  "ui.message.confirm_nxm_association": "Желаете ли да асоциирате NXM протокола със Stardrop?\n\nТова ще позволи на Stardrop автоматично да инсталира модове, изтеглени от Nexus Mods.",
+  "ui.message.confirm_nxm_association": "Искате ли Stardrop да отваря NXM връзки?\n\nТака Stardrop ще може автоматично да инсталира модове от Nexus Mods.",
+  "ui.message.confirm_remove_nxm_association": "Искаш ли да премахнеш асоциирането на Stardrop с NXM протокола?\n\nМодовете вече няма да се инсталират директно от Nexus Mods. Премахва се само регистрацията на Stardrop, така че асоциирането на друго приложение остава непроменено.",
   "ui.message.confirm_nxm_install": "Желаете ли да инсталирате следния мод:\n\n{0}\n\nМожете да деактивирате това потвърждение от менюто с настройки.",
   "ui.message.require_nexus_login": "Това действие изисква вписване в Nexus Mods API.",
   "ui.message.succeeded_nexus_install": "Следният мод беше инсталиран успешно през Nexus Mods:\n\n{0}",
@@ -353,6 +368,10 @@
   "ui.collections_window.tooltips.open_missing": "Отваря раздел в браузъра за всеки мод, който тази колекция все още очаква.",
   "ui.collections_window.tooltips.remove": "Премахване на тази колекция",
   "ui.collections_window.textblock.open_entry_hint": "Щракни два пъти върху мод, за да отвориш страницата му.",
+  "internal.add_to_collection": "Добави към колекцията",
+  "internal.install_normally": "Инсталирай нормално",
+  "ui.message.confirm_collection_install_target": "В момента използваш колекцията {0}.\n\nИскаш ли да добавиш този мод към нея или да го инсталираш нормално?\n\nЗабележка: Модът, добавен към колекция, се управлява от нея, затова Stardrop няма да проверява за негови обновления.\n\nМожеш да изключиш това потвърждение от менюто с настройки.",
+  "ui.main_window.tooltips.collection_add_on": "{0}\n\nДобавен е от теб, а не от колекцията, затова никоя нейна ревизия няма да обнови или замени този мод.",
   "ui.collections_window.textblock.drop_entry_hint": "Пусни изтеглен файл тук, за да го инсталираш.",
   "ui.collections_window.headers.mod_name": "Име на мода",
   "ui.collections_window.headers.version": "Версия",
