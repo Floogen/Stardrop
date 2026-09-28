@@ -50,15 +50,27 @@ namespace Stardrop.ViewModels
 
             Name = String.IsNullOrEmpty(entry.Name) ? Program.translation.Get("internal.unknown") : entry.Name;
             Version = String.IsNullOrEmpty(entry.Version) ? String.Empty : entry.Version;
-            Status = DescribeStatus(entry);
+            Status = DescribeStatus(collection, entry);
             SortableVersion = SemVersion.TryParse(Version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : null;
 
             // Skipped entries are optional ones the user turned down, so they are accounted for rather than missing
             IsMissing = entry.IsSatisfied() is false && entry.Status is not CollectionModStatus.Skipped;
         }
 
-        private static string DescribeStatus(CollectionModEntry entry)
+        private static string DescribeStatus(CollectionInstall collection, CollectionModEntry entry)
         {
+            // Names what it is waiting on, as those are the downloads that finish it
+            if (entry.Status is CollectionModStatus.AwaitingTargets)
+            {
+                var blockingNames = collection.DescribeBlockingTargets(entry, CollectionInstall.MAX_LISTED_TARGET_NAMES, Program.translation.Get("ui.message.collection_names_truncated"));
+                if (String.IsNullOrEmpty(blockingNames))
+                {
+                    return Program.translation.Get("ui.collections_window.status.awaiting_targets_unnamed");
+                }
+
+                return String.Format(Program.translation.Get("ui.collections_window.status.awaiting_targets"), blockingNames);
+            }
+
             // An optional entry Stardrop could not fetch on the user's behalf is theirs to decide on, so it says so
             // rather than reading as something the collection is still waiting on
             if (entry.Status is CollectionModStatus.AwaitingManualDownload && entry.IsOptional)
