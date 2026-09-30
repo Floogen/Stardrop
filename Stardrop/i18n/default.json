@@ -375,6 +375,9 @@
   "ui.message.collection_conflicts": "The curator flagged {0} conflict(s) between mods in this collection:",
   "ui.message.collection_conflict_entry": "{0} conflicts with {1}",
   "ui.message.collection_reason_overlay_failed": "the file could not be placed",
+  "ui.message.collection_reason_no_hash_matches": "none of the files the curator listed were found in the download",
+  "ui.message.collection_files_unmatched": "{0} entry(s) are missing some of the files the curator listed, so their replacements are only partly in place:",
+  "ui.message.collection_files_unmatched_entry": "{0} ({1} of {2} file(s) missing)",
   "ui.message.confirm_collection_entry_capture": "{0} is required by the following collection(s):\n\n{1}\n\nWould you like to install it as part of the collection, instead of a standalone mod?\n\nYou can disable this confirmation in the settings menu.",
   "ui.message.collection_entry_installed": "Installed {0} into the collection {1}.",
   "ui.message.collection_entry_failed": "Failed to install {0} into the collection {1}.",
@@ -425,5 +428,6 @@
   "ui.collections_window.status.skipped": "Skipped",
   "ui.collections_window.status.overlay": "Configuration applied",
   "ui.collections_window.status.awaiting_targets": "Waiting on {0}",
-  "ui.collections_window.status.awaiting_targets_unnamed": "Waiting to be applied"
+  "ui.collections_window.status.awaiting_targets_unnamed": "Waiting to be applied",
+  "ui.collections_window.status.files_missing": "{0} file(s) missing"
 }

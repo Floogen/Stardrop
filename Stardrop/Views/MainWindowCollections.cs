@@ -183,6 +183,7 @@ namespace Stardrop.Views
                     entry.OverlayTargets = match.OverlayTargets;
                     entry.SourceArchivePath = match.SourceArchivePath;
                     entry.StoredOverlayName = match.StoredOverlayName;
+                    entry.UnmatchedFileCount = match.UnmatchedFileCount;
 
                     plan.Unchanged.Add(entry);
                     continue;
@@ -260,6 +261,13 @@ namespace Stardrop.Views
                 return false;
             }
 
+            // The same file placed somewhere else is still a change, as is a record from before placements were
+            // read, which placed the file by its archive's layout rather than where the curator had it
+            if (HasSameFileHashes(previous, updated) is false)
+            {
+                return false;
+            }
+
             if (updated.IsFromNexus())
             {
                 return previous.NexusModId == updated.NexusModId && previous.NexusFileId == updated.NexusFileId;
@@ -269,6 +277,19 @@ namespace Stardrop.Views
                 && String.Equals(previous.ExternalUri, updated.ExternalUri, StringComparison.OrdinalIgnoreCase)
                 && String.Equals(previous.FileExpression, updated.FileExpression, StringComparison.OrdinalIgnoreCase)
                 && String.Equals(previous.LogicalFilename, updated.LogicalFilename, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>Whether two revisions give an entry the same file placements, in any order</summary>
+        private static bool HasSameFileHashes(CollectionModEntry previous, CollectionModEntry updated)
+        {
+            if (previous.FileHashes.Count != updated.FileHashes.Count)
+            {
+                return false;
+            }
+
+            var previousHashes = previous.FileHashes.Select(h => $"{h.Path}|{h.Md5}").ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            return updated.FileHashes.All(h => previousHashes.Contains($"{h.Path}|{h.Md5}"));
         }
 
         /// <summary>
@@ -826,14 +847,40 @@ namespace Stardrop.Views
                 }
 
                 var storedPath = GetStoredOverlayPath(collection, entry);
-                if (storedPath is null || ExtractOverlay(storedPath, installPath) <= 0)
+                if (storedPath is null)
                 {
                     entry.Status = CollectionModStatus.Failed;
                     entry.FailureReason = Program.translation.Get("ui.message.collection_reason_overlay_failed");
                     continue;
                 }
 
-                entry.OverlayTargets = GetOverwrittenTargets(collection, entry, storedPath);
+                // A replicated entry is placed file by file where the curator had each one, which is what lets it
+                // replace files inside another mod's folder. Anything else is written as its archive lays it out
+                if (entry.FileHashes.Count > 0)
+                {
+                    var placement = PlaceOverlayByHashes(collection, entry, storedPath, installPath);
+                    if (placement.WrittenPaths.Count == 0)
+                    {
+                        entry.Status = CollectionModStatus.Failed;
+                        entry.FailureReason = Program.translation.Get(placement.CouldNotRead ? "ui.message.collection_reason_overlay_failed" : "ui.message.collection_reason_no_hash_matches");
+                        continue;
+                    }
+
+                    entry.UnmatchedFileCount = placement.UnmatchedCount;
+                    entry.OverlayTargets = placement.TouchedTargets;
+                }
+                else
+                {
+                    if (ExtractOverlay(storedPath, installPath) <= 0)
+                    {
+                        entry.Status = CollectionModStatus.Failed;
+                        entry.FailureReason = Program.translation.Get("ui.message.collection_reason_overlay_failed");
+                        continue;
+                    }
+
+                    entry.OverlayTargets = GetOverwrittenTargets(collection, entry, storedPath);
+                }
+
                 entry.Status = CollectionModStatus.AppliedAsOverlay;
 
                 applied.Add(entry);
@@ -874,7 +921,7 @@ namespace Stardrop.Views
                     continue;
                 }
 
-                var written = ExtractOverlay(storedPath, installPath, arrivedFolders);
+                var written = overlay.FileHashes.Count > 0 ? PlaceOverlayByHashes(collection, overlay, storedPath, installPath, arrivedFolders).WrittenPaths.Count : ExtractOverlay(storedPath, installPath, arrivedFolders);
                 if (written <= 0)
                 {
                     continue;
@@ -1116,6 +1163,320 @@ namespace Stardrop.Views
         private static bool IsInsideAnyFolder(string relativePath, List<string> folders)
         {
             return folders.Any(f => relativePath.StartsWith(f + "/", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>What placing a replicated entry by its checksums did, for the caller to record on the entry</summary>
+        private class HashPlacementResult
+        {
+            /// <summary>Destinations written, relative to the collection's folder with forward slashes</summary>
+            public List<string> WrittenPaths { get; } = new List<string>();
+            /// <summary>Names of the mods whose folders received at least one file</summary>
+            public List<string> TouchedTargets { get; } = new List<string>();
+            /// <summary>Placements whose checksum matched no file in the archive</summary>
+            public int UnmatchedCount { get; set; }
+            /// <summary>Whether the archive could not be read at all, as opposed to holding nothing that matched</summary>
+            public bool CouldNotRead { get; set; }
+        }
+
+        /// <summary>
+        /// Places a replicated entry's files where the curator had them, the way Vortex does for its replicate mode.
+        /// Each file in the archive is identified by its checksum rather than its name or folder, then written to
+        /// every path the entry's hashes list gives that checksum. One file can therefore land in several places,
+        /// and anything in the archive the list does not mention is left out.
+        ///
+        /// The paths describe the curator's mod folder, which Stardrop does not necessarily lay out the same way. See
+        /// <see cref="ResolveHashDestination"/> for how each one is mapped onto the collection's folder.
+        /// </summary>
+        /// <param name="onlyFolders">When given, only placements landing inside these folders are written. Used to write files back over a mod that arrived late</param>
+        private static HashPlacementResult PlaceOverlayByHashes(CollectionInstall collection, CollectionModEntry entry, string storedPath, string installPath, List<string>? onlyFolders = null)
+        {
+            var result = new HashPlacementResult();
+            var neededChecksums = entry.FileHashes.Select(h => h.Md5).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var tempFolder = Path.Combine(Path.GetTempPath(), "Stardrop", Guid.NewGuid().ToString("N"));
+
+            try
+            {
+                var filesByChecksum = ReadFilesByChecksum(storedPath, tempFolder, neededChecksums);
+                if (filesByChecksum is null)
+                {
+                    result.CouldNotRead = true;
+                    return result;
+                }
+
+                Directory.CreateDirectory(installPath);
+                var installRoot = Path.GetFullPath(installPath) + Path.DirectorySeparatorChar;
+                var fileIndex = BuildFileIndex(installPath);
+                var (modFolders, targetsByFolder, isLimitedToTargets) = FindPlacementFolders(collection, entry, fileIndex);
+
+                foreach (var fileHash in entry.FileHashes)
+                {
+                    if (filesByChecksum.TryGetValue(fileHash.Md5, out var sourcePath) is false)
+                    {
+                        Program.helper.Log($"No file in {entry.Name} matches the checksum the curator recorded for {fileHash.Path}", Helper.Status.Warning);
+                        result.UnmatchedCount += 1;
+                        continue;
+                    }
+
+                    var destination = ResolveHashDestination(fileHash.Path, fileIndex, modFolders, isLimitedToTargets);
+                    if (destination is null)
+                    {
+                        Program.helper.Log($"Skipping {fileHash.Path} from {entry.Name}, as it does not resolve to a path inside the collection's folder", Helper.Status.Warning);
+                        continue;
+                    }
+
+                    if (onlyFolders is not null && IsInsideAnyFolder(destination, onlyFolders) is false)
+                    {
+                        continue;
+                    }
+
+                    // The recorded path comes from a third party, so it is checked again once it is a real path
+                    var destinationPath = Path.GetFullPath(Path.Combine(installPath, Path.Combine(destination.Split('/'))));
+                    if (destinationPath.StartsWith(installRoot, StringComparison.OrdinalIgnoreCase) is false)
+                    {
+                        Program.helper.Log($"Skipping {fileHash.Path} from {entry.Name}, as it points outside {installPath}", Helper.Status.Warning);
+                        continue;
+                    }
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+                    File.Copy(sourcePath, destinationPath, true);
+
+                    // Recorded so a later placement in the same pass resolves against it, keeping the casing consistent
+                    fileIndex.TryAdd(destination, destination);
+                    result.WrittenPaths.Add(destination);
+
+                    var touchedFolder = targetsByFolder.Keys.FirstOrDefault(f => destination.StartsWith(f + "/", StringComparison.OrdinalIgnoreCase));
+                    if (touchedFolder is not null && result.TouchedTargets.Contains(targetsByFolder[touchedFolder], StringComparer.OrdinalIgnoreCase) is false)
+                    {
+                        result.TouchedTargets.Add(targetsByFolder[touchedFolder]);
+                    }
+                }
+
+                Program.helper.Log($"Placed {result.WrittenPaths.Count} file(s) from {entry.Name} by checksum, with {result.UnmatchedCount} of {entry.FileHashes.Count} recorded file(s) missing from the archive");
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to place the files of {entry.Name} by checksum: {ex}", Helper.Status.Alert);
+                result.CouldNotRead = result.WrittenPaths.Count == 0;
+            }
+            finally
+            {
+                TryDeleteDirectory(tempFolder);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Extracts every file the entry needs into a scratch folder, keyed by checksum. Files whose checksum no
+        /// placement asks for are discarded as soon as they are read, so the scratch folder only ever holds what is
+        /// about to be written. Returns null where the archive could not be read.
+        /// </summary>
+        private static Dictionary<string, string>? ReadFilesByChecksum(string storedPath, string tempFolder, HashSet<string> neededChecksums)
+        {
+            var filesByChecksum = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // A loose file is its own single entry
+            if (IsArchiveFile(storedPath) is false)
+            {
+                var checksum = Toolkit.GetFileChecksum(storedPath);
+                if (checksum is null)
+                {
+                    return null;
+                }
+
+                if (neededChecksums.Contains(checksum))
+                {
+                    filesByChecksum[checksum] = storedPath;
+                }
+
+                return filesByChecksum;
+            }
+
+            try
+            {
+                Directory.CreateDirectory(tempFolder);
+
+                var fileNumber = 0;
+                using var archive = ArchiveFactory.OpenArchive(storedPath);
+                foreach (var archiveEntry in archive.Entries.Where(e => e.IsDirectory is false && String.IsNullOrEmpty(e.Key) is false))
+                {
+                    if (archiveEntry.Key!.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    // Numbered rather than named, as the archive's names play no part in where anything goes
+                    var tempPath = Path.Combine(tempFolder, fileNumber.ToString());
+                    fileNumber += 1;
+
+                    archiveEntry.WriteToFile(tempPath, new ExtractionOptions() { ExtractFullPath = false, Overwrite = true });
+
+                    var checksum = Toolkit.GetFileChecksum(tempPath);
+                    if (checksum is null || neededChecksums.Contains(checksum) is false || filesByChecksum.ContainsKey(checksum))
+                    {
+                        TryDelete(tempPath);
+                        continue;
+                    }
+
+                    filesByChecksum[checksum] = tempPath;
+                }
+
+                return filesByChecksum;
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to read {storedPath} while matching its files by checksum: {ex}", Helper.Status.Alert);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Every file under the collection's folder, relative to it with forward slashes. Keyed without regard to
+        /// case and holding the path as it is on disk, so a placement written with different casing lands on the
+        /// existing file rather than beside it on a case-sensitive file system.
+        /// </summary>
+        private static Dictionary<string, string> BuildFileIndex(string installPath)
+        {
+            var fileIndex = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (Directory.Exists(installPath) is false)
+            {
+                return fileIndex;
+            }
+
+            foreach (var filePath in Directory.EnumerateFiles(installPath, "*", SearchOption.AllDirectories))
+            {
+                var relativePath = Path.GetRelativePath(installPath, filePath).Replace('\\', '/');
+                fileIndex.TryAdd(relativePath, relativePath);
+            }
+
+            return fileIndex;
+        }
+
+        /// <summary>
+        /// The mod folders a replicated entry's placements are anchored to, relative to the collection's folder.
+        /// Where the entry's rules name mods, only their folders are used, which keeps a file from landing in an
+        /// unrelated mod that happens to share a file name. Otherwise every mod folder in the collection is a
+        /// candidate and matching has to be stricter.
+        /// </summary>
+        private static (List<string> Folders, Dictionary<string, string> TargetsByFolder, bool IsLimitedToTargets) FindPlacementFolders(CollectionInstall collection, CollectionModEntry entry, Dictionary<string, string> fileIndex)
+        {
+            // A folder holding a manifest is a mod folder, wherever it sits
+            var manifestFolders = fileIndex.Values.Where(p => String.Equals(Path.GetFileName(p), "manifest.json", StringComparison.OrdinalIgnoreCase)).Select(p => Path.GetDirectoryName(p)?.Replace('\\', '/')).Where(p => String.IsNullOrEmpty(p) is false).Select(p => p!).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+            var targetsByFolder = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var target in collection.GetOverlayTargets(entry))
+            {
+                foreach (var installedMod in target.InstalledMods.Where(m => String.IsNullOrEmpty(m.FolderName) is false))
+                {
+                    foreach (var folder in manifestFolders.Where(f => String.Equals(GetLastSegment(f), installedMod.FolderName, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        targetsByFolder.TryAdd(folder, target.Name);
+                    }
+                }
+            }
+
+            if (targetsByFolder.Count > 0)
+            {
+                return (targetsByFolder.Keys.ToList(), targetsByFolder, true);
+            }
+
+            return (manifestFolders, targetsByFolder, false);
+        }
+
+        /// <summary>
+        /// Maps one of the curator's paths onto the collection's folder, trying each of these in turn:
+        ///
+        /// 1. The path exactly as recorded, where a file already sits there.
+        /// 2. Anchored on a mod folder: the deepest folder in the path that shares its name with one of the mod
+        ///    folders, with the rest of the path placed under that folder. This is what absorbs the curator's folder
+        ///    layout differing from Stardrop's above the mod folder itself.
+        /// 3. The longest ending of the path that matches exactly one existing file in the mod folders. A single
+        ///    file name only counts where the folders are limited to the entry's own targets.
+        /// 4. The path as recorded, as a new file.
+        ///
+        /// Whatever is chosen is corrected to the casing already on disk. Returns null for a path that tries to
+        /// climb out of the collection's folder.
+        /// </summary>
+        private static string? ResolveHashDestination(string recordedPath, Dictionary<string, string> fileIndex, List<string> modFolders, bool isLimitedToTargets)
+        {
+            var segments = recordedPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length == 0 || segments.Any(s => s == "." || s == ".."))
+            {
+                return null;
+            }
+
+            var normalizedPath = String.Join('/', segments);
+            if (fileIndex.TryGetValue(normalizedPath, out var existingPath))
+            {
+                return existingPath;
+            }
+
+            // Walked from the deepest folder up, so a wrapper folder sharing the mod's name never wins over the mod's own
+            for (int index = segments.Length - 2; index >= 0; index--)
+            {
+                var anchor = modFolders.FirstOrDefault(f => String.Equals(GetLastSegment(f), segments[index], StringComparison.OrdinalIgnoreCase));
+                if (anchor is null)
+                {
+                    continue;
+                }
+
+                var anchoredPath = $"{anchor}/{String.Join('/', segments.Skip(index + 1))}";
+
+                return fileIndex.TryGetValue(anchoredPath, out var anchoredExisting) ? anchoredExisting : MatchExistingCasing(anchoredPath, fileIndex);
+            }
+
+            var candidates = fileIndex.Values.Where(p => modFolders.Any(f => p.StartsWith(f + "/", StringComparison.OrdinalIgnoreCase))).ToList();
+            var shortestEnding = isLimitedToTargets ? 1 : 2;
+            for (int length = segments.Length - 1; length >= shortestEnding; length--)
+            {
+                var ending = "/" + String.Join('/', segments.Skip(segments.Length - length));
+                var matches = candidates.Where(p => ("/" + p).EndsWith(ending, StringComparison.OrdinalIgnoreCase)).ToList();
+                if (matches.Count == 1)
+                {
+                    return matches[0];
+                }
+
+                // Several files share this ending. A shorter one would only match more of them
+                if (matches.Count > 1)
+                {
+                    break;
+                }
+            }
+
+            return MatchExistingCasing(normalizedPath, fileIndex);
+        }
+
+        /// <summary>
+        /// Rewrites a new file's folders in the casing they already have on disk, so it joins the existing folder
+        /// on a case-sensitive file system rather than creating a second one beside it.
+        /// </summary>
+        private static string MatchExistingCasing(string relativePath, Dictionary<string, string> fileIndex)
+        {
+            var segments = relativePath.Split('/');
+            var folderDepth = segments.Length - 1;
+
+            for (int depth = folderDepth; depth > 0; depth--)
+            {
+                var folder = String.Join('/', segments.Take(depth));
+                var existingFile = fileIndex.Values.FirstOrDefault(p => p.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase));
+                if (existingFile is null)
+                {
+                    continue;
+                }
+
+                var existingFolder = existingFile.Substring(0, folder.Length);
+
+                return $"{existingFolder}/{String.Join('/', segments.Skip(depth))}";
+            }
+
+            return relativePath;
+        }
+
+        private static string GetLastSegment(string relativePath)
+        {
+            var separatorIndex = relativePath.LastIndexOf('/');
+
+            return separatorIndex < 0 ? relativePath : relativePath.Substring(separatorIndex + 1);
         }
 
         /// <summary>
@@ -2233,6 +2594,7 @@ namespace Stardrop.Views
             }
 
             summary += BuildHeldOverlaysSection(collection);
+            summary += BuildUnmatchedFilesSection(collection);
 
             if (conflicts.Count > 0)
             {
@@ -2296,6 +2658,7 @@ namespace Stardrop.Views
             }
 
             summary += BuildHeldOverlaysSection(collection);
+            summary += BuildUnmatchedFilesSection(collection);
 
             // Says outright that the revision has not landed, as the collections window will keep reporting an
             // update until whatever is outstanding is dealt with
@@ -2458,6 +2821,32 @@ namespace Stardrop.Views
             if (heldOverlays.Count > _maxListedEntries)
             {
                 section += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_entries_truncated"), heldOverlays.Count - _maxListedEntries))}";
+            }
+
+            return section;
+        }
+
+        /// <summary>
+        /// Names the replicated entries that went on with some of their files missing from the download. The entry
+        /// itself reads as applied, so without this the gap would only show up in game as an unchanged file.
+        /// </summary>
+        private static string BuildUnmatchedFilesSection(CollectionInstall collection)
+        {
+            var partialEntries = collection.Mods.Where(m => m.Status is CollectionModStatus.AppliedAsOverlay && m.UnmatchedFileCount > 0).ToList();
+            if (partialEntries.Count == 0)
+            {
+                return String.Empty;
+            }
+
+            var section = Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_files_unmatched"), partialEntries.Count);
+            foreach (var entry in partialEntries.Take(_maxListedEntries))
+            {
+                section += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_files_unmatched_entry"), entry.Name, entry.UnmatchedFileCount, entry.FileHashes.Count))}";
+            }
+
+            if (partialEntries.Count > _maxListedEntries)
+            {
+                section += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_entries_truncated"), partialEntries.Count - _maxListedEntries))}";
             }
 
             return section;

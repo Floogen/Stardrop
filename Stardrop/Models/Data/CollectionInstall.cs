@@ -13,6 +13,13 @@ namespace Stardrop.Models.Data
     public record InstalledModRecord(string UniqueId, string? FolderName = null);
 
     /// <summary>
+    /// Where the curator had one of an entry's files, taken from the hashes list in collection.json. The path uses
+    /// forward slashes and is relative to the curator's mod folder, which is not necessarily laid out the way
+    /// Stardrop lays out the collection's folder.
+    /// </summary>
+    public record CollectionFileHash(string Path, string Md5);
+
+    /// <summary>
     /// A single mod pinned by a collection revision. The pin data lives here rather than on the generated profile,
     /// as a profile only tracks which mods are enabled and has nowhere to record a mod / file ID pair.
     /// </summary>
@@ -52,6 +59,13 @@ namespace Stardrop.Models.Data
         /// for configuration applied before archives were kept
         /// </summary>
         public string? StoredOverlayName { get; set; }
+        /// <summary>
+        /// The curator's exact file placements, when the entry was replicated rather than installed as is. An entry
+        /// with these and no manifest is placed file by file, which is how one mod's files replace another's
+        /// </summary>
+        public List<CollectionFileHash> FileHashes { get; set; } = new List<CollectionFileHash>();
+        /// <summary>How many of <see cref="FileHashes"/> had no matching file in the archive the last time it was placed</summary>
+        public int UnmatchedFileCount { get; set; }
         public CollectionModStatus Status { get; set; } = CollectionModStatus.Pending;
         public string? FailureReason { get; set; }
 

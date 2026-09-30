@@ -95,6 +95,12 @@ namespace Stardrop.ViewModels
                 return $"{status} ({entry.FailureReason})";
             }
 
+            // Files the curator listed that were not in the download mean the replacement is only partly in place
+            if (entry.Status is CollectionModStatus.AppliedAsOverlay && entry.UnmatchedFileCount > 0)
+            {
+                return $"{status} ({String.Format(Program.translation.Get("ui.collections_window.status.files_missing"), entry.UnmatchedFileCount)})";
+            }
+
             return status;
         }
     }
