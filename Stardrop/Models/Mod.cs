@@ -11,7 +11,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 
 namespace Stardrop.Models
@@ -370,14 +369,9 @@ namespace Stardrop.Models
 
             foreach (string key in Manifest.UpdateKeys)
             {
-                string cleanedKey = String.Concat(key.Where(c => !Char.IsWhiteSpace(c)));
-                var match = Regex.Match(key, @"Nexus:[^0-9-]*(?<modId>-?\d+)(?<flag>\@.*)?.*");
-                if (match.Success)
+                if (TryParseNexusKey(key, out int modId, out _))
                 {
-                    if (Int32.TryParse(match.Groups["modId"].ToString(), out int modId) && modId > 0)
-                    {
-                        return modId;
-                    }
+                    return modId;
                 }
             }
 
@@ -393,18 +387,38 @@ namespace Stardrop.Models
 
             foreach (string key in Manifest.UpdateKeys)
             {
-                string cleanedKey = String.Concat(key.Where(c => !Char.IsWhiteSpace(c)));
-                var match = Regex.Match(key, @"Nexus:[^0-9-]*(?<modId>-?\d+)(?<flag>\@.*)?.*");
-                if (match.Success)
+                if (TryParseNexusKey(key, out _, out string? flag))
                 {
-                    if (match.Groups.ContainsKey("flag"))
-                    {
-                        return match.Groups["flag"].ToString();
-                    }
+                    return flag;
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Parses a Nexus update key like SMAPI's UpdateKey.Parse, case-insensitive. The flag keeps its leading '@'.
+        /// </summary>
+        private static bool TryParseNexusKey(string key, out int modId, out string? flag)
+        {
+            modId = 0;
+            flag = null;
+
+            int siteIndex = key.IndexOf(':');
+            if (siteIndex < 0 || key[..siteIndex].Trim().Equals("Nexus", StringComparison.OrdinalIgnoreCase) is false)
+            {
+                return false;
+            }
+
+            string id = key[(siteIndex + 1)..].Trim();
+            int flagIndex = id.IndexOf('@');
+            if (flagIndex >= 0)
+            {
+                flag = id[flagIndex..].Trim();
+                id = id[..flagIndex].Trim();
+            }
+
+            return int.TryParse(id, out modId) && modId > 0;
         }
 
         private Bitmap? TryLoadThumbnail(string? filePath)
