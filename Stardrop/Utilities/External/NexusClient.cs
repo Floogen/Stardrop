@@ -470,8 +470,9 @@ namespace Stardrop.Utilities.External
             // usable as a filename is on the way into the path rather than at any one of them
             var filePath = Path.Combine(Pathing.GetNexusPath(), Pathing.GetSafePathSegment(fileName));
 
-            // FileMode.CreateNew throws on a name that is already taken, which would otherwise send a download that
-            // never started down the cleanup path below and delete whatever already held the name
+            // Archives are kept after installing, so an archive from an earlier download can already hold the name.
+            // It is overwritten via FileMode.Create, and only once the response has succeeded, so a download that
+            // never started leaves the earlier archive alone
             bool hasCreatedFile = false;
             try
             {
@@ -483,7 +484,7 @@ namespace Stardrop.Utilities.External
                     return new(DownloadResultKind.Failed, null);
                 }
 
-                using var fileStream = new FileStream(filePath, FileMode.CreateNew);
+                using var fileStream = new FileStream(filePath, FileMode.Create);
                 hasCreatedFile = true;
 
                 using var downloadStream = await response.Content.ReadAsStreamAsync();

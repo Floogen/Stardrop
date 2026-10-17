@@ -147,9 +147,10 @@ namespace Stardrop
                     settings.NexusDetails = new NexusUser();
                 }
 
-                // Delete any files underneath the Nexus folder
+                // Delete the downloaded archives underneath the Nexus folder once they are a week old. They are kept
+                // after installing so that mods like ModSyncCheck can collect them, which moves them out of the folder
                 var nexusDirectory = new DirectoryInfo(Pathing.GetNexusPath());
-                foreach (FileInfo file in nexusDirectory.GetFiles())
+                foreach (FileInfo file in nexusDirectory.GetFiles().Where(f => f.LastWriteTime < DateTime.Now.AddDays(-7)))
                 {
                     file.Delete();
                 }

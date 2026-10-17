@@ -1161,11 +1161,7 @@ namespace Stardrop.Views
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
-            // Delete the downloaded archived mod
-            if (File.Exists(downloadedFilePath))
-            {
-                File.Delete(downloadedFilePath);
-            }
+            // The downloaded archive is kept in the Nexus folder rather than deleted
 
             _viewModel.EvaluateRequirements();
             _viewModel.UpdateEndorsements();
@@ -2089,11 +2085,7 @@ namespace Stardrop.Views
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
-            // Delete the downloaded archived mods
-            foreach (var filePath in updateFilePaths.Where(p => File.Exists(p)))
-            {
-                File.Delete(filePath);
-            }
+            // The downloaded archives are kept in the Nexus folder rather than deleted
 
             _viewModel.EvaluateRequirements();
             _viewModel.UpdateEndorsements();
@@ -2271,11 +2263,7 @@ namespace Stardrop.Views
                 await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
                 await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
-                // Delete the downloaded archived mod
-                if (File.Exists(downloadedFilePath))
-                {
-                    File.Delete(downloadedFilePath);
-                }
+                // The downloaded archive is kept in the Nexus folder rather than deleted
 
                 _viewModel.EvaluateRequirements();
                 _viewModel.UpdateEndorsements();
