@@ -23,7 +23,7 @@ namespace Stardrop.Views
     public partial class MainWindow : Window
     {
         /// <summary>Extensions AddMods is able to open, used to tell an archive apart from a loose file</summary>
-        private static readonly string[] _archiveExtensions = new string[] { ".zip", ".7z", ".rar", ".tar", ".gz", ".bz2", ".xz" };
+        private static readonly string[] _archiveExtensions = [".zip", ".7z", ".rar", ".tar", ".gz", ".bz2", ".xz"];
 
         /// <summary>How many entries a list in the install summary names before it gives a count instead</summary>
         private const int _maxListedEntries = 5;
@@ -42,7 +42,7 @@ namespace Stardrop.Views
         /// </summary>
         private async Task<bool> ProcessCollectionLink(NXM nxmLink)
         {
-            if (Nexus.Client is null || String.IsNullOrEmpty(nxmLink.Link))
+            if (Nexus.Client is null || string.IsNullOrEmpty(nxmLink.Link))
             {
                 await CreateWarningWindow(Program.translation.Get("ui.message.require_nexus_login"), Program.translation.Get("internal.ok"));
                 return false;
@@ -50,7 +50,7 @@ namespace Stardrop.Views
 
             if (NexusClient.TryParseCollectionNxmLink(nxmLink.Link, out var domainName, out var slug, out var revisionNumber) is false)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_get"), nxmLink.Link), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.message.failed_collection_get"), nxmLink.Link), Program.translation.Get("internal.ok"));
                 return false;
             }
 
@@ -77,27 +77,27 @@ namespace Stardrop.Views
 
             // Named in the failure messages, which read better pointing at the link the user clicked where there was
             // one and at the collection otherwise
-            var failureSubject = String.IsNullOrEmpty(sourceDescription) ? slug : sourceDescription;
+            var failureSubject = string.IsNullOrEmpty(sourceDescription) ? slug : sourceDescription;
 
             // A collection keeps one identity across revisions, so a request for one already on disk is an update of
             // it rather than a second install
             var existingInstall = CollectionCache.Load(CollectionInstall.CreateSourceId(domainName, slug));
 
             var revision = await Nexus.Client.GetCollectionRevision(slug, revisionNumber, domainName);
-            if (revision is null || String.IsNullOrEmpty(revision.DownloadLink))
+            if (revision is null || string.IsNullOrEmpty(revision.DownloadLink))
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_get"), failureSubject), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.message.failed_collection_get"), failureSubject), Program.translation.Get("internal.ok"));
                 return false;
             }
 
-            var collectionName = revision.Collection is null || String.IsNullOrEmpty(revision.Collection.Name) ? slug : revision.Collection.Name;
+            var collectionName = revision.Collection is null || string.IsNullOrEmpty(revision.Collection.Name) ? slug : revision.Collection.Name;
             var resolvedRevision = revision.RevisionNumber is null ? (revisionNumber is null ? 0 : revisionNumber.Value) : revision.RevisionNumber.Value;
 
             if (existingInstall is null)
             {
                 if (Program.settings.IsAskingBeforeAcceptingNXM)
                 {
-                    var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_collection_install"), collectionName));
+                    var requestWindow = new MessageWindow(string.Format(Program.translation.Get("ui.message.confirm_nxm_collection_install"), collectionName));
                     if (await requestWindow.ShowDialog<bool>(this) is false)
                     {
                         return false;
@@ -110,13 +110,13 @@ namespace Stardrop.Views
                 // landing, in which case going round again is how the remaining entries get picked up
                 if (resolvedRevision == existingInstall.RevisionNumber && existingInstall.IsUpdateInProgress() is false)
                 {
-                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.collection_already_installed"), existingInstall.Name, resolvedRevision), Program.translation.Get("internal.ok"));
+                    await CreateWarningWindow(string.Format(Program.translation.Get("ui.message.collection_already_installed"), existingInstall.Name, resolvedRevision), Program.translation.Get("internal.ok"));
                     return false;
                 }
 
                 // Asked whatever the nxm confirmation setting says, as this writes over a collection the user
                 // already has rather than adding something new
-                var updateWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_collection_update"), collectionName, existingInstall.RevisionNumber, resolvedRevision));
+                var updateWindow = new MessageWindow(string.Format(Program.translation.Get("ui.message.confirm_collection_update"), collectionName, existingInstall.RevisionNumber, resolvedRevision));
                 if (await updateWindow.ShowDialog<bool>(this) is false)
                 {
                     return false;
@@ -128,7 +128,7 @@ namespace Stardrop.Views
 
             // The lock window only appears once SetLockState has run, as a sentinel timer creates it from that state.
             // UpdateLockWindow on its own does nothing, since it looks for a window that was never opened
-            SetLockState(true, String.Format(Program.translation.Get("ui.message.collection_preparing"), collectionName), cancellationSource);
+            SetLockState(true, string.Format(Program.translation.Get("ui.message.collection_preparing"), collectionName), cancellationSource);
 
             var (index, extractedArchivePath) = await DownloadAndReadCollectionIndex(revision.DownloadLink, collectionName, cancellationSource.Token);
             if (index is null)
@@ -222,9 +222,9 @@ namespace Stardrop.Views
         {
             CollectionModEntry? match = null;
 
-            if (String.IsNullOrEmpty(entry.Tag) is false)
+            if (string.IsNullOrEmpty(entry.Tag) is false)
             {
-                match = candidates.FirstOrDefault(c => String.Equals(c.Tag, entry.Tag, StringComparison.OrdinalIgnoreCase));
+                match = candidates.FirstOrDefault(c => string.Equals(c.Tag, entry.Tag, StringComparison.OrdinalIgnoreCase));
             }
 
             if (match is null && entry.NexusModId is not null)
@@ -232,14 +232,14 @@ namespace Stardrop.Views
                 match = candidates.FirstOrDefault(c => c.NexusModId == entry.NexusModId);
             }
 
-            if (match is null && String.IsNullOrEmpty(entry.ExternalUri) is false)
+            if (match is null && string.IsNullOrEmpty(entry.ExternalUri) is false)
             {
-                match = candidates.FirstOrDefault(c => String.Equals(c.ExternalUri, entry.ExternalUri, StringComparison.OrdinalIgnoreCase));
+                match = candidates.FirstOrDefault(c => string.Equals(c.ExternalUri, entry.ExternalUri, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (match is null && String.IsNullOrEmpty(entry.Name) is false)
+            if (match is null && string.IsNullOrEmpty(entry.Name) is false)
             {
-                match = candidates.FirstOrDefault(c => String.Equals(c.Name, entry.Name, StringComparison.OrdinalIgnoreCase));
+                match = candidates.FirstOrDefault(c => string.Equals(c.Name, entry.Name, StringComparison.OrdinalIgnoreCase));
             }
 
             if (match is not null)
@@ -273,10 +273,10 @@ namespace Stardrop.Views
                 return previous.NexusModId == updated.NexusModId && previous.NexusFileId == updated.NexusFileId;
             }
 
-            return String.Equals(previous.Md5Checksum, updated.Md5Checksum, StringComparison.OrdinalIgnoreCase)
-                && String.Equals(previous.ExternalUri, updated.ExternalUri, StringComparison.OrdinalIgnoreCase)
-                && String.Equals(previous.FileExpression, updated.FileExpression, StringComparison.OrdinalIgnoreCase)
-                && String.Equals(previous.LogicalFilename, updated.LogicalFilename, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(previous.Md5Checksum, updated.Md5Checksum, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(previous.ExternalUri, updated.ExternalUri, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(previous.FileExpression, updated.FileExpression, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(previous.LogicalFilename, updated.LogicalFilename, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>Whether two revisions give an entry the same file placements, in any order</summary>
@@ -374,15 +374,15 @@ namespace Stardrop.Views
         {
             if (Nexus.Client is null)
             {
-                return (null, String.Empty);
+                return (null, string.Empty);
             }
 
             var archiveUri = await Nexus.Client.GetCollectionArchiveLink(revisionDownloadLink, EnumParser.GetDescription(Program.settings.PreferredNexusServer));
-            if (String.IsNullOrEmpty(archiveUri))
+            if (string.IsNullOrEmpty(archiveUri))
             {
                 SetLockState(false);
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_get_archive"), revisionDownloadLink), Program.translation.Get("internal.ok"));
-                return (null, String.Empty);
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.message.failed_collection_get_archive"), revisionDownloadLink), Program.translation.Get("internal.ok"));
+                return (null, string.Empty);
             }
 
             var safeName = Pathing.GetSafePathSegment(collectionName);
@@ -391,14 +391,14 @@ namespace Stardrop.Views
             if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
             {
                 // No warning, as the user triggered this intentionally
-                return (null, String.Empty);
+                return (null, string.Empty);
             }
 
-            if (String.IsNullOrEmpty(downloadResult.DownloadedModFilePath))
+            if (string.IsNullOrEmpty(downloadResult.DownloadedModFilePath))
             {
                 SetLockState(false);
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.failed_collection_download_archive"), archiveUri), Program.translation.Get("internal.ok"));
-                return (null, String.Empty);
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.message.failed_collection_download_archive"), archiveUri), Program.translation.Get("internal.ok"));
+                return (null, string.Empty);
             }
 
             Program.helper.Log($"Downloaded the collection archive to {downloadResult.DownloadedModFilePath}");
@@ -412,7 +412,7 @@ namespace Stardrop.Views
                 {
                     foreach (var entry in archive.Entries.Where(e => e.IsDirectory is false))
                     {
-                        if (String.IsNullOrEmpty(entry.Key) || entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) || entry.Key.Contains(".DS_Store", StringComparison.OrdinalIgnoreCase))
+                        if (string.IsNullOrEmpty(entry.Key) || entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) || entry.Key.Contains(".DS_Store", StringComparison.OrdinalIgnoreCase))
                         {
                             continue;
                         }
@@ -420,14 +420,14 @@ namespace Stardrop.Views
                         // The destination is built here rather than by ExtractFullPath, which writes the entry's key
                         // as it was recorded. Characters in the keys can contain values that Windows rejects, so they need to be parsed out
                         var outputPath = Pathing.GetSafeDestinationPath(targetFolder, entry.Key);
-                        if (String.IsNullOrEmpty(outputPath))
+                        if (string.IsNullOrEmpty(outputPath))
                         {
                             Program.helper.Log($"Skipping {entry.Key} in the collection archive, as it does not resolve to a path inside {targetFolder}", Helper.Status.Warning);
                             continue;
                         }
 
                         var outputFolder = Path.GetDirectoryName(outputPath);
-                        if (String.IsNullOrEmpty(outputFolder) is false)
+                        if (string.IsNullOrEmpty(outputFolder) is false)
                         {
                             Directory.CreateDirectory(outputFolder);
                         }
@@ -441,7 +441,7 @@ namespace Stardrop.Views
                 Program.helper.Log($"Failed to extract the collection archive: {ex}", Helper.Status.Alert);
                 SetLockState(false);
                 await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
-                return (null, String.Empty);
+                return (null, string.Empty);
             }
             finally
             {
@@ -456,7 +456,7 @@ namespace Stardrop.Views
                 Program.helper.Log($"The collection archive did not contain a collection.json at {indexPath}", Helper.Status.Alert);
                 SetLockState(false);
                 await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
-                return (null, String.Empty);
+                return (null, string.Empty);
             }
 
             try
@@ -466,7 +466,7 @@ namespace Stardrop.Views
                 {
                     SetLockState(false);
                     await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
-                    return (null, String.Empty);
+                    return (null, string.Empty);
                 }
 
                 return (index, targetFolder);
@@ -476,7 +476,7 @@ namespace Stardrop.Views
                 Program.helper.Log($"Failed to parse the collection.json at {indexPath}: {ex}", Helper.Status.Alert);
                 SetLockState(false);
                 await CreateWarningWindow(Program.translation.Get("ui.message.failed_read_collection_index"), Program.translation.Get("internal.ok"));
-                return (null, String.Empty);
+                return (null, string.Empty);
             }
         }
 
@@ -501,7 +501,7 @@ namespace Stardrop.Views
             // one large download then jump. Bytes are tracked instead, falling back to counting when sizes are absent
             var totalDownloadSize = collection.GetPendingDownloadSize();
             var bytesByUri = new Dictionary<Uri, long>();
-            var currentEntryName = String.Empty;
+            var currentEntryName = string.Empty;
             int currentIndex = 0;
 
             void OnDownloadProgress(object? sender, ModDownloadProgressEventArgs e)
@@ -515,7 +515,7 @@ namespace Stardrop.Views
                 Nexus.Client.DownloadProgressChanged += OnDownloadProgress;
             }
 
-            SetLockState(true, String.Format(Program.translation.Get("ui.message.collection_preparing"), collection.Name), cancellationSource);
+            SetLockState(true, string.Format(Program.translation.Get("ui.message.collection_preparing"), collection.Name), cancellationSource);
 
             try
             {
@@ -533,7 +533,7 @@ namespace Stardrop.Views
                     UpdateCollectionProgress(currentEntryName, currentIndex, pendingMods.Count, bytesByUri.Values.Sum(), totalDownloadSize);
 
                     var downloadedPath = await DownloadCollectionEntry(entry, extractedArchivePath, cancellationSource.Token);
-                    if (String.IsNullOrEmpty(downloadedPath))
+                    if (string.IsNullOrEmpty(downloadedPath))
                     {
                         continue;
                     }
@@ -599,14 +599,14 @@ namespace Stardrop.Views
             // AddMods drops the lock as it finishes, and everything from here to the summary runs with nothing on
             // screen: two passes over the mods folder, the overlays, the extracted archive being cleared out and the
             // profile being built. On a large collection that is long enough to read as finished or as stuck
-            SetLockState(true, String.Format(Program.translation.Get("ui.message.collection_finalizing"), collection.Name));
+            SetLockState(true, string.Format(Program.translation.Get("ui.message.collection_finalizing"), collection.Name));
             await YieldToLockWindow();
 
             _viewModel.DiscoverMods(Pathing.defaultModPath);
 
             // The profile is built from what actually landed on disk rather than from what was requested, so a
             // partial install still produces a working profile
-            var installedMods = _viewModel.Mods.Where(m => String.Equals(m.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
+            var installedMods = _viewModel.Mods.Where(m => string.Equals(m.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
             RecordInstalledMods(entriesByArchive, installedModsByArchive, installedMods);
 
             // Only knowable once the replacements have recorded where they landed, so this waits until here rather
@@ -674,6 +674,8 @@ namespace Stardrop.Views
                 // configuration on the profile being left, which would collide with the summary still being open
                 SelectCollectionProfile(profile);
 
+                await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+
                 return;
             }
 
@@ -697,7 +699,7 @@ namespace Stardrop.Views
                 _viewModel.EnableModsByProfile(profile);
                 _viewModel.UpdateFilter();
             }
-
+            
             RefreshCollectionUpdateCount();
         }
 
@@ -714,7 +716,7 @@ namespace Stardrop.Views
                 ranks[order[rank]] = rank;
             }
 
-            return entriesByArchive.Keys.OrderBy(a => ranks.TryGetValue(entriesByArchive[a], out var rank) ? rank : Int32.MaxValue).ToList();
+            return entriesByArchive.Keys.OrderBy(a => ranks.TryGetValue(entriesByArchive[a], out var rank) ? rank : int.MaxValue).ToList();
         }
 
         /// <summary>
@@ -759,7 +761,7 @@ namespace Stardrop.Views
             try
             {
                 using var archive = ArchiveFactory.OpenArchive(archivePath);
-                return archive.Entries.Any(e => e.IsDirectory is false && String.Equals(Path.GetFileName(e.Key), "manifest.json", StringComparison.OrdinalIgnoreCase));
+                return archive.Entries.Any(e => e.IsDirectory is false && string.Equals(Path.GetFileName(e.Key), "manifest.json", StringComparison.OrdinalIgnoreCase));
             }
             catch (Exception ex)
             {
@@ -816,7 +818,7 @@ namespace Stardrop.Views
             }
 
             // The entry arriving a second time replaces what it kept the first time
-            if (String.IsNullOrEmpty(previousName) is false)
+            if (string.IsNullOrEmpty(previousName) is false)
             {
                 TryDelete(Pathing.GetCollectionOverlayPath(collection.SourceId, previousName));
             }
@@ -842,7 +844,7 @@ namespace Stardrop.Views
                 var blockingTargets = collection.GetBlockingTargets(entry);
                 if (blockingTargets.Count > 0)
                 {
-                    Program.helper.Log($"Holding the configuration {entry.Name} in {collection.Name} until {String.Join(", ", blockingTargets.Select(t => t.Name))} is installed");
+                    Program.helper.Log($"Holding the configuration {entry.Name} in {collection.Name} until {string.Join(", ", blockingTargets.Select(t => t.Name))} is installed");
                     continue;
                 }
 
@@ -988,7 +990,7 @@ namespace Stardrop.Views
         /// <summary>The kept archive for a configuration entry, or null where none was kept or it has since gone missing</summary>
         private static string? GetStoredOverlayPath(CollectionInstall collection, CollectionModEntry entry)
         {
-            if (String.IsNullOrEmpty(entry.StoredOverlayName))
+            if (string.IsNullOrEmpty(entry.StoredOverlayName))
             {
                 return null;
             }
@@ -1015,12 +1017,12 @@ namespace Stardrop.Views
         /// </summary>
         private static void RemoveUnusedStoredOverlays(CollectionInstall collection, CollectionUpdatePlan plan)
         {
-            var namesInUse = collection.Mods.Where(m => String.IsNullOrEmpty(m.StoredOverlayName) is false).Select(m => m.StoredOverlayName!).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var namesInUse = collection.Mods.Where(m => string.IsNullOrEmpty(m.StoredOverlayName) is false).Select(m => m.StoredOverlayName!).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var previousEntries = plan.Removed.Concat(plan.Replaced.Select(r => r.Previous));
 
             foreach (var entry in previousEntries)
             {
-                if (String.IsNullOrEmpty(entry.StoredOverlayName) || namesInUse.Contains(entry.StoredOverlayName))
+                if (string.IsNullOrEmpty(entry.StoredOverlayName) || namesInUse.Contains(entry.StoredOverlayName))
                 {
                     continue;
                 }
@@ -1038,13 +1040,13 @@ namespace Stardrop.Views
             var archiveFolders = GetArchiveRootFolders(archivePath);
             if (archiveFolders.Count == 0)
             {
-                return new List<string>();
+                return [];
             }
 
             var overwritten = new List<string>();
             foreach (var target in collection.GetOverlayTargets(entry))
             {
-                if (target.InstalledMods.Any(m => String.IsNullOrEmpty(m.FolderName) is false && archiveFolders.Contains(m.FolderName!, StringComparer.OrdinalIgnoreCase)))
+                if (target.InstalledMods.Any(m => string.IsNullOrEmpty(m.FolderName) is false && archiveFolders.Contains(m.FolderName!, StringComparer.OrdinalIgnoreCase)))
                 {
                     overwritten.Add(target.Name);
                 }
@@ -1064,7 +1066,7 @@ namespace Stardrop.Views
             try
             {
                 using var archive = ArchiveFactory.OpenArchive(archivePath);
-                foreach (var archiveEntry in archive.Entries.Where(e => e.IsDirectory is false && String.IsNullOrEmpty(e.Key) is false))
+                foreach (var archiveEntry in archive.Entries.Where(e => e.IsDirectory is false && string.IsNullOrEmpty(e.Key) is false))
                 {
                     var segments = archiveEntry.Key!.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
                     if (segments.Length < 2 || folders.Contains(segments[0], StringComparer.OrdinalIgnoreCase))
@@ -1115,7 +1117,7 @@ namespace Stardrop.Views
                 var destinationRoot = Path.GetFullPath(destinationPath) + Path.DirectorySeparatorChar;
 
                 using var archive = ArchiveFactory.OpenArchive(archivePath);
-                foreach (var archiveEntry in archive.Entries.Where(e => e.IsDirectory is false && String.IsNullOrEmpty(e.Key) is false))
+                foreach (var archiveEntry in archive.Entries.Where(e => e.IsDirectory is false && string.IsNullOrEmpty(e.Key) is false))
                 {
                     var segments = archiveEntry.Key!.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
                     if (segments.Length == 0)
@@ -1123,7 +1125,7 @@ namespace Stardrop.Views
                         continue;
                     }
 
-                    if (onlyFolders is not null && IsInsideAnyFolder(String.Join('/', segments), onlyFolders) is false)
+                    if (onlyFolders is not null && IsInsideAnyFolder(string.Join('/', segments), onlyFolders) is false)
                     {
                         continue;
                     }
@@ -1298,7 +1300,7 @@ namespace Stardrop.Views
 
                 var fileNumber = 0;
                 using var archive = ArchiveFactory.OpenArchive(storedPath);
-                foreach (var archiveEntry in archive.Entries.Where(e => e.IsDirectory is false && String.IsNullOrEmpty(e.Key) is false))
+                foreach (var archiveEntry in archive.Entries.Where(e => e.IsDirectory is false && string.IsNullOrEmpty(e.Key) is false))
                 {
                     if (archiveEntry.Key!.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase))
                     {
@@ -1361,14 +1363,14 @@ namespace Stardrop.Views
         private static (List<string> Folders, Dictionary<string, string> TargetsByFolder, bool IsLimitedToTargets) FindPlacementFolders(CollectionInstall collection, CollectionModEntry entry, Dictionary<string, string> fileIndex)
         {
             // A folder holding a manifest is a mod folder, wherever it sits
-            var manifestFolders = fileIndex.Values.Where(p => String.Equals(Path.GetFileName(p), "manifest.json", StringComparison.OrdinalIgnoreCase)).Select(p => Path.GetDirectoryName(p)?.Replace('\\', '/')).Where(p => String.IsNullOrEmpty(p) is false).Select(p => p!).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            var manifestFolders = fileIndex.Values.Where(p => string.Equals(Path.GetFileName(p), "manifest.json", StringComparison.OrdinalIgnoreCase)).Select(p => Path.GetDirectoryName(p)?.Replace('\\', '/')).Where(p => string.IsNullOrEmpty(p) is false).Select(p => p!).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
             var targetsByFolder = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var target in collection.GetOverlayTargets(entry))
             {
-                foreach (var installedMod in target.InstalledMods.Where(m => String.IsNullOrEmpty(m.FolderName) is false))
+                foreach (var installedMod in target.InstalledMods.Where(m => string.IsNullOrEmpty(m.FolderName) is false))
                 {
-                    foreach (var folder in manifestFolders.Where(f => String.Equals(GetLastSegment(f), installedMod.FolderName, StringComparison.OrdinalIgnoreCase)))
+                    foreach (var folder in manifestFolders.Where(f => string.Equals(GetLastSegment(f), installedMod.FolderName, StringComparison.OrdinalIgnoreCase)))
                     {
                         targetsByFolder.TryAdd(folder, target.Name);
                     }
@@ -1405,7 +1407,7 @@ namespace Stardrop.Views
                 return null;
             }
 
-            var normalizedPath = String.Join('/', segments);
+            var normalizedPath = string.Join('/', segments);
             if (fileIndex.TryGetValue(normalizedPath, out var existingPath))
             {
                 return existingPath;
@@ -1414,13 +1416,13 @@ namespace Stardrop.Views
             // Walked from the deepest folder up, so a wrapper folder sharing the mod's name never wins over the mod's own
             for (int index = segments.Length - 2; index >= 0; index--)
             {
-                var anchor = modFolders.FirstOrDefault(f => String.Equals(GetLastSegment(f), segments[index], StringComparison.OrdinalIgnoreCase));
+                var anchor = modFolders.FirstOrDefault(f => string.Equals(GetLastSegment(f), segments[index], StringComparison.OrdinalIgnoreCase));
                 if (anchor is null)
                 {
                     continue;
                 }
 
-                var anchoredPath = $"{anchor}/{String.Join('/', segments.Skip(index + 1))}";
+                var anchoredPath = $"{anchor}/{string.Join('/', segments.Skip(index + 1))}";
 
                 return fileIndex.TryGetValue(anchoredPath, out var anchoredExisting) ? anchoredExisting : MatchExistingCasing(anchoredPath, fileIndex);
             }
@@ -1429,7 +1431,7 @@ namespace Stardrop.Views
             var shortestEnding = isLimitedToTargets ? 1 : 2;
             for (int length = segments.Length - 1; length >= shortestEnding; length--)
             {
-                var ending = "/" + String.Join('/', segments.Skip(segments.Length - length));
+                var ending = "/" + string.Join('/', segments.Skip(segments.Length - length));
                 var matches = candidates.Where(p => ("/" + p).EndsWith(ending, StringComparison.OrdinalIgnoreCase)).ToList();
                 if (matches.Count == 1)
                 {
@@ -1457,7 +1459,7 @@ namespace Stardrop.Views
 
             for (int depth = folderDepth; depth > 0; depth--)
             {
-                var folder = String.Join('/', segments.Take(depth));
+                var folder = string.Join('/', segments.Take(depth));
                 var existingFile = fileIndex.Values.FirstOrDefault(p => p.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase));
                 if (existingFile is null)
                 {
@@ -1466,7 +1468,7 @@ namespace Stardrop.Views
 
                 var existingFolder = existingFile.Substring(0, folder.Length);
 
-                return $"{existingFolder}/{String.Join('/', segments.Skip(depth))}";
+                return $"{existingFolder}/{string.Join('/', segments.Skip(depth))}";
             }
 
             return relativePath;
@@ -1505,7 +1507,7 @@ namespace Stardrop.Views
 
             SetLockState(false);
 
-            await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.collection_install_cancelled"), collection.Name), Program.translation.Get("internal.ok"));
+            await CreateWarningWindow(string.Format(Program.translation.Get("ui.message.collection_install_cancelled"), collection.Name), Program.translation.Get("internal.ok"));
         }
 
         private static void TryDelete(string filePath)
@@ -1527,7 +1529,7 @@ namespace Stardrop.Views
         {
             try
             {
-                if (String.IsNullOrEmpty(directoryPath) is false && Directory.Exists(directoryPath))
+                if (string.IsNullOrEmpty(directoryPath) is false && Directory.Exists(directoryPath))
                 {
                     Directory.Delete(directoryPath, true);
                 }
@@ -1544,7 +1546,7 @@ namespace Stardrop.Views
         /// </summary>
         private void UpdateCollectionProgress(string currentModName, int currentIndex, int totalMods, long downloadedBytes, long totalBytes)
         {
-            var heading = String.Format(Program.translation.Get("ui.message.collection_downloading"), currentModName, currentIndex, totalMods);
+            var heading = string.Format(Program.translation.Get("ui.message.collection_downloading"), currentModName, currentIndex, totalMods);
 
             if (totalBytes <= 0)
             {
@@ -1555,9 +1557,9 @@ namespace Stardrop.Views
             // Reported in megabytes, as a large collection would overflow the int the lock window takes
             var megabyte = 1024L * 1024L;
             var cappedBytes = downloadedBytes > totalBytes ? totalBytes : downloadedBytes;
-            var sizeText = String.Format(Program.translation.Get("ui.message.collection_download_size"), Toolkit.ToHumanReadableSize(cappedBytes), Toolkit.ToHumanReadableSize(totalBytes));
+            var sizeText = string.Format(Program.translation.Get("ui.message.collection_download_size"), Toolkit.ToHumanReadableSize(cappedBytes), Toolkit.ToHumanReadableSize(totalBytes));
 
-            UpdateLockWindow(String.Concat(heading, Environment.NewLine, sizeText), (int)(cappedBytes / megabyte), (int)(totalBytes / megabyte));
+            UpdateLockWindow(string.Concat(heading, Environment.NewLine, sizeText), (int)(cappedBytes / megabyte), (int)(totalBytes / megabyte));
         }
 
         /// <summary>
@@ -1614,7 +1616,7 @@ namespace Stardrop.Views
             // and a collection routinely pins more than one of them, so matching on version hands every entry that
             // shares a mod ID the same file and only its name is used, which then collides on the way to disk
             var modFile = await Nexus.Client.GetFile(entry.NexusModId!.Value, entry.NexusFileId!.Value);
-            if (modFile is null || String.IsNullOrEmpty(modFile.Name))
+            if (modFile is null || string.IsNullOrEmpty(modFile.Name))
             {
                 entry.Status = CollectionModStatus.Failed;
                 entry.FailureReason = Program.translation.Get("ui.message.collection_reason_no_file");
@@ -1622,7 +1624,7 @@ namespace Stardrop.Views
             }
 
             var downloadLink = await Nexus.Client.GetFileDownloadLink(entry.NexusModId.Value, entry.NexusFileId.Value, serverName: EnumParser.GetDescription(Program.settings.PreferredNexusServer));
-            if (String.IsNullOrEmpty(downloadLink))
+            if (string.IsNullOrEmpty(downloadLink))
             {
                 entry.Status = CollectionModStatus.AwaitingManualDownload;
                 return null;
@@ -1635,7 +1637,7 @@ namespace Stardrop.Views
                 return null;
             }
 
-            if (String.IsNullOrEmpty(downloadResult.DownloadedModFilePath))
+            if (string.IsNullOrEmpty(downloadResult.DownloadedModFilePath))
             {
                 entry.Status = CollectionModStatus.Failed;
                 entry.FailureReason = Program.translation.Get("ui.message.collection_reason_download_failed");
@@ -1665,7 +1667,7 @@ namespace Stardrop.Views
 
             var baseName = Path.GetFileNameWithoutExtension(fileName);
             var extension = Path.GetExtension(fileName);
-            var qualifier = fileId is null ? String.Empty : $" [{fileId}]";
+            var qualifier = fileId is null ? string.Empty : $" [{fileId}]";
 
             var candidate = $"{baseName}{qualifier}{extension}";
             int suffix = 2;
@@ -1688,13 +1690,13 @@ namespace Stardrop.Views
         /// </summary>
         private static string? FindBundledFile(CollectionModEntry entry, string extractedArchivePath)
         {
-            if (String.IsNullOrEmpty(extractedArchivePath) || Directory.Exists(extractedArchivePath) is false)
+            if (string.IsNullOrEmpty(extractedArchivePath) || Directory.Exists(extractedArchivePath) is false)
             {
                 return FailBundledEntry(entry, "ui.message.collection_reason_missing_bundle");
             }
 
             // Both names describe the same file and either can be absent, so whichever is present is tried in turn
-            var searchNames = new[] { entry.FileExpression, entry.LogicalFilename }.Where(n => String.IsNullOrEmpty(n) is false).Select(n => n!).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            var searchNames = new[] { entry.FileExpression, entry.LogicalFilename }.Where(n => string.IsNullOrEmpty(n) is false).Select(n => n!).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             if (searchNames.Count == 0)
             {
                 return FailBundledEntry(entry, "ui.message.collection_reason_missing_bundle");
@@ -1714,7 +1716,7 @@ namespace Stardrop.Views
                 }
 
                 var packedPath = PackBundledFolder(folder);
-                if (String.IsNullOrEmpty(packedPath))
+                if (string.IsNullOrEmpty(packedPath))
                 {
                     return FailBundledEntry(entry, "ui.message.collection_reason_bundle_pack_failed");
                 }
@@ -1886,7 +1888,7 @@ namespace Stardrop.Views
             // profile does not list is one the user turned off. Absence is the only record of that choice, which is
             // why it is read against what was installed rather than taken from the profile alone
             var previouslyInstalled = plan.GetPreviouslyInstalledIds();
-            var disabledByUser = previouslyInstalled.Where(id => profile.EnabledModIds.Any(r => IsCollectionReference(r, collection) && String.Equals(r.UniqueId, id, StringComparison.OrdinalIgnoreCase)) is false).ToList();
+            var disabledByUser = previouslyInstalled.Where(id => profile.EnabledModIds.Any(r => IsCollectionReference(r, collection) && string.Equals(r.UniqueId, id, StringComparison.OrdinalIgnoreCase)) is false).ToList();
 
             var updatedReferences = collection.GetEnabledModReferences();
 
@@ -1921,7 +1923,7 @@ namespace Stardrop.Views
         /// <summary>Whether a profile reference points at a mod this collection installed</summary>
         private static bool IsCollectionReference(ModReference reference, CollectionInstall collection)
         {
-            return String.Equals(reference.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(reference.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1952,7 +1954,7 @@ namespace Stardrop.Views
         {
             // The revision is deliberately absent. The profile now outlives the revision it was generated for, so a
             // number in the name would be wrong from the first update onwards
-            var baseName = String.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
+            var baseName = string.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
             var candidate = baseName;
 
             int suffix = 2;
@@ -1974,7 +1976,7 @@ namespace Stardrop.Views
         /// <returns>Whether the link was handled here, declined in favour of an ordinary install, or matched nothing</returns>
         private async Task<CollectionEntryLinkResult> TryProcessCollectionEntryLink(NXM nxmLink)
         {
-            if (Nexus.Client is null || String.IsNullOrEmpty(nxmLink.Link))
+            if (Nexus.Client is null || string.IsNullOrEmpty(nxmLink.Link))
             {
                 return CollectionEntryLinkResult.NotMatched;
             }
@@ -1997,8 +1999,8 @@ namespace Stardrop.Views
             // clicked in it. They have already picked the entry, so a prompt naming it back at them adds nothing
             if (Program.settings.IsAskingBeforeAcceptingNXM && _collectionsWindow is null)
             {
-                var collectionNames = String.Join(Environment.NewLine, matches.Select(m => $"  {m.Collection.Name}"));
-                var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_collection_entry_capture"), entryName, collectionNames));
+                var collectionNames = string.Join(Environment.NewLine, matches.Select(m => $"  {m.Collection.Name}"));
+                var requestWindow = new MessageWindow(string.Format(Program.translation.Get("ui.message.confirm_collection_entry_capture"), entryName, collectionNames));
                 KeepDialogAboveSiblings(requestWindow);
 
                 // Declining asks for the ordinary install rather than cancelling, so the caller carries on from here
@@ -2027,9 +2029,9 @@ namespace Stardrop.Views
             }
 
             var archivePath = await DownloadCollectionEntryViaNXM(nxmLink, modId, fileId);
-            if (String.IsNullOrEmpty(archivePath))
+            if (string.IsNullOrEmpty(archivePath))
             {
-                await ReportCollectionEntryResult(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), entryName), isFailure: true);
+                await ReportCollectionEntryResult(string.Format(Program.translation.Get("ui.warning.failed_nexus_install"), entryName), isFailure: true);
                 return CollectionEntryLinkResult.Handled;
             }
 
@@ -2047,7 +2049,7 @@ namespace Stardrop.Views
             // back in step before the result is written into it
             _collectionsWindow?.RefreshCollections();
 
-            await ReportCollectionEntryResult(String.Join(Environment.NewLine, summary), hasFailure);
+            await ReportCollectionEntryResult(string.Join(Environment.NewLine, summary), hasFailure);
 
             return CollectionEntryLinkResult.Handled;
         }
@@ -2065,7 +2067,7 @@ namespace Stardrop.Views
         private async Task<ModInstallTarget> ResolveModInstallTarget(bool skipPrompt = false)
         {
             var profile = GetCurrentProfile();
-            if (profile is null || profile.IsFromCollection is false || String.IsNullOrEmpty(profile.SourceId))
+            if (profile is null || profile.IsFromCollection is false || string.IsNullOrEmpty(profile.SourceId))
             {
                 return ModInstallTarget.Default();
             }
@@ -2090,7 +2092,7 @@ namespace Stardrop.Views
                 return new ModInstallTarget(true, installPath);
             }
 
-            var requestWindow = new FlexibleOptionWindow(String.Format(Program.translation.Get("ui.message.confirm_collection_install_target"), collection.Name), Program.translation.Get("internal.add_to_collection"), Program.translation.Get("internal.install_normally"), Program.translation.Get("internal.cancel"), windowWidth: 450);
+            var requestWindow = new FlexibleOptionWindow(string.Format(Program.translation.Get("ui.message.confirm_collection_install_target"), collection.Name), Program.translation.Get("internal.add_to_collection"), Program.translation.Get("internal.install_normally"), Program.translation.Get("internal.cancel"), windowWidth: 450);
             KeepDialogAboveSiblings(requestWindow);
 
             var response = await requestWindow.ShowDialog<Choice>(this);
@@ -2148,8 +2150,8 @@ namespace Stardrop.Views
 
                 if (wasInstalled is false)
                 {
-                    var reason = String.IsNullOrEmpty(match.Entry.FailureReason) ? String.Empty : $" ({match.Entry.FailureReason})";
-                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_failed"), entryName, match.Collection.Name) + reason);
+                    var reason = string.IsNullOrEmpty(match.Entry.FailureReason) ? string.Empty : $" ({match.Entry.FailureReason})";
+                    summary.Add(string.Format(Program.translation.Get("ui.message.collection_entry_failed"), entryName, match.Collection.Name) + reason);
                     continue;
                 }
 
@@ -2158,16 +2160,16 @@ namespace Stardrop.Views
                 if (match.Entry.Status is CollectionModStatus.AwaitingTargets)
                 {
                     var blockingNames = match.Collection.DescribeBlockingTargets(match.Entry, CollectionInstall.MAX_LISTED_TARGET_NAMES, Program.translation.Get("ui.message.collection_names_truncated"));
-                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_held"), entryName, match.Collection.Name, blockingNames));
+                    summary.Add(string.Format(Program.translation.Get("ui.message.collection_entry_held"), entryName, match.Collection.Name, blockingNames));
                 }
                 else
                 {
-                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_installed"), entryName, match.Collection.Name));
+                    summary.Add(string.Format(Program.translation.Get("ui.message.collection_entry_installed"), entryName, match.Collection.Name));
                 }
 
                 foreach (var appliedOverlay in appliedOverlays)
                 {
-                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_released"), appliedOverlay.Name, match.Collection.Name));
+                    summary.Add(string.Format(Program.translation.Get("ui.message.collection_entry_released"), appliedOverlay.Name, match.Collection.Name));
                 }
 
                 if (includeRemainingCount is false)
@@ -2178,7 +2180,7 @@ namespace Stardrop.Views
                 var remaining = match.Collection.GetManualDownloads().Count;
                 if (remaining > 0)
                 {
-                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_remaining"), remaining));
+                    summary.Add(string.Format(Program.translation.Get("ui.message.collection_entry_remaining"), remaining));
                 }
             }
 
@@ -2270,19 +2272,19 @@ namespace Stardrop.Views
                 }
 
                 var checksum = Toolkit.GetFileChecksum(filePath);
-                var matches = String.IsNullOrEmpty(checksum) ? new List<(CollectionInstall Collection, CollectionModEntry Entry)>() : FindUnsatisfiedCollectionEntries(checksum);
+                var matches = string.IsNullOrEmpty(checksum) ? [] : FindUnsatisfiedCollectionEntries(checksum);
                 if (matches.Count == 0)
                 {
-                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_drop_no_match"), Path.GetFileName(filePath)));
+                    summary.Add(string.Format(Program.translation.Get("ui.message.collection_drop_no_match"), Path.GetFileName(filePath)));
                     continue;
                 }
 
                 // Installing removes the archive it worked from, which must never be the user's own copy sitting
                 // wherever they saved it
                 var archivePath = CopyIntoDownloadFolder(filePath);
-                if (String.IsNullOrEmpty(archivePath))
+                if (string.IsNullOrEmpty(archivePath))
                 {
-                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_drop_copy_failed"), Path.GetFileName(filePath)));
+                    summary.Add(string.Format(Program.translation.Get("ui.message.collection_drop_copy_failed"), Path.GetFileName(filePath)));
                     continue;
                 }
 
@@ -2300,7 +2302,7 @@ namespace Stardrop.Views
 
             // Reported the same way an nxm link is, so a drop and a download read the same in the same window. The
             // caller refreshes the window after this returns, which is why nothing here clears the footer
-            await ReportCollectionEntryResult(String.Join(Environment.NewLine, summary));
+            await ReportCollectionEntryResult(string.Join(Environment.NewLine, summary));
         }
 
         /// <summary>
@@ -2337,12 +2339,12 @@ namespace Stardrop.Views
             {
                 foreach (var entry in collection.Mods)
                 {
-                    if (entry.IsSatisfied() || String.IsNullOrEmpty(entry.Md5Checksum))
+                    if (entry.IsSatisfied() || string.IsNullOrEmpty(entry.Md5Checksum))
                     {
                         continue;
                     }
 
-                    if (String.Equals(entry.Md5Checksum, checksum, StringComparison.OrdinalIgnoreCase) is false)
+                    if (string.Equals(entry.Md5Checksum, checksum, StringComparison.OrdinalIgnoreCase) is false)
                     {
                         continue;
                     }
@@ -2398,13 +2400,13 @@ namespace Stardrop.Views
             }
 
             var modFile = await Nexus.Client.GetFile(modId, fileId);
-            if (modFile is null || String.IsNullOrEmpty(modFile.Name))
+            if (modFile is null || string.IsNullOrEmpty(modFile.Name))
             {
                 return null;
             }
 
             var downloadLink = await Nexus.Client.GetFileDownloadLink(nxmLink, EnumParser.GetDescription(Program.settings.PreferredNexusServer));
-            if (String.IsNullOrEmpty(downloadLink))
+            if (string.IsNullOrEmpty(downloadLink))
             {
                 return null;
             }
@@ -2469,11 +2471,11 @@ namespace Stardrop.Views
             }
 
             var installedModsByArchive = new Dictionary<string, List<Mod>>(StringComparer.OrdinalIgnoreCase);
-            await AddMods(new string[] { archivePath }, installPath, installedModsByArchive, replaceWithoutAsking: true);
+            await AddMods([archivePath], installPath, installedModsByArchive, replaceWithoutAsking: true);
 
             _viewModel.DiscoverMods(Pathing.defaultModPath);
 
-            var installedMods = _viewModel.Mods.Where(m => String.Equals(m.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
+            var installedMods = _viewModel.Mods.Where(m => string.Equals(m.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
             var entriesByArchive = new Dictionary<string, CollectionModEntry>(StringComparer.OrdinalIgnoreCase) { [archivePath] = entry };
             RecordInstalledMods(entriesByArchive, installedModsByArchive, installedMods);
 
@@ -2579,17 +2581,17 @@ namespace Stardrop.Views
             var modCount = collection.Mods.Count - collection.GetOverlays().Count;
 
             // Escaped, as the report is parsed for links further down and a mod name can hold the same characters
-            var summary = String.Format(Program.translation.Get("ui.message.collection_install_summary"), HyperlinkParser.Escape(collection.Name), installedCount, modCount);
+            var summary = string.Format(Program.translation.Get("ui.message.collection_install_summary"), HyperlinkParser.Escape(collection.Name), installedCount, modCount);
 
             if (manualDownloads.Count > 0)
             {
-                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_manual_downloads"), manualDownloads.Count);
+                summary += Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_manual_downloads"), manualDownloads.Count);
                 summary += BuildEntryLines(collection, manualDownloads, includeFailureReasons: false);
             }
 
             if (failures.Count > 0)
             {
-                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_failures"), failures.Count);
+                summary += Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_failures"), failures.Count);
                 summary += BuildEntryLines(collection, failures, includeFailureReasons: true);
             }
 
@@ -2598,15 +2600,15 @@ namespace Stardrop.Views
 
             if (conflicts.Count > 0)
             {
-                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_conflicts"), conflicts.Count);
+                summary += Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_conflicts"), conflicts.Count);
                 foreach (var conflict in conflicts)
                 {
-                    summary += Environment.NewLine + $"  {String.Format(Program.translation.Get("ui.message.collection_conflict_entry"), HyperlinkParser.Escape(conflict.Source.Name), HyperlinkParser.Escape(conflict.Target.Name))}";
+                    summary += Environment.NewLine + $"  {string.Format(Program.translation.Get("ui.message.collection_conflict_entry"), HyperlinkParser.Escape(conflict.Source.Name), HyperlinkParser.Escape(conflict.Target.Name))}";
                 }
             }
 
             // Left as written, as the curator may have included links of their own
-            if (String.IsNullOrEmpty(collection.InstallInstructions) is false)
+            if (string.IsNullOrEmpty(collection.InstallInstructions) is false)
             {
                 summary += Environment.NewLine + Environment.NewLine + Program.translation.Get("ui.message.collection_curator_notes");
                 summary += Environment.NewLine + collection.InstallInstructions;
@@ -2624,7 +2626,7 @@ namespace Stardrop.Views
             var appliedRevision = collection.IsUpdateInProgress() ? collection.PendingRevisionNumber!.Value : collection.RevisionNumber;
 
             // Escaped, as the report is parsed for links further down and a collection name can hold the same characters
-            var summary = String.Format(Program.translation.Get("ui.message.collection_update_summary"), HyperlinkParser.Escape(collection.Name), plan.Previous.RevisionNumber, appliedRevision);
+            var summary = string.Format(Program.translation.Get("ui.message.collection_update_summary"), HyperlinkParser.Escape(collection.Name), plan.Previous.RevisionNumber, appliedRevision);
 
             if (plan.HasChanges() is false)
             {
@@ -2632,28 +2634,28 @@ namespace Stardrop.Views
             }
             else
             {
-                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_update_counts"), plan.Added.Count, plan.Replaced.Count, plan.Removed.Count, plan.Unchanged.Count);
+                summary += Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_update_counts"), plan.Added.Count, plan.Replaced.Count, plan.Removed.Count, plan.Unchanged.Count);
             }
 
             // Named rather than counted, as their files are still on disk and the user is the one who decides
             // whether to keep them
             if (plan.Removed.Count > 0)
             {
-                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_update_removed"), plan.Removed.Count);
+                summary += Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_update_removed"), plan.Removed.Count);
                 summary += BuildEntryLines(collection, plan.Removed, includeFailureReasons: false);
             }
 
             var manualDownloads = collection.GetManualDownloads();
             if (manualDownloads.Count > 0)
             {
-                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_manual_downloads"), manualDownloads.Count);
+                summary += Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_manual_downloads"), manualDownloads.Count);
                 summary += BuildEntryLines(collection, manualDownloads, includeFailureReasons: false);
             }
 
             var failures = collection.GetFailures();
             if (failures.Count > 0)
             {
-                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_failures"), failures.Count);
+                summary += Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_failures"), failures.Count);
                 summary += BuildEntryLines(collection, failures, includeFailureReasons: true);
             }
 
@@ -2664,11 +2666,11 @@ namespace Stardrop.Views
             // update until whatever is outstanding is dealt with
             if (collection.IsUpdateInProgress())
             {
-                summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_update_incomplete"), collection.RevisionNumber);
+                summary += Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_update_incomplete"), collection.RevisionNumber);
             }
 
             // Left as written, as the curator may have included links of their own
-            if (String.IsNullOrEmpty(collection.InstallInstructions) is false)
+            if (string.IsNullOrEmpty(collection.InstallInstructions) is false)
             {
                 summary += Environment.NewLine + Environment.NewLine + Program.translation.Get("ui.message.collection_curator_notes");
                 summary += Environment.NewLine + collection.InstallInstructions;
@@ -2695,7 +2697,7 @@ namespace Stardrop.Views
             // so an entry whose mod another one still places is not offered up for deletion
             var removableEntries = plan.Removed.Where(e => e.InstalledMods.Any(i => droppedFolders.Contains(i.FolderName!, StringComparer.OrdinalIgnoreCase))).ToList();
 
-            var message = String.Format(Program.translation.Get("ui.message.confirm_collection_remove_dropped"), removableEntries.Count);
+            var message = string.Format(Program.translation.Get("ui.message.confirm_collection_remove_dropped"), removableEntries.Count);
             message += Environment.NewLine + BuildPlainEntryLines(removableEntries);
 
             // The collection dropping a mod says nothing about whether the user still wants it. A profile of their
@@ -2703,7 +2705,7 @@ namespace Stardrop.Views
             var dependentProfiles = GetProfilesUsingDroppedMods(collection, removableEntries);
             if (dependentProfiles.Count > 0)
             {
-                message += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_dropped_dependents"), dependentProfiles.Count);
+                message += Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_dropped_dependents"), dependentProfiles.Count);
             }
 
             var requestWindow = new MessageWindow(message);
@@ -2741,7 +2743,7 @@ namespace Stardrop.Views
 
             if (references.Count == 0)
             {
-                return new List<Profile>();
+                return [];
             }
 
             return _editorView.Profiles.Where(p => IsCollectionProfile(p, collection) is false && p.EnabledModIds.Any(m => references.Contains(m))).ToList();
@@ -2750,7 +2752,7 @@ namespace Stardrop.Views
         /// <summary>Whether a profile is the one generated for this collection</summary>
         private static bool IsCollectionProfile(Profile profile, CollectionInstall collection)
         {
-            return String.Equals(profile.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(profile.SourceId, collection.SourceId, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -2760,14 +2762,14 @@ namespace Stardrop.Views
         /// </summary>
         private static List<string> GetDroppedFolderNames(CollectionInstall collection, CollectionUpdatePlan plan)
         {
-            var claimedFolders = collection.Mods.SelectMany(m => m.InstalledMods).Select(i => i.FolderName).Where(f => String.IsNullOrEmpty(f) is false).ToList();
+            var claimedFolders = collection.Mods.SelectMany(m => m.InstalledMods).Select(i => i.FolderName).Where(f => string.IsNullOrEmpty(f) is false).ToList();
 
             var droppedFolders = new List<string>();
             foreach (var entry in plan.Removed)
             {
                 foreach (var installedMod in entry.InstalledMods)
                 {
-                    if (String.IsNullOrEmpty(installedMod.FolderName) || claimedFolders.Contains(installedMod.FolderName!, StringComparer.OrdinalIgnoreCase))
+                    if (string.IsNullOrEmpty(installedMod.FolderName) || claimedFolders.Contains(installedMod.FolderName!, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -2785,7 +2787,7 @@ namespace Stardrop.Views
         /// </summary>
         private static string BuildPlainEntryLines(List<CollectionModEntry> entries)
         {
-            var lines = String.Empty;
+            var lines = string.Empty;
             foreach (var entry in entries.Take(_maxListedEntries))
             {
                 lines += Environment.NewLine + $"  {entry.Name}";
@@ -2793,7 +2795,7 @@ namespace Stardrop.Views
 
             if (entries.Count > _maxListedEntries)
             {
-                lines += Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_entries_truncated"), entries.Count - _maxListedEntries);
+                lines += Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_entries_truncated"), entries.Count - _maxListedEntries);
             }
 
             return lines;
@@ -2808,19 +2810,19 @@ namespace Stardrop.Views
             var heldOverlays = collection.GetHeldOverlays();
             if (heldOverlays.Count == 0)
             {
-                return String.Empty;
+                return string.Empty;
             }
 
-            var section = Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_overlays_held"), heldOverlays.Count);
+            var section = Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_overlays_held"), heldOverlays.Count);
             foreach (var overlay in heldOverlays.Take(_maxListedEntries))
             {
                 var blockingNames = collection.DescribeBlockingTargets(overlay, CollectionInstall.MAX_LISTED_TARGET_NAMES, Program.translation.Get("ui.message.collection_names_truncated"));
-                section += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_overlay_held_entry"), overlay.Name, blockingNames))}";
+                section += Environment.NewLine + $"  {HyperlinkParser.Escape(string.Format(Program.translation.Get("ui.message.collection_overlay_held_entry"), overlay.Name, blockingNames))}";
             }
 
             if (heldOverlays.Count > _maxListedEntries)
             {
-                section += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_entries_truncated"), heldOverlays.Count - _maxListedEntries))}";
+                section += Environment.NewLine + $"  {HyperlinkParser.Escape(string.Format(Program.translation.Get("ui.message.collection_entries_truncated"), heldOverlays.Count - _maxListedEntries))}";
             }
 
             return section;
@@ -2835,18 +2837,18 @@ namespace Stardrop.Views
             var partialEntries = collection.Mods.Where(m => m.Status is CollectionModStatus.AppliedAsOverlay && m.UnmatchedFileCount > 0).ToList();
             if (partialEntries.Count == 0)
             {
-                return String.Empty;
+                return string.Empty;
             }
 
-            var section = Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_files_unmatched"), partialEntries.Count);
+            var section = Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_files_unmatched"), partialEntries.Count);
             foreach (var entry in partialEntries.Take(_maxListedEntries))
             {
-                section += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_files_unmatched_entry"), entry.Name, entry.UnmatchedFileCount, entry.FileHashes.Count))}";
+                section += Environment.NewLine + $"  {HyperlinkParser.Escape(string.Format(Program.translation.Get("ui.message.collection_files_unmatched_entry"), entry.Name, entry.UnmatchedFileCount, entry.FileHashes.Count))}";
             }
 
             if (partialEntries.Count > _maxListedEntries)
             {
-                section += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_entries_truncated"), partialEntries.Count - _maxListedEntries))}";
+                section += Environment.NewLine + $"  {HyperlinkParser.Escape(string.Format(Program.translation.Get("ui.message.collection_entries_truncated"), partialEntries.Count - _maxListedEntries))}";
             }
 
             return section;
@@ -2859,18 +2861,18 @@ namespace Stardrop.Views
         /// </summary>
         private static string BuildEntryLines(CollectionInstall collection, List<CollectionModEntry> entries, bool includeFailureReasons)
         {
-            var lines = String.Empty;
+            var lines = string.Empty;
             foreach (var entry in entries.Take(_maxListedEntries))
             {
                 // Marked so that a list of pages to work through says which of them can be passed on
-                var optional = entry.IsOptional is false ? String.Empty : $" {HyperlinkParser.Escape(Program.translation.Get("ui.message.collection_entry_optional"))}";
-                var reason = includeFailureReasons is false || String.IsNullOrEmpty(entry.FailureReason) ? String.Empty : $" ({HyperlinkParser.Escape(entry.FailureReason)})";
+                var optional = entry.IsOptional is false ? string.Empty : $" {HyperlinkParser.Escape(Program.translation.Get("ui.message.collection_entry_optional"))}";
+                var reason = includeFailureReasons is false || string.IsNullOrEmpty(entry.FailureReason) ? string.Empty : $" ({HyperlinkParser.Escape(entry.FailureReason)})";
                 lines += Environment.NewLine + $"  {HyperlinkParser.CreateLink(entry.Name, collection.GetEntryPageUri(entry, Program.settings.UseNXMLinks))}{optional}{reason}";
             }
 
             if (entries.Count > _maxListedEntries)
             {
-                lines += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_entries_truncated"), entries.Count - _maxListedEntries))}";
+                lines += Environment.NewLine + $"  {HyperlinkParser.Escape(string.Format(Program.translation.Get("ui.message.collection_entries_truncated"), entries.Count - _maxListedEntries))}";
             }
 
             return lines;

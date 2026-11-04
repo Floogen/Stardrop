@@ -6,6 +6,6 @@ namespace Stardrop.Models.Nexus.Web
     public class ModFiles
     {
         [JsonPropertyName("files")]
-        public List<ModFile> Files { get; set; }
+        public List<ModFile> Files { get; set; } = null!;
     }
 }

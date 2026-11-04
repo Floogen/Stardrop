@@ -23,13 +23,11 @@ namespace Stardrop
             if (Program.helper is null)
             {
                 Program.helper = new Helper();
+                Program.translation.LoadTranslations();
             }
 
-            // Load in translations
-            Program.translation.LoadTranslations();
-
             // Handle adding the themes
-            Dictionary<string, IStyle> themes = new Dictionary<string, IStyle>();
+            Dictionary<string, IStyle> themes = [];
             foreach (string fileFullName in ThemeManager.GetThemeFilePaths())
             {
                 try
@@ -44,12 +42,15 @@ namespace Stardrop
                 }
             }
 
-            Current.Styles.Insert(ThemeManager.THEME_STYLE_INDEX, !themes.ContainsKey(Program.settings.Theme) ? themes.Values.First() : themes[Program.settings.Theme]);
+            Styles.Insert(ThemeManager.THEME_STYLE_INDEX, !themes.TryGetValue(Program.settings.Theme, out IStyle? value) ? themes.Values.First() : value);
+#if DEBUG
+                this.AttachDeveloperTools();
+#endif
         }
 
-        private async void OnUrlsOpen(object? sender, UrlOpenedEventArgs e, MainWindow mainWindow)
+        private static async void OnUrlsOpen(object? sender, UrlOpenedEventArgs e, MainWindow mainWindow)
         {
-            foreach (string? url in e.Urls.Where(u => String.IsNullOrEmpty(u) is false))
+            foreach (string? url in e.Urls.Where(u => string.IsNullOrEmpty(u) is false))
             {
                 await mainWindow.ProcessNXMLink(new NXM() { Link = url, Timestamp = DateTime.Now });
             }
@@ -63,7 +64,14 @@ namespace Stardrop
                 desktop.MainWindow = mainWindow;
 
                 // Register events
-                this.UrlsOpened += (sender, e) => OnUrlsOpen(sender, e, mainWindow);
+                if (Current?.TryGetFeature<IActivatableLifetime>() is { } activatable)
+                {
+                    activatable.Activated += (sender, args) =>
+                    {
+                        if (args is ProtocolActivatedEventArgs p)
+                            OnUrlsOpen(sender, new UrlOpenedEventArgs([p.Uri.ToString()]), mainWindow);
+                    };
+                }
             }
 
             base.OnFrameworkInitializationCompleted();

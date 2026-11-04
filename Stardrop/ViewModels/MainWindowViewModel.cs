@@ -1,7 +1,7 @@
 ﻿using Avalonia.Collections;
 using Avalonia.Controls;
 using Json.More;
-using ReactiveUI;
+using ReactiveUI.Reactive;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using Stardrop.Models;
@@ -27,15 +27,15 @@ namespace Stardrop.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private string ChromeHint { get; set; } = "NoChrome";
-        private bool HasSystemDecorations { get; set; } = true;
-        private bool ShowTitle { get; set; } = true;
-        private bool ShowMainMenu { get; set; } = true;
-        private bool ShowWindowMenu { get; set; } = true;
+        // public string ChromeHint { get; set; } = "NoChrome";
+        // private bool HasSystemDecorations { get; set; } = true;
+        public bool ShowTitle { get; set; } = true;
+        public bool ShowMainMenu { get; set; } = true;
+        public bool ShowWindowMenu { get; set; } = true;
 
-        private DataGridPathGroupDescription _modPathGrouping = new DataGridPathGroupDescription(nameof(Mod.Path));
-        private DataGridPathGroupDescription _rootPathGrouping = new DataGridPathGroupDescription(nameof(Mod.RootPath));
-        private DataGridPathGroupDescription _frameworkGrouping = new DataGridPathGroupDescription(nameof(Mod.FrameworkID));
+        private DataGridPathGroupDescription _modPathGrouping = new(nameof(Mod.Path));
+        private DataGridPathGroupDescription _rootPathGrouping = new(nameof(Mod.RootPath));
+        private DataGridPathGroupDescription _frameworkGrouping = new(nameof(Mod.FrameworkID));
 
         private string _dragOverColor = "#ff9f2a";
         public string DragOverColor { get { return _dragOverColor; } set { this.RaiseAndSetIfChanged(ref _dragOverColor, value); } }
@@ -43,7 +43,7 @@ namespace Stardrop.ViewModels
         public bool IsLocked { get { return _isLocked; } set { this.RaiseAndSetIfChanged(ref _isLocked, value); } }
         private bool _isCheckingForUpdates;
         public bool IsCheckingForUpdates { get { return _isCheckingForUpdates; } set { this.RaiseAndSetIfChanged(ref _isCheckingForUpdates, value); } }
-        public ObservableCollection<Mod> Mods { get; set; }
+        public ObservableCollection<Mod> Mods { get; set; } = null!;
         private int _enabledModCount;
         public int EnabledModCount { get { return _enabledModCount; } set { this.RaiseAndSetIfChanged(ref _enabledModCount, value); } }
         private int _actualModCount;
@@ -62,25 +62,36 @@ namespace Stardrop.ViewModels
         /// <summary>Whether any installed mod belongs to a collection. Drives the visibility of the source filter, which is noise for users with no collections</summary>
         public bool HasCollectionMods { get { return _hasCollectionMods; } set { this.RaiseAndSetIfChanged(ref _hasCollectionMods, value); } }
         private Profile? _activeProfile;
-        private HashSet<ModReference> _activeProfileReferences = new HashSet<ModReference>();
+        private HashSet<ModReference> _activeProfileReferences = [];
         private bool _showEndorsements;
         public bool ShowEndorsements { get { return _showEndorsements; } set { this.RaiseAndSetIfChanged(ref _showEndorsements, value); } }
         private bool _showInstalls;
         public bool ShowInstalls { get { return _showInstalls; } set { this.RaiseAndSetIfChanged(ref _showInstalls, value); } }
         private bool _isNexusConnected;
+        public bool IsNexusConnected 
+        { 
+            get => _isNexusConnected; 
+            set => this.RaiseAndSetIfChanged(ref _isNexusConnected, value); 
+        }
         /// <summary>Visibility preferences from the column context menu, keyed by ext:ColumnExtensions.Key</summary>
-        private Dictionary<string, bool> _columnPreferences = new Dictionary<string, bool>();
-        private string _filterText;
+        private Dictionary<string, bool> _columnPreferences = [];
+        private string _filterText = null!;
         public string FilterText { get { return _filterText; } set { _filterText = value; UpdateFilter(); } }
-        private List<string> _columnFilter;
+        private List<string> _columnFilter = null!;
         public List<string> ColumnFilter { get { return _columnFilter; } set { _columnFilter = value; UpdateFilter(); } }
         private string _updateStatusText = Program.translation.Get("ui.main_window.button.update_status.generic");
         public string UpdateStatusText { get { return _updateStatusText; } set { this.RaiseAndSetIfChanged(ref _updateStatusText, value); } }
-        private string _downloadsButtonText;
+        private string _downloadsButtonText = null!;
         public string DownloadsButtonText { get => _downloadsButtonText; set => this.RaiseAndSetIfChanged(ref _downloadsButtonText, value); }
         private int _modsWithCachedUpdates;
         public int ModsWithCachedUpdates { get { return _modsWithCachedUpdates; } set { this.RaiseAndSetIfChanged(ref _modsWithCachedUpdates, value); } }
         private int _collectionsWithUpdates;
+
+        private ModUpdateState _updateState = ModUpdateState.Generic;
+        public ModUpdateState UpdateState { 
+            get => _updateState; 
+            set => this.RaiseAndSetIfChanged(ref _updateState, value);
+        }
         /// <summary>
         /// Collections sitting behind a newer revision. Shown beside the mod update count as a pointer towards the
         /// collections window, which is where the update itself is described and acted on.
@@ -98,28 +109,31 @@ namespace Stardrop.ViewModels
         public bool HasCollectionUpdates { get { return _collectionsWithUpdates > 0; } }
         public string Version { get; set; }
 
-        private string _nexusStatus = String.Concat("Nexus Mods: ", Program.translation.Get("internal.disconnected"));
-        public string NexusStatus { get { return _nexusStatus; } set { this.RaiseAndSetIfChanged(ref _nexusStatus, String.Concat("Nexus Mods: ", value)); } }
-
-        private string _nexusLimits;
+        private string _nexusLimits = null!;
         public string NexusLimits { get { return _nexusLimits; } set { this.RaiseAndSetIfChanged(ref _nexusLimits, value); } }
-        private string _smapiVersion;
-        public string SmapiVersion { get { return String.IsNullOrEmpty(_smapiVersion) ? Program.translation.Get("ui.main_window.labels.unknown_SMAPI") : $"v{_smapiVersion}"; } set { this.RaiseAndSetIfChanged(ref _smapiVersion, value); } }
+        private string _smapiVersion = null!;
+        public string SmapiVersion { get { return string.IsNullOrEmpty(_smapiVersion) ? Program.translation.Get("ui.main_window.labels.unknown_SMAPI") : $"v{_smapiVersion}"; } set { this.RaiseAndSetIfChanged(ref _smapiVersion, value); } }
 
         public bool ShowSaveProfileChanges { get { return _showSaveProfileChanges; } set { this.RaiseAndSetIfChanged(ref _showSaveProfileChanges, value); } }
         private bool _showSaveProfileChanges;
         public bool AreModGroupsEnabled { get { return _areModGroupsEnabled; } set { this.RaiseAndSetIfChanged(ref _areModGroupsEnabled, value); } }
         private bool _areModGroupsEnabled = Program.settings.ModGroupingMethod != ModGrouping.None;
+        private bool _areModGroupsExpanded = true;
+        public bool AreModGroupsExpanded 
+        { 
+            get => _areModGroupsExpanded; 
+            set => this.RaiseAndSetIfChanged(ref _areModGroupsExpanded, value); 
+        }
         public bool ShowModThumbnails { get { return _showModThumbnails; } set { this.RaiseAndSetIfChanged(ref _showModThumbnails, value); } }
         private bool _showModThumbnails = Program.settings.ShowModThumbnails;
-        public string ModGroupsStateButtonText { get { return _modGroupsStateButtonText; } set { this.RaiseAndSetIfChanged(ref _modGroupsStateButtonText, value); } }
-        private string _modGroupsStateButtonText = Program.settings.ModGroupingMethod != ModGrouping.None ? Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse") : Program.translation.Get("ui.main_window.buttons.mod_groups_state.expand");
+        private static readonly JsonSerializerOptions ReadOptions = new() { AllowTrailingCommas = true };
+        private static readonly JsonSerializerOptions WriteOptions = new() { WriteIndented = true };
 
         public MainWindowViewModel(string modsFilePath, string version)
         {
             DiscoverMods(modsFilePath);
             Version = $"v{version}";
-            SmapiVersion = Program.settings.GameDetails?.SmapiVersion;
+            SmapiVersion = Program.settings.GameDetails?.SmapiVersion ?? string.Empty;
 
             // Create data view
             DataView = new DataGridCollectionView(Mods, isDataSorted: false, isDataInGroupOrder: false);
@@ -132,13 +146,11 @@ namespace Stardrop.ViewModels
             // Do OS specific setup
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                ChromeHint = "Default";
                 ShowMainMenu = false;
                 ShowWindowMenu = false;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                ChromeHint = "Default";
                 ShowWindowMenu = false;
                 ShowTitle = false;
             }
@@ -186,10 +198,10 @@ namespace Stardrop.ViewModels
             }
 
             // Get the local data
-            ClientData localDataCache = new ClientData();
+            ClientData localDataCache = new();
             if (File.Exists(Pathing.GetDataCachePath()))
             {
-                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), ReadOptions) ?? new ClientData();
             }
 
             if (isActive)
@@ -207,7 +219,7 @@ namespace Stardrop.ViewModels
             localDataCache.ColumnActiveStates[header] = isActive;
 
             // Cache the local data
-            File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+            File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, WriteOptions));
         }
 
         /// <summary>
@@ -217,7 +229,7 @@ namespace Stardrop.ViewModels
         private void ApplyColumnVisibility(DataGridColumn targetColumn, bool isActive)
         {
             var columnKey = ColumnExtensions.GetKey(targetColumn);
-            if (String.IsNullOrEmpty(columnKey) is false)
+            if (string.IsNullOrEmpty(columnKey) is false)
             {
                 _columnPreferences[columnKey] = isActive;
             }
@@ -252,13 +264,13 @@ namespace Stardrop.ViewModels
                 }
 
                 var columnKey = ColumnExtensions.GetKey(targetColumn);
-                if (String.IsNullOrEmpty(columnKey))
+                if (string.IsNullOrEmpty(columnKey))
                 {
                     Program.helper.Log($"Failed to gate column {targetColumn.Header}: it lacks an ext:ColumnExtensions.Key value in the XAML.");
                     continue;
                 }
 
-                bool isEnabled = _columnPreferences.TryGetValue(columnKey, out bool preference) ? preference : true;
+                bool isEnabled = !_columnPreferences.TryGetValue(columnKey, out bool preference) || preference;
                 targetColumn.IsVisible = isEnabled && isNexusConnected;
             }
         }
@@ -266,10 +278,10 @@ namespace Stardrop.ViewModels
         public void SetColumnOrder(DataGrid modGrid)
         {
             // Get the local data
-            ClientData localDataCache = new ClientData();
+            ClientData localDataCache = new();
             if (File.Exists(Pathing.GetDataCachePath()))
             {
-                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), ReadOptions) ?? new ClientData();
             }
 
             if (localDataCache is not null && modGrid is not null && modGrid.Columns is not null)
@@ -287,7 +299,7 @@ namespace Stardrop.ViewModels
                 }
 
                 // Cache the local data
-                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, WriteOptions));
             }
         }
 
@@ -342,7 +354,7 @@ namespace Stardrop.ViewModels
         /// </summary>
         private static void ApplyCollectionDetails(Mod mod, Dictionary<string, CollectionInstall> collectionsBySourceId)
         {
-            if (String.IsNullOrEmpty(mod.SourceId))
+            if (string.IsNullOrEmpty(mod.SourceId))
             {
                 return;
             }
@@ -354,7 +366,7 @@ namespace Stardrop.ViewModels
                 return;
             }
 
-            mod.CollectionName = String.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
+            mod.CollectionName = string.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
             mod.IsCollectionAddOn = collection.IsModPinned(mod.UniqueId) is false;
         }
 
@@ -379,7 +391,7 @@ namespace Stardrop.ViewModels
         private static List<string> GetScanRoots(string modsFilePath)
         {
             var roots = new List<string>();
-            if (String.IsNullOrEmpty(modsFilePath) is false && Directory.Exists(modsFilePath))
+            if (string.IsNullOrEmpty(modsFilePath) is false && Directory.Exists(modsFilePath))
             {
                 roots.Add(modsFilePath);
             }
@@ -438,7 +450,7 @@ namespace Stardrop.ViewModels
         /// </summary>
         public List<(FileInfo Manifest, FileInfo? Config)> GetModFolders(DirectoryInfo modDirectory)
         {
-            List<(FileInfo Manifest, FileInfo? Config)> modFolders = new List<(FileInfo Manifest, FileInfo? Config)>();
+            List<(FileInfo Manifest, FileInfo? Config)> modFolders = [];
             foreach (var directory in modDirectory.EnumerateDirectories())
             {
                 try
@@ -468,7 +480,7 @@ namespace Stardrop.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Program.helper.Log($"There was an error when attempting to get the manifest.json within the directory ({(directory is null ? String.Empty : directory.FullName)}): {ex}", Helper.Status.Alert);
+                    Program.helper.Log($"There was an error when attempting to get the manifest.json within the directory ({(directory is null ? string.Empty : directory.FullName)}): {ex}", Helper.Status.Alert);
                 }
             }
 
@@ -487,7 +499,7 @@ namespace Stardrop.ViewModels
         /// <returns></returns>
         public async Task<List<Mod>> DirectModInstallAsync(string? fileFullName)
         {
-            List<Mod> addedMods = new List<Mod>();
+            List<Mod> addedMods = [];
             if (string.IsNullOrEmpty(fileFullName))
             {
                 return addedMods;
@@ -498,7 +510,7 @@ namespace Stardrop.ViewModels
                 // Extract the archive data
                 using (var archive = ArchiveFactory.OpenArchive(fileFullName))
                 {
-                    Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
+                    Dictionary<string, Manifest?> pathToManifests = [];
                     foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key)!.Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
                     {
                         if (manifest.Key is not null)
@@ -518,7 +530,7 @@ namespace Stardrop.ViewModels
                     // Warn and skip the install logic if the given archive has no manifest.json
                     if (pathToManifests.Count == 0)
                     {
-                        Program.helper.Log(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
+                        Program.helper.Log(string.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
                         return addedMods;
                     }
 
@@ -532,7 +544,7 @@ namespace Stardrop.ViewModels
                         if (manifest is not null)
                         {
                             var installPath = Program.settings.ModInstallPath;
-                            if (String.IsNullOrEmpty(manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase)))
+                            if (string.IsNullOrEmpty(manifestPath.Replace("manifest.json", string.Empty, StringComparison.OrdinalIgnoreCase)))
                             {
                                 installPath = Path.Combine(installPath, manifest.UniqueID);
                             }
@@ -544,22 +556,22 @@ namespace Stardrop.ViewModels
                             }
 
                             Program.helper.Log($"Install path for mod {manifest.UniqueID}:{installPath}");
-                            var manifestFolderPath = manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase);
-                            foreach (var entry in archive.Entries.Where(e => e.Key.StartsWith(manifestFolderPath)))
+                            var manifestFolderPath = manifestPath.Replace("manifest.json", string.Empty, StringComparison.OrdinalIgnoreCase);
+                            foreach (var entry in archive.Entries.Where(e => e.Key!.StartsWith(manifestFolderPath)))
                             {
-                                if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) || entry.Key.Contains(".DS_Store", StringComparison.OrdinalIgnoreCase))
+                                if (entry.Key!.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) || entry.Key.Contains(".DS_Store", StringComparison.OrdinalIgnoreCase))
                                 {
                                     continue;
                                 }
-                                var outputPath = Path.Combine(installPath, manifestFolderPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+                                var outputPath = Path.Combine(installPath, manifestFolderPath, string.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
 
-                                if (String.IsNullOrEmpty(manifestFolderPath) is false)
+                                if (string.IsNullOrEmpty(manifestFolderPath) is false)
                                 {
                                     var installDirectory = new DirectoryInfo(installPath);
                                     var manifestDirectory = new DirectoryInfo(manifestFolderPath);
                                     if (installDirectory.Exists && (installDirectory.Name.Equals(manifestDirectory.Name, StringComparison.OrdinalIgnoreCase) || installDirectory.Name.Equals(manifest.UniqueID)))
                                     {
-                                        outputPath = Path.Combine(installPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+                                        outputPath = Path.Combine(installPath, string.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
 
                                         Program.helper.Log(outputPath);
                                     }
@@ -570,16 +582,16 @@ namespace Stardrop.ViewModels
                                 // system rejects or a segment aiming above the install path. Rebuilding the path
                                 // below installPath keeps both out, at the cost of a folder named slightly differently
                                 var safeOutputPath = Pathing.GetSafeDestinationPath(installPath, Path.GetRelativePath(installPath, outputPath));
-                                if (String.IsNullOrEmpty(safeOutputPath))
+                                if (string.IsNullOrEmpty(safeOutputPath))
                                 {
-                                    Program.helper.Log($"Skipping {entry.Key}, as it does not resolve to a path inside {installPath}", Utilities.Helper.Status.Warning);
+                                    Program.helper.Log($"Skipping {entry.Key}, as it does not resolve to a path inside {installPath}", Helper.Status.Warning);
                                     continue;
                                 }
                                 outputPath = safeOutputPath;
 
                                 // Create the default location if it doesn't existe
                                 var outputFolder = Path.GetDirectoryName(outputPath);
-                                if (String.IsNullOrEmpty(outputFolder))
+                                if (string.IsNullOrEmpty(outputFolder))
                                 {
                                     continue;
                                 }
@@ -601,7 +613,7 @@ namespace Stardrop.ViewModels
                         }
                         else
                         {
-                            Program.helper.Log(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
+                            Program.helper.Log(string.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
                         }
 
                         currentManifestIndex += 1;
@@ -610,7 +622,7 @@ namespace Stardrop.ViewModels
             }
             catch (Exception ex)
             {
-                Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
+                Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Helper.Status.Warning);
             }
 
             return addedMods;
@@ -618,10 +630,7 @@ namespace Stardrop.ViewModels
 
         public void DiscoverMods(string modsFilePath)
         {
-            if (Mods is null)
-            {
-                Mods = new ObservableCollection<Mod>();
-            }
+            Mods ??= [];
             Mods.Clear();
 
             var scanRoots = GetScanRoots(modsFilePath);
@@ -631,12 +640,12 @@ namespace Stardrop.ViewModels
             }
 
             // Get cached key data
-            List<ModKeyInfo> modKeysCache = new List<ModKeyInfo>();
+            List<ModKeyInfo> modKeysCache = [];
             if (File.Exists(Pathing.GetKeyCachePath()))
             {
                 try
                 {
-                    modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                    modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), ReadOptions) ?? [];
                 }
                 catch (Exception ex)
                 {
@@ -645,12 +654,12 @@ namespace Stardrop.ViewModels
             }
 
             // Get the local data
-            ClientData localDataCache = new ClientData();
+            ClientData localDataCache = new();
             if (File.Exists(Pathing.GetDataCachePath()))
             {
                 try
                 {
-                    localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                    localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), ReadOptions) ?? new ClientData();
                 }
                 catch (Exception ex)
                 {
@@ -669,7 +678,7 @@ namespace Stardrop.ViewModels
             {
                 foreach (var modKey in modKeysCache)
                 {
-                    if (modKey is null || String.IsNullOrEmpty(modKey.UniqueId))
+                    if (modKey is null || string.IsNullOrEmpty(modKey.UniqueId))
                     {
                         continue;
                     }
@@ -685,7 +694,7 @@ namespace Stardrop.ViewModels
             {
                 foreach (var installData in localDataCache.ModInstallData)
                 {
-                    if (installData is null || String.IsNullOrEmpty(installData.UniqueId))
+                    if (installData is null || string.IsNullOrEmpty(installData.UniqueId))
                     {
                         continue;
                     }
@@ -700,7 +709,7 @@ namespace Stardrop.ViewModels
 
             ModKeyInfo? GetModKey(string? uniqueId)
             {
-                if (String.IsNullOrEmpty(uniqueId))
+                if (string.IsNullOrEmpty(uniqueId))
                 {
                     return null;
                 }
@@ -718,7 +727,7 @@ namespace Stardrop.ViewModels
                 try
                 {
                     var manifest = ManifestParser.GetData(File.ReadAllText(manifestInfo.FullName));
-                    if (manifest is null || String.IsNullOrEmpty(manifest.UniqueID))
+                    if (manifest is null || string.IsNullOrEmpty(manifest.UniqueID))
                     {
                         Program.helper.Log($"The manifest.json was empty or not deserializable from {manifestInfo.DirectoryName}", Helper.Status.Alert);
                         continue;
@@ -802,17 +811,14 @@ namespace Stardrop.ViewModels
             var modInstallData = new List<ModInstallData>();
             foreach (var mod in Mods.Where(m => m is not null))
             {
-                if (mod.InstallTimestamp is null)
-                {
-                    mod.InstallTimestamp = DateTime.Now;
-                }
+                mod.InstallTimestamp ??= DateTime.Now;
 
                 modInstallData.Add(new ModInstallData() { UniqueId = mod.UniqueId, SourceId = mod.SourceId, InstallTimestamp = mod.InstallTimestamp.Value, LastUpdateTimestamp = mod.LastUpdateTimestamp });
             }
-            localDataCache.ModInstallData = modInstallData;
+            localDataCache!.ModInstallData = modInstallData;
 
             // Cache the local data
-            File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+            File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, WriteOptions));
 
             EvaluateRequirements();
 
@@ -850,11 +856,8 @@ namespace Stardrop.ViewModels
             // An enabled copy wins over everything else, the dependent's own source first. Each enabled mod is
             // handed to SMAPI as a junction of its own, so resolving past one that is already on and enabling a
             // second copy puts two folders claiming the same unique ID in the mods folder
-            var enabledMatch = candidates.FirstOrDefault(m => m.IsEnabled && String.Equals(m.SourceId, dependent.SourceId, StringComparison.OrdinalIgnoreCase));
-            if (enabledMatch is null)
-            {
-                enabledMatch = candidates.FirstOrDefault(m => m.IsEnabled);
-            }
+            var enabledMatch = candidates.FirstOrDefault(m => m.IsEnabled && string.Equals(m.SourceId, dependent.SourceId, StringComparison.OrdinalIgnoreCase));
+            enabledMatch ??= candidates.FirstOrDefault(m => m.IsEnabled);
 
             if (enabledMatch is not null)
             {
@@ -862,7 +865,7 @@ namespace Stardrop.ViewModels
             }
 
             // Nothing is on yet, so the copy that belongs alongside the dependent is the one to reach for
-            var sameSourceMatch = candidates.FirstOrDefault(m => String.Equals(m.SourceId, dependent.SourceId, StringComparison.OrdinalIgnoreCase));
+            var sameSourceMatch = candidates.FirstOrDefault(m => string.Equals(m.SourceId, dependent.SourceId, StringComparison.OrdinalIgnoreCase));
             if (sameSourceMatch is not null)
             {
                 return sameSourceMatch;
@@ -902,10 +905,10 @@ namespace Stardrop.ViewModels
         public void EvaluateRequirements()
         {
             // Get cached key data
-            List<ModKeyInfo> modKeysCache = new List<ModKeyInfo>();
+            List<ModKeyInfo> modKeysCache = [];
             if (File.Exists(Pathing.GetKeyCachePath()))
             {
-                modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), ReadOptions) ?? [];
             }
 
             // Flag any missing requirements
@@ -936,6 +939,7 @@ namespace Stardrop.ViewModels
 
                     mod.NotifyPropertyChanged("Requirements");
                     mod.NotifyPropertyChanged("MissingRequirements");
+                    mod.NotifyPropertyChanged("HardRequirements");
                 }
                 catch (Exception ex)
                 {
@@ -946,7 +950,7 @@ namespace Stardrop.ViewModels
 
         public List<FileInfo> GetConfigFiles(DirectoryInfo modDirectory)
         {
-            List<FileInfo> configs = new List<FileInfo>();
+            List<FileInfo> configs = [];
             foreach (var directory in modDirectory.EnumerateDirectories())
             {
                 var localConfigs = directory.EnumerateFiles("config.json");
@@ -1010,7 +1014,7 @@ namespace Stardrop.ViewModels
         internal List<Config> GetPendingConfigUpdates(Profile profile, bool excludeMissingConfigs = false, bool useArchiveAsBase = false)
         {
             // Merge any existing preserved configs
-            List<Config> pendingConfigUpdates = new List<Config>();
+            List<Config> pendingConfigUpdates = [];
             foreach (var reference in profile.EnabledModIds)
             {
                 var modId = reference.UniqueId.ToLower();
@@ -1036,7 +1040,7 @@ namespace Stardrop.ViewModels
                         // Write the archived config, if the current one doesn't exist
                         if (mod.Config is null)
                         {
-                            if (excludeMissingConfigs || String.IsNullOrEmpty(mod.ModFileInfo.DirectoryName))
+                            if (excludeMissingConfigs || string.IsNullOrEmpty(mod.ModFileInfo.DirectoryName))
                             {
                                 continue;
                             }
@@ -1052,7 +1056,7 @@ namespace Stardrop.ViewModels
                             if (JsonDocumentEqualityComparer.Instance.Equals(JsonDocument.Parse(mod.Config.Data), profile.PreservedModConfigs[modId]) is false)
                             {
                                 // JsonTools.Merge will preserve the originalJson values, but will add new properties from archivedJson
-                                string mergedJson = String.Empty;
+                                string mergedJson = string.Empty;
                                 if (useArchiveAsBase is false)
                                 {
                                     mergedJson = JsonTools.Merge(archivedJson, currentJson, false); ;
@@ -1116,7 +1120,7 @@ namespace Stardrop.ViewModels
                 }
                 else if (Nexus.Client is not null && mod.NexusModThumbnailPath is null)
                 {
-                    mod.NexusModThumbnailPath = await Nexus.Client.DownloadThumbnail((int)mod.NexusModId);
+                    mod.NexusModThumbnailPath = await Nexus.Client.DownloadThumbnail(mod.NexusModId!.Value);
                 }
             }
         }
@@ -1256,7 +1260,7 @@ namespace Stardrop.ViewModels
                 // collection is what defines the profile's contents. Answered from SourceId, which comes off the
                 // folder path and so outlives the profile being saved without the mod in it. Reading membership from
                 // the references alone made disabling a mod remove it from the view at the next profile pass
-                if (String.Equals(mod.SourceId, _activeProfile.SourceId, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(mod.SourceId, _activeProfile.SourceId, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -1341,16 +1345,10 @@ namespace Stardrop.ViewModels
                     continue;
                 }
 
-                var keptCopy = copies.FirstOrDefault(m => String.Equals(m.SourceId, preferredSourceId, StringComparison.OrdinalIgnoreCase));
-                if (keptCopy is null)
-                {
-                    keptCopy = copies.FirstOrDefault(m => m.IsFromCollection is false);
-                }
+                var keptCopy = copies.FirstOrDefault(m => string.Equals(m.SourceId, preferredSourceId, StringComparison.OrdinalIgnoreCase));
+                keptCopy ??= copies.FirstOrDefault(m => m.IsFromCollection is false);
 
-                if (keptCopy is null)
-                {
-                    keptCopy = copies.First();
-                }
+                keptCopy ??= copies.First();
 
                 DisableDuplicatesOf(new List<Mod> { keptCopy });
             }
@@ -1440,8 +1438,7 @@ namespace Stardrop.ViewModels
 
         private bool ModFilter(object item)
         {
-            var mod = item as Mod;
-            if (mod is null)
+            if (item is not Mod mod)
             {
                 return false;
             }
@@ -1474,15 +1471,15 @@ namespace Stardrop.ViewModels
                 return false;
             }
 
-            if (String.IsNullOrEmpty(_filterText) || _columnFilter is null || !_columnFilter.Any())
+            if (string.IsNullOrEmpty(_filterText) || _columnFilter is null || !_columnFilter.Any())
             {
                 return true;
             }
 
-            if (!String.IsNullOrEmpty(_filterText) && _columnFilter.Any())
+            if (!string.IsNullOrEmpty(_filterText) && _columnFilter.Any())
             {
-                var filterTextNoWhitespace = _filterText.Replace(" ", String.Empty);
-                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.mod_name")) && mod.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))
+                var filterTextNoWhitespace = _filterText.Replace(" ", string.Empty);
+                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.mod_name")) && mod.Name.Replace(" ", string.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -1492,19 +1489,19 @@ namespace Stardrop.ViewModels
                     switch (Program.settings.ModGroupingMethod)
                     {
                         case ModGrouping.Folder:
-                            if (mod.Path.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            if (mod.Path.Replace(" ", string.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
                             {
                                 return true;
                             }
                             break;
                         case ModGrouping.FolderCondensed:
-                            if (mod.RootPath.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            if (mod.RootPath.Replace(" ", string.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
                             {
                                 return true;
                             }
                             break;
                         case ModGrouping.ContentPack:
-                            if (mod.FrameworkID is not null && mod.FrameworkID.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            if (mod.FrameworkID is not null && mod.FrameworkID.Replace(" ", string.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
                             {
                                 return true;
                             }
@@ -1518,24 +1515,24 @@ namespace Stardrop.ViewModels
                     {
                         case ModGrouping.Folder:
                         case ModGrouping.FolderCondensed:
-                            if (mod.RootPath is not null && mod.RootPath.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            if (mod.RootPath is not null && mod.RootPath.Replace(" ", string.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
                             {
                                 return true;
                             }
                             break;
                         case ModGrouping.ContentPack:
-                            if (mod.FrameworkID is not null && mod.FrameworkID.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
+                            if (mod.FrameworkID is not null && mod.FrameworkID.Replace(" ", string.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase) is true)
                             {
                                 return true;
                             }
                             break;
                     }
                 }
-                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.author")) && mod.Author.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))
+                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.author")) && mod.Author.Replace(" ", string.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
-                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.requirements")) && ((mod.HardRequirements is not null && mod.HardRequirements.Any(r => r.Name is null || r.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))) || (mod.MissingRequirements is not null && mod.MissingRequirements.Any(r => r.Name is null || r.Name.Replace(" ", String.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase)))))
+                if (_columnFilter.Contains(Program.translation.Get("ui.main_window.combobox.requirements")) && ((mod.HardRequirements is not null && mod.HardRequirements.Any(r => r.Name is null || r.Name.Replace(" ", string.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase))) || (mod.MissingRequirements is not null && mod.MissingRequirements.Any(r => r.Name is null || r.Name.Replace(" ", string.Empty).Contains(filterTextNoWhitespace, StringComparison.OrdinalIgnoreCase)))))
                 {
                     return true;
                 }

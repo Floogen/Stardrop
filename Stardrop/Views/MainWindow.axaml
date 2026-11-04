@@ -5,22 +5,23 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:sys="clr-namespace:System;assembly=netstandard"
-        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:i="clr-namespace:Optris.Icons.Avalonia;assembly=Optris.Icons.Avalonia"
         xmlns:conv="clr-namespace:Stardrop.Converters;assembly=Stardrop"
 		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
 		xmlns:ext="clr-namespace:Stardrop.Utilities.Extension"
+		xmlns:models="using:Stardrop.Models"
+		xmlns:smapi="using:Stardrop.Models.SMAPI"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Stardrop.Views.MainWindow"
+		x:DataType="vm:MainWindowViewModel"
         Title="Stardrop"
         MinWidth="400"
         MinHeight="400"
         Width="1430"
         Height="800"
         Background="{DynamicResource ThemeBackgroundBrush}"
-        HasSystemDecorations="{Binding HasSystemDecorations}"
-        ExtendClientAreaToDecorationsHint="true"
-        ExtendClientAreaChromeHints="{Binding ChromeHint}"
-        ExtendClientAreaTitleBarHeightHint="-1"
+		WindowDecorations="BorderOnly"
+		ExtendClientAreaToDecorationsHint="True"
         CanResize="True"
         Opened="MainWindow_Opened"
         Closing="MainWindow_Closing"
@@ -29,6 +30,7 @@
 
 	<Window.Resources>
 		<conv:EnumConverter x:Key="EnumToStringConverter"/>
+		<conv:EnumEqualsConverter x:Key="EnumEqualsConverter" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -57,6 +59,12 @@
 		<Style Selector="MenuItem.Bar:selected /template/ ContentPresenter#PART_HeaderPresenter">
 			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
 		</Style>
+		<Style Selector="MenuItem.Bar:pressed /template/ ContentPresenter#PART_HeaderPresenter">
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
+		</Style>
+		<Style Selector="MenuItem.Bar:open /template/ ContentPresenter#PART_HeaderPresenter">
+			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}"/>
+		</Style>
 		<Style Selector="MenuItem.Bar:selected /template/ Border#PART_LayoutRoot">
 			<Setter Property="BorderBrush" Value="{DynamicResource ThemeBackgroundBrush}" />
 		</Style>
@@ -76,7 +84,7 @@
 											  Margin="{TemplateBinding Padding}">
 								<ContentPresenter.DataTemplates>
 									<DataTemplate DataType="sys:String">
-										<AccessText Text="{Binding}" />
+										<AccessText Text="{Binding}"/>
 									</DataTemplate>
 								</ContentPresenter.DataTemplates>
 							</ContentPresenter>
@@ -96,9 +104,7 @@
 										CornerRadius="{DynamicResource OverlayCornerRadius}">
 									<ScrollViewer Classes="menuscroller">
 										<ItemsPresenter Name="PART_ItemsPresenter"
-														Items="{TemplateBinding Items}"
 														ItemsPanel="{TemplateBinding ItemsPanel}"
-														ItemTemplate="{TemplateBinding ItemTemplate}"
 														Margin="{DynamicResource MenuFlyoutScrollerMargin}"
 														Grid.IsSharedSizeScope="True" />
 									</ScrollViewer>
@@ -118,6 +124,9 @@
 		<Style Selector="Button[IsEnabled=false] /template/ ContentPresenter">
 			<Setter Property="Opacity" Value="0.5"/>
 			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+		<Style Selector="Button#modGroupStateButton">
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
 		</Style>
 		<Style Selector="Button.hyperlink">
 			<Setter Property="Background" Value="Transparent" />
@@ -148,6 +157,9 @@
 			<Setter Property="Foreground" Value="{DynamicResource HighlightBrush}" />
 			<Setter Property="i:Attached.Icon" Value="mdi-thumb-up" />
 		</Style>
+		<Style Selector="Button.hyperlink:pointerover TextBlock">
+			<Setter Property="Foreground" Value="White" />
+		</Style>
 		<Style Selector="Button.hyperlink:pointerover /template/ ContentPresenter">
 			<Setter Property="Background" Value="Transparent" />
 			<Setter Property="TextBlock.Foreground" Value="White" />
@@ -177,7 +189,7 @@
 		<Style Selector="ComboBox">
 			<Setter Property="Background" Value="Transparent" />
 			<Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
-			<Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
+			<Setter Property="BorderThickness" Value="1" />
 			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
 			<Setter Property="VerticalContentAlignment" Value="Center" />
 			<Setter Property="Padding" Value="4" />
@@ -232,10 +244,7 @@
 									<ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
 												  VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
 										<ItemsPresenter Name="PART_ItemsPresenter"
-														Items="{TemplateBinding Items}"
-														ItemsPanel="{TemplateBinding ItemsPanel}"
-														ItemTemplate="{TemplateBinding ItemTemplate}"
-														VirtualizationMode="{TemplateBinding VirtualizationMode}" />
+														ItemsPanel="{TemplateBinding ItemsPanel}"/>
 									</ScrollViewer>
 								</Border>
 							</Popup>
@@ -266,7 +275,7 @@
 		<Style Selector="CheckBox.OptionClickbox:checked /template/ Border#NormalRectangle">
 			<Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
 		</Style>
-		<Style Selector="CheckBox.OptionClickbox:pointerover /template/ ContentPresenter#ContentPresenter">
+		<Style Selector="CheckBox.OptionClickbox:pointerover /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
 		</Style>
 		<Style Selector="DataGridCell.centered">
@@ -324,12 +333,19 @@
 		<Style Selector="TextBox:not(:focus)">
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
 			<Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
+			<Setter Property="PlaceholderForeground" Value="{DynamicResource ThemeForegroundBrush}" />
 		</Style>
 		<Style Selector="TextBox.notes:focus /template/ Border">
 			<Setter Property="Background" Value="Transparent"/>
 		</Style>
 		<Style Selector="TextBox.notes:not(:focus)">
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundHighBrush}"/>
+		</Style>
+		<Style Selector="TextBox:pointerover">
+			<Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForegroundPointerOver}" />
+		</Style>
+		<Style Selector="MenuItem /template/ Popup ScrollViewer">
+			<Setter Property="VerticalScrollBarVisibility" Value="Disabled" />
 		</Style>
 	</Window.Styles>
 
@@ -394,7 +410,7 @@
 			<ColumnDefinition Width="Auto" />
 		</Grid.ColumnDefinitions>
 
-		<Border Name="menuBorder" Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
+		<Border Name="menuBorder" Background="Transparent" Grid.Row="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 0 0 2" Grid.ColumnSpan="2">
 			<Menu Name="mainMenu" IsVisible="{Binding ShowMainMenu}" HorizontalAlignment="Left" KeyboardNavigation.TabNavigation="None">
 				<Image Name="menuIcon" Source="/Assets/icon.ico" Stretch="None"/>
 				<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.file}" Margin="-10 0 0 0" Classes="Bar">
@@ -439,13 +455,11 @@
 			<Button Name="exitButton" i:Attached.Icon="mdi-close" Margin="0 0 -10 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent"/>
 		</Menu>
 		<!-- ToolBar -->
-		<Separator />
-
 		<DockPanel Name="profileBar" Grid.Row="2" Grid.Column="0">
 			<TextBlock Text="{i18n:Translate ui.main_window.labels.profile}" Foreground="{DynamicResource ThemeForegroundBrush}" Padding="7" Focusable="False" VerticalAlignment="Center" />
 			<ComboBox x:Name="profileComboBox" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center"  FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="300">
 				<ComboBox.ItemTemplate>
-					<DataTemplate>
+					<DataTemplate x:DataType="models:Profile">
 						<StackPanel>
 							<Border Classes="collectionDivider" Classes.firstCollection="{Binding IsFirstCollectionProfile}" Background="{DynamicResource HighlightBrush}" Height="1" Margin="0 2 0 5"/>
 							<!-- A Grid rather than a horizontal StackPanel, which would hand the name unlimited width and leave it overrunning the dropdown instead of trimming -->
@@ -497,9 +511,9 @@
 		</DockPanel>
 
 		<Border Name="dragOverBorder" Margin="10" DragDrop.AllowDrop="True" Grid.Row="3" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
-			<DataGrid Name="modGrid" Foreground="{DynamicResource DataGridRowForeground}" Background="{DynamicResource DataGridRowBackground}" AlternatingRowBackground="{DynamicResource AlternativeDataGridRowBackground}" CanUserSortColumns="True" CanUserResizeColumns="True" CanUserReorderColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+			<DataGrid Name="modGrid" ItemsSource="{Binding DataView}" Foreground="{DynamicResource DataGridRowForeground}" Background="{DynamicResource DataGridRowBackground}" CanUserSortColumns="True" CanUserResizeColumns="True" CanUserReorderColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 				<DataGrid.Resources>
-					<ContextMenu x:Key="GridColumnContextMenu" Name="gridColumnContextMenu" DataContext="{Binding $parent[DataGrid].DataContext}">
+					<ContextMenu x:Key="GridColumnContextMenu" Name="gridColumnContextMenu">
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.columns.show_hide}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.requirements}"  Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.author}" Classes="ColumnInactive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
@@ -512,12 +526,12 @@
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_headers.notes}"  Classes="ColumnActive" Command="{Binding ChangeColumnVisibility}" CommandParameter="{Binding $self}" />
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.cancel}" />
 					</ContextMenu>
-					<ContextMenu x:Key="GridRowContextMenu">
+					<ContextMenu x:Key="GridRowContextMenu" x:DataType="models:Mod">
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.open}">
 							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.open_containing_folder}" Click="ModGridMenuRow_OpenFolderPath" />
 							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.open_mod_page}" Click="ModGridMenuRow_OpenModPage" IsVisible="{Binding ModPageUri, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.open_manifest}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding ManifestFilePath}" />
-							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.open_config}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Config.FilePath}" IsVisible="{Binding HasConfig}" />
+							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.open_config}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Config?.FilePath}" IsVisible="{Binding HasConfig}" />
 						</MenuItem>
 						<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.filters}">
 							<MenuItem Header="{i18n:Translate ui.main_window.menu_items.context.show_whole_mod_group}" Click="ModGridMenuRow_ShowWholeModGroup" />
@@ -537,18 +551,24 @@
 					</ContextMenu>
 				</DataGrid.Resources>
 				<DataGrid.Styles>
+					<Style Selector="DataGridRow:nth-child(even)">
+						<Setter Property="Background" Value="{DynamicResource DataGridRowBackground}" />
+					</Style>
+					<Style Selector="DataGridRow:nth-child(odd)">
+						<Setter Property="Background" Value="{DynamicResource AlternativeDataGridRowBackground}" />
+					</Style>
 					<Style Selector="DataGridColumnHeader">
 						<Setter Property="ContextMenu" Value="{StaticResource GridColumnContextMenu}" />
 					</Style>
 					<Style Selector="DataGridRow">
 						<Setter Property="ContextMenu" Value="{StaticResource GridRowContextMenu}" />
-						<Setter Property="ToolTip.Tip" Value="{Binding Summary}" />
+						<Setter Property="ToolTip.Tip" Value="{ReflectionBinding Summary}" />
 					</Style>
 				</DataGrid.Styles>
 				<DataGrid.Columns>
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Thumbnails" CanUserReorder="False" IsVisible="{Binding ShowModThumbnails}" Header="" Width="150" CanUserResize="False" CanUserSort="False">
 						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate>
+							<DataTemplate x:DataType="models:Mod">
 								<VirtualizingStackPanel>
 									<Image Height="125" Width="125" Source="{Binding NexusModThumbnailFile}" Stretch="Uniform" />
 								</VirtualizingStackPanel>
@@ -558,14 +578,14 @@
 					<!-- Header is left empty on purpose -->
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="State" CanUserReorder="False" Header="" Width="32" CanUserResize="False" CanUserSort="True" SortMemberPath="IsEnabled">
 						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate>
+							<DataTemplate x:DataType="models:Mod">
 								<CheckBox IsChecked="{Binding IsEnabled}" Click="EnabledBox_Clicked" Margin="5 0 0 0"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Name" Header="{i18n:Translate ui.main_window.menu_headers.mod_name}" CanUserReorder="False" SortMemberPath="Name">
 						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate>
+							<DataTemplate x:DataType="models:Mod">
 								<Grid ColumnDefinitions="20,*" Margin="7 0 0 0">
 									<ContentControl Grid.Column="0" i:Attached.Icon="mdi-package-variant-closed" Foreground="{DynamicResource CollectionCuratedBrush}" IsVisible="{Binding IsCuratedByCollection}" ToolTip.Tip="{Binding CollectionLabel}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
 									<ContentControl Grid.Column="0" i:Attached.Icon="mdi-package-variant-closed-plus" Foreground="{DynamicResource CollectionAddOnBrush}" IsVisible="{Binding IsCollectionAddOn}" ToolTip.Tip="{Binding CollectionLabel}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
@@ -576,27 +596,27 @@
 					</DataGridTemplateColumn>
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Endorsement" Header="{i18n:Translate ui.main_window.menu_headers.endorsement}" CellStyleClasses="centered" IsVisible="{Binding ShowEndorsements}">
 						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate>
+							<DataTemplate x:DataType="models:Mod">
 								<Button Name="endorsementButton" Tag="{Binding UniqueId}" Classes="hyperlink status" Classes.endorsed="{Binding IsEndorsed}" Classes.abstained="{Binding !IsEndorsed}" Click="EndorsementButton_Click" IsVisible="{Binding NexusModId, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTextColumn ext:ColumnExtensions.Key="UniqueId" Header="{i18n:Translate ui.main_window.menu_headers.unique_id}" Binding="{Binding UniqueId}" IsVisible="False">
+					<DataGridTextColumn ext:ColumnExtensions.Key="UniqueId" x:DataType="models:Mod" Header="{i18n:Translate ui.main_window.menu_headers.unique_id}" Binding="{Binding UniqueId}" IsVisible="False">
 					</DataGridTextColumn>
-					<DataGridTextColumn ext:ColumnExtensions.Key="Author" Header="{i18n:Translate ui.main_window.menu_headers.author}" Binding="{Binding Author}" CellStyleClasses="centered" IsVisible="False">
+					<DataGridTextColumn ext:ColumnExtensions.Key="Author" x:DataType="models:Mod" Header="{i18n:Translate ui.main_window.menu_headers.author}" Binding="{Binding Author}" CellStyleClasses="centered" IsVisible="False">
 					</DataGridTextColumn>
-					<DataGridTextColumn ext:ColumnExtensions.Key="Collection" Header="{i18n:Translate ui.main_window.menu_headers.collection}" Binding="{Binding CollectionName}" CellStyleClasses="centered" IsVisible="False">
+					<DataGridTextColumn ext:ColumnExtensions.Key="Collection" x:DataType="models:Mod" Header="{i18n:Translate ui.main_window.menu_headers.collection}" Binding="{Binding CollectionName}" CellStyleClasses="centered" IsVisible="False">
 					</DataGridTextColumn>
-					<DataGridTextColumn ext:ColumnExtensions.Key="InstallTimestamp" Header="{i18n:Translate ui.main_window.menu_headers.install_timestamp}" Binding="{Binding InstallTimestamp}" IsVisible="False">
+					<DataGridTextColumn ext:ColumnExtensions.Key="InstallTimestamp" x:DataType="models:Mod" Header="{i18n:Translate ui.main_window.menu_headers.install_timestamp}" Binding="{Binding InstallTimestamp}" IsVisible="False">
 					</DataGridTextColumn>
-					<DataGridTextColumn ext:ColumnExtensions.Key="LastUpdated" Header="{i18n:Translate ui.main_window.menu_headers.last_updated}" Binding="{Binding LastUpdateTimestamp}" IsVisible="True">
+					<DataGridTextColumn ext:ColumnExtensions.Key="LastUpdated" x:DataType="models:Mod" Header="{i18n:Translate ui.main_window.menu_headers.last_updated}" Binding="{Binding LastUpdateTimestamp}" IsVisible="True">
 					</DataGridTextColumn>
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Requirements" Header="{i18n:Translate ui.main_window.menu_headers.requirements}" IsVisible="False" SortMemberPath="HardRequirements.Count" CellStyleClasses="centered">
 						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate>
-								<ListBox Items="{Binding HardRequirements}" Background="Transparent">
+							<DataTemplate x:DataType="models:Mod">
+								<ListBox ItemsSource="{Binding HardRequirements}" Background="Transparent">
 									<ListBox.ItemTemplate>
-										<DataTemplate>
+										<DataTemplate x:DataType="smapi:ManifestDependency">
 											<TextBlock Text="{Binding Path=Name}" Foreground="{DynamicResource DataGridRowForeground}" />
 										</DataTemplate>
 									</ListBox.ItemTemplate>
@@ -606,51 +626,62 @@
 					</DataGridTemplateColumn>
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="MissingRequirements" Header="{i18n:Translate ui.main_window.menu_headers.missing_requirements}" SortMemberPath="MissingRequirements.Count" CellStyleClasses="centered">
 						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate>
-								<ListBox Items="{Binding MissingRequirements}" Background="Transparent">
+							<DataTemplate x:DataType="models:Mod">
+								<ListBox ItemsSource="{Binding MissingRequirements}" Background="Transparent">
 									<ListBox.ItemTemplate>
-										<DataTemplate>
-											<Button Content="{Binding Path=Name}" Classes="hyperlink" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding GenericLink}" Foreground="{DynamicResource HighlightForegroundBrush}"/>
+										<DataTemplate x:DataType="smapi:ManifestDependency">
+											<Button Classes="hyperlink" 
+													Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" 
+													CommandParameter="{Binding GenericLink}">
+												<TextBlock Text="{Binding Path=Name}" Foreground="{DynamicResource HighlightForegroundBrush}" />
+											</Button>
 										</DataTemplate>
 									</ListBox.ItemTemplate>
 								</ListBox>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTextColumn ext:ColumnExtensions.Key="Version" Header="{i18n:Translate ui.main_window.menu_headers.version}" Binding="{Binding ParsedVersion}" CellStyleClasses="centered" IsVisible="True">
+					<DataGridTextColumn ext:ColumnExtensions.Key="Version" x:DataType="models:Mod" Header="{i18n:Translate ui.main_window.menu_headers.version}" Binding="{Binding ParsedVersion}" CellStyleClasses="centered" IsVisible="True">
 					</DataGridTextColumn>
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Configuration" Header="{i18n:Translate ui.main_window.menu_headers.configuration}" SortMemberPath="HasConfig" CellStyleClasses="centered" IsVisible="False" >
 						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate>
-								<Button Content="{i18n:Translate ui.main_window.hyperlinks.click_to_open}" Classes="hyperlink" IsVisible="{Binding HasConfig}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding Config.FilePath}" Foreground="{DynamicResource HighlightForegroundBrush}"/>
+							<DataTemplate x:DataType="models:Mod">
+								<Button Classes="hyperlink" 
+										IsVisible="{Binding HasConfig}" 
+										Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" 
+										CommandParameter="{Binding Config?.FilePath}">
+									<TextBlock Text="{i18n:Translate ui.main_window.hyperlinks.click_to_open}" Foreground="{DynamicResource HighlightForegroundBrush}" />
+								</Button>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Status" Header="{i18n:Translate ui.main_window.menu_headers.status}" SortMemberPath="ParsedStatus" CellStyleClasses="centered" >
 						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate>
+							<DataTemplate x:DataType="models:Mod">
 								<Button Name="statusButton" Tag="{Binding Status, Converter={StaticResource EnumToStringConverter}}" Classes="hyperlink status" Classes.ignored="{Binding IsUpdateIgnored}" Content="{Binding ParsedStatus}" Command="{Binding $parent[DataGrid].DataContext.OpenBrowser}" CommandParameter="{Binding UpdateUri}"/>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="NexusInstall" Header="{i18n:Translate ui.main_window.menu_headers.nexus_install}" SortMemberPath="InstallStatus" CellStyleClasses="centered" IsVisible="{Binding ShowInstalls}" >
 						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate>
+							<DataTemplate x:DataType="models:Mod">
 								<Button Name="installButton" Classes="hyperlink status" Content="{Binding InstallStatus}" Click="InstallButton_Click" Tag="{Binding UniqueId}" Foreground="{DynamicResource HighlightForegroundBrush}" />
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
 					<DataGridTemplateColumn ext:ColumnExtensions.Key="Changelog" ext:ColumnExtensions.RequiresNexus="True" Header="{i18n:Translate ui.main_window.menu_headers.changelog}" CellStyleClasses="centered" IsVisible="False" CanUserSort="False">
 						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate>
-								<Button Name="changelogButton" Classes="hyperlink status" Content="{i18n:Translate ui.main_window.hyperlinks.view_changelog}" IsVisible="{Binding HasChangelog}" Click="ChangelogButton_Click" Tag="{Binding UniqueId}" Foreground="{DynamicResource HighlightForegroundBrush}" />
+							<DataTemplate x:DataType="models:Mod">
+								<Button Name="changelogButton" Classes="hyperlink status" IsVisible="{Binding HasChangelog}" Click="ChangelogButton_Click" Tag="{Binding UniqueId}">
+									<TextBlock Text="{i18n:Translate ui.main_window.hyperlinks.view_changelog}" Foreground="{DynamicResource HighlightForegroundBrush}" />
+								</Button>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
-					<DataGridTemplateColumn ext:ColumnExtensions.Key="Notes" Header="{i18n:Translate ui.main_window.menu_headers.notes}" SortMemberPath="Notes" CellStyleClasses="centered" Width="150" IsVisible="True" >
+					<DataGridTemplateColumn ext:ColumnExtensions.Key="Notes" Header="{i18n:Translate ui.main_window.menu_headers.notes}" SortMemberPath="Notes" Width="150" IsVisible="True" >
 						<DataGridTemplateColumn.CellTemplate>
-							<DataTemplate>
-								<TextBox Classes="notes" Text="{Binding Note, Mode=TwoWay}" TextWrapping="Wrap" AcceptsReturn="True" Background="Transparent" BorderThickness="0"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="0 0 0 0" />
+							<DataTemplate x:DataType="models:Mod">
+								<TextBox Classes="notes" Text="{Binding Note, Mode=TwoWay}" TextWrapping="Wrap" AcceptsReturn="True" Background="Transparent" BorderThickness="0"  VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" Margin="0 0 0 0" />
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
 					</DataGridTemplateColumn>
@@ -658,7 +689,7 @@
 			</DataGrid>
 		</Border>
 		<DockPanel Name="filterBar" Grid.Row="4" Grid.Column="0" Margin="7 0 0 5">
-			<TextBox Name="searchBox" Watermark="{i18n:Translate ui.main_window.labels.filter}" Height="10" Width="250" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
+			<TextBox Name="searchBox" PlaceholderText="{i18n:Translate ui.main_window.labels.filter}" Height="10" Width="250" BorderBrush="{DynamicResource HighlightBrush}" HorizontalAlignment="Left"/>
 			<Button Name="searchFilterColumnButton" Content="{i18n:Translate ui.main_window.buttons.no_search_filters}" VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}">
 				<Button.Flyout>
 					<Flyout FlyoutPresenterClasses="FilterBoxFlyout">
@@ -675,22 +706,37 @@
 			<StackPanel IsVisible="{Binding AreModGroupsEnabled}" Orientation="Horizontal" Margin="10 0 10 0">
 				<Separator Width="1" Height="15" Background="{DynamicResource HighlightBrush}" />
 			</StackPanel>
-			<Button Name="modGroupStateButton" IsVisible="{Binding AreModGroupsEnabled}" Content="{Binding ModGroupsStateButtonText}" VerticalAlignment="Center" Margin="0 0 0 0" Foreground="{DynamicResource ThemeForegroundBrush}" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}"/>
+			<Button Name="modGroupStateButton" IsVisible="{Binding AreModGroupsEnabled}" VerticalAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource HighlightBrush}">
+				<Panel IsHitTestVisible="False">
+					<TextBlock Text="{i18n:Translate ui.main_window.buttons.mod_groups_state.collapse}" 
+							IsVisible="{Binding AreModGroupsExpanded}" 
+							VerticalAlignment="Center" HorizontalAlignment="Center" />
+					<TextBlock Text="{i18n:Translate ui.main_window.buttons.mod_groups_state.expand}" 
+							IsVisible="{Binding !AreModGroupsExpanded}" 
+							VerticalAlignment="Center" HorizontalAlignment="Center" />
+				</Panel>
+			</Button>
 			<StackPanel Orientation="Horizontal" Margin="10 0 10 0">
 				<Separator Width="1" Height="15" Background="{DynamicResource HighlightBrush}" />
 			</StackPanel>
-			<ComboBox x:Name="disabledModFilterColumnBox" Margin="0 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="210">
-				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.show_all_mods}" />
-				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.show_mods_with_configs}" />
-				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.show_disabled_mods}" />
-				<ComboBoxItem Content="{i18n:Translate ui.main_window.combobox.show_enabled_mods}" />
-			</ComboBox>
+			<ComboBox x:Name="disabledModFilterColumnBox" Margin="0 2 0 0" Background="{DynamicResource ThemeBackgroundBrush}" Foreground="{DynamicResource ThemeForegroundBrush}" FontWeight="Bold" BorderBrush="{DynamicResource HighlightBrush}" SelectedIndex="0" Width="210" />
 			<CheckBox Name="showUpdatableMods" Content="{i18n:Translate ui.main_window.buttons.show_updatable_mods}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
 			<CheckBox Name="showAllModSources" Content="{i18n:Translate ui.main_window.buttons.show_all_mod_sources}" ToolTip.Tip="{i18n:Translate ui.main_window.tooltips.show_all_mod_sources}" IsVisible="{Binding HasCollectionMods}" Foreground="{DynamicResource ThemeForegroundBrush}" Margin="7 0 0 0" Classes="OptionClickbox"/>
 		</DockPanel>
 		<Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="0 2 0 0">
 			<Grid>
-                <Button Name="statusBarButton" Content="{Binding UpdateStatusText}" Grid.Column="0" Classes="hyperlink" Click="ModUpdateCheck_Click" HorizontalAlignment="Left"/>                
+                <Button Name="statusBarButton" Grid.Column="0" Classes="hyperlink" Click="ModUpdateCheck_Click" HorizontalAlignment="Left">
+					<Panel IsHitTestVisible="False">
+						<TextBlock Text="{i18n:Translate ui.main_window.button.update_status.generic}" 
+								IsVisible="{Binding UpdateState, Converter={StaticResource EnumEqualsConverter}, ConverterParameter={x:Static models:ModUpdateState.Generic}}" />
+						
+						<TextBlock Text="{i18n:Translate ui.main_window.button.update_status.updating}" 
+								IsVisible="{Binding UpdateState, Converter={StaticResource EnumEqualsConverter}, ConverterParameter={x:Static models:ModUpdateState.Updating}}" />
+						
+						<TextBlock Text="{i18n:Translate ui.main_window.button.update_status.failed}" 
+								IsVisible="{Binding UpdateState, Converter={StaticResource EnumEqualsConverter}, ConverterParameter={x:Static models:ModUpdateState.Failed}}" />
+					</Panel>
+				</Button>                
                 <Button Name="downloadButton" Content="{Binding DownloadsButtonText}" Grid.Column="0" Classes="hyperlink" HorizontalAlignment="Center">
                     <Button.Flyout>
                         <Flyout FlyoutPresenterClasses="DownloadBoxFlyout">
@@ -699,7 +745,13 @@
                     </Button.Flyout>
                 </Button>
                 <Grid ColumnDefinitions="Auto, Auto, Auto, Auto" HorizontalAlignment="Right">
-                    <Button Name="nexusModsButton" Content="{Binding NexusStatus}" Grid.Column="0" Classes="hyperlink" HorizontalAlignment="Right" Padding="8,0,8,0" VerticalAlignment="Center"/>
+                    <Button Name="nexusModsButton" Grid.Column="0" Classes="hyperlink" HorizontalAlignment="Right" Padding="8,0,8,0" VerticalAlignment="Center">
+						<StackPanel Orientation="Horizontal" IsHitTestVisible="False">
+							<TextBlock Text="Nexus Mods: " />
+							<TextBlock Text="{i18n:Translate internal.connected}" IsVisible="{Binding IsNexusConnected}" />
+							<TextBlock Text="{i18n:Translate internal.disconnected}" IsVisible="{Binding !IsNexusConnected}" />
+						</StackPanel>
+					</Button>
                     <TextBlock Text="{Binding NexusLimits}" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" IsVisible="{Binding ShowEndorsements}"/>
                     <TextBlock Text=" | " Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}"/>
                     <Button Content="{Binding Version}" Grid.Column="3" Classes="hyperlink" Command="{Binding OpenBrowser}" CommandParameter="https://www.nexusmods.com/stardewvalley/mods/10455" HorizontalAlignment="Right" Padding="8,0,8,0" VerticalAlignment="Center"/>

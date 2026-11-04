@@ -17,8 +17,12 @@ namespace Stardrop.Utilities.External
     public partial class NexusClient
     {
         // Matches the current collection URL format along with the older next.nexusmods.com one
-        private static readonly Regex _collectionUrlPattern = new Regex(@"nexusmods\.com\/(?:games\/)?(?<domain>[a-z0-9]+)\/collections\/(?<slug>[a-z0-9]+)(?:\/revisions\/(?<revision>[0-9]+))?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly Regex _nxmCollectionRegex = new Regex(NxmCollectionPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        // private static readonly Regex _collectionUrlPattern = new(@"nexusmods\.com\/(?:games\/)?(?<domain>[a-z0-9]+)\/collections\/(?<slug>[a-z0-9]+)(?:\/revisions\/(?<revision>[0-9]+))?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        [GeneratedRegex(@"nexusmods\.com\/(?:games\/)?(?<domain>[a-z0-9]+)\/collections\/(?<slug>[a-z0-9]+)(?:\/revisions\/(?<revision>[0-9]+))?", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+        private static partial Regex CollectionUrlPattern();
+        // private static readonly Regex _nxmCollectionRegex = new(NxmCollectionPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        [GeneratedRegex(NxmCollectionPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+        private static partial Regex NxmCollectionRegex();
 
         /// <summary>
         /// Pulls a collection revision's metadata from Nexus' v2 GraphQL API. Passing a null revision resolves to the
@@ -107,8 +111,8 @@ namespace Stardrop.Utilities.External
 
                 UpdateRequestCounts(response.Headers);
 
-                var preferredLink = downloadLinks.DownloadLinks.FirstOrDefault(l => String.IsNullOrEmpty(serverName) is false && String.IsNullOrEmpty(l.ShortName) is false && l.ShortName.Equals(serverName, StringComparison.OrdinalIgnoreCase));
-                if (preferredLink is not null && String.IsNullOrEmpty(preferredLink.Uri) is false)
+                var preferredLink = downloadLinks.DownloadLinks.FirstOrDefault(l => string.IsNullOrEmpty(serverName) is false && string.IsNullOrEmpty(l.ShortName) is false && l.ShortName.Equals(serverName, StringComparison.OrdinalIgnoreCase));
+                if (preferredLink is not null && string.IsNullOrEmpty(preferredLink.Uri) is false)
                 {
                     return preferredLink.Uri;
                 }
@@ -132,7 +136,7 @@ namespace Stardrop.Utilities.External
             var isPremium = Program.settings.NexusDetails is not null && Program.settings.NexusDetails.IsPremium;
             var install = new CollectionInstall(domainName, slug, revisionNumber)
             {
-                Name = index.Info is not null && String.IsNullOrEmpty(index.Info.Name) is false ? index.Info.Name : slug,
+                Name = index.Info is not null && string.IsNullOrEmpty(index.Info.Name) is false ? index.Info.Name : slug,
                 Curator = index.Info is null ? null : index.Info.Author,
                 Summary = index.Info is null ? null : index.Info.Description,
                 InstallInstructions = index.Info is null ? null : index.Info.InstallInstructions,
@@ -162,7 +166,7 @@ namespace Stardrop.Utilities.External
 
                 var entry = new CollectionModEntry()
                 {
-                    Name = String.IsNullOrEmpty(collectionMod.Name) ? "Unknown mod" : collectionMod.Name,
+                    Name = string.IsNullOrEmpty(collectionMod.Name) ? "Unknown mod" : collectionMod.Name,
                     Version = collectionMod.Version,
                     Author = collectionMod.Author,
                     IsOptional = collectionMod.Optional,
@@ -204,7 +208,7 @@ namespace Stardrop.Utilities.External
 
             foreach (var hash in hashes)
             {
-                if (String.IsNullOrWhiteSpace(hash.Path) || String.IsNullOrWhiteSpace(hash.MD5))
+                if (string.IsNullOrWhiteSpace(hash.Path) || string.IsNullOrWhiteSpace(hash.MD5))
                 {
                     continue;
                 }
@@ -281,16 +285,16 @@ namespace Stardrop.Utilities.External
         /// </summary>
         public static bool TryParseCollectionNxmLink(string link, out string domainName, out string slug, out int? revision)
         {
-            domainName = String.Empty;
-            slug = String.Empty;
+            domainName = string.Empty;
+            slug = string.Empty;
             revision = null;
 
-            if (String.IsNullOrEmpty(link))
+            if (string.IsNullOrEmpty(link))
             {
                 return false;
             }
 
-            var match = _nxmCollectionRegex.Match(Regex.Unescape(link));
+            var match = NxmCollectionRegex().Match(Regex.Unescape(link));
             if (match.Success is false)
             {
                 return false;
@@ -299,7 +303,7 @@ namespace Stardrop.Utilities.External
             domainName = match.Groups["domain"].Value;
             slug = match.Groups["slug"].Value;
 
-            if (Int32.TryParse(match.Groups["revision"].Value, out var parsedRevision))
+            if (int.TryParse(match.Groups["revision"].Value, out var parsedRevision))
             {
                 revision = parsedRevision;
             }
@@ -312,16 +316,16 @@ namespace Stardrop.Utilities.External
         /// </summary>
         public static bool TryParseCollectionUrl(string url, out string domainName, out string slug, out int? revision)
         {
-            domainName = String.Empty;
-            slug = String.Empty;
+            domainName = string.Empty;
+            slug = string.Empty;
             revision = null;
 
-            if (String.IsNullOrEmpty(url))
+            if (string.IsNullOrEmpty(url))
             {
                 return false;
             }
 
-            var match = _collectionUrlPattern.Match(url);
+            var match = CollectionUrlPattern().Match(url);
             if (match.Success is false)
             {
                 return false;
@@ -330,7 +334,7 @@ namespace Stardrop.Utilities.External
             domainName = match.Groups["domain"].Value;
             slug = match.Groups["slug"].Value;
 
-            if (match.Groups["revision"].Success && Int32.TryParse(match.Groups["revision"].Value, out var parsedRevision))
+            if (match.Groups["revision"].Success && int.TryParse(match.Groups["revision"].Value, out var parsedRevision))
             {
                 revision = parsedRevision;
             }

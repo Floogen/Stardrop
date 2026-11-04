@@ -17,7 +17,7 @@ namespace Stardrop.Converters
                 throw new ArgumentOutOfRangeException(nameof(parameter), "Parameter must be a non-null enum.");
             }
 
-            return Enum.Equals(value, parameter);
+            return Equals(value, parameter);
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

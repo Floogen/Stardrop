@@ -1,17 +1,17 @@
 using Avalonia.Controls;
-using ReactiveUI;
+using ReactiveUI.Reactive;
 
 namespace Stardrop.ViewModels
 {
     public class FlexibleOptionWindowViewModel : ViewModelBase
     {
-        private string _messageText;
+        private string _messageText = null!;
         public string MessageText { get { return _messageText; } set { this.RaiseAndSetIfChanged(ref _messageText, value); } }
-        private string _firstButtonText;
+        private string _firstButtonText = null!;
         public string FirstButtonText { get { return _firstButtonText; } set { this.RaiseAndSetIfChanged(ref _firstButtonText, value); } }
-        private string _secondButtonText;
+        private string _secondButtonText = null!;
         public string SecondButtonText { get { return _secondButtonText; } set { this.RaiseAndSetIfChanged(ref _secondButtonText, value); } }
-        private string _thirdButtonText;
+        private string _thirdButtonText = null!;
         public string ThirdButtonText { get { return _thirdButtonText; } set { this.RaiseAndSetIfChanged(ref _thirdButtonText, value); } }
 
         private bool _isFirstButtonVisible;

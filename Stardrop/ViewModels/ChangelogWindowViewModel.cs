@@ -1,4 +1,4 @@
-using ReactiveUI;
+using ReactiveUI.Reactive;
 using Semver;
 using Stardrop.Models.Nexus.Web;
 using System;
@@ -10,9 +10,15 @@ namespace Stardrop.ViewModels
 {
     public class ChangelogWindowViewModel : ViewModelBase
     {
-        public ObservableCollection<ChangelogVersion> Versions { get; set; }
+        private ObservableCollection<ChangelogVersion> _versions = [];
 
-        private string _modName = String.Empty;
+        public ObservableCollection<ChangelogVersion> Versions
+        {
+            get => _versions;
+            set => this.RaiseAndSetIfChanged(ref _versions, value);
+        }
+
+        private string _modName = string.Empty;
         public string ModName { get { return _modName; } set { this.RaiseAndSetIfChanged(ref _modName, value); } }
 
         private bool _hasChanges;
@@ -24,18 +30,18 @@ namespace Stardrop.ViewModels
         private bool _showEmptyMessage;
         public bool ShowEmptyMessage { get { return _showEmptyMessage; } set { this.RaiseAndSetIfChanged(ref _showEmptyMessage, value); } }
 
-        private string _modPageUri = String.Empty;
+        private string _modPageUri = string.Empty;
         public string ModPageUri { get { return _modPageUri; } set { this.RaiseAndSetIfChanged(ref _modPageUri, value); } }
 
         private bool _hasModPage;
         public bool HasModPage { get { return _hasModPage; } set { this.RaiseAndSetIfChanged(ref _hasModPage, value); } }
 
-        private string _emptyMessage = String.Empty;
+        private string _emptyMessage = string.Empty;
         public string EmptyMessage { get { return _emptyMessage; } set { this.RaiseAndSetIfChanged(ref _emptyMessage, value); } }
 
         public ChangelogWindowViewModel()
         {
-            Versions = new ObservableCollection<ChangelogVersion>();
+            Versions = [];
         }
 
         /// <summary>

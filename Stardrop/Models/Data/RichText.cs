@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Stardrop.Models.Data
 {
@@ -9,10 +8,10 @@ namespace Stardrop.Models.Data
     /// </summary>
     public class RichTextSegment
     {
-        public string Text { get; set; } = String.Empty;
+        public string Text { get; set; } = string.Empty;
         /// <summary>The web address this run opens, or null when the run is plain text</summary>
         public string? Uri { get; set; }
-        public bool IsLink => String.IsNullOrEmpty(Uri) is false;
+        public bool IsLink => string.IsNullOrEmpty(Uri) is false;
 
         public static RichTextSegment CreateText(string text)
         {
@@ -32,6 +31,6 @@ namespace Stardrop.Models.Data
     public class RichTextLine
     {
         public double IndentWidth { get; set; }
-        public List<RichTextSegment> Segments { get; set; } = new List<RichTextSegment>();
+        public List<RichTextSegment> Segments { get; set; } = [];
     }
 }

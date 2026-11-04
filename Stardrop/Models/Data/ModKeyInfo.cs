@@ -2,8 +2,8 @@
 {
     public class ModKeyInfo
     {
-        public string UniqueId { get; set; }
-        public string Name { get; set; }
-        public string PageUrl { get; set; }
+        public string UniqueId { get; set; } = null!;
+        public string Name { get; set; } = null!;
+        public string PageUrl { get; set; } = null!;
     }
 }

@@ -3,20 +3,19 @@
         xmlns:vm="using:Stardrop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:i="clr-namespace:Optris.Icons.Avalonia;assembly=Optris.Icons.Avalonia"
 		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
         x:Class="Stardrop.Views.ProfileExportWindow"
+		x:DataType="vm:ProfileExportWindowViewModel"
         Title="{i18n:Translate ui.window.profiles_export.name}"
         MinWidth="400"
         MinHeight="200"
         Width="400"
         Height="200"
         Background="{DynamicResource ThemeBackgroundBrush}"
-        HasSystemDecorations="true"
-        ExtendClientAreaToDecorationsHint="true"
-        ExtendClientAreaChromeHints="NoChrome"
-        ExtendClientAreaTitleBarHeightHint="-1"
+		WindowDecorations="BorderOnly"
+		ExtendClientAreaToDecorationsHint="True"
         CanResize="True"
         Icon="/Assets/icon.ico">
 
@@ -54,7 +53,7 @@
 		<Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
 			<Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
 		</Style>
-		<Style Selector="CheckBox:pointerover /template/ ContentPresenter#ContentPresenter">
+		<Style Selector="CheckBox:pointerover /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
 		</Style>
 		<Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
@@ -110,8 +109,8 @@
 		</StackPanel>
 		
 		<DockPanel Grid.Row="2" Grid.Column="0" Margin="0 0 10 10" HorizontalAlignment="Right">
-			<Button Name="applyButton" ToolTip.Tip="{Binding ToolTip_Save}" i:Attached.Icon="mdi-check" Margin="-40 0 15 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent"/>
-			<Button Name="cancelButton" IsCancel="True" ToolTip.Tip="{Binding ToolTip_Cancel}" i:Attached.Icon="mdi-cancel" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
+			<Button Name="applyButton" ToolTip.Tip="{i18n:Translate ui.settings_window.tooltips.save_changes}" i:Attached.Icon="mdi-check" Margin="-40 0 15 0" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Green" Background="Transparent"/>
+			<Button Name="cancelButton" IsCancel="True" ToolTip.Tip="{i18n:Translate ui.settings_window.tooltips.cancel_changes}" i:Attached.Icon="mdi-cancel" BorderBrush="{DynamicResource HighlightBrush}" Foreground="Red" Background="Transparent"/>
 		</DockPanel>
 	</Grid>
 </Window>

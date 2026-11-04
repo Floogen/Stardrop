@@ -4,9 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using DynamicData;
-using DynamicData.Binding;
 using Semver;
 using SharpCompress.Archives;
 using SharpCompress.Common;
@@ -15,7 +14,6 @@ using Stardrop.Models.Data;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Models.Nexus.Web;
 using Stardrop.Models.SMAPI;
-using Stardrop.Models.SMAPI.Web;
 using Stardrop.Utilities;
 using Stardrop.Utilities.Extension;
 using Stardrop.Utilities.External;
@@ -27,7 +25,6 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text.Json;
@@ -35,6 +32,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
+using System.Reactive.Linq;
+using System.ComponentModel;
 
 namespace Stardrop.Views
 {
@@ -49,16 +48,16 @@ namespace Stardrop.Views
 
         private readonly MainWindowViewModel _viewModel;
         private readonly ProfileEditorViewModel _editorView;
-        private DispatcherTimer _searchBoxTimer;
-        private DispatcherTimer _smapiProcessTimer;
-        private DispatcherTimer _lockSentinel;
-        private DispatcherTimer _nxmSentinel;
+        private DispatcherTimer? _searchBoxTimer;
+        private DispatcherTimer _smapiProcessTimer = null!;
+        private readonly DispatcherTimer _lockSentinel;
+        private readonly DispatcherTimer _nxmSentinel = null!;
 
         // Tracking related
         private bool _shiftPressed;
         private bool _ctrlPressed;
 
-        private string _lockReason;
+        private string _lockReason = null!;
         private CancellationTokenSource? _lockCancellationSource;
         /// <summary>The window the lock state opened, so that unlocking closes that one rather than every dialog the main window owns</summary>
         private WarningWindow? _lockWindow;
@@ -71,11 +70,24 @@ namespace Stardrop.Views
         private bool _hasLoggedNXMHold;
 
         // Session related
-        private LastSessionData _lastSessionDate;
+        private LastSessionData _lastSessionDate = null!;
 
+        private static readonly JsonSerializerOptions ReadOptions = new() { AllowTrailingCommas = true };
+        private static readonly JsonSerializerOptions WriteOptions = new() { WriteIndented = true };
+        [GeneratedRegex(@"\s+\/")]
+        private static partial Regex WhitespaceBeforeSlashPattern();
         public MainWindow()
         {
             InitializeComponent();
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                WindowDecorations = Avalonia.Controls.WindowDecorations.Full;
+            }
+            else
+            {
+                WindowDecorations = Avalonia.Controls.WindowDecorations.BorderOnly;
+            }
 
             // Set the main window view
             _viewModel = new MainWindowViewModel(Pathing.defaultModPath, Program.ApplicationVersion);
@@ -83,16 +95,16 @@ namespace Stardrop.Views
 
             // Set the path according to the environmental variable SMAPI_MODS_PATH
             // SMAPI_MODS_PATH is set via the profile dropdown on the UI
-            var modGrid = this.FindControl<DataGrid>("modGrid");
+            var modGrid = this.FindControl<DataGrid>("modGrid")!;
             modGrid.IsReadOnly = true;
-            modGrid.LoadingRow += (sender, e) => { e.Row.Header = e.Row.GetIndex() + 1; };
-            modGrid.Items = _viewModel.DataView;
+            modGrid.LoadingRow += (sender, e) => { e.Row.Header = e.Row.Index + 1; };
+            modGrid.ItemsSource = _viewModel.DataView;
             modGrid.LoadingRowGroup += ModGrid_LoadingRowGroup;
             modGrid.ColumnReordered += (sender, e) => { _viewModel.SetColumnOrder(modGrid); };
-            modGrid.AddHandler(InputElement.LostFocusEvent, OnGridLostFocus, RoutingStrategies.Bubble);
+            modGrid.AddHandler(LostFocusEvent, OnGridLostFocus, RoutingStrategies.Bubble);
 
-            var dragOverBorder = this.FindControl<Border>("dragOverBorder");
-            dragOverBorder.AddHandler(InputElement.PointerPressedEvent, OnGridBackgroundPressed, RoutingStrategies.Tunnel);
+            var dragOverBorder = this.FindControl<Border>("dragOverBorder")!;
+            dragOverBorder.AddHandler(PointerPressedEvent, OnGridBackgroundPressed, RoutingStrategies.Tunnel);
 
             AddHandler(DragDrop.DropEvent, Drop);
             AddHandler(DragDrop.DragOverEvent, (sender, e) =>
@@ -105,12 +117,12 @@ namespace Stardrop.Views
             });
 
             // Get the local data
-            ClientData localDataCache = new ClientData();
+            ClientData localDataCache = new();
             if (File.Exists(Pathing.GetDataCachePath()))
             {
                 try
                 {
-                    localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                    localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), ReadOptions) ?? new ClientData();
                 }
                 catch
                 {
@@ -127,13 +139,17 @@ namespace Stardrop.Views
             // Sets the grid's column visibility, based on previous session
             if (localDataCache.ColumnActiveStates is not null)
             {
-                var gridColumnContextMenu = this.FindControl<ContextMenu>("gridColumnContextMenu");
-                foreach (MenuItem column in gridColumnContextMenu.Items)
+                var gridColumnContextMenu = this.FindControl<ContextMenu>("gridColumnContextMenu")!;
+                foreach (var column in gridColumnContextMenu.Items.OfType<MenuItem>())
                 {
-                    string columnName = (string)column.Header;
-                    if (localDataCache.ColumnActiveStates.ContainsKey(columnName))
+                    if (column.Header is not string columnName)
                     {
-                        _viewModel.SetColumnVisibility(column, modGrid, localDataCache.ColumnActiveStates[columnName]);
+                        continue;
+                    }
+
+                    if (localDataCache.ColumnActiveStates.TryGetValue(columnName, out bool isActive))
+                    {
+                        _viewModel.SetColumnVisibility(column, modGrid, isActive);
                     }
                 }
             }
@@ -158,14 +174,14 @@ namespace Stardrop.Views
                 }
             }
             // Handle the mainMenu bar for drag and related events
-            var menuBorder = this.FindControl<Border>("menuBorder");
+            var menuBorder = this.FindControl<Border>("menuBorder")!;
             menuBorder.PointerPressed += MainBar_PointerPressed;
             menuBorder.DoubleTapped += MainBar_DoubleTapped;
 
             // Set profile list
             _editorView = new ProfileEditorViewModel(Pathing.GetProfilesFolderPath(), _viewModel.Mods.ToList());
-            var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
-            profileComboBox.Items = _editorView.Profiles;
+            var profileComboBox = this.FindControl<ComboBox>("profileComboBox")!;
+            profileComboBox.ItemsSource = _editorView.Profiles;
             profileComboBox.SelectedIndex = 0;
             if (_editorView.Profiles.FirstOrDefault(p => p.Name == Program.settings.LastSelectedProfileName) is Profile oldProfile && oldProfile is not null)
             {
@@ -175,85 +191,94 @@ namespace Stardrop.Views
 
             // Update selected mods
             var profile = profileComboBox.SelectedItem as Profile;
-            _viewModel.EnableModsByProfile(profile);
+            _viewModel.EnableModsByProfile(profile!);
 
             // Check if we have any cached updates for mods
             if (_viewModel.IsCheckingForUpdates is false)
             {
-                _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.updating");
-                CheckForModUpdates(_viewModel.Mods.ToList(), useCache: true);
+                // _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.updating");
+                _viewModel.UpdateState = ModUpdateState.Updating;
+                _ = CheckForModUpdates([.. _viewModel.Mods], useCache: true);
             }
             else
             {
-                CheckForModUpdates(_viewModel.Mods.ToList(), probe: true);
+                _ = CheckForModUpdates([.. _viewModel.Mods], probe: true);
             }
 
             // Start sentinel for watching NXM files
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) is false)
             {
-                _nxmSentinel = new DispatcherTimer();
-                _nxmSentinel.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 1000);
+                _nxmSentinel = new DispatcherTimer
+                {
+                    Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 1000)
+                };
                 _nxmSentinel.Tick += _nxmSentinelTimer_Tick;
                 _nxmSentinel.Start();
             }
 
             // Start sentinel for watching for lock state
-            _lockSentinel = new DispatcherTimer();
-            _lockSentinel.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 100);
+            _lockSentinel = new DispatcherTimer
+            {
+                Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 100)
+            };
             _lockSentinel.Tick += _lockSentinelTimer_Tick;
             _lockSentinel.Start();
 
             // FOOTER: "Value cannot be null. (Parameter 'path1')" error clears removing the above chunk
 
             // Handle buttons
-            this.FindControl<Button>("minimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
-            this.FindControl<Button>("maximizeButton").Click += delegate { AdjustWindowState(); };
-            this.FindControl<Button>("exitButton").Click += Exit_Click;
-            this.FindControl<Button>("editProfilesButton").Click += EditProfilesButton_Click;
-            this.FindControl<Button>("saveConfigsToProfile").Click += SaveConfigButton_Click;
-            this.FindControl<Button>("saveProfileChanges").Click += SaveProfileChanges_Click;
-            this.FindControl<Button>("smapiButton").Click += Smapi_Click;
-            this.FindControl<CheckBox>("showUpdatableMods").Click += ShowUpdatableModsButton_Click;
-            this.FindControl<CheckBox>("showAllModSources").Click += ShowAllModSourcesButton_Click;
-            this.FindControl<Button>("nexusModsButton").Click += NexusModsButton_Click;
-            this.FindControl<Button>("modGroupStateButton").Click += ModGroupStateButton;
+            this.FindControl<Button>("minimizeButton")!.Click += delegate { WindowState = WindowState.Minimized; };
+            this.FindControl<Button>("maximizeButton")!.Click += delegate { AdjustWindowState(); };
+            this.FindControl<Button>("exitButton")!.Click += Exit_Click;
+            this.FindControl<Button>("editProfilesButton")!.Click += EditProfilesButton_Click;
+            this.FindControl<Button>("saveConfigsToProfile")!.Click += SaveConfigButton_Click;
+            this.FindControl<Button>("saveProfileChanges")!.Click += SaveProfileChanges_Click;
+            this.FindControl<Button>("smapiButton")!.Click += Smapi_Click;
+            this.FindControl<CheckBox>("showUpdatableMods")!.Click += ShowUpdatableModsButton_Click;
+            this.FindControl<CheckBox>("showAllModSources")!.Click += ShowAllModSourcesButton_Click;
+            this.FindControl<Button>("nexusModsButton")!.Click += NexusModsButton_Click;
+            this.FindControl<Button>("modGroupStateButton")!.Click += ModGroupStateButton;
 
             // Handle filtering via textbox
-            this.FindControl<TextBox>("searchBox").AddHandler(KeyUpEvent, SearchBox_KeyUp);
+            this.FindControl<TextBox>("searchBox")!.AddHandler(KeyUpEvent, SearchBox_KeyUp);
 
             // Handle filtering by searchFilterColumnBox
-            var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
+            var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox")!;
             searchFilterColumnBox.SelectionChanged += FilterListBox_SelectionChanged;
-            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.mod_name"));
+            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content?.ToString() == Program.translation.Get("ui.main_window.combobox.mod_name"));
 
-            var disabledModFilterColumnBox = this.FindControl<ComboBox>("disabledModFilterColumnBox");
-            disabledModFilterColumnBox.SelectedIndex = 0;
+            UpdateDisabledModFilterComboBox();
+            var disabledModFilterColumnBox = this.FindControl<ComboBox>("disabledModFilterColumnBox")!;
             disabledModFilterColumnBox.SelectionChanged += DisabledModComboBox_SelectionChanged;
 
             // Have to register this even here, as MacOS doesn't detect it via axaml during build
-            this.PropertyChanged += MainWindow_PropertyChanged;
+            PropertyChanged += MainWindow_PropertyChanged;
 
             // Hook into key related events
-            this.KeyDown += MainWindow_KeyDown;
-            this.KeyUp += MainWindow_KeyUp;
+            KeyDown += MainWindow_KeyDown;
+            KeyUp += MainWindow_KeyUp;
 
             // Check if SMAPI should be started immediately via --start-smapi
             if (Program.onBootStartSMAPI)
             {
-                StartSMAPI();
+                _ = StartSMAPI();
             }
 
             Program.helper.Log($"Initialization complete!");
 
-#if DEBUG
-            this.AttachDevTools();
-#endif
 
             if (Design.IsDesignMode)
             {
                 var testManifest = new Manifest() { Author = "Author", Name = "Test Mod", UniqueID = "Stardrop.TestMod", Version = "1.0.0" };
                 _viewModel.Mods.Add(new Mod(testManifest));
             }
+            Program.translation.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == "Item" || e.PropertyName == "Item[]")
+                {
+                    UpdateDisabledModFilterComboBox();
+                }
+            };
         }
 
         private void OnGridBackgroundPressed(object? sender, PointerPressedEventArgs e)
@@ -262,7 +287,7 @@ namespace Stardrop.Views
             if (e.Source is not TextBox textBox || !textBox.Classes.Contains("notes"))
             {
                 // Move focus to the grid itself, pulling it off the TextBox
-                this.FindControl<DataGrid>("modGrid").Focus();
+                this.FindControl<DataGrid>("modGrid")!.Focus();
             }
         }
 
@@ -284,7 +309,7 @@ namespace Stardrop.Views
 
         private void ModGrid_LoadingRowGroup(object? sender, DataGridRowGroupHeaderEventArgs e)
         {
-            _viewModel.ModGroupsStateButtonText = Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
+            _viewModel.AreModGroupsExpanded = true;
         }
 
         private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
@@ -300,10 +325,10 @@ namespace Stardrop.Views
             else
             {
                 // Only grab search box if not currently typing in notes
-                var focusedElement = FocusManager.Instance?.Current;
+                var focusedElement = FocusManager?.GetFocusedElement();
                 if (focusedElement is not null && (focusedElement is not TextBox textBox || !textBox.Classes.Contains("notes")))
                 {
-                    var searchBox = this.FindControl<TextBox>("searchBox");
+                    var searchBox = this.FindControl<TextBox>("searchBox")!;
                     searchBox.Focus();
                     SearchBox_KeyUp(sender, e);
                 }
@@ -324,43 +349,45 @@ namespace Stardrop.Views
 
         private async void MainWindow_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (this.IsVisible is false)
+            if (IsVisible is false)
             {
                 return;
             }
 
-            if (e.Property == WindowStateProperty && (WindowState)e.OldValue == WindowState.Minimized && SMAPI.IsRunning)
+            if (e.Property == WindowStateProperty && e.OldValue is WindowState.Minimized && SMAPI.IsRunning)
             {
-                var warningWindow = new WarningWindow(Program.translation.Get("ui.warning.stardrop_locked"), Program.translation.Get("internal.unlock"), true);
-                warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                var warningWindow = new WarningWindow(Program.translation.Get("ui.warning.stardrop_locked"), Program.translation.Get("internal.unlock"), true)
+                {
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
                 await warningWindow.ShowDialog(this);
             }
         }
 
-        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        private void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
         {
             Program.settings.LastSelectedProfileName = GetCurrentProfile().Name;
 
             // Write the settings cache
-            File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, new JsonSerializerOptions() { WriteIndented = true }));
+            File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, WriteOptions));
 
             // Cache the local data with latest values
             if (File.Exists(Pathing.GetDataCachePath()))
             {
-                ClientData localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                ClientData localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), ReadOptions) ?? new ClientData();
 
                 if (localDataCache is not null)
                 {
                     localDataCache.LastSessionData = new LastSessionData()
                     {
-                        Height = this.Height,
-                        Width = this.Width,
-                        PositionX = this.Position.X,
-                        PositionY = this.Position.Y
+                        Height = Height,
+                        Width = Width,
+                        PositionX = Position.X,
+                        PositionY = Position.Y
                     };
                 }
 
-                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, WriteOptions));
             }
         }
 
@@ -372,17 +399,17 @@ namespace Stardrop.Views
                 {
                     Program.helper.Log($"Setting window size according to settings: {_lastSessionDate.Width}x{_lastSessionDate.Height} ({_lastSessionDate.PositionX}, {_lastSessionDate.PositionY})");
 
-                    this.Width = _lastSessionDate.Width;
-                    this.Height = _lastSessionDate.Height;
+                    Width = _lastSessionDate.Width;
+                    Height = _lastSessionDate.Height;
 
-                    var screen = this.Screens.ScreenFromBounds(new PixelRect(_lastSessionDate.PositionX, _lastSessionDate.PositionY, (int)_lastSessionDate.Width, (int)_lastSessionDate.Height));
+                    var screen = Screens.ScreenFromBounds(new PixelRect(_lastSessionDate.PositionX, _lastSessionDate.PositionY, (int)_lastSessionDate.Width, (int)_lastSessionDate.Height));
                     if (screen is not null)
                     {
-                        this.Position = new PixelPoint(_lastSessionDate.PositionX, _lastSessionDate.PositionY);
-                        this.WindowStartupLocation = WindowStartupLocation.Manual;
+                        Position = new PixelPoint(_lastSessionDate.PositionX, _lastSessionDate.PositionY);
+                        WindowStartupLocation = WindowStartupLocation.Manual;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Program.helper.Log($"Failed to restore window settings!");
                 }
@@ -392,11 +419,11 @@ namespace Stardrop.Views
             await HandleStardropUpdateCheck();
 
             // Check if Stardrop should display the changelog (if it has updated since last boot)
-            if (String.IsNullOrEmpty(Program.settings.Version))
+            if (string.IsNullOrEmpty(Program.settings.Version))
             {
-                Program.settings.Version = _viewModel.Version.Replace("v", String.Empty);
+                Program.settings.Version = _viewModel.Version.Replace("v", string.Empty);
             }
-            else if (SemVersion.TryParse(Program.settings.Version, SemVersionStyles.Any, out var cachedVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), SemVersionStyles.Any, out var currentVersion) && cachedVersion.CompareSortOrderTo(currentVersion) < 0)
+            else if (SemVersion.TryParse(Program.settings.Version, SemVersionStyles.Any, out var cachedVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", string.Empty), SemVersionStyles.Any, out var currentVersion) && cachedVersion.CompareSortOrderTo(currentVersion) < 0)
             {
                 // Display message with link to release notes
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.stardrop_update_complete"));
@@ -405,7 +432,7 @@ namespace Stardrop.Views
                     Toolkit.OpenBrowser("https://github.com/Floogen/Stardrop/releases/latest");
                 }
 
-                Program.settings.Version = _viewModel.Version.Replace("v", String.Empty);
+                Program.settings.Version = _viewModel.Version.Replace("v", string.Empty);
             }
 
             if (Pathing.defaultGamePath is null || File.Exists(Pathing.GetSmapiPath()) is false)
@@ -427,7 +454,7 @@ namespace Stardrop.Views
             // Set up the Nexus Mods connection and attempt to register for the NXM URI protocol
             await CheckForNexusConnection();
 
-            if (String.IsNullOrEmpty(Program.nxmLink) is false)
+            if (string.IsNullOrEmpty(Program.nxmLink) is false)
             {
                 await ProcessNXMLink(new NXM() { Link = Program.nxmLink, Timestamp = DateTime.Now });
                 Program.nxmLink = null;
@@ -450,15 +477,15 @@ namespace Stardrop.Views
             await warningWindow.ShowDialog(this);
         }
 
-        private async void Drop(object sender, DragEventArgs e)
+        private async void Drop(object? sender, DragEventArgs e)
         {
-            if (String.IsNullOrWhiteSpace(Pathing.defaultModPath) || Directory.Exists(Pathing.defaultModPath) is false)
+            if (string.IsNullOrWhiteSpace(Pathing.defaultModPath) || Directory.Exists(Pathing.defaultModPath) is false)
             {
                 await DisplayInvalidSMAPIWarning();
                 return;
             }
 
-            if (!e.Data.Contains(DataFormats.FileNames))
+            if (!e.DataTransfer.Contains(DataFormat.File))
             {
                 return;
             }
@@ -470,7 +497,7 @@ namespace Stardrop.Views
                 return;
             }
 
-            var addedMods = await AddMods(e.Data.GetFileNames()?.ToArray(), installTarget.InstallPathOverride);
+            var addedMods = await AddMods(e.DataTransfer.TryGetFiles()?.OfType<IStorageFile>().Select(f => f.Path.LocalPath).ToArray(), installTarget.InstallPathOverride);
 
             // TODO: Add optional setting to disable checking for updates when a new mod is installed?
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
@@ -487,19 +514,19 @@ namespace Stardrop.Views
         {
             if (SMAPI.Process is null)
             {
-                SMAPI.Process = Process.GetProcessesByName(SMAPI.GetProcessName()).FirstOrDefault();
+                SMAPI.Process = Process.GetProcessesByName(SMAPI.GetProcessName()).FirstOrDefault()!;
             }
             else if (SMAPI.Process.HasExited || Process.GetProcessesByName(SMAPI.GetProcessName()).FirstOrDefault() is null)
             {
                 Program.helper.Log("SMAPI has exited, restoring Stardrop", Helper.Status.Debug);
 
-                SMAPI.Process = null;
+                SMAPI.Process = null!;
                 SMAPI.IsRunning = false;
 
                 _viewModel.IsLocked = false;
                 _smapiProcessTimer.IsEnabled = false;
 
-                this.WindowState = WindowState.Normal;
+                WindowState = WindowState.Normal;
             }
         }
 
@@ -533,9 +560,9 @@ namespace Stardrop.Views
                 var nxmLinks = new List<NXM>();
 
                 // Gather the NXM links, then clear the file
-                using (FileStream stream = new FileStream(Pathing.GetLinksCachePath(), FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                using (FileStream stream = new(Pathing.GetLinksCachePath(), FileMode.Open, FileAccess.ReadWrite, FileShare.None))
                 {
-                    var pendingLinks = await JsonSerializer.DeserializeAsync<List<NXM>>(stream, new JsonSerializerOptions { AllowTrailingCommas = true });
+                    var pendingLinks = await JsonSerializer.DeserializeAsync<List<NXM>>(stream, ReadOptions);
                     if (pendingLinks is not null)
                     {
                         foreach (var nxmLink in pendingLinks)
@@ -547,7 +574,7 @@ namespace Stardrop.Views
                     // Clear the stream and empty out the file
                     stream.SetLength(0);
 
-                    await JsonSerializer.SerializeAsync(stream, new List<NXM>(), new JsonSerializerOptions() { WriteIndented = true });
+                    await JsonSerializer.SerializeAsync(stream, new List<NXM>(), WriteOptions);
                 }
 
                 // Process each link
@@ -561,7 +588,7 @@ namespace Stardrop.Views
                     }
                 }
             }
-            catch (IOException ex)
+            catch (IOException)
             {
                 Program.helper.Log($"Unable to access the Links.json file");
                 return;
@@ -590,15 +617,17 @@ namespace Stardrop.Views
 
         private async void _lockSentinelTimer_Tick(object? sender, EventArgs e)
         {
-            if (_lockWindow is not null || HasOpenDialog() || _viewModel.IsLocked is false || String.IsNullOrEmpty(_lockReason))
+            if (_lockWindow is not null || HasOpenDialog() || _viewModel.IsLocked is false || string.IsNullOrEmpty(_lockReason))
             {
                 return;
             }
 
             Program.helper.Log($"Detected lock state request ({_lockReason}): Locking main window!");
 
-            var warningWindow = new WarningWindow(_lockReason, _viewModel, cancellationSource: _lockCancellationSource);
-            warningWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var warningWindow = new WarningWindow(_lockReason, _viewModel, cancellationSource: _lockCancellationSource)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
             KeepDialogAboveSiblings(warningWindow);
 
             // Held onto so that SetLockState and UpdateLockWindow have this window to work with, rather than
@@ -619,15 +648,14 @@ namespace Stardrop.Views
             }
         }
 
-        private void ModGridMenuRow_ChangeState(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ModGridMenuRow_ChangeState(object? sender, RoutedEventArgs e)
         {
             var modGrid = this.FindControl<DataGrid>("modGrid");
             if (modGrid is null)
             {
                 return;
             }
-            var selectedMod = (sender as MenuItem).DataContext as Mod;
-            if (selectedMod is null)
+            if ((sender as MenuItem)?.DataContext is not Mod selectedMod)
             {
                 return;
             }
@@ -652,15 +680,14 @@ namespace Stardrop.Views
         /// <param name="sender">
         /// The currently selected mod of the whole mod group whose mods to enable/disable.
         /// </param>
-        private void ModGridMenuRow_ChangeWholeModGroupState(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ModGridMenuRow_ChangeWholeModGroupState(object? sender, RoutedEventArgs e)
         {
             var modGrid = this.FindControl<DataGrid>("modGrid");
             if (modGrid is null)
             {
                 return;
             }
-            var selectedMod = (sender as MenuItem)?.DataContext as Mod;
-            if (selectedMod is null)
+            if ((sender as MenuItem)?.DataContext is not Mod selectedMod)
             {
                 return;
             }
@@ -676,7 +703,7 @@ namespace Stardrop.Views
             {
                 originallySelectedModPaths.Add(selectedMod.Path);
             }
-            foreach (Mod mod in modGrid.Items)
+            foreach (var mod in modGrid.ItemsSource?.OfType<Mod>() ?? [])
             {
                 if (originallySelectedModPaths.Contains(mod.Path))
                 {
@@ -723,21 +750,19 @@ namespace Stardrop.Views
             }
         }
 
-        private void ModGridMenuRow_OpenFolderPath(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ModGridMenuRow_OpenFolderPath(object? sender, RoutedEventArgs e)
         {
-            var selectedMod = (sender as MenuItem).DataContext as Mod;
-            if (selectedMod is null)
+            if ((sender as MenuItem)?.DataContext is not Mod selectedMod)
             {
                 return;
             }
 
-            OpenNativeExplorer(selectedMod.ModFileInfo.DirectoryName);
+            OpenNativeExplorer(selectedMod.ModFileInfo.DirectoryName!);
         }
 
-        private void ModGridMenuRow_OpenModPage(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ModGridMenuRow_OpenModPage(object? sender, RoutedEventArgs e)
         {
-            var selectedMod = (sender as MenuItem).DataContext as Mod;
-            if (selectedMod is null)
+            if ((sender as MenuItem)?.DataContext is not Mod selectedMod)
             {
                 return;
             }
@@ -745,16 +770,15 @@ namespace Stardrop.Views
             Toolkit.OpenBrowser(selectedMod.ModPageUri);
         }
 
-        private void ModGridMenuRow_ShowWholeModGroup(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ModGridMenuRow_ShowWholeModGroup(object? sender, RoutedEventArgs e)
         {
-            var selectedMod = (sender as MenuItem)?.DataContext as Mod;
-            if (selectedMod is null)
+            if ((sender as MenuItem)?.DataContext is not Mod selectedMod)
             {
                 return;
             }
 
-            var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
-            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.group"));
+            var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox")!;
+            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content?.ToString() == Program.translation.Get("ui.main_window.combobox.group"));
 
             var filterText = string.Empty;
             switch (Program.settings.ModGroupingMethod)
@@ -772,38 +796,36 @@ namespace Stardrop.Views
                     break;
             }
 
-            this.FindControl<TextBox>("searchBox").Text = filterText;
+            this.FindControl<TextBox>("searchBox")!.Text = filterText;
             _viewModel.FilterText = filterText;
         }
 
-        private void ModGridMenuRow_ShowAuthorsMods(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ModGridMenuRow_ShowAuthorsMods(object? sender, RoutedEventArgs e)
         {
-            var selectedMod = (sender as MenuItem)?.DataContext as Mod;
-            if (selectedMod is null)
+            if ((sender as MenuItem)?.DataContext is not Mod selectedMod)
             {
                 return;
             }
 
-            var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
-            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content.ToString() == Program.translation.Get("ui.main_window.combobox.author"));
+            var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox")!;
+            searchFilterColumnBox.SelectedItem = searchFilterColumnBox.Items.Cast<ListBoxItem>().First(c => c.Content?.ToString() == Program.translation.Get("ui.main_window.combobox.author"));
 
-            this.FindControl<TextBox>("searchBox").Text = selectedMod.Author;
+            this.FindControl<TextBox>("searchBox")!.Text = selectedMod.Author;
             _viewModel.FilterText = selectedMod.Author;
         }
 
-        private void ModGridMenuRow_ClearFilter(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ModGridMenuRow_ClearFilter(object? sender, RoutedEventArgs e)
         {
-            var selectedMod = (sender as MenuItem)?.DataContext as Mod;
-            if (selectedMod is null)
+            if ((sender as MenuItem)?.DataContext is not Mod selectedMod)
             {
                 return;
             }
 
-            this.FindControl<TextBox>("searchBox").Text = String.Empty;
-            _viewModel.FilterText = String.Empty;
+            this.FindControl<TextBox>("searchBox")!.Text = string.Empty;
+            _viewModel.FilterText = string.Empty;
         }
 
-        private async void ModGridMenuRow_Delete(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void ModGridMenuRow_Delete(object? sender, RoutedEventArgs e)
         {
             var modGrid = this.FindControl<DataGrid>("modGrid");
             if (modGrid is null)
@@ -811,7 +833,7 @@ namespace Stardrop.Views
                 return;
             }
 
-            var selectedMod = (sender as MenuItem).DataContext as Mod;
+            var selectedMod = (sender as MenuItem)?.DataContext as Mod;
             if (selectedMod is not null)
             {
                 // Add the selected mod into the selection list if shift or ctrl is held, otherwise clear the current selection
@@ -828,13 +850,13 @@ namespace Stardrop.Views
                 bool hasDeletedAMod = false;
                 foreach (Mod mod in modGrid.SelectedItems)
                 {
-                    var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_mod_deletion"), mod.Name));
+                    var requestWindow = new MessageWindow(string.Format(Program.translation.Get("ui.message.confirm_mod_deletion"), mod.Name));
                     if (await requestWindow.ShowDialog<bool>(this))
                     {
                         // Delete old vesrion
                         if (TryDeleteMod(mod) is false)
                         {
-                            await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_delete"), mod.Name), Program.translation.Get("internal.ok"));
+                            await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.failed_to_delete"), mod.Name), Program.translation.Get("internal.ok"));
                         }
                         else
                         {
@@ -868,7 +890,7 @@ namespace Stardrop.Views
         /// The ignore is version scoped and stored globally in the client data cache, keyed on unique ID. It lapses
         /// on its own once a version newer than the ignored one is suggested, which CheckForModUpdates handles.
         /// </summary>
-        private async void ModGridMenuRow_IgnoreUpdate(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void ModGridMenuRow_IgnoreUpdate(object? sender, RoutedEventArgs e)
         {
             if ((sender as MenuItem)?.DataContext is not Mod selectedMod)
             {
@@ -894,12 +916,12 @@ namespace Stardrop.Views
             // profile scoped, so nothing here should mark the profile as having unsaved changes
             try
             {
-                ClientData clientData = new ClientData();
+                ClientData clientData = new();
                 if (File.Exists(Pathing.GetDataCachePath()))
                 {
                     try
                     {
-                        clientData = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true }) ?? new ClientData();
+                        clientData = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), ReadOptions) ?? new ClientData();
                     }
                     catch
                     {
@@ -907,7 +929,7 @@ namespace Stardrop.Views
                     }
                 }
 
-                if (String.IsNullOrEmpty(selectedMod.IgnoredVersion))
+                if (string.IsNullOrEmpty(selectedMod.IgnoredVersion))
                 {
                     if (clientData.IgnoredUpdates.ContainsKey(selectedMod.UniqueId))
                     {
@@ -919,7 +941,7 @@ namespace Stardrop.Views
                     clientData.IgnoredUpdates[selectedMod.UniqueId] = selectedMod.IgnoredVersion;
                 }
 
-                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(clientData, new JsonSerializerOptions() { WriteIndented = true }));
+                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(clientData, WriteOptions));
             }
             catch (Exception ex)
             {
@@ -941,8 +963,10 @@ namespace Stardrop.Views
         {
             if (_searchBoxTimer is null)
             {
-                _searchBoxTimer = new DispatcherTimer();
-                _searchBoxTimer.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond / 2);
+                _searchBoxTimer = new DispatcherTimer
+                {
+                    Interval = new TimeSpan(TimeSpan.TicksPerMillisecond / 2)
+                };
                 _searchBoxTimer.Tick += SearchBoxTimer_Tick;
                 _searchBoxTimer.Start();
             }
@@ -950,7 +974,7 @@ namespace Stardrop.Views
 
         private void SearchBoxTimer_Tick(object? sender, EventArgs e)
         {
-            var filterText = this.FindControl<TextBox>("searchBox").Text;
+            var filterText = this.FindControl<TextBox>("searchBox")!.Text ?? string.Empty;
             if (_viewModel.FilterText == filterText)
             {
                 return;
@@ -960,53 +984,68 @@ namespace Stardrop.Views
             // Ensure the ColumnFilter is set
             if (_viewModel.ColumnFilter is null || _viewModel.ColumnFilter.Any() is false)
             {
-                var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox");
-                _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<ListBoxItem>().Select(i => i.Content.ToString()).ToList();
+                var searchFilterColumnBox = this.FindControl<ListBox>("searchFilterColumnBox")!;
+                _viewModel.ColumnFilter = [.. (searchFilterColumnBox.SelectedItems ?? Array.Empty<object>())
+                    .Cast<ListBoxItem>()
+                    .Select(i => i.Content?.ToString() ?? string.Empty)];
             }
         }
 
         private void FilterListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var searchFilterColumnBox = (e.Source as ListBox);
-            _viewModel.ColumnFilter = searchFilterColumnBox.SelectedItems.Cast<ListBoxItem>().Select(i => i.Content.ToString()).ToList();
+            if (e.Source is not ListBox searchFilterColumnBox)
+            {
+                return;
+            }
+            _viewModel.ColumnFilter = [.. (searchFilterColumnBox.SelectedItems ?? Array.Empty<object>())
+                .Cast<ListBoxItem>()
+                .Select(i => i.Content?.ToString() ?? string.Empty)];
 
-            int selectedItemCount = searchFilterColumnBox.SelectedItems.Count;
-            this.FindControl<Button>("searchFilterColumnButton").Content = selectedItemCount > 0 ? String.Format(Program.translation.Get("ui.main_window.buttons.active_search_filters"), selectedItemCount) : Program.translation.Get("ui.main_window.buttons.no_search_filters");
+            int selectedItemCount = searchFilterColumnBox.SelectedItems?.Count ?? 0;
+            this.FindControl<Button>("searchFilterColumnButton")!.Content = selectedItemCount > 0 ? string.Format(Program.translation.Get("ui.main_window.buttons.active_search_filters"), selectedItemCount) : Program.translation.Get("ui.main_window.buttons.no_search_filters");
+        }
+        private void UpdateDisabledModFilterComboBox()
+        {
+            var box = this.FindControl<ComboBox>("disabledModFilterColumnBox");
+            if (box is null) return;
+
+            var currentFilter = (box.SelectedItem as ComboBoxItem)?.Tag as DisplayFilter? 
+                                ?? _viewModel.DisabledModFilter;
+
+            var items = new List<ComboBoxItem>
+            {
+                new() { Content = Program.translation.Get("ui.main_window.combobox.show_all_mods"), Tag = DisplayFilter.None },
+                new() { Content = Program.translation.Get("ui.main_window.combobox.show_mods_with_configs"), Tag = DisplayFilter.RequireConfig },
+                new() { Content = Program.translation.Get("ui.main_window.combobox.show_disabled_mods"), Tag = DisplayFilter.ShowDisabled },
+                new() { Content = Program.translation.Get("ui.main_window.combobox.show_enabled_mods"), Tag = DisplayFilter.ShowEnabled }
+            };
+
+            box.ItemsSource = items;
+            
+            box.SelectedItem = items.FirstOrDefault(i => i.Tag is DisplayFilter f && f == currentFilter) 
+                            ?? items.FirstOrDefault();
         }
 
         private void DisabledModComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var disabledModFilterColumnBox = (e.Source as ComboBox);
-            var filterText = (disabledModFilterColumnBox.SelectedItem as ComboBoxItem).Content.ToString();
-
-            if (filterText == Program.translation.Get("ui.main_window.combobox.show_all_mods"))
+            if (sender is ComboBox { SelectedItem: ComboBoxItem { Tag: DisplayFilter filter } })
             {
-                _viewModel.DisabledModFilter = Models.Data.Enums.DisplayFilter.None;
-            }
-            else if (filterText == Program.translation.Get("ui.main_window.combobox.show_mods_with_configs"))
-            {
-                _viewModel.DisabledModFilter = Models.Data.Enums.DisplayFilter.RequireConfig;
-            }
-            else if (filterText == Program.translation.Get("ui.main_window.combobox.show_enabled_mods"))
-            {
-                _viewModel.DisabledModFilter = Models.Data.Enums.DisplayFilter.ShowEnabled;
-            }
-            else if (filterText == Program.translation.Get("ui.main_window.combobox.show_disabled_mods"))
-            {
-                _viewModel.DisabledModFilter = Models.Data.Enums.DisplayFilter.ShowDisabled;
+                _viewModel.DisabledModFilter = filter;
             }
         }
 
-        private void ShowUpdatableModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ShowUpdatableModsButton_Click(object? sender, RoutedEventArgs e)
         {
-            var showUpdatableModsCheckBox = e.Source as CheckBox;
-            _viewModel.ShowUpdatableMods = (bool)showUpdatableModsCheckBox.IsChecked;
+            if (e.Source is not CheckBox showUpdatableModsCheckBox)
+            {
+                return;
+            }
+            _viewModel.ShowUpdatableMods = showUpdatableModsCheckBox.IsChecked is true;
         }
 
-        private void ShowAllModSourcesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ShowAllModSourcesButton_Click(object? sender, RoutedEventArgs e)
         {
-            var showAllModSourcesCheckBox = e.Source as CheckBox;
-            if (showAllModSourcesCheckBox is null)
+            if (e.Source is not CheckBox showAllModSourcesCheckBox)
             {
                 return;
             }
@@ -1016,8 +1055,7 @@ namespace Stardrop.Views
 
         private async void ProfileComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var profile = (e.Source as ComboBox).SelectedItem as Profile;
-            if (profile is null)
+            if (e.Source is not ComboBox comboBox || comboBox.SelectedItem is not Profile profile)
             {
                 return;
             }
@@ -1032,7 +1070,7 @@ namespace Stardrop.Views
                     Program.helper.Log($"The mod {pendingConfigUpdate.UniqueId} for profile \"{oldProfile.Name}\" does not have its current configuration preserved ->\nModified configuration:\n{pendingConfigUpdate.Data}", Helper.Status.Warning);
                 }
 
-                if (pendingConfigUpdates.Count > 0 && await new MessageWindow(String.Format(Program.translation.Get("ui.message.unsaved_config_changes"), oldProfile.Name)).ShowDialog<bool>(this))
+                if (pendingConfigUpdates.Count > 0 && await new MessageWindow(string.Format(Program.translation.Get("ui.message.unsaved_config_changes"), oldProfile.Name)).ShowDialog<bool>(this))
                 {
                     _viewModel.ReadModConfigs(oldProfile, pendingConfigUpdates);
                     UpdateProfile(oldProfile);
@@ -1047,11 +1085,10 @@ namespace Stardrop.Views
             Program.settings.ShouldWriteToModConfigs = true;
         }
 
-        private async void EndorsementButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void EndorsementButton_Click(object? sender, RoutedEventArgs e)
         {
-            var button = e.Source as Button;
             var modGrid = this.FindControl<DataGrid>("modGrid");
-            if (button is null || modGrid is null)
+            if (e.Source is not Button button || modGrid is null)
             {
                 return;
             }
@@ -1078,26 +1115,25 @@ namespace Stardrop.Views
             }
             else if (result == EndorsementResponse.IsOwnMod)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("ui.warning.mod_owned")), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("ui.warning.mod_owned")), Program.translation.Get("internal.ok"));
             }
             else if (result == EndorsementResponse.TooSoonAfterDownload)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("ui.warning.too_soon_after_download")), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("ui.warning.too_soon_after_download")), Program.translation.Get("internal.ok"));
             }
             else if (result == EndorsementResponse.NotDownloadedMod)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("ui.warning.not_downloaded")), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("ui.warning.not_downloaded")), Program.translation.Get("internal.ok"));
             }
             else
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("internal.unknown")), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.unable_to_endorse"), Program.translation.Get("internal.unknown")), Program.translation.Get("internal.ok"));
             }
         }
 
-        private async void ChangelogButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void ChangelogButton_Click(object? sender, RoutedEventArgs e)
         {
-            var button = e.Source as Button;
-            if (button is null)
+            if (e.Source is not Button button)
             {
                 return;
             }
@@ -1111,7 +1147,7 @@ namespace Stardrop.Views
             var modId = clickedMod.GetNexusId();
             if (modId is null || Nexus.Client is null)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_nexus_changelog"), clickedMod.Name), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.unable_nexus_changelog"), clickedMod.Name), Program.translation.Get("internal.ok"));
                 return;
             }
 
@@ -1120,8 +1156,10 @@ namespace Stardrop.Views
             {
                 // Show the window before fetching, so the user gets a loading spinner instead of a
                 // frozen-looking grid while Nexus responds.
-                var changelogWindow = new ChangelogWindow(clickedMod.Name, clickedMod.ModPageUri);
-                changelogWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                var changelogWindow = new ChangelogWindow(clickedMod.Name, clickedMod.ModPageUri)
+                {
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
 
                 var dialog = changelogWindow.ShowDialog(this);
                 changelogWindow.SetChangelogs(await Nexus.Client.GetModChangelogs(modId.Value));
@@ -1134,30 +1172,28 @@ namespace Stardrop.Views
             }
         }
 
-        private async void InstallButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void InstallButton_Click(object? sender, RoutedEventArgs e)
         {
-            var button = e.Source as Button;
             var modGrid = this.FindControl<DataGrid>("modGrid");
-            if (button is null || modGrid is null)
+            if (e.Source is not Button button || modGrid is null)
             {
                 return;
             }
 
             // Take the mod from the row's own data context, as a unique ID lookup can land on a collection copy
-            var clickedMod = button.DataContext as Mod;
-            if (clickedMod is null)
+            if (button.DataContext is not Mod clickedMod)
             {
                 return;
             }
 
             // Install the mod
             var downloadedFilePath = await InstallModViaNexus(clickedMod);
-            if (String.IsNullOrEmpty(downloadedFilePath))
+            if (string.IsNullOrEmpty(downloadedFilePath))
             {
                 return;
             }
 
-            var addedMods = await AddMods(new string[] { downloadedFilePath });
+            var addedMods = await AddMods([downloadedFilePath]);
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
@@ -1172,11 +1208,10 @@ namespace Stardrop.Views
             _viewModel.UpdateFilter();
         }
 
-        private void EnabledBox_Clicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void EnabledBox_Clicked(object? sender, RoutedEventArgs e)
         {
-            var checkBox = e.Source as CheckBox;
             var modGrid = this.FindControl<DataGrid>("modGrid");
-            if (checkBox is null || modGrid is null)
+            if (e.Source is not CheckBox checkBox || modGrid is null)
             {
                 return;
             }
@@ -1238,17 +1273,19 @@ namespace Stardrop.Views
             }
         }
 
-        private async void EditProfilesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void EditProfilesButton_Click(object? sender, RoutedEventArgs e)
         {
-            var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
+            var profileComboBox = this.FindControl<ComboBox>("profileComboBox")!;
             var oldProfile = profileComboBox.SelectedItem as Profile;
 
-            var editorWindow = new ProfileEditor(_editorView, _viewModel.DirectModInstallAsync, HandleModListRefresh);
-            editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var editorWindow = new ProfileEditor(_editorView, _viewModel.DirectModInstallAsync, HandleModListRefresh)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
             await editorWindow.ShowDialog(this);
 
             // Restore the previously selected profile
-            if (_editorView.Profiles.Any(p => p.Name == oldProfile.Name))
+            if (oldProfile is not null && _editorView.Profiles.Any(p => p.Name == oldProfile.Name))
             {
                 profileComboBox.SelectedItem = oldProfile;
             }
@@ -1258,12 +1295,11 @@ namespace Stardrop.Views
             }
         }
 
-        private void SaveConfigButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void SaveConfigButton_Click(object? sender, RoutedEventArgs e)
         {
-            var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
-            var profile = profileComboBox.SelectedItem as Profile;
+            var profileComboBox = this.FindControl<ComboBox>("profileComboBox")!;
 
-            if (profile is null)
+            if (profileComboBox.SelectedItem is not Profile profile)
             {
                 return;
             }
@@ -1277,7 +1313,7 @@ namespace Stardrop.Views
             if (pendingConfigUpdates.Count == 0)
             {
                 var reason = _viewModel.HasCollectionOwnedConfigs(profile) ? "ui.warning.no_mod_configs_to_save_collection" : "ui.warning.no_mod_configs_to_save";
-                CreateWarningWindow(String.Format(Program.translation.Get(reason), profile.Name), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get(reason), profile.Name), Program.translation.Get("internal.ok"));
 
                 return;
             }
@@ -1287,27 +1323,26 @@ namespace Stardrop.Views
 
             if (!Program.settings.EnableProfileSpecificModConfigs)
             {
-                CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.mod_config_saved_but_not_enabled"), profile.Name), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.mod_config_saved_but_not_enabled"), profile.Name), Program.translation.Get("internal.ok"));
             }
 
             Program.settings.ShouldWriteToModConfigs = true;
         }
 
-        private void ModGroupStateButton(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ModGroupStateButton(object? sender, RoutedEventArgs e)
         {
-            bool areModGroupsExpanded = _viewModel.ModGroupsStateButtonText == Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse");
+            bool wantToCollapse = _viewModel.AreModGroupsExpanded;
 
             var modGrid = this.FindControl<DataGrid>("modGrid");
+            if (modGrid is null) return;
+
             foreach (DataGridCollectionViewGroup group in _viewModel.DataView.Groups.Where(g => g is DataGridCollectionViewGroup))
             {
-                if (group is null)
-                {
-                    continue;
-                }
+                if (group is null) continue;
 
                 try
                 {
-                    if (areModGroupsExpanded)
+                    if (wantToCollapse)
                     {
                         modGrid.CollapseRowGroup(group, true);
                     }
@@ -1322,16 +1357,17 @@ namespace Stardrop.Views
                 }
             }
 
-            _viewModel.ModGroupsStateButtonText = !areModGroupsExpanded ? Program.translation.Get("ui.main_window.buttons.mod_groups_state.collapse") : Program.translation.Get("ui.main_window.buttons.mod_groups_state.expand");
+            // 最后翻转状态，触发 XAML 的 TextBlock 切换文字
+            _viewModel.AreModGroupsExpanded = !wantToCollapse;
         }
 
-        private async void NexusModsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void NexusModsButton_Click(object? sender, RoutedEventArgs e)
         {
             await HandleNexusConnection();
         }
 
         // Menu related click events
-        private async void SaveProfileChanges_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void SaveProfileChanges_Click(object? sender, RoutedEventArgs e)
         {
             await SaveChanges();
         }
@@ -1341,7 +1377,7 @@ namespace Stardrop.Views
             await SaveChanges();
         }
 
-        private async void Smapi_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void Smapi_Click(object? sender, RoutedEventArgs e)
         {
             await StartSMAPI();
         }
@@ -1351,7 +1387,7 @@ namespace Stardrop.Views
             await StartSMAPI();
         }
 
-        private async void AddMod_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void AddMod_Click(object? sender, RoutedEventArgs e)
         {
             await HandleModAdd();
         }
@@ -1361,7 +1397,7 @@ namespace Stardrop.Views
             await HandleModAdd();
         }
 
-        private async void Settings_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void Settings_Click(object? sender, RoutedEventArgs e)
         {
             await DisplaySettingsWindow();
         }
@@ -1371,7 +1407,7 @@ namespace Stardrop.Views
             await DisplaySettingsWindow();
         }
 
-        private async void Collections_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void Collections_Click(object? sender, RoutedEventArgs e)
         {
             await DisplayCollectionsWindow();
         }
@@ -1381,7 +1417,7 @@ namespace Stardrop.Views
             await DisplayCollectionsWindow();
         }
 
-        private void LogFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void LogFile_Click(object? sender, RoutedEventArgs e)
         {
             OpenNativeExplorer(Pathing.GetLogFolderPath());
         }
@@ -1391,7 +1427,7 @@ namespace Stardrop.Views
             OpenNativeExplorer(Pathing.GetLogFolderPath());
         }
 
-        private void SmapiLogFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void SmapiLogFile_Click(object? sender, RoutedEventArgs e)
         {
             OpenNativeExplorer(Pathing.GetSmapiLogFolderPath());
         }
@@ -1401,7 +1437,7 @@ namespace Stardrop.Views
             OpenNativeExplorer(Pathing.GetSmapiLogFolderPath());
         }
 
-        private async void ModUpdateCheck_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void ModUpdateCheck_Click(object? sender, RoutedEventArgs e)
         {
             await HandleModUpdateCheck();
         }
@@ -1411,7 +1447,7 @@ namespace Stardrop.Views
             await HandleModUpdateCheck();
         }
 
-        private async void StardropUpdate_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void StardropUpdate_Click(object? sender, RoutedEventArgs e)
         {
             await HandleStardropUpdateCheck(true);
         }
@@ -1421,7 +1457,7 @@ namespace Stardrop.Views
             await HandleStardropUpdateCheck(true);
         }
 
-        private async void SMAPIUpdate_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void SMAPIUpdate_Click(object? sender, RoutedEventArgs e)
         {
             await HandleSMAPIUpdateCheck(true);
         }
@@ -1431,7 +1467,7 @@ namespace Stardrop.Views
             await HandleSMAPIUpdateCheck(true);
         }
 
-        private async void ModListRefresh_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void ModListRefresh_Click(object? sender, RoutedEventArgs e)
         {
             await HandleModListRefresh();
         }
@@ -1441,7 +1477,7 @@ namespace Stardrop.Views
             await HandleModListRefresh();
         }
 
-        private async void NexusModBulkInstall_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void NexusModBulkInstall_Click(object? sender, RoutedEventArgs e)
         {
             await HandleBulkModInstall();
         }
@@ -1451,7 +1487,7 @@ namespace Stardrop.Views
             await HandleBulkModInstall();
         }
 
-        private async void NexusModBulkInstallEnabledOnly_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void NexusModBulkInstallEnabledOnly_Click(object? sender, RoutedEventArgs e)
         {
             await HandleBulkModInstall(enabledModsOnly: true);
         }
@@ -1461,7 +1497,7 @@ namespace Stardrop.Views
             await HandleBulkModInstall(enabledModsOnly: true);
         }
 
-        private async void NexusConnection_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void NexusConnection_Click(object? sender, RoutedEventArgs e)
         {
             await HandleNexusConnection();
         }
@@ -1471,7 +1507,7 @@ namespace Stardrop.Views
             await HandleNexusConnection();
         }
 
-        private async void EnableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void EnableAllMods_Click(object? sender, RoutedEventArgs e)
         {
             await HandleBulkModStateChange(true);
         }
@@ -1481,7 +1517,7 @@ namespace Stardrop.Views
             await HandleBulkModStateChange(true);
         }
 
-        private async void DisableAllMods_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void DisableAllMods_Click(object? sender, RoutedEventArgs e)
         {
             await HandleBulkModStateChange(false);
         }
@@ -1491,31 +1527,31 @@ namespace Stardrop.Views
             await HandleBulkModStateChange(false);
         }
 
-        private void Exit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void Exit_Click(object? sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void Exit_Click(object? sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
-        private void MainBar_DoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void MainBar_DoubleTapped(object? sender, RoutedEventArgs e)
         {
-            var menu = this.FindControl<Menu>("mainMenu");
+            var menu = this.FindControl<Menu>("mainMenu")!;
             if (!menu.IsPointerOver && !e.Handled)
             {
                 AdjustWindowState();
             }
         }
 
-        private void MainBar_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private void MainBar_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            var menu = this.FindControl<Menu>("mainMenu");
+            var menu = this.FindControl<Menu>("mainMenu")!;
             if (e.Pointer.IsPrimary && !menu.IsOpen && !e.Handled)
             {
-                this.BeginMoveDrag(e);
+                BeginMoveDrag(e);
             }
         }
 
@@ -1542,8 +1578,7 @@ namespace Stardrop.Views
             Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
 
             // Get the currently selected profile
-            var profile = this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
-            if (profile is null)
+            if (this.FindControl<ComboBox>("profileComboBox")?.SelectedItem is not Profile profile)
             {
                 await CreateWarningWindow(Program.translation.Get("ui.warning.unable_to_determine_profile"), Program.translation.Get("internal.ok"));
                 Program.helper.Log($"Unable to determine selected profile, SMAPI will not be started!", Helper.Status.Alert);
@@ -1562,21 +1597,22 @@ namespace Stardrop.Views
                 Program.settings.ShouldWriteToModConfigs = false;
 
                 // Write the settings cache
-                File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, new JsonSerializerOptions() { WriteIndented = true }));
+                File.WriteAllText(Pathing.GetSettingsPath(), JsonSerializer.Serialize(Program.settings, WriteOptions));
             }
 
-            using (Process smapi = Process.Start(SMAPI.GetPrepareProcess(false)))
+            using Process? smapi = Process.Start(SMAPI.GetPrepareProcess(false));
+
+            SMAPI.IsRunning = true;
+            _viewModel.IsLocked = true;
+
+            _smapiProcessTimer = new DispatcherTimer
             {
-                SMAPI.IsRunning = true;
-                _viewModel.IsLocked = true;
+                Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 500)
+            };
+            _smapiProcessTimer.Tick += _smapiProcessTimer_Tick;
+            _smapiProcessTimer.Start();
 
-                _smapiProcessTimer = new DispatcherTimer();
-                _smapiProcessTimer.Interval = new TimeSpan(TimeSpan.TicksPerMillisecond * 500);
-                _smapiProcessTimer.Tick += _smapiProcessTimer_Tick;
-                _smapiProcessTimer.Start();
-
-                this.WindowState = WindowState.Minimized;
-            }
+            WindowState = WindowState.Minimized;
         }
 
         private async Task HandleModAdd()
@@ -1587,12 +1623,24 @@ namespace Stardrop.Views
                 return;
             }
 
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Filters.Add(new FileDialogFilter() { Name = "Mod Archive (*.zip, *.7z, *.rar)", Extensions = { "zip", "7z", "rar" } });
-            dialog.AllowMultiple = true;
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Select Mod Archive",
+                AllowMultiple = true,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType("Mod Archive (*.zip, *.7z, *.rar)")
+                    {
+                        Patterns = ["*.zip", "*.7z", "*.rar"]
+                    }
+                ]
+            });
 
-            // Resolved after the files are chosen
-            var filePaths = await dialog.ShowAsync(this);
+            var filePaths = files.Count > 0
+                ? files.Select(f => f.Path.LocalPath).ToArray()
+                : null;
+
+
             if (filePaths is null || filePaths.Length == 0)
             {
                 return;
@@ -1618,8 +1666,10 @@ namespace Stardrop.Views
         {
             Program.helper.Log($"Opening settings window");
 
-            var editorWindow = new SettingsWindow(this.Height);
-            editorWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var editorWindow = new SettingsWindow(Height)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
             if (await editorWindow.ShowDialog<bool>(this))
             {
                 await HandleModListRefresh();
@@ -1639,8 +1689,10 @@ namespace Stardrop.Views
         {
             Program.helper.Log($"Opening collections window");
 
-            var collectionsWindow = new CollectionsWindow(_editorView, HandleCollectionRemoved, HandleCollectionFileDrop, HandleCollectionRefresh, HandleCollectionUpdate);
-            collectionsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var collectionsWindow = new CollectionsWindow(_editorView, HandleCollectionRemoved, HandleCollectionFileDrop, HandleCollectionRefresh, HandleCollectionUpdate)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
 
             // Held so that an arriving nxm link can tell this window apart from a dialog waiting on an answer, and
             // so that anything installed while it is open can put it back in step
@@ -1681,7 +1733,7 @@ namespace Stardrop.Views
 
         private void HandleCollectionRemoved()
         {
-            var profileComboBox = this.FindControl<ComboBox>("profileComboBox");
+            var profileComboBox = this.FindControl<ComboBox>("profileComboBox")!;
             var selectedProfile = profileComboBox.SelectedItem as Profile;
 
             _viewModel.DiscoverMods(Pathing.defaultModPath);
@@ -1697,6 +1749,8 @@ namespace Stardrop.Views
                 profileComboBox.SelectedIndex = 0;
             }
 
+            _ = GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+
             _viewModel.RefreshModCounts();
             _viewModel.UpdateFilter();
 
@@ -1710,37 +1764,37 @@ namespace Stardrop.Views
 
             // Check if current version is the latest
             var versionToUri = await GitHub.GetLatestStardropRelease();
-            if (versionToUri is not null && SemVersion.TryParse(versionToUri?.Key.Replace("v", String.Empty), out latestVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", String.Empty), out var currentVersion) && latestVersion.CompareSortOrderTo(currentVersion) > 0)
+            if (versionToUri is not null && SemVersion.TryParse(versionToUri?.Key.Replace("v", string.Empty), out latestVersion) && SemVersion.TryParse(_viewModel.Version.Replace("v", string.Empty), out var currentVersion) && latestVersion.CompareSortOrderTo(currentVersion) > 0)
             {
                 updateAvailable = true;
             }
             else if (versionToUri is null)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_unable_to_find_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.stardrop_unable_to_find_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
                 return;
             }
 
             // If an update is available, notify the user otherwise let them know Stardrop is up-to-date
             if (updateAvailable)
             {
-                var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.stardrop_update_available"), latestVersion));
+                var requestWindow = new MessageWindow(string.Format(Program.translation.Get("ui.message.stardrop_update_available"), latestVersion));
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
                     SetLockState(true, Program.translation.Get("ui.warning.stardrop_downloading"));
-                    var extractedLatestReleasePath = await GitHub.DownloadLatestStardropRelease(versionToUri?.Value);
-                    if (String.IsNullOrEmpty(extractedLatestReleasePath))
+                    var extractedLatestReleasePath = await GitHub.DownloadLatestStardropRelease(versionToUri!.Value.Value);
+                    if (string.IsNullOrEmpty(extractedLatestReleasePath))
                     {
-                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                        await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.stardrop_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
                         SetLockState(false);
                         return;
                     }
                     SetLockState(false);
 
-                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_update_downloaded"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                    await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.stardrop_update_downloaded"), _viewModel.Version), Program.translation.Get("internal.ok"));
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
                         // Prepare the process
-                        string[] arguments = new string[] { "timeout 1", $"move \"{Path.Combine(extractedLatestReleasePath, "*")}\" .", $"robocopy \"{Path.Combine(extractedLatestReleasePath, "Themes")}\" Themes /E /MOVE", $"move \"{Path.Combine(extractedLatestReleasePath, "i18n", "*")}\" .\\i18n", $"rmdir /s /q \"{extractedLatestReleasePath}\"", $"\"{Path.Combine(Directory.GetCurrentDirectory(), "Stardrop.exe")}\"" };
+                        string[] arguments = ["timeout 1", $"move \"{Path.Combine(extractedLatestReleasePath, "*")}\" .", $"robocopy \"{Path.Combine(extractedLatestReleasePath, "Themes")}\" Themes /E /MOVE", $"move \"{Path.Combine(extractedLatestReleasePath, "i18n", "*")}\" .\\i18n", $"rmdir /s /q \"{extractedLatestReleasePath}\"", $"\"{Path.Combine(Directory.GetCurrentDirectory(), "Stardrop.exe")}\""];
                         var processInfo = new ProcessStartInfo
                         {
                             FileName = "cmd",
@@ -1753,7 +1807,7 @@ namespace Stardrop.Views
                         {
                             Program.helper.Log($"Starting update process from {_viewModel.Version} to {versionToUri?.Key}");
                             Process.Start(processInfo);
-                            this.Close();
+                            Close();
                         }
                         catch (Exception ex)
                         {
@@ -1793,7 +1847,7 @@ namespace Stardrop.Views
 
                             // Restart the application
                             string scriptPath = $"'{Path.Combine(Directory.GetCurrentDirectory(), RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Stardrop.sh" : "Stardrop")}'";
-                            string[] arguments = new string[] { $"chmod +x {scriptPath}", $"{scriptPath}" };
+                            string[] arguments = [$"chmod +x {scriptPath}", $"{scriptPath}"];
                             var processInfo = new ProcessStartInfo
                             {
                                 FileName = "/usr/bin/env",
@@ -1804,7 +1858,7 @@ namespace Stardrop.Views
 
                             using (var process = Process.Start(processInfo))
                             {
-                                this.Close();
+                                Close();
                             }
                         }
                         catch (Exception ex)
@@ -1817,7 +1871,7 @@ namespace Stardrop.Views
             }
             else if (manualCheck)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.stardrop_up_to_date"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.stardrop_up_to_date"), _viewModel.Version), Program.translation.Get("internal.ok"));
             }
         }
 
@@ -1840,7 +1894,7 @@ namespace Stardrop.Views
             KeyValuePair<string, string>? latestSmapiToUri = await GitHub.GetLatestSMAPIRelease();
             if (latestSmapiToUri is not null && SemVersion.TryParse(latestSmapiToUri?.Key, SemVersionStyles.Any, out var latestVersion) && currentSmapiVersion is not null && latestVersion.CompareSortOrderTo(currentSmapiVersion) > 0)
             {
-                var confirmationWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.SMAPI_update_available"), latestVersion));
+                var confirmationWindow = new MessageWindow(string.Format(Program.translation.Get("ui.message.SMAPI_update_available"), latestVersion));
                 if (await confirmationWindow.ShowDialog<bool>(this) is false)
                 {
                     Program.helper.Log("Player opted to not install the latest version of SMAPI");
@@ -1848,10 +1902,10 @@ namespace Stardrop.Views
                 }
 
                 SetLockState(true, Program.translation.Get("ui.warning.SMAPI_downloading"));
-                var extractedLatestReleasePath = await GitHub.DownloadLatestSMAPIRelease(latestSmapiToUri?.Value);
-                if (String.IsNullOrEmpty(extractedLatestReleasePath))
+                var extractedLatestReleasePath = await GitHub.DownloadLatestSMAPIRelease(latestSmapiToUri!.Value.Value);
+                if (string.IsNullOrEmpty(extractedLatestReleasePath))
                 {
-                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                    await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
                     SetLockState(false);
                     return;
                 }
@@ -1863,7 +1917,7 @@ namespace Stardrop.Views
                 // Verify it exists
                 if (File.Exists(filePath) is false)
                 {
-                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                    await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_download_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
                     SetLockState(false);
                     return;
                 }
@@ -1905,14 +1959,14 @@ namespace Stardrop.Views
                     Program.helper.Log($"Failed to install SMAPI's update due to the following error: {ex}");
 
                     SetLockState(false);
-                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_install_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                    await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_install_latest"), _viewModel.Version), Program.translation.Get("internal.ok"));
 
                     OpenNativeExplorer(extractedLatestReleasePath);
                     return;
                 }
 
                 // Update the setting version
-                Program.settings.GameDetails.SmapiVersion = latestVersion.ToString();
+                Program.settings.GameDetails!.SmapiVersion = latestVersion.ToString();
                 _viewModel.SmapiVersion = Program.settings.GameDetails.SmapiVersion;
 
                 // Delete any files underneath the SMAPI upgrade folder
@@ -1931,12 +1985,12 @@ namespace Stardrop.Views
                 var requestWindow = new MessageWindow(Program.translation.Get("ui.message.SMAPI_update_complete"));
                 if (await requestWindow.ShowDialog<bool>(this))
                 {
-                    Toolkit.OpenBrowser($"https://smapi.io/release/{latestSmapiToUri?.Key.Replace(".", String.Empty)}");
+                    Toolkit.OpenBrowser($"https://smapi.io/release/{latestSmapiToUri?.Key.Replace(".", string.Empty)}");
                 }
             }
             else if (manualCheck is true)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.SMAPI_up_to_date"), _viewModel.SmapiVersion), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.SMAPI_up_to_date"), _viewModel.SmapiVersion), Program.translation.Get("internal.ok"));
             }
         }
 
@@ -2016,7 +2070,7 @@ namespace Stardrop.Views
 
             // The count is of the mods that will actually change rather than of everything on screen, as confirming
             // against a total that is mostly already in the requested state says nothing useful
-            var requestWindow = new MessageWindow(String.Format(Program.translation.Get(enableState ? "ui.message.confirm_bulk_change_mod_states_enable" : "ui.message.confirm_bulk_change_mod_states_disable"), targetMods.Count));
+            var requestWindow = new MessageWindow(string.Format(Program.translation.Get(enableState ? "ui.message.confirm_bulk_change_mod_states_enable" : "ui.message.confirm_bulk_change_mod_states_disable"), targetMods.Count));
             if (await requestWindow.ShowDialog<bool>(this) is false)
             {
                 return;
@@ -2061,14 +2115,14 @@ namespace Stardrop.Views
                 await CreateWarningWindow(Program.translation.Get("ui.warning.download_without_premium"), Program.translation.Get("internal.ok"));
                 return;
             }
-            else if (_viewModel.Mods.Where(m => String.IsNullOrEmpty(m.InstallStatus) is false).Count() == 0)
+            else if (_viewModel.Mods.Where(m => string.IsNullOrEmpty(m.InstallStatus) is false).Count() == 0)
             {
                 await CreateWarningWindow(Program.translation.Get("ui.warning.no_downloads_available"), Program.translation.Get("internal.ok"));
                 return;
             }
 
-            List<string> updateFilePaths = new List<string>();
-            foreach (var mod in _viewModel.Mods.Where(m => String.IsNullOrEmpty(m.InstallStatus) is false))
+            List<string> updateFilePaths = [];
+            foreach (var mod in _viewModel.Mods.Where(m => string.IsNullOrEmpty(m.InstallStatus) is false))
             {
                 if (enabledModsOnly is true && mod.IsEnabled is false)
                 {
@@ -2078,7 +2132,7 @@ namespace Stardrop.Views
 
                 var downloadFilePath = await InstallModViaNexus(mod);
 
-                if (String.IsNullOrEmpty(downloadFilePath))
+                if (string.IsNullOrEmpty(downloadFilePath))
                 {
                     continue;
                 }
@@ -2110,11 +2164,13 @@ namespace Stardrop.Views
                 if (apiKey is null)
                 {
                     // If not, display the login window
-                    var loginWindow = new NexusLogin(_viewModel);
-                    loginWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    var loginWindow = new NexusLogin(_viewModel)
+                    {
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    };
                     apiKey = await loginWindow.ShowDialog<string>(this);
 
-                    if (String.IsNullOrEmpty(apiKey))
+                    if (string.IsNullOrEmpty(apiKey))
                     {
                         return;
                     }
@@ -2133,10 +2189,10 @@ namespace Stardrop.Views
                 Program.settings.NexusDetails.Key = SimpleObscure.Encrypt(apiKey, obscurer.Key, obscurer.Vector);
 
                 // Cache the required data
-                File.WriteAllText(Pathing.GetNotionCachePath(), JsonSerializer.Serialize(new PairedKeys { Lock = obscurer.Key, Vector = obscurer.Vector }, new JsonSerializerOptions() { WriteIndented = true }));
+                File.WriteAllText(Pathing.GetNotionCachePath(), JsonSerializer.Serialize(new PairedKeys { Lock = obscurer.Key, Vector = obscurer.Vector }, WriteOptions));
 
                 // Set the status
-                _viewModel.NexusStatus = Program.translation.Get("internal.connected");
+                _viewModel.IsNexusConnected = true;
 
                 // Update any required NexusClient Mods related components
                 await CheckForNexusConnection();
@@ -2146,8 +2202,10 @@ namespace Stardrop.Views
 
             // If the user is logged in
             // Display information window
-            var detailsWindow = new NexusInfo(Program.settings.NexusDetails);
-            detailsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var detailsWindow = new NexusInfo(Program.settings.NexusDetails)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
             if (await detailsWindow.ShowDialog<bool>(this) is true)
             {
                 Nexus.ClearClient();
@@ -2213,17 +2271,17 @@ namespace Stardrop.Views
             }
 
             var processedDownloadLink = await Nexus.Client.GetFileDownloadLink(nxmLink, EnumParser.GetDescription(Program.settings.PreferredNexusServer));
-            if (String.IsNullOrEmpty(processedDownloadLink))
+            if (string.IsNullOrEmpty(processedDownloadLink))
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_get_download_link"), nxmLink.Link), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.failed_to_get_download_link"), nxmLink.Link), Program.translation.Get("internal.ok"));
                 return NXMLinkResult.Failed;
             }
 
             // Get the mod details
             var modDetails = await Nexus.Client.GetModDetailsViaNXM(nxmLink);
-            if (modDetails is null || String.IsNullOrEmpty(modDetails.Name))
+            if (modDetails is null || string.IsNullOrEmpty(modDetails.Name))
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_to_get_mod_details"), nxmLink.Link), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.failed_to_get_mod_details"), nxmLink.Link), Program.translation.Get("internal.ok"));
                 return NXMLinkResult.Failed;
             }
 
@@ -2243,7 +2301,7 @@ namespace Stardrop.Views
                 return NXMLinkResult.Failed;
             }
 
-            var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
+            var requestWindow = new MessageWindow(string.Format(Program.translation.Get("ui.message.confirm_nxm_install"), modDetails.Name));
             if (Program.settings.IsAskingBeforeAcceptingNXM is false || await requestWindow.ShowDialog<bool>(this))
             {
                 // Asked before the download rather than after, so backing out costs nothing. A link the
@@ -2257,7 +2315,7 @@ namespace Stardrop.Views
                 var downloadResult = await Nexus.Client.DownloadFileAndGetPath(processedDownloadLink, modDetails.Name);
                 if (downloadResult.ResultKind is DownloadResultKind.Failed)
                 {
-                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
+                    await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.failed_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
                     return NXMLinkResult.Failed;
                 }
                 if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
@@ -2267,7 +2325,7 @@ namespace Stardrop.Views
                 }
                 string downloadedFilePath = downloadResult.DownloadedModFilePath!;
 
-                var addedMods = await AddMods(new string[] { downloadedFilePath }, installTarget.InstallPathOverride);
+                var addedMods = await AddMods([downloadedFilePath], installTarget.InstallPathOverride);
                 await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
                 await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
@@ -2282,7 +2340,7 @@ namespace Stardrop.Views
                 _viewModel.UpdateFilter();
 
                 // Let the user know that the mod was installed via NXM
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.message.succeeded_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.message.succeeded_nexus_install"), modDetails.Name), Program.translation.Get("internal.ok"));
 
                 return NXMLinkResult.Success;
             }
@@ -2318,7 +2376,7 @@ namespace Stardrop.Views
         /// </summary>
         private bool IsBlockedByOpenWindow()
         {
-            return this.OwnedWindows.Any(w => ReferenceEquals(w, _collectionsWindow) is false);
+            return OwnedWindows.Any(w => ReferenceEquals(w, _collectionsWindow) is false);
         }
 
         /// <summary>
@@ -2369,7 +2427,7 @@ namespace Stardrop.Views
         private void SetLockState(bool isWindowLocked, string? lockReason = null, CancellationTokenSource? cancellationSource = null)
         {
             _viewModel.IsLocked = isWindowLocked;
-            _lockReason = lockReason is null ? String.Empty : lockReason;
+            _lockReason = lockReason is null ? string.Empty : lockReason;
             _lockCancellationSource = isWindowLocked ? cancellationSource : null;
 
             // Only the window this state opened. Closing everything the main window owns takes any dialog the user
@@ -2435,7 +2493,7 @@ namespace Stardrop.Views
             {
                 if (File.Exists(Pathing.GetDataCachePath()))
                 {
-                    cachedClient = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                    cachedClient = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), ReadOptions);
                 }
             }
             catch
@@ -2454,7 +2512,7 @@ namespace Stardrop.Views
             {
                 foreach (var modItem in mods)
                 {
-                    if (String.IsNullOrEmpty(modItem.IgnoredVersion) && cachedClient.IgnoredUpdates.TryGetValue(modItem.UniqueId, out string? ignoredVersion))
+                    if (string.IsNullOrEmpty(modItem.IgnoredVersion) && cachedClient.IgnoredUpdates.TryGetValue(modItem.UniqueId, out string? ignoredVersion))
                     {
                         modItem.IgnoredVersion = ignoredVersion;
                     }
@@ -2463,7 +2521,8 @@ namespace Stardrop.Views
 
             if (File.Exists(Pathing.GetVersionCachePath()))
             {
-                oldUpdateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                oldUpdateCache = JsonSerializer.Deserialize<UpdateCache>(File.ReadAllText(Pathing.GetVersionCachePath()), ReadOptions);
+                
                 if (oldUpdateCache is not null && (skipCacheCheck || _viewModel.IsCheckingForUpdates is false))
                 {
                     foreach (var modItem in mods)
@@ -2475,11 +2534,11 @@ namespace Stardrop.Views
                         }
 
                         // If an ignored version exists but a newer suggested version is now available, clear the ignored mapping
-                        if (!String.IsNullOrEmpty(modItem.IgnoredVersion))
+                        if (!string.IsNullOrEmpty(modItem.IgnoredVersion))
                         {
                             try
                             {
-                                if (!String.IsNullOrEmpty(modUpdateInfo.SuggestedVersion) && Semver.SemVersion.TryParse(modUpdateInfo.SuggestedVersion, Semver.SemVersionStyles.Any, out var suggested) && Semver.SemVersion.TryParse(modItem.IgnoredVersion, Semver.SemVersionStyles.Any, out var ignoredVer))
+                                if (!string.IsNullOrEmpty(modUpdateInfo.SuggestedVersion) && SemVersion.TryParse(modUpdateInfo.SuggestedVersion, SemVersionStyles.Any, out var suggested) && SemVersion.TryParse(modItem.IgnoredVersion, SemVersionStyles.Any, out var ignoredVer))
                                 {
                                     if (suggested.CompareSortOrderTo(ignoredVer) > 0)
                                     {
@@ -2489,7 +2548,7 @@ namespace Stardrop.Views
                                             if (cachedClient is not null && cachedClient.IgnoredUpdates is not null && cachedClient.IgnoredUpdates.ContainsKey(modItem.UniqueId))
                                             {
                                                 cachedClient.IgnoredUpdates.Remove(modItem.UniqueId);
-                                                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(cachedClient, new JsonSerializerOptions() { WriteIndented = true }));
+                                                File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(cachedClient, WriteOptions));
                                             }
                                         }
                                         catch { }
@@ -2520,7 +2579,8 @@ namespace Stardrop.Views
 
             // Update the status to let the user know the update is finished
             _viewModel.ModsWithCachedUpdates = modsToUpdate;
-            _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.generic");
+            // _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.generic");
+            _viewModel.UpdateState = ModUpdateState.Generic;
 
             return oldUpdateCache;
         }
@@ -2543,13 +2603,14 @@ namespace Stardrop.Views
                 CloseMainMenu();
 
                 // Update the status to let the user know the update is polling
-                _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.updating");
+                // _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.updating");
+                _viewModel.UpdateState = ModUpdateState.Updating;
 
                 // Set the environment variable for the mod path
                 var enabledModsPath = Path.Combine(Pathing.GetSelectedModsFolderPath());
                 Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
 
-                if (Program.settings.GameDetails is null || String.IsNullOrEmpty(Program.settings.GameDetails.SmapiVersion) || Program.settings.GameDetails.HasBadGameVersion() || Program.settings.GameDetails.HasSMAPIUpdated(SMAPI.GetVersion()))
+                if (Program.settings.GameDetails is null || string.IsNullOrEmpty(Program.settings.GameDetails.SmapiVersion) || Program.settings.GameDetails.HasBadGameVersion() || Program.settings.GameDetails.HasSMAPIUpdated(SMAPI.GetVersion()))
                 {
                     var smapiLogPath = Path.Combine(Pathing.GetSmapiLogFolderPath(), "SMAPI-latest.txt");
                     Program.helper.Log($"Checking for SMAPI-latest.txt at path: {Pathing.GetSmapiLogFolderPath()}");
@@ -2558,17 +2619,15 @@ namespace Stardrop.Views
                         // Parse SMAPI's log
                         Program.helper.Log($"Grabbing game details (SMAPI / SDV versions) from SMAPI's log file.");
 
-                        using (var fileStream = new FileStream(smapiLogPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        using (var reader = new StreamReader(fileStream))
+                        using var fileStream = new FileStream(smapiLogPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                        using var reader = new StreamReader(fileStream);
+                        string? line;
+                        while ((line = reader.ReadLine()) is not null)
                         {
-                            while (reader.Peek() >= 0)
+                            if (Program.GameDetailsPattern().IsMatch(line))
                             {
-                                var line = reader.ReadLine();
-                                if (Program.gameDetailsPattern.IsMatch(line))
-                                {
-                                    var match = Program.gameDetailsPattern.Match(line);
-                                    Program.settings.GameDetails = new GameDetails(match.Groups["gameVersion"].ToString(), match.Groups["smapiVersion"].ToString(), match.Groups["system"].ToString());
-                                }
+                                var match = Program.GameDetailsPattern().Match(line);
+                                Program.settings.GameDetails = new GameDetails(match.Groups["gameVersion"].ToString(), match.Groups["smapiVersion"].ToString(), match.Groups["system"].ToString());
                             }
                         }
                     }
@@ -2578,7 +2637,7 @@ namespace Stardrop.Views
                         // a message the user has to answer reads as though Stardrop is still working
                         SetLockState(false);
 
-                        await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_locate_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                        await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.unable_to_locate_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
                         Program.helper.Log($"Unable to locate SMAPI-latest.txt", Helper.Status.Alert);
 
                         _viewModel.IsCheckingForUpdates = false;
@@ -2586,11 +2645,11 @@ namespace Stardrop.Views
                     }
                 }
 
-                if (Program.settings.GameDetails is null || String.IsNullOrEmpty(Program.settings.GameDetails.SmapiVersion))
+                if (Program.settings.GameDetails is null || string.IsNullOrEmpty(Program.settings.GameDetails.SmapiVersion))
                 {
                     SetLockState(false);
 
-                    await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_read_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
+                    await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.unable_to_read_log"), _viewModel.Version), Program.translation.Get("internal.ok"));
                     Program.helper.Log($"SMAPI started but Stardrop was unable to read SMAPI-latest.txt. Mods will not be checked for updates.", Helper.Status.Alert);
 
                     _viewModel.IsCheckingForUpdates = false;
@@ -2635,9 +2694,9 @@ namespace Stardrop.Views
                 // outside a collection take update data back out of it
                 foreach (var modItem in mods.Where(m => m.IsFromCollection is false))
                 {
-                    var updateLink = String.Empty;
-                    var modPageLink = String.Empty;
-                    var recommendedVersion = String.Empty;
+                    var updateLink = string.Empty;
+                    var modPageLink = string.Empty;
+                    var recommendedVersion = string.Empty;
                     var status = WikiCompatibilityStatus.Unknown;
 
                     // Prep the data to be checked
@@ -2652,7 +2711,7 @@ namespace Stardrop.Views
                         }
                         recommendedVersion = suggestedUpdateData.Version;
                     }
-                    else if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != ModEntryMetadata.WikiCompatibilityStatus.Ok)
+                    else if (metaData is not null && metaData.CompatibilityStatus != WikiCompatibilityStatus.Unknown && metaData.CompatibilityStatus != WikiCompatibilityStatus.Ok)
                     {
                         status = metaData.CompatibilityStatus;
                         if (metaData.CompatibilityStatus == WikiCompatibilityStatus.Unofficial && metaData.Unofficial is not null && modItem.IsModOutdated(metaData.Unofficial.Version))
@@ -2671,7 +2730,7 @@ namespace Stardrop.Views
                     if (metaData is not null)
                     {
                         modPageLink = metaData.CustomUrl;
-                        if (String.IsNullOrEmpty(modPageLink) && metaData.Main is not null)
+                        if (string.IsNullOrEmpty(modPageLink) && metaData.Main is not null)
                         {
                             modPageLink = metaData.Main.Url;
                         }
@@ -2721,19 +2780,19 @@ namespace Stardrop.Views
                 {
                     Directory.CreateDirectory(Pathing.GetCacheFolderPath());
                 }
-                File.WriteAllText(Pathing.GetVersionCachePath(), JsonSerializer.Serialize(updateCache, new JsonSerializerOptions() { WriteIndented = true }));
+                File.WriteAllText(Pathing.GetVersionCachePath(), JsonSerializer.Serialize(updateCache, WriteOptions));
 
                 // Get cached key data
-                List<ModKeyInfo> modKeysCache = new List<ModKeyInfo>();
+                List<ModKeyInfo> modKeysCache = [];
                 if (File.Exists(Pathing.GetKeyCachePath()))
                 {
-                    modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                    modKeysCache = JsonSerializer.Deserialize<List<ModKeyInfo>>(File.ReadAllText(Pathing.GetKeyCachePath()), ReadOptions) ?? [];
                 }
 
                 // Update the cached key data
                 foreach (var modEntry in modUpdateData.Where(m => m.Metadata is not null))
                 {
-                    var modUrl = String.IsNullOrEmpty(modEntry.Metadata.CustomUrl) && modEntry.Metadata.Main is not null ? modEntry.Metadata.Main.Url : modEntry.Metadata.CustomUrl;
+                    var modUrl = string.IsNullOrEmpty(modEntry.Metadata.CustomUrl) && modEntry.Metadata.Main is not null ? modEntry.Metadata.Main.Url : modEntry.Metadata.CustomUrl;
                     if (modKeysCache.FirstOrDefault(m => m.UniqueId.Equals(modEntry.Id)) is ModKeyInfo keyInfo && keyInfo is not null)
                     {
                         keyInfo.Name = modEntry.Metadata.Name;
@@ -2746,27 +2805,30 @@ namespace Stardrop.Views
                 }
 
                 // Cache the key data
-                File.WriteAllText(Pathing.GetKeyCachePath(), JsonSerializer.Serialize(modKeysCache, new JsonSerializerOptions() { WriteIndented = true }));
+                File.WriteAllText(Pathing.GetKeyCachePath(), JsonSerializer.Serialize(modKeysCache, WriteOptions));
 
                 // Re-evaluate all mod requirements (to check for cached names)
                 _viewModel.EvaluateRequirements();
 
                 // Update the status to let the user know the update is finished
                 _viewModel.ModsWithCachedUpdates = modsToUpdate;
-                _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.generic");
-
+                // _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.generic");
+                _viewModel.UpdateState = ModUpdateState.Generic;
+                
                 Program.helper.Log($"Mod update check {(useCache ? "via cache" : "via smapi.io")} completed without error");
             }
             catch (Exception ex)
             {
                 Program.helper.Log($"Failed to get mod updates via smapi.io: {ex}", Helper.Status.Alert);
-                _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.failed");
+                // _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.failed");
+                _viewModel.UpdateState = ModUpdateState.Failed;
 
                 if (manualCheck)
                 {
                     SetLockState(false);
                     await CreateWarningWindow($"{Program.translation.Get("ui.warning.mod_update_check_failed")}\n\n{Program.translation.Get("ui.warning.mod_update_check_failed.footer")}", Program.translation.Get("internal.ok"));
                 }
+                
             }
 
             _viewModel.IsCheckingForUpdates = false;
@@ -2801,7 +2863,7 @@ namespace Stardrop.Views
 
             if (isKeyValid is true)
             {
-                _viewModel.NexusStatus = Program.translation.Get("internal.connected");
+                _viewModel.IsNexusConnected = true;
                 _viewModel.NexusLimits = $"(Remaining Daily Requests: {Nexus.Client.DailyRequestsRemaining}) ";
 
                 // Gather any endorsements
@@ -2857,7 +2919,7 @@ namespace Stardrop.Views
             if (oldClient is not null)
             {
                 oldClient.DailyRequestLimitsChanged -= NexusDailyLimitsChanged;
-                _viewModel.NexusStatus = Program.translation.Get("internal.disconnected");
+                _viewModel.IsNexusConnected = false;
                 _viewModel.ShowEndorsements = false;
                 _viewModel.ShowInstalls = false;
                 RefreshGatedColumns(false);
@@ -2918,7 +2980,7 @@ namespace Stardrop.Views
 
             if (state.Status is NXMAssociationStatus.Overridden)
             {
-                await new WarningWindow(String.Format(Program.translation.Get("ui.warning.nxm_association_overridden"), state.HandlerName), Program.translation.Get("internal.ok")).ShowDialog(this);
+                await new WarningWindow(string.Format(Program.translation.Get("ui.warning.nxm_association_overridden"), state.HandlerName), Program.translation.Get("internal.ok")).ShowDialog(this);
             }
         }
 
@@ -2927,14 +2989,14 @@ namespace Stardrop.Views
             NexusClient? client = sender as NexusClient;
             if (client is not null)
             {
-                _viewModel.NexusStatus = Program.translation.Get("internal.connected");
+                _viewModel.IsNexusConnected = true;
                 _viewModel.NexusLimits = $"(Remaining Daily Requests: {client.DailyRequestsRemaining}) ";
             }
         }
 
         private void AdjustWindowState()
         {
-            this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
+            WindowState = WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
         }
 
         /// <summary>
@@ -2977,7 +3039,7 @@ namespace Stardrop.Views
 
         private Profile GetCurrentProfile()
         {
-            return this.FindControl<ComboBox>("profileComboBox").SelectedItem as Profile;
+            return this.FindControl<ComboBox>("profileComboBox")!.SelectedItem as Profile ?? null!;
         }
 
         private void UpdateProfile(Profile profile)
@@ -3008,7 +3070,7 @@ namespace Stardrop.Views
             var modId = mod.GetNexusId();
             if (modId is null || Nexus.Client is null)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.unable_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.unable_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
                 return null;
             }
             mod.InstallState = InstallState.Downloading;
@@ -3016,7 +3078,7 @@ namespace Stardrop.Views
             var modFile = await Nexus.Client.GetFileByVersion(modId.Value, mod.SuggestedVersion, modFlag: mod.GetNexusFlag());
             if (modFile is null)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
                 mod.InstallState = InstallState.Unknown;
                 return null;
             }
@@ -3024,7 +3086,7 @@ namespace Stardrop.Views
             var modDownloadLink = await Nexus.Client.GetFileDownloadLink(modId.Value, modFile.Id, serverName: EnumParser.GetDescription(Program.settings.PreferredNexusServer));
             if (modDownloadLink is null)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
                 mod.InstallState = InstallState.Unknown;
                 return null;
             }
@@ -3047,7 +3109,7 @@ namespace Stardrop.Views
                 return null;
             }
 
-            var downloadResult = await Nexus.Client.DownloadFileAndGetPath(modDownloadLink, modFile.Name);
+            var downloadResult = await Nexus.Client.DownloadFileAndGetPath(modDownloadLink, modFile.Name!);
             if (downloadResult.ResultKind is DownloadResultKind.UserCanceled)
             {
                 mod.InstallState = InstallState.Unknown;
@@ -3056,7 +3118,7 @@ namespace Stardrop.Views
             }
             if (downloadResult.ResultKind is DownloadResultKind.Failed)
             {
-                await CreateWarningWindow(String.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.failed_nexus_install"), mod.Name), Program.translation.Get("internal.ok"));
                 mod.InstallState = InstallState.Unknown;
                 return null;
             }
@@ -3079,7 +3141,7 @@ namespace Stardrop.Views
                     return TryDeleteMod(mod, retries - 1);
                 }
 
-                Program.helper.Log($"Failed to delete the mod {mod.Name}: {ex}", Utilities.Helper.Status.Warning);
+                Program.helper.Log($"Failed to delete the mod {mod.Name}: {ex}", Helper.Status.Warning);
                 return false;
             }
 
@@ -3090,7 +3152,7 @@ namespace Stardrop.Views
         {
             Program.helper.Log($"Attempting to delete the mod {mod.Name}");
 
-            var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName);
+            var targetDirectory = new DirectoryInfo(mod.ModFileInfo.DirectoryName!);
             if (targetDirectory is not null && targetDirectory.Exists)
             {
                 targetDirectory.Delete(true);
@@ -3130,18 +3192,18 @@ namespace Stardrop.Views
 
             // Lock the window
             int totalMods = filePaths.Length;
-            SetLockState(true, String.Format(Program.translation.Get("ui.warning.install_mod_attempt_count"), totalMods));
+            SetLockState(true, string.Format(Program.translation.Get("ui.warning.install_mod_attempt_count"), totalMods));
 
             // Get the local data
-            ClientData localDataCache = new ClientData();
+            ClientData localDataCache = new();
             if (File.Exists(Pathing.GetDataCachePath()))
             {
-                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), ReadOptions) ?? new ClientData();
             }
 
             // Export zip to the default mods folder
             int currentModIndex = 1;
-            List<string> warnings = new List<string>();
+            List<string> warnings = [];
             foreach (string fileFullName in filePaths)
             {
                 try
@@ -3150,7 +3212,7 @@ namespace Stardrop.Views
                     // TODO refactor this to use async
                     using (var archive = ArchiveFactory.OpenArchive(fileFullName))
                     {
-                        Dictionary<string, Manifest?> pathToManifests = new Dictionary<string, Manifest?>();
+                        Dictionary<string, Manifest?> pathToManifests = [];
                         foreach (var manifest in archive.Entries.Where(e => Path.GetFileName(e.Key)!.Equals("manifest.json", StringComparison.OrdinalIgnoreCase)))
                         {
                             if (manifest.Key is not null)
@@ -3163,7 +3225,7 @@ namespace Stardrop.Views
                         // Warn and skip the install logic if the given archive has no manifest.json
                         if (pathToManifests.Count == 0)
                         {
-                            warnings.Add(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
+                            warnings.Add(string.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
                             continue;
                         }
 
@@ -3171,7 +3233,7 @@ namespace Stardrop.Views
                         bool shouldProceedWithUpdate = true;
                         foreach (var manifest in pathToManifests.Values.Where(m => m is not null && _viewModel.HasModInstalled(m.UniqueID) is true && string.IsNullOrEmpty(m.UpdateCautionMessage) is false))
                         {
-                            var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_mod_update_caution"), manifest!.Name, manifest!.UpdateCautionMessage)) { Topmost = true };
+                            var requestWindow = new MessageWindow(string.Format(Program.translation.Get("ui.message.confirm_mod_update_caution"), manifest!.Name, manifest!.UpdateCautionMessage)) { Topmost = true };
                             if (await ShowDialogOverLock<bool>(requestWindow) is false)
                             {
                                 Program.helper.Log($"User elected to skip mod update due to given Manifest.UpdateCautionMessage message for mod {manifest!.UniqueID}:{manifest!.UpdateCautionMessage}");
@@ -3196,12 +3258,12 @@ namespace Stardrop.Views
                             bool isUpdate = false;
                             if (manifest is not null)
                             {
-                                var installPath = String.IsNullOrEmpty(installPathOverride) ? Program.settings.ModInstallPath : installPathOverride;
+                                var installPath = string.IsNullOrEmpty(installPathOverride) ? Program.settings.ModInstallPath : installPathOverride;
 
                                 // Only treat this as an update of a mod from the same source, otherwise installing a
                                 // collection would overwrite the user's loose copy of the same mod
                                 var targetSourceId = Pathing.GetCollectionSourceId(installPath);
-                                if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase) && String.Equals(m.SourceId, targetSourceId, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null && mod.ModFileInfo.Directory is not null)
+                                if (_viewModel.Mods.FirstOrDefault(m => m.UniqueId.Equals(manifest.UniqueID, StringComparison.OrdinalIgnoreCase) && string.Equals(m.SourceId, targetSourceId, StringComparison.OrdinalIgnoreCase)) is Mod mod && mod is not null && mod.ModFileInfo.Directory is not null)
                                 {
                                     if (manifest.DeleteOldVersion is false && alwaysAskToDelete is true)
                                     {
@@ -3215,7 +3277,7 @@ namespace Stardrop.Views
                                             }
                                         }
 
-                                        var requestWindow = new FlexibleOptionWindow(String.Format(warningMessage, manifest.Name), Program.translation.Get("internal.yes"), Program.translation.Get("internal.yes_all"), Program.translation.Get("internal.no"))
+                                        var requestWindow = new FlexibleOptionWindow(string.Format(warningMessage, manifest.Name), Program.translation.Get("internal.yes"), Program.translation.Get("internal.yes_all"), Program.translation.Get("internal.no"))
                                         {
                                             Topmost = true
                                         };
@@ -3228,20 +3290,20 @@ namespace Stardrop.Views
                                             }
 
                                             // Delete old version
-                                            UpdateLockWindow(String.Format(Program.translation.Get("ui.warning.mod_deleting"), manifest.Name), currentManifestIndex, pathToManifests.Keys.Count);
+                                            UpdateLockWindow(string.Format(Program.translation.Get("ui.warning.mod_deleting"), manifest.Name), currentManifestIndex, pathToManifests.Keys.Count);
                                             if (TryDeleteMod(mod) is false)
                                             {
-                                                warnings.Add(String.Format(Program.translation.Get("ui.warning.failed_to_delete_during_update"), mod.Name));
+                                                warnings.Add(string.Format(Program.translation.Get("ui.warning.failed_to_delete_during_update"), mod.Name));
                                             }
                                         }
                                     }
                                     else
                                     {
                                         // Delete old version
-                                        UpdateLockWindow(String.Format(Program.translation.Get("ui.warning.mod_deleting"), manifest.Name), currentManifestIndex, pathToManifests.Keys.Count);
+                                        UpdateLockWindow(string.Format(Program.translation.Get("ui.warning.mod_deleting"), manifest.Name), currentManifestIndex, pathToManifests.Keys.Count);
                                         if (TryDeleteMod(mod) is false)
                                         {
-                                            warnings.Add(String.Format(Program.translation.Get("ui.warning.failed_to_delete_during_update"), mod.Name));
+                                            warnings.Add(string.Format(Program.translation.Get("ui.warning.failed_to_delete_during_update"), mod.Name));
                                         }
                                     }
 
@@ -3259,7 +3321,7 @@ namespace Stardrop.Views
                                         installData.LastUpdateTimestamp = updatedTimestamp;
                                     }
                                 }
-                                else if (String.IsNullOrEmpty(manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase)))
+                                else if (string.IsNullOrEmpty(manifestPath.Replace("manifest.json", string.Empty, StringComparison.OrdinalIgnoreCase)))
                                 {
                                     installPath = Path.Combine(installPath, manifest.UniqueID);
                                 }
@@ -3271,48 +3333,49 @@ namespace Stardrop.Views
                                 }
 
                                 // Set lock state to let user know we are installing the mod
-                                string individualProgressText = String.Format(isUpdate ? Program.translation.Get("ui.warning.mod_updating") : Program.translation.Get("ui.warning.mod_installing"), manifest.Name);
-                                string modProgressText = String.Format("[{0} / {1}] Mods", currentModIndex, totalMods);
-                                string manifestProgressText = String.Format("[{0} / {1}] Manifests", currentManifestIndex, pathToManifests.Keys.Count);
-                                UpdateLockWindow(String.Concat(modProgressText, "\n", manifestProgressText, "\n\n", individualProgressText), currentManifestIndex, pathToManifests.Keys.Count);
+                                string individualProgressText = string.Format(isUpdate ? Program.translation.Get("ui.warning.mod_updating") : Program.translation.Get("ui.warning.mod_installing"), manifest.Name);
+                                string modProgressText = string.Format("[{0} / {1}] Mods", currentModIndex, totalMods);
+                                string manifestProgressText = string.Format("[{0} / {1}] Manifests", currentManifestIndex, pathToManifests.Keys.Count);
+                                UpdateLockWindow(string.Concat(modProgressText, "\n", manifestProgressText, "\n\n", individualProgressText), currentManifestIndex, pathToManifests.Keys.Count);
 
                                 Program.helper.Log($"Install path for mod {manifest.UniqueID}:{installPath}");
-                                var manifestFolderPath = manifestPath.Replace("manifest.json", String.Empty, StringComparison.OrdinalIgnoreCase);
-                                foreach (var entry in archive.Entries.Where(e => e.Key.StartsWith(manifestFolderPath)))
+                                var manifestFolderPath = manifestPath.Replace("manifest.json", string.Empty, StringComparison.OrdinalIgnoreCase);
+                                foreach (var entry in archive.Entries.Where(e => e.Key!.StartsWith(manifestFolderPath)))
                                 {
-                                    if (entry.Key.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) || entry.Key.Contains(".DS_Store", StringComparison.OrdinalIgnoreCase))
+                                    var entryKey = entry.Key!;
+                                    if (entryKey.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase) || entryKey.Contains(".DS_Store", StringComparison.OrdinalIgnoreCase))
                                     {
                                         continue;
                                     }
-                                    var outputPath = Path.Combine(installPath, manifestFolderPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+                                    var outputPath = Path.Combine(installPath, manifestFolderPath, string.IsNullOrEmpty(manifestFolderPath) ? entryKey : Path.GetRelativePath(manifestFolderPath, entryKey));
 
-                                    if (String.IsNullOrEmpty(manifestFolderPath) is false)
+                                    if (string.IsNullOrEmpty(manifestFolderPath) is false)
                                     {
                                         var installDirectory = new DirectoryInfo(installPath);
                                         var manifestDirectory = new DirectoryInfo(manifestFolderPath);
                                         if (installDirectory.Exists && (installDirectory.Name.Equals(manifestDirectory.Name, StringComparison.OrdinalIgnoreCase) || installDirectory.Name.Equals(manifest.UniqueID)))
                                         {
-                                            outputPath = Path.Combine(installPath, String.IsNullOrEmpty(manifestFolderPath) ? entry.Key : Path.GetRelativePath(manifestFolderPath, entry.Key));
+                                            outputPath = Path.Combine(installPath, string.IsNullOrEmpty(manifestFolderPath) ? entryKey : Path.GetRelativePath(manifestFolderPath, entryKey));
 
                                             Program.helper.Log(outputPath);
                                         }
                                     }
-                                    outputPath = Regex.Replace(outputPath, @"\s+\/", "/");
+                                    outputPath = WhitespaceBeforeSlashPattern().Replace(outputPath, "/");
 
                                     // Entry keys are whatever the packer wrote, so they can hold characters this file
                                     // system rejects or a segment aiming above the install path. Rebuilding the path
                                     // below installPath keeps both out, at the cost of a folder named slightly differently
                                     var safeOutputPath = Pathing.GetSafeDestinationPath(installPath, Path.GetRelativePath(installPath, outputPath));
-                                    if (String.IsNullOrEmpty(safeOutputPath))
+                                    if (string.IsNullOrEmpty(safeOutputPath))
                                     {
-                                        Program.helper.Log($"Skipping {entry.Key}, as it does not resolve to a path inside {installPath}", Helper.Status.Warning);
+                                        Program.helper.Log($"Skipping {entryKey}, as it does not resolve to a path inside {installPath}", Helper.Status.Warning);
                                         continue;
                                     }
                                     outputPath = safeOutputPath;
 
                                     // Create the default location if it doesn't existe
                                     var outputFolder = Path.GetDirectoryName(outputPath);
-                                    if (String.IsNullOrEmpty(outputFolder))
+                                    if (string.IsNullOrEmpty(outputFolder))
                                     {
                                         continue;
                                     }
@@ -3338,7 +3401,7 @@ namespace Stardrop.Views
                                 {
                                     if (installedModsByArchive.ContainsKey(fileFullName) is false)
                                     {
-                                        installedModsByArchive[fileFullName] = new List<Mod>();
+                                        installedModsByArchive[fileFullName] = [];
                                     }
 
                                     installedModsByArchive[fileFullName].Add(addedMod);
@@ -3346,7 +3409,7 @@ namespace Stardrop.Views
                             }
                             else
                             {
-                                warnings.Add(String.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
+                                warnings.Add(string.Format(Program.translation.Get("ui.warning.no_manifest"), fileFullName));
                             }
 
                             currentManifestIndex += 1;
@@ -3355,8 +3418,8 @@ namespace Stardrop.Views
                 }
                 catch (Exception ex)
                 {
-                    Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Utilities.Helper.Status.Warning);
-                    warnings.Add(String.Format(Program.translation.Get("ui.warning.unable_to_load_mod"), fileFullName));
+                    Program.helper.Log($"Failed to unzip the file {fileFullName} due to the following error: {ex}", Helper.Status.Warning);
+                    warnings.Add(string.Format(Program.translation.Get("ui.warning.unable_to_load_mod"), fileFullName));
                 }
 
                 currentModIndex += 1;
@@ -3370,7 +3433,7 @@ namespace Stardrop.Views
             }
 
             // Cache the local data
-            File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, new JsonSerializerOptions() { WriteIndented = true }));
+            File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, WriteOptions));
 
             // Refresh mod list
             _viewModel.DiscoverMods(Pathing.defaultModPath);
@@ -3392,6 +3455,8 @@ namespace Stardrop.Views
             // Update the current profile
             UpdateProfile(GetCurrentProfile());
 
+            await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
+            
             Program.helper.Log($"Add mods request received ({request}): Processed");
             return addedMods;
         }
@@ -3413,16 +3478,16 @@ namespace Stardrop.Views
             {
                 Program.helper.Log($"Starting process to link folders via terminal using {processInfo.FileName} and an argument length of {processInfo.Arguments.Length}");
 
-                using (var process = Process.Start(processInfo))
+                using (var process = Process.Start(processInfo)!)
                 {
                     // Synchronously read the standard output / error of the spawned process.
                     var standardOutput = process.StandardOutput.ReadToEnd();
                     var errorOutput = process.StandardError.ReadToEnd();
 
-                    Program.helper.Log($"Standard Output: {(String.IsNullOrWhiteSpace(standardOutput) ? "Empty" : String.Concat(Environment.NewLine, standardOutput))}");
-                    Program.helper.Log($"Error Output: {(String.IsNullOrWhiteSpace(errorOutput) ? "Empty" : String.Concat(Environment.NewLine, errorOutput))}");
+                    Program.helper.Log($"Standard Output: {(string.IsNullOrWhiteSpace(standardOutput) ? "Empty" : string.Concat(Environment.NewLine, standardOutput))}");
+                    Program.helper.Log($"Error Output: {(string.IsNullOrWhiteSpace(errorOutput) ? "Empty" : string.Concat(Environment.NewLine, errorOutput))}");
 
-                    if (!String.IsNullOrWhiteSpace(errorOutput))
+                    if (!string.IsNullOrWhiteSpace(errorOutput))
                     {
                         Program.helper.Log($"Printing full argument chain due to error output being detected: {Environment.NewLine}{processInfo.Arguments}");
                     }
@@ -3452,17 +3517,17 @@ namespace Stardrop.Views
             // previous launch would keep suppressing checks nothing asked to suppress
             TryDeleteSMAPIConfigOverride(enabledModsPath);
 
-            string spacing = String.Concat(Environment.NewLine, "\t");
-            Program.helper.Log($"Creating links for the following enabled mods from profile {profile.Name}:{spacing}{String.Join(spacing, profile.EnabledModIds.Select(r => r.ToString()))}");
+            string spacing = string.Concat(Environment.NewLine, "\t");
+            Program.helper.Log($"Creating links for the following enabled mods from profile {profile.Name}:{spacing}{string.Join(spacing, profile.EnabledModIds.Select(r => r.ToString()))}");
 
             // Link the enabled mods via a chained command
-            List<string> arguments = new List<string>();
-            List<string> usedLinkNames = new List<string>();
-            List<string> linkedUniqueIds = new List<string>();
+            List<string> arguments = [];
+            List<string> usedLinkNames = [];
+            List<string> linkedUniqueIds = [];
 
             // Ordered so that a duplicated unique ID resolves to the copy this profile owns, as the guard below
             // keeps whichever is reached first
-            var enabledMods = _viewModel.Mods.Where(m => m.IsEnabled).OrderByDescending(m => String.Equals(m.SourceId, profile.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
+            var enabledMods = _viewModel.Mods.Where(m => m.IsEnabled).OrderByDescending(m => string.Equals(m.SourceId, profile.SourceId, StringComparison.OrdinalIgnoreCase)).ToList();
 
             // Collected from the copies that actually get linked rather than from everything enabled. SMAPI knows a
             // mod only by its unique ID, so suppressing one the user is running loosely would hide an update they
@@ -3585,7 +3650,7 @@ namespace Stardrop.Views
                 // pin values that are meant to follow whatever a future SMAPI ships
                 var overrides = new Dictionary<string, object>() { ["SuppressUpdateChecks"] = suppressedUniqueIds };
 
-                File.WriteAllText(Path.Combine(enabledModsPath, _smapiConfigOverrideName), JsonSerializer.Serialize(overrides, new JsonSerializerOptions() { WriteIndented = true }));
+                File.WriteAllText(Path.Combine(enabledModsPath, _smapiConfigOverrideName), JsonSerializer.Serialize(overrides, WriteOptions));
                 Program.helper.Log($"Told SMAPI to skip update checks for {suppressedUniqueIds.Count} collection mod(s)");
             }
             catch (Exception ex)
@@ -3679,11 +3744,15 @@ namespace Stardrop.Views
             // Downloads count or selected language otherwise changes.
             Observable.CombineLatest(
                 first: panelVM.InProgressDownloads.StartWith(0),
-                second: Program.translation.WhenAnyPropertyChanged().StartWith(Program.translation),
-                resultSelector: (int count, Translation? translation) => (count, translation!)
+                second: Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
+                        handler => Program.translation.PropertyChanged += handler,
+                        handler => Program.translation.PropertyChanged -= handler)
+                    .Select(_ => Program.translation)
+                    .StartWith(Program.translation),
+                resultSelector: (int count, Translation translation) => (count, translation)
             ).Subscribe(((int downloadCount, Translation translation) x) =>
             {
-                _viewModel.DownloadsButtonText = String.Format(x.translation.Get("ui.main_window.buttons.downloads.label"), x.downloadCount);
+                _viewModel.DownloadsButtonText = string.Format(x.translation.Get("ui.main_window.buttons.downloads.label"), x.downloadCount);
             });
         }
 

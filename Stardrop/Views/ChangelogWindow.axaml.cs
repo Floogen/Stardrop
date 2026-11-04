@@ -2,7 +2,6 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Stardrop.Utilities;
 using Stardrop.ViewModels;
-using System;
 using System.Collections.Generic;
 
 namespace Stardrop.Views
@@ -11,10 +10,10 @@ namespace Stardrop.Views
     {
         public ChangelogWindow() : base()
         {
-            AvaloniaXamlLoader.Load(this);
+            InitializeComponent();
 
-            this.FindControl<Button>("closeButton").Click += delegate { this.Close(); };
-            this.FindControl<Button>("modPageButton").Click += delegate
+            this.FindControl<Button>("closeButton")!.Click += delegate { Close(); };
+            this.FindControl<Button>("modPageButton")!.Click += delegate
             {
                 if (DataContext is ChangelogWindowViewModel viewModel)
                 {
@@ -35,9 +34,9 @@ namespace Stardrop.Views
                 return;
             }
 
-            viewModel.ModName = String.Format(Program.translation.Get("ui.window.changelog.title"), modName);
+            viewModel.ModName = string.Format(Program.translation.Get("ui.window.changelog.title"), modName);
             viewModel.ModPageUri = modPageUri;
-            viewModel.HasModPage = String.IsNullOrEmpty(modPageUri) is false;
+            viewModel.HasModPage = string.IsNullOrEmpty(modPageUri) is false;
             viewModel.IsLoading = true;
         }
 

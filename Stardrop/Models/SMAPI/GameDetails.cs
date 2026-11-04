@@ -14,10 +14,10 @@ namespace Stardrop.Models.SMAPI
         }
 
         /// <summary>Stardew Valley's game version.</summary>
-        public string GameVersion { get; set; }
+        public string GameVersion { get; set; } = null!;
 
         /// <summary>SMAPI's version.</summary>
-        public string SmapiVersion { get; set; }
+        public string SmapiVersion { get; set; } = null!;
 
         /// <summary>The operating system.</summary>
         public OS System { get; set; }
@@ -52,7 +52,7 @@ namespace Stardrop.Models.SMAPI
 
         public bool HasSMAPIUpdated(string version)
         {
-            if (String.IsNullOrEmpty(version))
+            if (string.IsNullOrEmpty(version))
             {
                 return false;
             }
@@ -60,7 +60,7 @@ namespace Stardrop.Models.SMAPI
             return HasSMAPIUpdated(SemVersion.Parse(version));
         }
 
-        public bool HasSMAPIUpdated(SemVersion version)
+        public bool HasSMAPIUpdated(SemVersion? version)
         {
             if (version is null)
             {

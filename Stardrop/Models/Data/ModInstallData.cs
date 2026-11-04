@@ -9,7 +9,7 @@ namespace Stardrop.Models.Data
     /// </summary>
     public class ModInstallData
     {
-        public string UniqueId { get; set; }
+        public string UniqueId { get; set; } = null!;
         /// <summary>Null for a loose install, which is also how records written before this field existed read</summary>
         public string? SourceId { get; set; }
         public DateTime InstallTimestamp { get; set; }

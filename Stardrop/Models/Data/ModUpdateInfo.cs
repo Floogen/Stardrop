@@ -4,10 +4,10 @@ namespace Stardrop.Models.Data
 {
     public class ModUpdateInfo
     {
-        public string UniqueId { get; set; }
-        public string SuggestedVersion { get; set; }
+        public string UniqueId { get; set; } = null!;
+        public string SuggestedVersion { get; set; } = null!;
         public WikiCompatibilityStatus Status { get; set; }
-        public string Link { get; set; }
+        public string Link { get; set; } = null!;
 
 
         public ModUpdateInfo()

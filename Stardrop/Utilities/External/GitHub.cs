@@ -17,7 +17,7 @@ namespace Stardrop.Utilities.External
             KeyValuePair<string, string>? versionToUri = null;
 
             // Create a throwaway client
-            HttpClient client = new HttpClient();
+            HttpClient client = new();
             client.DefaultRequestHeaders.Add("User-Agent", "Stardrop - SDV Mod Manager");
 
             try
@@ -29,7 +29,7 @@ namespace Stardrop.Utilities.External
                     JsonDocument parsedContent = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
                     string tagName = parsedContent.RootElement.GetProperty("tag_name").ToString();
                     string downloadUri = parsedContent.RootElement.GetProperty("html_url").ToString();
-                    downloadUri = String.Concat(downloadUri, "/", $"SMAPI-{tagName}-installer.zip").Replace("releases/tag/", "releases/download/");
+                    downloadUri = string.Concat(downloadUri, "/", $"SMAPI-{tagName}-installer.zip").Replace("releases/tag/", "releases/download/");
 
                     versionToUri = new KeyValuePair<string, string>(tagName, downloadUri);
                 }
@@ -46,17 +46,17 @@ namespace Stardrop.Utilities.External
         public async static Task<string> DownloadLatestSMAPIRelease(string uri)
         {
             // Create a throwaway client
-            HttpClient client = new HttpClient();
+            HttpClient client = new();
             client.DefaultRequestHeaders.Add("User-Agent", "Stardrop - SDV Mod Manager");
 
-            string downloadedArchivePath = String.Empty;
+            string downloadedArchivePath = string.Empty;
             try
             {
                 var response = await client.GetAsync(uri);
                 // TODO refactor this to use async
                 using (var archive = ArchiveFactory.OpenArchive(await response.Content.ReadAsStreamAsync()))
                 {
-                    downloadedArchivePath = Path.Combine(Pathing.GetSmapiUpgradeFolderPath(), Path.GetDirectoryName(archive.Entries.First().Key));
+                    downloadedArchivePath = Path.Combine(Pathing.GetSmapiUpgradeFolderPath(), Path.GetDirectoryName(archive.Entries.First().Key)!);
                     foreach (var entry in archive.Entries)
                     {
                         await entry.WriteToDirectoryAsync(Pathing.GetSmapiUpgradeFolderPath(), new SharpCompress.Common.ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
@@ -77,7 +77,7 @@ namespace Stardrop.Utilities.External
             KeyValuePair<string, string>? versionToUri = null;
 
             // Create a throwaway client
-            HttpClient client = new HttpClient();
+            HttpClient client = new();
             client.DefaultRequestHeaders.Add("User-Agent", "Stardrop - SDV Mod Manager");
 
             try
@@ -91,26 +91,26 @@ namespace Stardrop.Utilities.External
                     string downloadUri = parsedContent.RootElement.GetProperty("html_url").ToString();
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                     {
-                        downloadUri = String.Concat(downloadUri, "/", "Stardrop-osx-x64.zip");
+                        downloadUri = string.Concat(downloadUri, "/", "Stardrop-osx-x64.zip");
                         if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
                         {
-                            downloadUri = String.Concat(downloadUri, "/", "Stardrop-osx-arm64.zip");
+                            downloadUri = string.Concat(downloadUri, "/", "Stardrop-osx-arm64.zip");
                         }
                     }
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     {
-                        downloadUri = String.Concat(downloadUri, "/", "Stardrop-linux-x64.zip");
+                        downloadUri = string.Concat(downloadUri, "/", "Stardrop-linux-x64.zip");
                         if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
                         {
-                            downloadUri = String.Concat(downloadUri, "/", "Stardrop-linux-arm64.zip");
+                            downloadUri = string.Concat(downloadUri, "/", "Stardrop-linux-arm64.zip");
                         }
                     }
                     else
                     {
-                        downloadUri = String.Concat(downloadUri, "/", "Stardrop-win-x64.zip");
+                        downloadUri = string.Concat(downloadUri, "/", "Stardrop-win-x64.zip");
                         if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
                         {
-                            downloadUri = String.Concat(downloadUri, "/", "Stardrop-win-arm64.zip");
+                            downloadUri = string.Concat(downloadUri, "/", "Stardrop-win-arm64.zip");
                         }
                     }
                     downloadUri = downloadUri.Replace("releases/tag/", "releases/download/");
@@ -130,10 +130,10 @@ namespace Stardrop.Utilities.External
         public async static Task<string> DownloadLatestStardropRelease(string uri)
         {
             // Create a throwaway client
-            HttpClient client = new HttpClient();
+            HttpClient client = new();
             client.DefaultRequestHeaders.Add("User-Agent", "Stardrop - SDV Mod Manager");
 
-            string downloadedArchivePath = String.Empty;
+            string downloadedArchivePath = string.Empty;
             try
             {
                 var response = await client.GetAsync(uri);

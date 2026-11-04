@@ -1,19 +1,18 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Layout;
+﻿using Avalonia.Controls;
+using Avalonia.Threading; 
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
 using Stardrop.Utilities.External;
 using Stardrop.ViewModels;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
+using Stardrop.Utilities;
 
 namespace Stardrop.Views
 {
     public partial class WarningWindow : Window
     {
-        private readonly MainWindowViewModel _mainWindowModel;
+        private readonly MainWindowViewModel _mainWindowModel = null!;
         private readonly WarningWindowViewModel _viewModel;
         private bool _closeOnExitSMAPI;
         private bool _closeOnParentUnlock;
@@ -27,12 +26,8 @@ namespace Stardrop.Views
             _viewModel = new WarningWindowViewModel();
             DataContext = _viewModel;
 
-            this.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            this.SizeToContent = SizeToContent.Height;
-
-#if DEBUG
-            this.AttachDevTools();
-#endif
+            WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            SizeToContent = SizeToContent.Height;
         }
 
         /// <summary>
@@ -68,7 +63,7 @@ namespace Stardrop.Views
         /// operation rather than closing the window. Closing is left to whatever unlocks the main window, so the
         /// window stays up while the operation winds down.
         /// </summary>
-        public WarningWindow(string warningText, MainWindowViewModel model, bool closeOnParentUnlock = true, CancellationTokenSource? cancellationSource = null) : this(warningText, String.Empty)
+        public WarningWindow(string warningText, MainWindowViewModel model, bool closeOnParentUnlock = true, CancellationTokenSource? cancellationSource = null) : this(warningText, string.Empty)
         {
             _mainWindowModel = model;
             _closeOnParentUnlock = closeOnParentUnlock;
@@ -92,7 +87,7 @@ namespace Stardrop.Views
             }
 
             _viewModel.IsProgressBarVisible = progress is not null && progress.Value >= 0;
-            _viewModel.ProgressBarValue = progress is null ? 0 : (progress.Value / (double)maxProgress.Value) * 100;
+            _viewModel.ProgressBarValue = progress is null ? 0 : progress.Value / (double)maxProgress.Value * 100;
         }
 
         public override void Show()
@@ -101,38 +96,59 @@ namespace Stardrop.Views
 
             if (_closeOnExitSMAPI)
             {
-                WaitForProcessToClose();
+                _ = WaitForProcessToClose();
             }
 
             if (_closeOnParentUnlock)
             {
-                WaitForParentToUnlock();
+                _ = WaitForParentToUnlock();
             }
         }
 
         private async Task WaitForProcessToClose()
         {
-            while (SMAPI.IsRunning)
+            try
             {
-                await Task.Delay(500);
+                while (SMAPI.IsRunning && IsVisible)
+                {
+                    await Task.Delay(500);
+                }
+                
+                if (!IsVisible) return;
+                Dispatcher.UIThread.Post(Close);
             }
-            this.Close();
+            catch (Exception ex)
+            {
+                Program.helper.Log($"WaitForProcessToClose failed: {ex}", Helper.Status.Alert);
+            }
         }
 
         private async Task WaitForParentToUnlock()
         {
-            while (_mainWindowModel.IsLocked)
+            try
             {
-                await Task.Delay(500);
+                if (_mainWindowModel is null) return;
+
+                while (_mainWindowModel.IsLocked && IsVisible)
+                {
+                    await Task.Delay(500);
+                }
+
+                if (!IsVisible) return;
+
+                Dispatcher.UIThread.Post(Close);
             }
-            this.Close();
+            catch (Exception ex)
+            {
+                Program.helper.Log($"WaitForParentToUnlock failed: {ex}", Helper.Status.Alert);
+            }
         }
 
         private void UnlockButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if (_cancellationSource is null)
             {
-                this.Close();
+                Close();
                 return;
             }
 

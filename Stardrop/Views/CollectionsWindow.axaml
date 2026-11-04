@@ -1,10 +1,11 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Stardrop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:i="clr-namespace:Optris.Icons.Avalonia;assembly=Optris.Icons.Avalonia"
 		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
+		xmlns:vm="using:Stardrop.ViewModels"
+        x:DataType="vm:CollectionsWindowViewModel"
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="560"
         x:Class="Stardrop.Views.CollectionsWindow"
         Title="{i18n:Translate ui.window.collections.name}"
@@ -13,9 +14,8 @@
         Width="900"
         Height="560"
         Background="{DynamicResource ThemeBackgroundBrush}"
-        HasSystemDecorations="true"
-        ExtendClientAreaToDecorationsHint="true"
-        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaToDecorationsHint="True"
+        WindowDecorations="BorderOnly"
         ExtendClientAreaTitleBarHeightHint="-1"
         CanResize="True"
         Icon="/Assets/icon.ico">
@@ -72,7 +72,7 @@
 		<Style Selector="CheckBox.OptionClickbox:checked /template/ Border#NormalRectangle">
 			<Setter Property="BorderBrush" Value="{DynamicResource HighlightForegroundBrush}" />
 		</Style>
-		<Style Selector="CheckBox.OptionClickbox:pointerover /template/ ContentPresenter#ContentPresenter">
+		<Style Selector="CheckBox.OptionClickbox:pointerover /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
 		</Style>
 		<Style Selector="TextBlock.sortable:pointerover">
@@ -132,9 +132,9 @@
 			</Grid.ColumnDefinitions>
 
 			<Border Grid.Column="0" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
-				<ListBox Name="collectionList" Items="{Binding Collections}" SelectedItem="{Binding SelectedCollection}" Background="{DynamicResource DataGridRowBackground}">
+				<ListBox Name="collectionList" ItemsSource="{Binding Collections}" SelectedItem="{Binding SelectedCollection}" Background="{DynamicResource DataGridRowBackground}">
 					<ListBox.ItemTemplate>
-						<DataTemplate>
+						<DataTemplate x:DataType="vm:CollectionView">
 							<StackPanel Margin="0 2 0 2">
 								<TextBlock Classes="row" Text="{Binding Name}" TextWrapping="Wrap" />
 								<TextBlock Classes="subtle" Text="{Binding Progress}" />
@@ -151,15 +151,15 @@
 					     panel they act on and the title still wraps across the full width beneath them -->
 					<Grid DockPanel.Dock="Top" Margin="0 0 0 8">
 						<StackPanel Margin="0 0 90 0">
-							<TextBlock Classes="detail" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding SelectedCollection.Name}" />
-							<TextBlock Classes="subtle" IsVisible="{Binding SelectedCollection.HasCurator}" Text="{Binding SelectedCollection.Curator}" />
-							<TextBlock Classes="subtle" Text="{Binding SelectedCollection.Revision}" />
-							<TextBlock Classes="update link" HorizontalAlignment="Left" Cursor="Hand" Tapped="OnUpdateStatusTapped" IsVisible="{Binding SelectedCollection.HasUpdate}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.update_available}" TextWrapping="Wrap" Text="{Binding SelectedCollection.UpdateStatus}" />
-							<TextBlock Classes="subtle" Text="{Binding SelectedCollection.Profile}" />
-							<TextBlock Classes="detail" Margin="0 6 0 0" Text="{Binding SelectedCollection.Progress}" />
+							<TextBlock Classes="detail" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding SelectedCollection?.Name}" />
+							<TextBlock Classes="subtle" IsVisible="{Binding SelectedCollection?.HasCurator, TargetNullValue=False}" Text="{Binding SelectedCollection?.Curator}" />
+							<TextBlock Classes="subtle" Text="{Binding SelectedCollection?.Revision}" />
+							<TextBlock Classes="update link" HorizontalAlignment="Left" Cursor="Hand" Tapped="OnUpdateStatusTapped" IsVisible="{Binding SelectedCollection?.HasUpdate, TargetNullValue=False}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.update_available}" TextWrapping="Wrap" Text="{Binding SelectedCollection?.UpdateStatus}" />
+							<TextBlock Classes="subtle" Text="{Binding SelectedCollection?.Profile}" />
+							<TextBlock Classes="detail" Margin="0 6 0 0" Text="{Binding SelectedCollection?.Progress}" />
 						</StackPanel>
 						<StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal">
-							<Button Name="updateButton" Cursor="Hand" IsVisible="{Binding SelectedCollection.HasUpdate}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.apply_update}" i:Attached.Icon="mdi-download" Foreground="{DynamicResource UpdateAvailableBrush}" BorderThickness="0" Background="Transparent" />
+							<Button Name="updateButton" Cursor="Hand" IsVisible="{Binding SelectedCollection?.HasUpdate, TargetNullValue=False}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.apply_update}" i:Attached.Icon="mdi-download" Foreground="{DynamicResource UpdateAvailableBrush}" BorderThickness="0" Background="Transparent" />
 							<Button Name="refreshButton" Cursor="Hand" IsEnabled="{Binding CanCheckForUpdates}" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.check_updates}" i:Attached.Icon="mdi-refresh" Foreground="{DynamicResource ThemeForegroundBrush}" BorderThickness="0" Background="Transparent" />
 							<Button Name="removeButton" Cursor="Hand" ToolTip.Tip="{i18n:Translate ui.collections_window.tooltips.remove}" i:Attached.Icon="mdi-delete" Foreground="{DynamicResource UpdateBrokenBrush}" BorderThickness="0" Background="Transparent" />
 						</StackPanel>
@@ -174,7 +174,7 @@
 					</Grid>
 
 					<Grid DockPanel.Dock="Top" ColumnDefinitions="1.4* 0.5* 1.6*" Height="22">
-						<TextBlock Classes="header sortable" Grid.Column="0" Cursor="Hand" Tapped="OnNameHeaderTapped" Text="{Binding NameHeader}" FontWeight="Bold" />
+						<TextBlock Classes="header sortable" Grid.Column="0" Cursor="Hand" Tapped="OnNameHeaderTapped" Text="{Binding NameHeader}" FontWeight="Bold" Margin="10 0 0 0"/>
 						<TextBlock Classes="header sortable" Grid.Column="1" Cursor="Hand" Tapped="OnVersionHeaderTapped" Text="{Binding VersionHeader}" FontWeight="Bold" />
 						<TextBlock Classes="header sortable" Grid.Column="2" Cursor="Hand" Tapped="OnStatusHeaderTapped" Text="{Binding StatusHeader}" FontWeight="Bold" />
 					</Grid>
@@ -182,9 +182,9 @@
 					<TextBlock DockPanel.Dock="Bottom" Classes="subtle" Margin="0 2 0 0" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Text="{i18n:Translate ui.collections_window.textblock.drop_entry_hint}" />
 					<TextBlock DockPanel.Dock="Bottom" Classes="subtle" Margin="0 6 0 0" HorizontalAlignment="Center" Text="{i18n:Translate ui.collections_window.textblock.open_entry_hint}" />
 
-					<ListBox Name="entryList" Items="{Binding Entries}">
+					<ListBox Name="entryList" ItemsSource="{Binding Entries}">
 						<ListBox.ItemTemplate>
-							<DataTemplate>
+							<DataTemplate x:DataType="vm:CollectionEntryView">
 								<Grid ColumnDefinitions="1.4* 0.5* 1.6*" Background="Transparent" DoubleTapped="OnEntryDoubleTapped">
 									<TextBlock Classes="row" Grid.Column="0" Text="{Binding Name}" TextWrapping="Wrap" />
 									<TextBlock Classes="row" Grid.Column="1" Text="{Binding Version}" />
