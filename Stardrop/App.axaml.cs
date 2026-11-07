@@ -7,7 +7,6 @@ using Stardrop.Utilities;
 using Stardrop.Utilities.Internal;
 using Stardrop.Views;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -27,22 +26,55 @@ namespace Stardrop
             }
 
             // Handle adding the themes
-            Dictionary<string, IStyle> themes = [];
-            foreach (string fileFullName in ThemeManager.GetThemeFilePaths())
+            // Dictionary<string, IStyle> themes = [];
+            // foreach (string fileFullName in ThemeManager.GetThemeFilePaths())
+            // {
+            //     try
+            //     {
+            //         var themeName = Path.GetFileNameWithoutExtension(fileFullName);
+            //         themes[themeName] = ThemeManager.Load(fileFullName);
+            //         Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         Program.helper.Log($"Unable to load theme on {Path.GetFileNameWithoutExtension(fileFullName)}: {ex}", Helper.Status.Warning);
+            //     }
+            // }
+
+            // Styles.Insert(ThemeManager.THEME_STYLE_INDEX, !themes.TryGetValue(Program.settings.Theme, out IStyle? value) ? themes.Values.First() : value);
+            var themeFilePaths = ThemeManager.GetThemeFilePaths().ToList();
+            string? targetThemePath = null;
+
+            foreach (var fileFullName in themeFilePaths)
             {
-                try
+                var themeName = Path.GetFileNameWithoutExtension(fileFullName);
+                if (themeName.Equals(Program.settings.Theme, StringComparison.OrdinalIgnoreCase))
                 {
-                    var themeName = Path.GetFileNameWithoutExtension(fileFullName);
-                    themes[themeName] = ThemeManager.Load(fileFullName);
-                    Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
-                }
-                catch (Exception ex)
-                {
-                    Program.helper.Log($"Unable to load theme on {Path.GetFileNameWithoutExtension(fileFullName)}: {ex}", Helper.Status.Warning);
+                    targetThemePath = fileFullName;
+                    break;
                 }
             }
 
-            Styles.Insert(ThemeManager.THEME_STYLE_INDEX, !themes.TryGetValue(Program.settings.Theme, out IStyle? value) ? themes.Values.First() : value);
+            if (targetThemePath is null && themeFilePaths.Count > 0)
+            {
+                targetThemePath = themeFilePaths.First();
+                Program.helper.Log($"Theme '{Program.settings.Theme}' not found, falling back to '{Path.GetFileNameWithoutExtension(targetThemePath)}'", Helper.Status.Warning);
+            }
+
+            if (targetThemePath is not null)
+            {
+                try
+                {
+                    var selectedThemeStyle = ThemeManager.Load(targetThemePath);
+                    Styles.Insert(ThemeManager.THEME_STYLE_INDEX, selectedThemeStyle);
+                    Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(targetThemePath)}", Helper.Status.Debug);
+                }
+                catch (Exception ex)
+                {
+                    Program.helper.Log($"Unable to load theme {Path.GetFileNameWithoutExtension(targetThemePath)}: {ex}", Helper.Status.Warning);
+                }
+            }
+
 #if DEBUG
                 this.AttachDeveloperTools();
 #endif
