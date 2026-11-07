@@ -217,7 +217,7 @@
   // Downloads Panel - Labels
   "ui.downloads_panel.download_canceled": "已取消",
   "ui.downloads_panel.download_failed": "失败",
-  "ui_downloads_panel.download_success": "完成！",
+  "ui.downloads_panel.download_success": "完成！",
   "ui.downloads_panel.no_downloads_label":  "没有正在进行的下载",
 
   // Downloads Panel - Tooltips
@@ -260,6 +260,7 @@
   "ui.warning.stardrop_unable_to_find_latest": "无法检查 Stardrop 的 GitHub 仓库是否有更新\n\n请手动检查 GitHub 是否有可用更新，或稍后再试",
   "ui.warning.stardrop_update_downloaded": "成功下载了最新版本\n\nStardrop 现在将重新启动",
   "ui.warning.SMAPI_unable_to_download_latest": "无法下载 SMAPI 的最新版本\n\n请手动下载最新版本",
+  "ui.warning.SMAPI_unable_to_find_latest": "无法检查 SMAPI 的 GitHub 仓库是否有更新\n\n请手动检查 GitHub 是否有可用更新，或稍后再试",
   "ui.warning.SMAPI_unable_to_install_latest": "无法安装 SMAPI 的最新版本\n\n请手动下载最新版本",
   "ui.warning.unable_to_locate_log": "无法定位 SMAPI-latest.txt！SMAPI 需要至少成功运行一次，以便 Stardrop 检测游戏详情",
   "ui.warning.unable_to_read_log": "无法通过读取 SMAPI 的日志文件来获取游戏版本\n\n将不会检查模组更新",

@@ -154,6 +154,9 @@ namespace Stardrop.ViewModels
                 ShowWindowMenu = false;
                 ShowTitle = false;
             }
+#if DEBUG
+            ShowEndorsements = true;
+#endif
         }
 
         public void OpenBrowser(string url)
@@ -244,8 +247,11 @@ namespace Stardrop.ViewModels
             {
                 return true;
             }
-
+#if DEBUG
+            return true; // Allow Nexus-gated columns to be shown in debug builds, so they can be tested without a Nexus connection
+#else
             return _isNexusConnected;
+#endif
         }
 
         /// <summary>
@@ -271,7 +277,11 @@ namespace Stardrop.ViewModels
                 }
 
                 bool isEnabled = !_columnPreferences.TryGetValue(columnKey, out bool preference) || preference;
+#if DEBUG
+                targetColumn.IsVisible = isEnabled; // Allow Nexus-gated columns to be shown in debug builds, so they can be tested without a Nexus connection
+#else
                 targetColumn.IsVisible = isEnabled && isNexusConnected;
+#endif
             }
         }
 

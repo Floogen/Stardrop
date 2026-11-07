@@ -38,9 +38,10 @@ namespace Stardrop.ViewModels
         {
             ShowMainMenu = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             ShowNXMAssociationButton = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            ShowNexusServers = Program.settings.NexusDetails is not null && Program.settings.NexusDetails.IsPremium;
 #if DEBUG
             ShowNexusServers = true;
+#else
+            ShowNexusServers = Program.settings.NexusDetails is not null && Program.settings.NexusDetails.IsPremium;
 #endif
         }
     }

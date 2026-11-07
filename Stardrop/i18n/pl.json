@@ -174,7 +174,7 @@
   // Downloads Panel - Labels
   "ui.downloads_panel.download_canceled": "Anulowane",
   "ui.downloads_panel.download_failed": "Nieudane",
-  "ui_downloads_panel.download_success": "Zakończone!",
+  "ui.downloads_panel.download_success": "Zakończone!",
   "ui.downloads_panel.no_downloads_label":  "Brak aktywnych pobrań",
 
   // Downloads Panel - Tooltips

@@ -1892,6 +1892,12 @@ namespace Stardrop.Views
             }
 
             KeyValuePair<string, string>? latestSmapiToUri = await GitHub.GetLatestSMAPIRelease();
+
+            if (latestSmapiToUri is null)
+            {
+                await CreateWarningWindow(string.Format(Program.translation.Get("ui.warning.SMAPI_unable_to_find_latest"), _viewModel.SmapiVersion), Program.translation.Get("internal.ok"));
+                return;
+            }
             if (latestSmapiToUri is not null && SemVersion.TryParse(latestSmapiToUri?.Key, SemVersionStyles.Any, out var latestVersion) && currentSmapiVersion is not null && latestVersion.CompareSortOrderTo(currentSmapiVersion) > 0)
             {
                 var confirmationWindow = new MessageWindow(string.Format(Program.translation.Get("ui.message.SMAPI_update_available"), latestVersion));
