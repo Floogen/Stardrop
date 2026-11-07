@@ -1,0 +1,94 @@
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- Theme: Dragonfly Wing -->
+
+    <Style>
+        <Style.Resources>
+
+            <!-- Base Colors (light theme: "NightBlack" is the window background, "White" is the text) -->
+            <Color x:Key="NightBlack">#EFEDF7</Color>
+            <Color x:Key="OffBlack">#E6E3F2</Color>
+            <Color x:Key="DarkestGray">#DAD8EE</Color>
+            <Color x:Key="DarkGray">#B5D4C8</Color>
+            <Color x:Key="OffGray">#F7F5FC</Color>
+            <Color x:Key="PerfectGray">#9693D6</Color>
+            <Color x:Key="White">#2E2440</Color>
+
+            <!-- Accent / UI Colors -->
+            <Color x:Key="NeonMint">#AEC891</Color>
+            <Color x:Key="CalmBlue">#775B89</Color>
+            <Color x:Key="NeonRed">#D9708A</Color>
+            <Color x:Key="NeonYellow">#EDE59A</Color>
+            <Color x:Key="GrayBlue">#A3BBDB</Color>
+            <Color x:Key="DarkPurple">#775B89</Color>
+
+            <!-- Avalonia Brushes -->
+            <SolidColorBrush x:Key="ThemeBackgroundBrush"
+                             Color="{DynamicResource NightBlack}" />
+            <SolidColorBrush x:Key="ThemeForegroundBrush"
+                             Color="{DynamicResource White}" />
+
+            <SolidColorBrush x:Key="HighlightBrush"
+                             Color="{DynamicResource OffBlack}" />
+            <SolidColorBrush x:Key="HighlightForegroundBrush"
+                             Color="{DynamicResource CalmBlue}" />
+
+            <SolidColorBrush x:Key="ThemeControlMidBrush"
+                             Color="{DynamicResource PerfectGray}" />
+            <SolidColorBrush x:Key="ThemeControlMidHighBrush"
+                             Color="{DynamicResource White}"
+                             Opacity="0.18" />
+            <SolidColorBrush x:Key="ThemeForegroundHighBrush"
+                             Color="{DynamicResource White}" />
+            <SolidColorBrush x:Key="ThemeControlHighBrush"
+                             Color="{DynamicResource White}"
+                             Opacity="0.4" />
+            <SolidColorBrush x:Key="ThemeControlVeryHighBrush"
+                             Color="{DynamicResource White}"
+                             Opacity="0.6" />
+            <SolidColorBrush x:Key="ThemeAccentBrush"
+                             Color="{DynamicResource White}"
+                             Opacity="0.12" />
+            <SolidColorBrush x:Key="ThemeForegroundLowBrush"
+                             Color="{DynamicResource White}"
+                             Opacity="0.65" />
+
+            <!-- DataGrid -->
+            <SolidColorBrush x:Key="DataGridHeaderBrush"
+                             Color="#9693D6" />
+            <SolidColorBrush x:Key="DataGridRowBackground"
+                             Color="#B5D4C8" />
+            <SolidColorBrush x:Key="AlternativeDataGridRowBackground"
+                             Color="#A3BBDB" />
+            <SolidColorBrush x:Key="DataGridRowForeground"
+                             Color="{DynamicResource White}" />
+
+            <!-- ComboBox -->
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundBrush"
+                             Color="#B5D4C8" />
+            <SolidColorBrush x:Key="ComboBoxItemSelectedBackgroundBrush"
+                             Color="#9693D6" />
+
+            <!-- Status -->
+            <SolidColorBrush x:Key="UpdateAvailableBrush"
+                             Color="{DynamicResource NeonMint}" />
+            <SolidColorBrush x:Key="UpdateBrokenBrush"
+                             Color="{DynamicResource NeonRed}" />
+            <SolidColorBrush x:Key="UpdateUnofficialBrush"
+                             Color="{DynamicResource NeonYellow}" />
+
+            <!-- Collection icons -->
+            <SolidColorBrush x:Key="CollectionCuratedBrush" Color="{DynamicResource DarkPurple}" />
+            <SolidColorBrush x:Key="CollectionAddOnBrush" Color="{DynamicResource White}" />
+
+            <!-- Buttons -->
+            <SolidColorBrush x:Key="ButtonHoverBrush" Color="#9693D6" />
+            <SolidColorBrush x:Key="ButtonPressedBrush" Color="#7872A5" />
+
+        </Style.Resources>
+    </Style>
+
+</Styles>
