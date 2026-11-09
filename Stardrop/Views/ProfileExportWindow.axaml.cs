@@ -38,7 +38,7 @@ namespace Stardrop.Views
 
             var dialog = new SaveFileDialog
             {
-                Title = "Export Profile",
+                Title = Program.translation.Get("ui.window.profiles_export.name"),
                 InitialFileName = $"{_exportProfile.Name}.json",
                 Filters = new List<FileDialogFilter>
                 {

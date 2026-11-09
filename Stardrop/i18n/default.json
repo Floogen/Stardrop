@@ -93,6 +93,7 @@
   "ui.main_window.button.update_status.generic": "Click To Check For Mod Updates",
   "ui.main_window.button.update_status.updating": "Updating...",
   "ui.main_window.button.update_status.failed": "Mod Update Check Failed",
+  "ui.main_window.button.update_status.reason.smapi_unavailable": "smapi.io Unavailable",
 
   // Main Window - Buttons - Downloads
   "ui.main_window.buttons.downloads.label": "Downloads ({0})",
@@ -117,6 +118,10 @@
   // Profile Editor Window - Labels
   "ui.profile_editor.labels.from_collection": "From a collection",
 
+  // Profile Editor Window - Dialogs
+  "ui.profile_editor.dialogs.open_profile": "Open Mod Profile",
+  "ui.profile_editor.dialogs.json_filter": "JSON files",
+
   // Profile Export Window
   "ui.profile_export_window.text.options": "Options",
   "ui.profile_export_window.checkbox.include_mod_configs": "Include Mod Configs",
@@ -134,6 +139,21 @@
   "ui.settings_window.labels.miscellaneous": "Miscellaneous",
   "ui.settings_window.labels.nexus": "Nexus Mods",
   "ui.settings_window.labels.preferred_server": "Preferred Server:",
+
+  // Settings Window - Dialogs
+  "ui.settings_window.dialogs.select_mod_folder": "Select the mod folder",
+  "ui.settings_window.dialogs.select_mod_install_folder": "Select the output folder for mods installed via Stardrop",
+  "ui.settings_window.dialogs.select_collection_install_folder": "Select the folder that collections install their mods to",
+
+  // Settings Window - Nexus Servers
+  "ui.settings_window.nexus_servers.nexus_cdn": "Nexus CDN",
+  "ui.settings_window.nexus_servers.chicago": "Chicago",
+  "ui.settings_window.nexus_servers.paris": "Paris",
+  "ui.settings_window.nexus_servers.amsterdam": "Amsterdam",
+  "ui.settings_window.nexus_servers.prague": "Prague",
+  "ui.settings_window.nexus_servers.los_angeles": "Los Angeles",
+  "ui.settings_window.nexus_servers.miami": "Miami",
+  "ui.settings_window.nexus_servers.singapore": "Singapore",
 
   // Settings Window - Mod Grouping
   "ui.settings_window.mod_grouping.none": "None",
@@ -224,6 +244,9 @@
   "ui.warning.mod_update_scanning": "Scanning mods folder for changes...",
   "ui.warning.mod_update_checking": "Checking mods for updates via smapi.io...",
   "ui.warning.mod_update_applying": "Labeling mod updates...",
+  "ui.warning.mod_update_check_failed": "Unable to finish mod update check.",
+  "ui.warning.mod_update_check_failed.reason.smapi_unavailable": "The update source (smapi.io) could not be reached or returned an error. If your internet connection is working, this is likely a temporary outage with smapi.io.",
+  "ui.warning.mod_update_check_failed.footer": "Earlier checked updates are still shown. Please try again later or see the log file for details.",
   "ui.warning.SMAPI_up_to_date": "SMAPI is up-to-date.\n\n{0} is the latest version.",
   "ui.warning.install_mod_attempt_count": "Attempting to install {0} mod(s)",
   "ui.warning.mod_installing": "Installing {0}",
@@ -375,10 +398,18 @@
   "ui.message.collection_conflicts": "The curator flagged {0} conflict(s) between mods in this collection:",
   "ui.message.collection_conflict_entry": "{0} conflicts with {1}",
   "ui.message.collection_reason_overlay_failed": "the file could not be placed",
+  "ui.message.collection_reason_no_hash_matches": "none of the files the curator listed were found in the download",
+  "ui.message.collection_files_unmatched": "{0} entry(s) are missing some of the files the curator listed, so their replacements are only partly in place:",
+  "ui.message.collection_files_unmatched_entry": "{0} ({1} of {2} file(s) missing)",
   "ui.message.confirm_collection_entry_capture": "{0} is required by the following collection(s):\n\n{1}\n\nWould you like to install it as part of the collection, instead of a standalone mod?\n\nYou can disable this confirmation in the settings menu.",
   "ui.message.collection_entry_installed": "Installed {0} into the collection {1}.",
   "ui.message.collection_entry_failed": "Failed to install {0} into the collection {1}.",
   "ui.message.collection_entry_remaining": "{0} mod(s) in that collection still need to be downloaded manually.",
+  "ui.message.collection_entry_held": "Saved the configuration {0} for the collection {1}. It will be applied once {2} is installed.",
+  "ui.message.collection_entry_released": "Applied the configuration {0} in the collection {1}, now that the mods it configures are installed.",
+  "ui.message.collection_overlays_held": "{0} configuration file(s) will be applied once the mods they configure are installed:",
+  "ui.message.collection_overlay_held_entry": "{0} (waiting on {1})",
+  "ui.message.collection_names_truncated": "{0} and {1} more",
   "ui.message.collection_drop_no_match": "{0} does not match anything the installed collections are waiting on.",
   "ui.message.confirm_collection_install_target": "You are currently using the collection {0}.\n\nWould you like to add this mod to that collection or install it normally?\n\nNote: A mod added to a collection is managed by it, so Stardrop will not check it for updates.\n\nYou can disable this confirmation in the settings menu.",
   "ui.message.collection_drop_copy_failed": "{0} could not be prepared for install.",
@@ -418,5 +449,8 @@
   "ui.collections_window.status.installed": "Installed",
   "ui.collections_window.status.failed": "Failed",
   "ui.collections_window.status.skipped": "Skipped",
-  "ui.collections_window.status.overlay": "Configuration applied"
+  "ui.collections_window.status.overlay": "Configuration applied",
+  "ui.collections_window.status.awaiting_targets": "Waiting on {0}",
+  "ui.collections_window.status.awaiting_targets_unnamed": "Waiting to be applied",
+  "ui.collections_window.status.files_missing": "{0} file(s) missing"
 }

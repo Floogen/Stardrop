@@ -163,6 +163,20 @@ namespace Stardrop.Models.Nexus
         public string? Url { get; set; }
     }
 
+    /// <summary>
+    /// One file of a mod the curator installed in Vortex's replicate mode. The path is where the file sat in the
+    /// curator's mod folder and the checksum is what identifies it inside the downloaded archive, so a file can be
+    /// placed without the archive's own layout having any say in where it goes.
+    /// </summary>
+    public class CollectionModFileHash
+    {
+        [JsonPropertyName("path")]
+        public string? Path { get; set; }
+
+        [JsonPropertyName("md5")]
+        public string? MD5 { get; set; }
+    }
+
     public class CollectionMod
     {
         [JsonPropertyName("name")]
@@ -189,6 +203,10 @@ namespace Stardrop.Models.Nexus
 
         [JsonPropertyName("source")]
         public CollectionModSource? Source { get; set; }
+
+        /// <summary>Present when the curator chose to replicate their install exactly, listing every file and where it goes</summary>
+        [JsonPropertyName("hashes")]
+        public List<CollectionModFileHash>? Hashes { get; set; }
     }
 
     public class CollectionIndex

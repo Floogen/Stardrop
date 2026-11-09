@@ -121,6 +121,21 @@
   "ui.settings_window.labels.preferred_server": "Предпочитан сървър:",
   "ui.settings_window.labels.collection_install": "Път до модовете, инсталирани от колекции",
 
+  // Settings Window - Dialogs
+  "ui.settings_window.dialogs.select_mod_folder": "Избери папката с модове",
+  "ui.settings_window.dialogs.select_mod_install_folder": "Избери папката, в която Stardrop инсталира модовете",
+  "ui.settings_window.dialogs.select_collection_install_folder": "Избери папката, в която колекциите инсталират модовете си",
+
+  // Settings Window - Nexus Servers
+  "ui.settings_window.nexus_servers.nexus_cdn": "Nexus CDN",
+  "ui.settings_window.nexus_servers.chicago": "Чикаго",
+  "ui.settings_window.nexus_servers.paris": "Париж",
+  "ui.settings_window.nexus_servers.amsterdam": "Амстердам",
+  "ui.settings_window.nexus_servers.prague": "Прага",
+  "ui.settings_window.nexus_servers.los_angeles": "Лос Анджелис",
+  "ui.settings_window.nexus_servers.miami": "Маями",
+  "ui.settings_window.nexus_servers.singapore": "Сингапур",
+
   // Settings Window - Mod Grouping
   "ui.settings_window.mod_grouping.none": "Без групиране",
   "ui.settings_window.mod_grouping.content_pack": "Пакет със съдържание",
@@ -170,6 +185,10 @@
 
   // Profile Editor and Export Window
   "ui.profile_editor.labels.from_collection": "От колекция",
+
+  // Profile Editor Window - Dialogs
+  "ui.profile_editor.dialogs.open_profile": "Отваряне на профил за модове",
+  "ui.profile_editor.dialogs.json_filter": "JSON файлове",
   "ui.profile_export_window.text.options": "Опции",
   "ui.profile_export_window.checkbox.include_mod_configs": "Включване на настройките на модовете",
   "ui.profile_export_window.checkbox.include_disabled_mods": "Включване на изключените модове",

@@ -96,6 +96,10 @@
   "ui.main_window.combobox.requirements": "ความต้องการ",
   "ui.main_window.combobox.group": "กลุ่มม็อด",
 
+  // Profile Editor Window - Dialogs
+  "ui.profile_editor.dialogs.open_profile": "เปิดโปรไฟล์ม็อด",
+  "ui.profile_editor.dialogs.json_filter": "ไฟล์ JSON",
+
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "เส้นทางของ SMAPI",
   "ui.settings_window.labels.mod_path": "เส้นทางของโฟลเดอร์ม็อด",
@@ -106,6 +110,21 @@
   "ui.settings_window.labels.miscellaneous": "เบ็ดเตล็ด",
   "ui.settings_window.labels.nexus": "Nexus Mods",
   "ui.settings_window.labels.preferred_server": "เซิร์ฟเวอร์ที่ต้องการ:",
+
+  // Settings Window - Dialogs
+  "ui.settings_window.dialogs.select_mod_folder": "เลือกโฟลเดอร์ม็อด",
+  "ui.settings_window.dialogs.select_mod_install_folder": "เลือกโฟลเดอร์ผลลัพธ์สำหรับม็อดที่ติดตั้งผ่าน Stardrop",
+  "ui.settings_window.dialogs.select_collection_install_folder": "เลือกโฟลเดอร์ที่คอลเลกชันจะติดตั้งม็อด",
+
+  // Settings Window - Nexus Servers
+  "ui.settings_window.nexus_servers.nexus_cdn": "Nexus CDN",
+  "ui.settings_window.nexus_servers.chicago": "ชิคาโก",
+  "ui.settings_window.nexus_servers.paris": "ปารีส",
+  "ui.settings_window.nexus_servers.amsterdam": "อัมสเตอร์ดัม",
+  "ui.settings_window.nexus_servers.prague": "ปราก",
+  "ui.settings_window.nexus_servers.los_angeles": "ลอสแอนเจลิส",
+  "ui.settings_window.nexus_servers.miami": "ไมแอมี",
+  "ui.settings_window.nexus_servers.singapore": "สิงคโปร์",
 
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "ละเว้นโฟลเดอร์ที่ซ่อนอยู่",

@@ -97,6 +97,10 @@
   "ui.main_window.combobox.requirements": "必要要件",
   "ui.main_window.combobox.group": "Modグループ",
 
+  // Profile Editor Window - Dialogs
+  "ui.profile_editor.dialogs.open_profile": "Modプロファイルを開く",
+  "ui.profile_editor.dialogs.json_filter": "JSON ファイル",
+
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPIのパス",
   "ui.settings_window.labels.mod_path": "Modフォルダのパス",
@@ -107,6 +111,21 @@
   "ui.settings_window.labels.miscellaneous": "その他",
   "ui.settings_window.labels.nexus": "Nexus Mods",
   "ui.settings_window.labels.preferred_server": "優先サーバー:",
+
+  // Settings Window - Dialogs
+  "ui.settings_window.dialogs.select_mod_folder": "Modフォルダを選択",
+  "ui.settings_window.dialogs.select_mod_install_folder": "StardropでインストールしたModの保存先を選択",
+  "ui.settings_window.dialogs.select_collection_install_folder": "コレクションがModをインストールするフォルダを選択",
+
+  // Settings Window - Nexus Servers
+  "ui.settings_window.nexus_servers.nexus_cdn": "Nexus CDN",
+  "ui.settings_window.nexus_servers.chicago": "シカゴ",
+  "ui.settings_window.nexus_servers.paris": "パリ",
+  "ui.settings_window.nexus_servers.amsterdam": "アムステルダム",
+  "ui.settings_window.nexus_servers.prague": "プラハ",
+  "ui.settings_window.nexus_servers.los_angeles": "ロサンゼルス",
+  "ui.settings_window.nexus_servers.miami": "マイアミ",
+  "ui.settings_window.nexus_servers.singapore": "シンガポール",
 
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "隠しフォルダを無視",

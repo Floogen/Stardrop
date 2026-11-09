@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Stardrop.Utilities.External
@@ -20,6 +21,7 @@ namespace Stardrop.Utilities.External
     {
         internal static bool IsRunning = false;
         internal static Process Process;
+        internal static readonly Regex responseHeadersPattern = new Regex(@"^HEADERS\r?\n=+", RegexOptions.Multiline);
 
         public static ProcessStartInfo GetPrepareProcess(bool hideConsole)
         {
@@ -90,7 +92,9 @@ namespace Stardrop.Utilities.External
             return "StardewModdingAPI";
         }
 
-        public async static Task<List<ModEntry>> GetModUpdateData(GameDetails gameDetails, List<Mod> mods)
+        /// <summary>Requests update data from smapi.io for the given mods and their requirements</summary>
+        /// <returns>The update data, or null if smapi.io could not provide it (so a failed check is not mistaken for one that found nothing)</returns>
+        public async static Task<List<ModEntry>?> GetModUpdateData(GameDetails gameDetails, List<Mod> mods)
         {
             List<ModSearchEntry> searchEntries = new List<ModSearchEntry>();
 
@@ -112,21 +116,39 @@ namespace Stardrop.Utilities.External
             ModSearchData searchData = new ModSearchData(searchEntries, gameDetails.SmapiVersion, gameDetails.GameVersion, gameDetails.System.ToString(), true);
 
             // Create a throwaway client
-            HttpClient client = new HttpClient();
+            using HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
             client.DefaultRequestHeaders.Add("Application-Version", Program.ApplicationVersion);
             client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.ApplicationVersion} {Environment.OSVersion}");
 
             var parsedRequest = JsonSerializer.Serialize(searchData, new JsonSerializerOptions() { WriteIndented = true, IgnoreNullValues = true });
             var requestPackage = new StringContent(parsedRequest, Encoding.UTF8, "application/json");
-            var response = await client.PostAsync("https://smapi.io/api/v3.0/mods", requestPackage);
 
-            List<ModEntry> modUpdateData = new List<ModEntry>();
+            // Network failures and timeouts are reported as no data, so the caller treats them the same as an error status from smapi.io
+            HttpResponseMessage response;
+            try
+            {
+                response = await client.PostAsync("https://smapi.io/api/v3.0/mods", requestPackage);
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                Program.helper.Log($"Unable to reach smapi.io: {ex.Message}");
+                return null;
+            }
+
+            List<ModEntry>? modUpdateData = null;
             if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
             {
                 // In the name of the Nine Divines, why is JsonSerializer.Deserialize case sensitive by default???
                 string content = await response.Content.ReadAsStringAsync();
-                modUpdateData = JsonSerializer.Deserialize<List<ModEntry>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                try
+                {
+                    modUpdateData = JsonSerializer.Deserialize<List<ModEntry>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                catch (JsonException ex)
+                {
+                    Program.helper.Log($"Unable to parse mod update data from smapi.io: {ex.Message}");
+                }
 
                 if (modUpdateData is null || modUpdateData.Count == 0)
                 {
@@ -142,7 +164,7 @@ namespace Stardrop.Utilities.External
                     Program.helper.Log($"Bad status given from smapi.io: {response.StatusCode}");
                     if (response.Content is not null)
                     {
-                        Program.helper.Log($"Response from smapi.io:\n{await response.Content.ReadAsStringAsync()}");
+                        Program.helper.Log($"Response from smapi.io:\n{GetLoggableResponse(await response.Content.ReadAsStringAsync())}");
                     }
                 }
                 else if (response.Content is null)
@@ -157,9 +179,19 @@ namespace Stardrop.Utilities.External
                 Program.helper.Log($"Our request to smapi.io:\n{parsedRequest}");
             }
 
-            client.Dispose();
-
             return modUpdateData;
+        }
+
+        /// <summary>Drops the request headers smapi.io echoes back on its error page</summary>
+        private static string GetLoggableResponse(string content)
+        {
+            var headersMatch = responseHeadersPattern.Match(content);
+            if (headersMatch.Success is false)
+            {
+                return content;
+            }
+
+            return $"{content.Substring(0, headersMatch.Index).TrimEnd()}\n[Request headers omitted]";
         }
 
         internal static SemVersion? GetVersion()
