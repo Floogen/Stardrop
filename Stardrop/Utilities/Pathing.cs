@@ -163,6 +163,21 @@ namespace Stardrop.Utilities
         }
 
         /// <summary>
+        /// Where a collection keeps its configuration archives, so they can be written again once a mod they are
+        /// ordered after arrives. Sits with the records rather than the installs, as it belongs to the record and
+        /// goes when the record does
+        /// </summary>
+        public static string GetCollectionOverlaysFolderPath(string sourceId)
+        {
+            return Path.Combine(GetCollectionsCacheFolderPath(), "Overlays", sourceId);
+        }
+
+        public static string GetCollectionOverlayPath(string sourceId, string storedName)
+        {
+            return Path.Combine(GetCollectionOverlaysFolderPath(sourceId), storedName);
+        }
+
+        /// <summary>
         /// Turns a name from an outside source, such as a collection or a file on Nexus Mods, into something usable
         /// as a single path segment. Invalid characters are replaced, and leading whitespace along with trailing
         /// whitespace and periods are removed: Windows silently drops those when it writes the file, so a path built

@@ -13,6 +13,13 @@ namespace Stardrop.Models.Data
     public record InstalledModRecord(string UniqueId, string? FolderName = null);
 
     /// <summary>
+    /// Where the curator had one of an entry's files, taken from the hashes list in collection.json. The path uses
+    /// forward slashes and is relative to the curator's mod folder, which is not necessarily laid out the way
+    /// Stardrop lays out the collection's folder.
+    /// </summary>
+    public record CollectionFileHash(string Path, string Md5);
+
+    /// <summary>
     /// A single mod pinned by a collection revision. The pin data lives here rather than on the generated profile,
     /// as a profile only tracks which mods are enabled and has nowhere to record a mod / file ID pair.
     /// </summary>
@@ -46,6 +53,19 @@ namespace Stardrop.Models.Data
         public List<InstalledModRecord> InstalledMods { get; set; } = new List<InstalledModRecord>();
         /// <summary>Names of the mods this entry's files were copied over, when it was applied as an overlay rather than installed</summary>
         public List<string> OverlayTargets { get; set; } = new List<string>();
+        /// <summary>
+        /// File name of this entry's configuration archive under <see cref="Utilities.Pathing.GetCollectionOverlaysFolderPath"/>.
+        /// Kept so the configuration can be written again once a mod it is ordered after arrives. Null for mods and
+        /// for configuration applied before archives were kept
+        /// </summary>
+        public string? StoredOverlayName { get; set; }
+        /// <summary>
+        /// The curator's exact file placements, when the entry was replicated rather than installed as is. An entry
+        /// with these and no manifest is placed file by file, which is how one mod's files replace another's
+        /// </summary>
+        public List<CollectionFileHash> FileHashes { get; set; } = new List<CollectionFileHash>();
+        /// <summary>How many of <see cref="FileHashes"/> had no matching file in the archive the last time it was placed</summary>
+        public int UnmatchedFileCount { get; set; }
         public CollectionModStatus Status { get; set; } = CollectionModStatus.Pending;
         public string? FailureReason { get; set; }
 
@@ -65,6 +85,12 @@ namespace Stardrop.Models.Data
         public bool IsFromNexus()
         {
             return SourceType is CollectionModSourceType.Nexus && NexusModId is not null && NexusFileId is not null;
+        }
+
+        /// <summary>Whether this entry is the curator's configuration rather than a mod, whether or not it has been written yet</summary>
+        public bool IsOverlay()
+        {
+            return Status is CollectionModStatus.AppliedAsOverlay or CollectionModStatus.AwaitingTargets;
         }
     }
 
@@ -93,6 +119,9 @@ namespace Stardrop.Models.Data
     /// </summary>
     public class CollectionInstall
     {
+        /// <summary>How many mods a line naming what configuration is waiting on lists before it gives a count instead</summary>
+        public const int MAX_LISTED_TARGET_NAMES = 3;
+
         /// <summary>Stable identifier used as both the folder name under the collections root and the SourceId on every mod it installs</summary>
         public string SourceId { get; set; } = String.Empty;
         public string Slug { get; set; } = String.Empty;
@@ -212,6 +241,10 @@ namespace Stardrop.Models.Data
             return Mods.Count(m => m.IsOptional is false && IsOutstanding(m));
         }
 
+        /// <summary>
+        /// Held configuration is left out. It is waiting on mods that are counted here already. Counting it as
+        /// well would hold a revision open over an optional mod the user may never fetch
+        /// </summary>
         private static bool IsOutstanding(CollectionModEntry entry)
         {
             return entry.Status is CollectionModStatus.Pending or CollectionModStatus.AwaitingManualDownload or CollectionModStatus.Downloading or CollectionModStatus.Failed;
@@ -238,7 +271,7 @@ namespace Stardrop.Models.Data
         /// <summary>The number of mods the collection pins, leaving out the configuration entries among them</summary>
         public int GetModCount()
         {
-            return Mods.Count - Mods.Count(m => m.Status is CollectionModStatus.AppliedAsOverlay);
+            return Mods.Count - Mods.Count(m => m.IsOverlay());
         }
 
         /// <summary>The collection's own page on Nexus Mods</summary>
@@ -288,8 +321,9 @@ namespace Stardrop.Models.Data
             // An entry still waiting on the user gets the mod manager form of that link, which has Nexus hand the
             // file back as an nxm link rather than leaving them to find the button on the page. An entry already
             // accounted for keeps the plain page, since a download for one has no pending entry to match and would
-            // land as a loose second copy of a mod the collection already holds
-            if (useModManagerLink is false || entry.IsSatisfied())
+            // land as a loose second copy of a mod the collection already holds. Held configuration is already kept,
+            // so it has nothing left to download either
+            if (useModManagerLink is false || entry.IsSatisfied() || entry.Status is CollectionModStatus.AwaitingTargets)
             {
                 return filePage;
             }
@@ -417,34 +451,71 @@ namespace Stardrop.Models.Data
 
         /// <summary>
         /// The entries this one is ordered after, which for configuration are the mods its files are meant to land
-        /// on top of. Used for reporting rather than for placement, as placement follows the install order.
+        /// on top of. A rule can say this from either end, as "this after that" or as "that before this", so both
+        /// are read. Decides when held configuration is written, while where its files go is left to the archive.
         /// </summary>
         public List<CollectionModEntry> GetOverlayTargets(CollectionModEntry entry)
         {
             var targets = new List<CollectionModEntry>();
 
-            var sourceIndex = Mods.IndexOf(entry);
-            if (sourceIndex < 0)
+            var entryIndex = Mods.IndexOf(entry);
+            if (entryIndex < 0)
             {
                 return targets;
             }
 
-            foreach (var rule in Rules.Where(r => r.Type is CollectionModRuleType.After && r.SourceIndex == sourceIndex && r.IsResolved()))
+            foreach (var rule in Rules.Where(r => r.IsResolved() && r.SourceIndex < Mods.Count && r.TargetIndex < Mods.Count))
             {
-                if (rule.TargetIndex >= Mods.Count)
+                if (rule.Type is CollectionModRuleType.After && rule.SourceIndex == entryIndex)
                 {
-                    continue;
+                    targets.Add(Mods[rule.TargetIndex]);
                 }
-
-                targets.Add(Mods[rule.TargetIndex]);
+                else if (rule.Type is CollectionModRuleType.Before && rule.TargetIndex == entryIndex)
+                {
+                    targets.Add(Mods[rule.SourceIndex]);
+                }
             }
 
             return targets.Distinct().ToList();
         }
 
+        /// <summary>
+        /// The targets still keeping a configuration entry from being written. An optional target does not hold it,
+        /// nor does one the user passed over, as either may never arrive and the rest of the configuration should
+        /// not wait on it. Should one turn up later, the configuration is written back over it at that point.
+        /// </summary>
+        public List<CollectionModEntry> GetBlockingTargets(CollectionModEntry entry)
+        {
+            return GetOverlayTargets(entry).Where(t => t.IsSatisfied() is false && t.IsOptional is false && t.Status is not CollectionModStatus.Skipped).ToList();
+        }
+
+        /// <summary>
+        /// Names the targets holding a configuration entry back, cut short once there are more than maxNames of them,
+        /// as one configuration archive can cover most of a collection. The overflow format is passed in so the model
+        /// stays free of translation lookups
+        /// </summary>
+        /// <param name="overflowFormat">Takes the names that are listed, then the count of those left out</param>
+        public string DescribeBlockingTargets(CollectionModEntry entry, int maxNames, string overflowFormat)
+        {
+            var names = GetBlockingTargets(entry).Select(t => t.Name).ToList();
+            if (names.Count <= maxNames)
+            {
+                return String.Join(", ", names);
+            }
+
+            return String.Format(overflowFormat, String.Join(", ", names.Take(maxNames)), names.Count - maxNames);
+        }
+
+        /// <summary>Configuration entries, including those held back until their targets arrive</summary>
         public List<CollectionModEntry> GetOverlays()
         {
-            return Mods.Where(m => m.Status is CollectionModStatus.AppliedAsOverlay).ToList();
+            return Mods.Where(m => m.IsOverlay()).ToList();
+        }
+
+        /// <summary>Configuration kept but not yet written, as a mod it is ordered after is still missing</summary>
+        public List<CollectionModEntry> GetHeldOverlays()
+        {
+            return Mods.Where(m => m.Status is CollectionModStatus.AwaitingTargets).ToList();
         }
 
         /// <summary>
