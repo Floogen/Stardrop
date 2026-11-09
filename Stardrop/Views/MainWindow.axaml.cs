@@ -2613,6 +2613,15 @@ namespace Stardrop.Views
                 await ReportLockProgress(Program.translation.Get("ui.warning.mod_update_checking"));
                 var modUpdateData = await SMAPI.GetModUpdateData(Program.settings.GameDetails, mods);
 
+                // Applying a failed check would clear every mod's update status and overwrite the version cache, so the last known results stay in place
+                if (modUpdateData is null)
+                {
+                    Program.helper.Log($"smapi.io did not return mod update data, keeping the last known update results", Helper.Status.Alert);
+                    _viewModel.UpdateStatusText = $"{Program.translation.Get("ui.main_window.button.update_status.failed")}: {Program.translation.Get("ui.main_window.button.update_status.reason.smapi_unavailable")}";
+                    _viewModel.IsCheckingForUpdates = false;
+                    return;
+                }
+
                 await ReportLockProgress(Program.translation.Get("ui.warning.mod_update_applying"));
 
                 // The full list still goes to GetModUpdateData so requirement names keep resolving, but only mods

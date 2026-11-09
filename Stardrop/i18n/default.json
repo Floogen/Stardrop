@@ -93,6 +93,7 @@
   "ui.main_window.button.update_status.generic": "Click To Check For Mod Updates",
   "ui.main_window.button.update_status.updating": "Updating...",
   "ui.main_window.button.update_status.failed": "Mod Update Check Failed",
+  "ui.main_window.button.update_status.reason.smapi_unavailable": "smapi.io Unavailable",
 
   // Main Window - Buttons - Downloads
   "ui.main_window.buttons.downloads.label": "Downloads ({0})",
