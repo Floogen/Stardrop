@@ -85,41 +85,8 @@ namespace Stardrop.Views
             };
             this.FindControl<Button>("refreshThemesButton")!.Click += RefreshThemesButton_Click;
 
-            // Handle Nexus Mods preferred server.
-            // Keep the enum as the item's value, so localization cannot affect the saved setting.
-            // The translated label is display-only: the value handed to the Nexus API is still the
-            // server's [Description], see the GetFileDownloadLink calls in MainWindow.
-            var serverDisplayKeys = new Dictionary<NexusServers, string>()
-            {
-                { NexusServers.NexusCDN, "ui.settings_window.nexus_servers.nexus_cdn" },
-                { NexusServers.Chicago, "ui.settings_window.nexus_servers.chicago" },
-                { NexusServers.Paris, "ui.settings_window.nexus_servers.paris" },
-                { NexusServers.Amsterdam, "ui.settings_window.nexus_servers.amsterdam" },
-                { NexusServers.Prague, "ui.settings_window.nexus_servers.prague" },
-                { NexusServers.LosAngeles, "ui.settings_window.nexus_servers.los_angeles" },
-                { NexusServers.Miami, "ui.settings_window.nexus_servers.miami" },
-                { NexusServers.Singapore, "ui.settings_window.nexus_servers.singapore" }
-            };
-
+            UpdateServerComboBox();
             var preferredComboBox = this.FindControl<ComboBox>("preferredServerBox")!;
-            preferredComboBox.ItemsSource = Enum.GetValues<NexusServers>()
-                .Select(server => new ComboBoxItem
-                {
-                    Content = serverDisplayKeys.TryGetValue(server, out var displayKey)
-                        ? Program.translation.Get(displayKey)
-                        : EnumParser.GetDescription(server),
-                    Tag = server
-                })
-                .ToList();
-            // Use FirstOrDefault instead of First: if the stored setting holds a value outside
-            // NexusServers (a hand-edited config file), we simply leave the box unselected rather
-            // than throwing, which is what the previous description-based lookup did.
-            var selectedServer = preferredComboBox.ItemsSource.Cast<ComboBoxItem>()
-                .FirstOrDefault(option => option.Tag is NexusServers server && server == Program.settings.PreferredNexusServer);
-            if (selectedServer is not null)
-            {
-                preferredComboBox.SelectedItem = selectedServer;
-            }
             preferredComboBox.SelectionChanged += (sender, e) =>
             {
                 if (preferredComboBox.SelectedItem is ComboBoxItem { Tag: NexusServers server })
@@ -142,6 +109,7 @@ namespace Stardrop.Views
                     Program.translation.SetLanguage(language.Code);
                     Program.settings.Language = language.Code;
                     UpdateGroupingComboBox();
+                    UpdateServerComboBox();
                 }
             };
 
@@ -186,6 +154,40 @@ namespace Stardrop.Views
             groupingComboBox.ItemsSource = items;
             
             groupingComboBox.SelectedItem = items.FirstOrDefault(i => i.Tag is ModGrouping g && g == currentSelectedGrouping);
+        }
+
+        private void UpdateServerComboBox()
+        {
+            var preferredComboBox = this.FindControl<ComboBox>("preferredServerBox");
+            if (preferredComboBox is null) return;
+
+            var currentServer = (preferredComboBox.SelectedItem as ComboBoxItem)?.Tag as NexusServers? ?? Program.settings.PreferredNexusServer;
+
+            var serverDisplayKeys = new Dictionary<NexusServers, string>()
+            {
+                { NexusServers.NexusCDN, "ui.settings_window.nexus_servers.nexus_cdn" },
+                { NexusServers.Chicago, "ui.settings_window.nexus_servers.chicago" },
+                { NexusServers.Paris, "ui.settings_window.nexus_servers.paris" },
+                { NexusServers.Amsterdam, "ui.settings_window.nexus_servers.amsterdam" },
+                { NexusServers.Prague, "ui.settings_window.nexus_servers.prague" },
+                { NexusServers.LosAngeles, "ui.settings_window.nexus_servers.los_angeles" },
+                { NexusServers.Miami, "ui.settings_window.nexus_servers.miami" },
+                { NexusServers.Singapore, "ui.settings_window.nexus_servers.singapore" }
+            };
+
+            var newItems = Enum.GetValues<NexusServers>()
+                .Select(server => new ComboBoxItem
+                {
+                    Content = serverDisplayKeys.TryGetValue(server, out var displayKey)
+                        ? Program.translation.Get(displayKey)
+                        : EnumParser.GetDescription(server),
+                    Tag = server
+                })
+                .ToList();
+
+            preferredComboBox.ItemsSource = newItems;
+
+            preferredComboBox.SelectedItem = newItems.FirstOrDefault(option => option.Tag is NexusServers server && server == currentServer) ?? newItems.FirstOrDefault();
         }
 
         [SupportedOSPlatform("windows")]
