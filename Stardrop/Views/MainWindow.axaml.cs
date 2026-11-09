@@ -1993,7 +1993,7 @@ namespace Stardrop.Views
                     _viewModel.RefreshModCounts();
                 }
 
-                await CheckForModUpdates(_viewModel.Mods.ToList());
+                await CheckForModUpdates(_viewModel.Mods.ToList(), manualCheck: true);
             }
             finally
             {
@@ -2525,7 +2525,7 @@ namespace Stardrop.Views
             return oldUpdateCache;
         }
 
-        private async Task CheckForModUpdates(List<Mod> mods, bool useCache = false, bool probe = false, bool skipCacheCheck = false)
+        private async Task CheckForModUpdates(List<Mod> mods, bool useCache = false, bool probe = false, bool skipCacheCheck = false, bool manualCheck = false)
         {
             try
             {
@@ -2618,6 +2618,13 @@ namespace Stardrop.Views
                 {
                     Program.helper.Log($"smapi.io did not return mod update data, keeping the last known update results", Helper.Status.Alert);
                     _viewModel.UpdateStatusText = $"{Program.translation.Get("ui.main_window.button.update_status.failed")}: {Program.translation.Get("ui.main_window.button.update_status.reason.smapi_unavailable")}";
+
+                    if (manualCheck)
+                    {
+                        SetLockState(false);
+                        await CreateWarningWindow($"{Program.translation.Get("ui.warning.mod_update_check_failed")}\n\n{Program.translation.Get("ui.warning.mod_update_check_failed.reason.smapi_unavailable")}\n\n{Program.translation.Get("ui.warning.mod_update_check_failed.footer")}", Program.translation.Get("internal.ok"));
+                    }
+
                     _viewModel.IsCheckingForUpdates = false;
                     return;
                 }
@@ -2754,6 +2761,12 @@ namespace Stardrop.Views
             {
                 Program.helper.Log($"Failed to get mod updates via smapi.io: {ex}", Helper.Status.Alert);
                 _viewModel.UpdateStatusText = Program.translation.Get("ui.main_window.button.update_status.failed");
+
+                if (manualCheck)
+                {
+                    SetLockState(false);
+                    await CreateWarningWindow($"{Program.translation.Get("ui.warning.mod_update_check_failed")}\n\n{Program.translation.Get("ui.warning.mod_update_check_failed.footer")}", Program.translation.Get("internal.ok"));
+                }
             }
 
             _viewModel.IsCheckingForUpdates = false;
