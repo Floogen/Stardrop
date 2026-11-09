@@ -1240,8 +1240,8 @@ namespace Stardrop.ViewModels
 
         /// <summary>
         /// Whether a mod belongs to what the user is currently looking at. A collection profile shows everything the
-        /// collection installed, plus anything it reuses from outside its own folder, while a plain profile shows
-        /// everything no collection owns.
+        /// collection installed, plus anything it reuses from outside its own folder. A plain profile shows
+        /// everything no collection owns, plus any collection mod it enables.
         /// </summary>
         private bool PassesSourceFilter(Mod mod)
         {
@@ -1266,7 +1266,14 @@ namespace Stardrop.ViewModels
                 return _activeProfileReferences.Contains(mod.ToReference());
             }
 
-            return mod.IsFromCollection is false;
+            if (mod.IsFromCollection is false)
+            {
+                return true;
+            }
+
+            // A collection mod is on screen in a plain profile only because the profile enables it, such as in a copy
+            // of a collection's profile. Hiding those left the profile running mods the grid never showed
+            return _activeProfileReferences.Contains(mod.ToReference());
         }
 
         /// <summary>
@@ -1414,12 +1421,13 @@ namespace Stardrop.ViewModels
         /// place a mod is toggled, as this runs immediately before the filter is applied and so catches every path
         /// that could have changed the enabled state. The set only grows within a session and is rebuilt from the
         /// profile whenever one is applied, which is what keeps a mod the profile reached outside the collection for
-        /// on screen after the user disables it. A mod the collection installed no longer relies on this, as
+        /// on screen after the user disables it. A plain profile uses it the same way for the collection mods it
+        /// enables. A mod the active collection installed no longer relies on this, as
         /// <see cref="PassesSourceFilter"/> answers for those from SourceId.
         /// </summary>
         private void TrackEnabledModsForSourceFilter()
         {
-            if (_activeProfile is null || _activeProfile.IsFromCollection is false)
+            if (_activeProfile is null)
             {
                 return;
             }

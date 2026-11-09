@@ -4,7 +4,7 @@ namespace Stardrop.Models.Data.Enums
     {
         /// <summary>
         /// Show only what belongs to the active profile. A collection profile shows the mods it references, wherever
-        /// they live, while a plain profile shows everything not owned by a collection.
+        /// they live. A plain profile shows everything not owned by a collection, plus any collection mod it enables.
         /// </summary>
         ActiveProfile,
         /// <summary>Show every installed mod, including copies owned by collections the user is not currently using</summary>
