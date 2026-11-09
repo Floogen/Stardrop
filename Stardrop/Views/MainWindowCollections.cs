@@ -30,6 +30,8 @@ namespace Stardrop.Views
         // The lock window is opened from a timer, so a stretch of synchronous work has to hand the thread back for
         // long enough to let that timer run. Sits above the sentinel's own interval
         private const int _lockWindowYieldMilliseconds = 150;
+        /// <summary>Length of the random prefix a kept configuration archive is stored under, ahead of its own name</summary>
+        private const int STORED_OVERLAY_PREFIX_LENGTH = 8;
 
         /// <summary>Whether the revision check has already run this session, so a refresh does not repeat it</summary>
         private bool _hasCheckedCollectionRevisions;
@@ -172,13 +174,16 @@ namespace Stardrop.Views
                 }
 
                 // An entry the previous revision never managed to install is work either way, so only a satisfied
-                // one carries anything forward
-                if (IsSamePin(match, entry) && match.IsSatisfied())
+                // one carries anything forward. Held configuration counts as well, as its file is already kept and
+                // fetching it again would only put the user through another download
+                if (IsSamePin(match, entry) && (match.IsSatisfied() || IsKeptHeldOverlay(previous, match)))
                 {
                     entry.Status = match.Status;
                     entry.InstalledMods = match.InstalledMods;
                     entry.OverlayTargets = match.OverlayTargets;
                     entry.SourceArchivePath = match.SourceArchivePath;
+                    entry.StoredOverlayName = match.StoredOverlayName;
+                    entry.UnmatchedFileCount = match.UnmatchedFileCount;
 
                     plan.Unchanged.Add(entry);
                     continue;
@@ -256,6 +261,13 @@ namespace Stardrop.Views
                 return false;
             }
 
+            // The same file placed somewhere else is still a change, as is a record from before placements were
+            // read, which placed the file by its archive's layout rather than where the curator had it
+            if (HasSameFileHashes(previous, updated) is false)
+            {
+                return false;
+            }
+
             if (updated.IsFromNexus())
             {
                 return previous.NexusModId == updated.NexusModId && previous.NexusFileId == updated.NexusFileId;
@@ -265,6 +277,19 @@ namespace Stardrop.Views
                 && String.Equals(previous.ExternalUri, updated.ExternalUri, StringComparison.OrdinalIgnoreCase)
                 && String.Equals(previous.FileExpression, updated.FileExpression, StringComparison.OrdinalIgnoreCase)
                 && String.Equals(previous.LogicalFilename, updated.LogicalFilename, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>Whether two revisions give an entry the same file placements, in any order</summary>
+        private static bool HasSameFileHashes(CollectionModEntry previous, CollectionModEntry updated)
+        {
+            if (previous.FileHashes.Count != updated.FileHashes.Count)
+            {
+                return false;
+            }
+
+            var previousHashes = previous.FileHashes.Select(h => $"{h.Path}|{h.Md5}").ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            return updated.FileHashes.All(h => previousHashes.Contains($"{h.Path}|{h.Md5}"));
         }
 
         /// <summary>
@@ -597,12 +622,20 @@ namespace Stardrop.Views
             await YieldToLockWindow();
 
             // Last, as an overlay is copied into a mod folder that only exists once the mods above are installed and
-            // their folder names have been recorded
-            ApplyCollectionOverlays(collection, SortArchivesByInstallOrder(collection, overlaysByArchive), overlaysByArchive, installPath);
+            // their folder names have been recorded. Every configuration archive is kept first, so one whose mods
+            // are still to be downloaded manually can be written once they arrive rather than ahead of them
+            StoreCollectionOverlays(collection, overlaysByArchive);
+            var appliedOverlays = ApplyReadyOverlays(collection, installPath);
+
+            // Only once the new record's entries have taken what they need, so nothing still in use is cleared
+            if (updatePlan is not null)
+            {
+                RemoveUnusedStoredOverlays(collection, updatePlan);
+            }
 
             // Configuration only lands at this point, so a second pass is needed for the mods it touched to report
             // that they now have a config
-            if (overlaysByArchive.Count > 0 || staleFolderCount > 0)
+            if (appliedOverlays.Count > 0 || staleFolderCount > 0)
             {
                 _viewModel.DiscoverMods(Pathing.defaultModPath);
             }
@@ -669,12 +702,6 @@ namespace Stardrop.Views
         }
 
         /// <summary>
-        /// Removes the entries that carry no manifest, handing them back for separate treatment. AddMods has nothing
-        /// to install from a file with no manifest and skips it, which is the wrong outcome here: a curator's
-        /// configuration arrives this way, whether bundled in the collection archive or downloaded like any other
-        /// entry and the mod rules point at it as their source.
-        /// </summary>
-        /// <summary>
         /// The archives in the order their entries should be written. Anything the rules say nothing about keeps the
         /// position the collection gave it.
         /// </summary>
@@ -690,6 +717,12 @@ namespace Stardrop.Views
             return entriesByArchive.Keys.OrderBy(a => ranks.TryGetValue(entriesByArchive[a], out var rank) ? rank : Int32.MaxValue).ToList();
         }
 
+        /// <summary>
+        /// Removes the entries that carry no manifest, handing them back for separate treatment. AddMods has nothing
+        /// to install from a file with no manifest and skips it, which is the wrong outcome here: a curator's
+        /// configuration arrives this way, whether bundled in the collection archive or downloaded like any other
+        /// entry and the mod rules point at it as their source.
+        /// </summary>
         private static Dictionary<string, CollectionModEntry> TakeNonModEntries(Dictionary<string, CollectionModEntry> entriesByArchive)
         {
             var nonMods = new Dictionary<string, CollectionModEntry>(StringComparer.OrdinalIgnoreCase);
@@ -737,30 +770,262 @@ namespace Stardrop.Views
         }
 
         /// <summary>
-        /// Writes each manifest-less entry into the collection's mod folder, whole and with its structure intact,
-        /// then records which mods it landed on top of. The rules never decide which files an entry places, only
-        /// which entry wins where two of them place the same path, so this is a plain copy and the ordering above is
-        /// what makes the curator's configuration take precedence.
+        /// Keeps a copy of each manifest-less entry's archive under the collection's overlay store, then clears the
+        /// original. Nothing is written into the mod folder here, as <see cref="ApplyReadyOverlays"/> decides when
+        /// each one is safe to write.
         /// </summary>
-        private static void ApplyCollectionOverlays(CollectionInstall collection, List<string> orderedArchives, Dictionary<string, CollectionModEntry> overlaysByArchive, string installPath)
+        private static void StoreCollectionOverlays(CollectionInstall collection, Dictionary<string, CollectionModEntry> overlaysByArchive)
         {
-            foreach (var archivePath in orderedArchives)
+            foreach (var archivePath in overlaysByArchive.Keys)
             {
-                var entry = overlaysByArchive[archivePath];
-                var overwritten = GetOverwrittenTargets(collection, entry, archivePath);
+                StoreOverlay(collection, overlaysByArchive[archivePath], archivePath);
+                TryDelete(archivePath);
+            }
+        }
 
-                if (TryExtractOverlay(archivePath, installPath) is false)
+        /// <summary>
+        /// Copies a configuration archive into the collection's overlay store and marks the entry as held until
+        /// <see cref="ApplyReadyOverlays"/> writes it. Copied rather than moved, as a single archive dropped in by
+        /// the user can satisfy entries in more than one collection and each keeps a copy of its own.
+        /// </summary>
+        private static bool StoreOverlay(CollectionInstall collection, CollectionModEntry entry, string archivePath)
+        {
+            var previousName = entry.StoredOverlayName;
+
+            try
+            {
+                var storeFolder = Pathing.GetCollectionOverlaysFolderPath(collection.SourceId);
+                Directory.CreateDirectory(storeFolder);
+
+                // Prefixed, as two entries can pin files that share a name
+                var storedName = $"{Guid.NewGuid().ToString("N").Substring(0, STORED_OVERLAY_PREFIX_LENGTH)}_{Path.GetFileName(archivePath)}";
+                File.Copy(archivePath, Path.Combine(storeFolder, storedName), true);
+
+                entry.StoredOverlayName = storedName;
+                entry.Status = CollectionModStatus.AwaitingTargets;
+                entry.FailureReason = null;
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to keep the configuration {entry.Name} for the collection {collection.Name}: {ex}", Helper.Status.Alert);
+
+                entry.Status = CollectionModStatus.Failed;
+                entry.FailureReason = Program.translation.Get("ui.message.collection_reason_overlay_failed");
+
+                return false;
+            }
+
+            // The entry arriving a second time replaces what it kept the first time
+            if (String.IsNullOrEmpty(previousName) is false)
+            {
+                TryDelete(Pathing.GetCollectionOverlayPath(collection.SourceId, previousName));
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Writes every held configuration entry whose targets have all arrived, whole and with its structure
+        /// intact, then records which mods it landed on top of. Walked in install order, so where two of them place
+        /// the same path the one the rules put last wins. One ordered after another is only written once that
+        /// one has been.
+        ///
+        /// An entry with a target still missing stays held. Writing it now would put its files into a folder the mod
+        /// later lands in, where any file the mod includes at the same path would take the curator's place.
+        /// </summary>
+        private static List<CollectionModEntry> ApplyReadyOverlays(CollectionInstall collection, string installPath)
+        {
+            var applied = new List<CollectionModEntry>();
+
+            foreach (var entry in collection.GetInstallOrder().Where(m => m.Status is CollectionModStatus.AwaitingTargets).ToList())
+            {
+                var blockingTargets = collection.GetBlockingTargets(entry);
+                if (blockingTargets.Count > 0)
                 {
-                    entry.Status = CollectionModStatus.Failed;
-                    entry.FailureReason = Program.translation.Get("ui.message.collection_reason_overlay_failed");
-                    TryDelete(archivePath);
+                    Program.helper.Log($"Holding the configuration {entry.Name} in {collection.Name} until {String.Join(", ", blockingTargets.Select(t => t.Name))} is installed");
                     continue;
                 }
 
-                TryDelete(archivePath);
+                var storedPath = GetStoredOverlayPath(collection, entry);
+                if (storedPath is null)
+                {
+                    entry.Status = CollectionModStatus.Failed;
+                    entry.FailureReason = Program.translation.Get("ui.message.collection_reason_overlay_failed");
+                    continue;
+                }
 
-                entry.OverlayTargets = overwritten;
+                // A replicated entry is placed file by file where the curator had each one, which is what lets it
+                // replace files inside another mod's folder. Anything else is written as its archive lays it out
+                if (entry.FileHashes.Count > 0)
+                {
+                    var placement = PlaceOverlayByHashes(collection, entry, storedPath, installPath);
+                    if (placement.WrittenPaths.Count == 0)
+                    {
+                        entry.Status = CollectionModStatus.Failed;
+                        entry.FailureReason = Program.translation.Get(placement.CouldNotRead ? "ui.message.collection_reason_overlay_failed" : "ui.message.collection_reason_no_hash_matches");
+                        continue;
+                    }
+
+                    entry.UnmatchedFileCount = placement.UnmatchedCount;
+                    entry.OverlayTargets = placement.TouchedTargets;
+                }
+                else
+                {
+                    if (ExtractOverlay(storedPath, installPath) <= 0)
+                    {
+                        entry.Status = CollectionModStatus.Failed;
+                        entry.FailureReason = Program.translation.Get("ui.message.collection_reason_overlay_failed");
+                        continue;
+                    }
+
+                    entry.OverlayTargets = GetOverwrittenTargets(collection, entry, storedPath);
+                }
+
                 entry.Status = CollectionModStatus.AppliedAsOverlay;
+
+                applied.Add(entry);
+            }
+
+            return applied;
+        }
+
+        /// <summary>
+        /// Writes configuration the rules place after a late arrival back over it. A mod downloaded once its
+        /// configuration was already written lands on top of it. Anything the mod includes at the same path, such
+        /// as a default config.json, would otherwise take the curator's place.
+        ///
+        /// Only the files inside the folders the arrival wrote are touched, so a setting the user has since changed
+        /// in any other mod is left as it is. Configuration written before archives were kept has nothing to write
+        /// back from and is passed over.
+        /// </summary>
+        private static int ReapplyOverlaysOverEntry(CollectionInstall collection, CollectionModEntry arrivedEntry, List<string> arrivedFolders, string installPath)
+        {
+            if (arrivedFolders.Count == 0)
+            {
+                return 0;
+            }
+
+            var installOrder = collection.GetInstallOrder();
+            var arrivedRank = installOrder.IndexOf(arrivedEntry);
+            if (arrivedRank < 0)
+            {
+                return 0;
+            }
+
+            var reappliedCount = 0;
+            foreach (var overlay in installOrder.Skip(arrivedRank + 1).Where(m => m.Status is CollectionModStatus.AppliedAsOverlay))
+            {
+                var storedPath = GetStoredOverlayPath(collection, overlay);
+                if (storedPath is null)
+                {
+                    continue;
+                }
+
+                var written = overlay.FileHashes.Count > 0 ? PlaceOverlayByHashes(collection, overlay, storedPath, installPath, arrivedFolders).WrittenPaths.Count : ExtractOverlay(storedPath, installPath, arrivedFolders);
+                if (written <= 0)
+                {
+                    continue;
+                }
+
+                Program.helper.Log($"Wrote {written} file(s) of the configuration {overlay.Name} back over {arrivedEntry.Name}, as the curator's rules place it after that mod");
+
+                if (overlay.OverlayTargets.Contains(arrivedEntry.Name, StringComparer.OrdinalIgnoreCase) is false)
+                {
+                    overlay.OverlayTargets.Add(arrivedEntry.Name);
+                }
+
+                reappliedCount += 1;
+            }
+
+            return reappliedCount;
+        }
+
+        /// <summary>
+        /// The folders an installed entry's mods sit in, relative to the collection's folder and separated by forward
+        /// slashes, which is the form an overlay archive's entries are compared in. Read from the discovered mods
+        /// rather than from <see cref="InstalledModRecord.FolderName"/>, which drops any parent folder a mod was
+        /// nested in.
+        /// </summary>
+        private static List<string> GetEntryModFolders(string installPath, List<Mod> collectionMods, CollectionModEntry entry)
+        {
+            var folders = new List<string>();
+
+            foreach (var installedMod in entry.InstalledMods)
+            {
+                var mod = collectionMods.FirstOrDefault(m => m.UniqueId.Equals(installedMod.UniqueId, StringComparison.OrdinalIgnoreCase));
+                if (mod is null || mod.ModFileInfo.Directory is null)
+                {
+                    continue;
+                }
+
+                var relativePath = Path.GetRelativePath(installPath, mod.ModFileInfo.Directory.FullName).Replace('\\', '/');
+                if (relativePath == "." || relativePath.StartsWith("..", StringComparison.Ordinal) || Path.IsPathRooted(relativePath))
+                {
+                    continue;
+                }
+
+                folders.Add(relativePath.TrimEnd('/'));
+            }
+
+            return folders.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        /// <summary>
+        /// The name a kept file had before it was stored. Matters only for a loose configuration file, which is
+        /// copied across under its own name rather than extracted
+        /// </summary>
+        private static string GetOriginalOverlayName(string storedPath)
+        {
+            var fileName = Path.GetFileName(storedPath);
+            if (fileName.Length > STORED_OVERLAY_PREFIX_LENGTH + 1 && fileName[STORED_OVERLAY_PREFIX_LENGTH] == '_')
+            {
+                return fileName.Substring(STORED_OVERLAY_PREFIX_LENGTH + 1);
+            }
+
+            return fileName;
+        }
+
+        /// <summary>The kept archive for a configuration entry, or null where none was kept or it has since gone missing</summary>
+        private static string? GetStoredOverlayPath(CollectionInstall collection, CollectionModEntry entry)
+        {
+            if (String.IsNullOrEmpty(entry.StoredOverlayName))
+            {
+                return null;
+            }
+
+            var storedPath = Pathing.GetCollectionOverlayPath(collection.SourceId, entry.StoredOverlayName);
+            if (File.Exists(storedPath) is false)
+            {
+                Program.helper.Log($"The kept configuration for {entry.Name} in {collection.Name} is missing from {storedPath}", Helper.Status.Warning);
+                return null;
+            }
+
+            return storedPath;
+        }
+
+        /// <summary>Whether an entry is held configuration whose kept archive is still on disk</summary>
+        private static bool IsKeptHeldOverlay(CollectionInstall collection, CollectionModEntry entry)
+        {
+            return entry.Status is CollectionModStatus.AwaitingTargets && GetStoredOverlayPath(collection, entry) is not null;
+        }
+
+        /// <summary>
+        /// Clears the kept archives an update left without an owner, being those of entries the revision dropped or
+        /// pinned to a different file. The files they wrote stay where they are, the same as a dropped mod's do.
+        /// </summary>
+        private static void RemoveUnusedStoredOverlays(CollectionInstall collection, CollectionUpdatePlan plan)
+        {
+            var namesInUse = collection.Mods.Where(m => String.IsNullOrEmpty(m.StoredOverlayName) is false).Select(m => m.StoredOverlayName!).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var previousEntries = plan.Removed.Concat(plan.Replaced.Select(r => r.Previous));
+
+            foreach (var entry in previousEntries)
+            {
+                if (String.IsNullOrEmpty(entry.StoredOverlayName) || namesInUse.Contains(entry.StoredOverlayName))
+                {
+                    continue;
+                }
+
+                TryDelete(Pathing.GetCollectionOverlayPath(collection.SourceId, entry.StoredOverlayName));
             }
         }
 
@@ -818,7 +1083,15 @@ namespace Stardrop.Views
             return folders;
         }
 
-        private static bool TryExtractOverlay(string archivePath, string destinationPath)
+        /// <summary>
+        /// Writes a configuration archive's files into the collection's folder, returning how many were written or
+        /// -1 where the archive could not be read.
+        /// </summary>
+        /// <param name="onlyFolders">
+        /// When given, limits the write to files inside these folders, relative to the destination and separated by
+        /// forward slashes. A loose file sits outside every folder, so it is never written under this limit
+        /// </param>
+        private static int ExtractOverlay(string archivePath, string destinationPath, List<string>? onlyFolders = null)
         {
             try
             {
@@ -826,10 +1099,16 @@ namespace Stardrop.Views
 
                 if (IsArchiveFile(archivePath) is false)
                 {
-                    File.Copy(archivePath, Path.Combine(destinationPath, Path.GetFileName(archivePath)), true);
-                    Program.helper.Log($"Copied the configuration file {Path.GetFileName(archivePath)} into {destinationPath}");
+                    if (onlyFolders is not null)
+                    {
+                        return 0;
+                    }
 
-                    return true;
+                    var originalName = GetOriginalOverlayName(archivePath);
+                    File.Copy(archivePath, Path.Combine(destinationPath, originalName), true);
+                    Program.helper.Log($"Copied the configuration file {originalName} into {destinationPath}");
+
+                    return 1;
                 }
 
                 var written = 0;
@@ -840,6 +1119,11 @@ namespace Stardrop.Views
                 {
                     var segments = archiveEntry.Key!.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
                     if (segments.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    if (onlyFolders is not null && IsInsideAnyFolder(String.Join('/', segments), onlyFolders) is false)
                     {
                         continue;
                     }
@@ -865,14 +1149,334 @@ namespace Stardrop.Views
 
                 Program.helper.Log($"Placed {written} file(s) from {Path.GetFileName(archivePath)} into {destinationPath}");
 
-                return written > 0;
+                return written;
             }
             catch (Exception ex)
             {
                 Program.helper.Log($"Failed to place the contents of {archivePath} into {destinationPath}: {ex}", Helper.Status.Alert);
 
-                return false;
+                return -1;
             }
+        }
+
+        /// <summary>Whether a forward slash separated path sits inside one of the given folders, compared the same way</summary>
+        private static bool IsInsideAnyFolder(string relativePath, List<string> folders)
+        {
+            return folders.Any(f => relativePath.StartsWith(f + "/", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>What placing a replicated entry by its checksums did, for the caller to record on the entry</summary>
+        private class HashPlacementResult
+        {
+            /// <summary>Destinations written, relative to the collection's folder with forward slashes</summary>
+            public List<string> WrittenPaths { get; } = new List<string>();
+            /// <summary>Names of the mods whose folders received at least one file</summary>
+            public List<string> TouchedTargets { get; } = new List<string>();
+            /// <summary>Placements whose checksum matched no file in the archive</summary>
+            public int UnmatchedCount { get; set; }
+            /// <summary>Whether the archive could not be read at all, as opposed to holding nothing that matched</summary>
+            public bool CouldNotRead { get; set; }
+        }
+
+        /// <summary>
+        /// Places a replicated entry's files where the curator had them, the way Vortex does for its replicate mode.
+        /// Each file in the archive is identified by its checksum rather than its name or folder, then written to
+        /// every path the entry's hashes list gives that checksum. One file can therefore land in several places,
+        /// and anything in the archive the list does not mention is left out.
+        ///
+        /// The paths describe the curator's mod folder, which Stardrop does not necessarily lay out the same way. See
+        /// <see cref="ResolveHashDestination"/> for how each one is mapped onto the collection's folder.
+        /// </summary>
+        /// <param name="onlyFolders">When given, only placements landing inside these folders are written. Used to write files back over a mod that arrived late</param>
+        private static HashPlacementResult PlaceOverlayByHashes(CollectionInstall collection, CollectionModEntry entry, string storedPath, string installPath, List<string>? onlyFolders = null)
+        {
+            var result = new HashPlacementResult();
+            var neededChecksums = entry.FileHashes.Select(h => h.Md5).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var tempFolder = Path.Combine(Path.GetTempPath(), "Stardrop", Guid.NewGuid().ToString("N"));
+
+            try
+            {
+                var filesByChecksum = ReadFilesByChecksum(storedPath, tempFolder, neededChecksums);
+                if (filesByChecksum is null)
+                {
+                    result.CouldNotRead = true;
+                    return result;
+                }
+
+                Directory.CreateDirectory(installPath);
+                var installRoot = Path.GetFullPath(installPath) + Path.DirectorySeparatorChar;
+                var fileIndex = BuildFileIndex(installPath);
+                var (modFolders, targetsByFolder, isLimitedToTargets) = FindPlacementFolders(collection, entry, fileIndex);
+
+                foreach (var fileHash in entry.FileHashes)
+                {
+                    if (filesByChecksum.TryGetValue(fileHash.Md5, out var sourcePath) is false)
+                    {
+                        Program.helper.Log($"No file in {entry.Name} matches the checksum the curator recorded for {fileHash.Path}", Helper.Status.Warning);
+                        result.UnmatchedCount += 1;
+                        continue;
+                    }
+
+                    var destination = ResolveHashDestination(fileHash.Path, fileIndex, modFolders, isLimitedToTargets);
+                    if (destination is null)
+                    {
+                        Program.helper.Log($"Skipping {fileHash.Path} from {entry.Name}, as it does not resolve to a path inside the collection's folder", Helper.Status.Warning);
+                        continue;
+                    }
+
+                    if (onlyFolders is not null && IsInsideAnyFolder(destination, onlyFolders) is false)
+                    {
+                        continue;
+                    }
+
+                    // The recorded path comes from a third party, so it is checked again once it is a real path
+                    var destinationPath = Path.GetFullPath(Path.Combine(installPath, Path.Combine(destination.Split('/'))));
+                    if (destinationPath.StartsWith(installRoot, StringComparison.OrdinalIgnoreCase) is false)
+                    {
+                        Program.helper.Log($"Skipping {fileHash.Path} from {entry.Name}, as it points outside {installPath}", Helper.Status.Warning);
+                        continue;
+                    }
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+                    File.Copy(sourcePath, destinationPath, true);
+
+                    // Recorded so a later placement in the same pass resolves against it, keeping the casing consistent
+                    fileIndex.TryAdd(destination, destination);
+                    result.WrittenPaths.Add(destination);
+
+                    var touchedFolder = targetsByFolder.Keys.FirstOrDefault(f => destination.StartsWith(f + "/", StringComparison.OrdinalIgnoreCase));
+                    if (touchedFolder is not null && result.TouchedTargets.Contains(targetsByFolder[touchedFolder], StringComparer.OrdinalIgnoreCase) is false)
+                    {
+                        result.TouchedTargets.Add(targetsByFolder[touchedFolder]);
+                    }
+                }
+
+                Program.helper.Log($"Placed {result.WrittenPaths.Count} file(s) from {entry.Name} by checksum, with {result.UnmatchedCount} of {entry.FileHashes.Count} recorded file(s) missing from the archive");
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Failed to place the files of {entry.Name} by checksum: {ex}", Helper.Status.Alert);
+                result.CouldNotRead = result.WrittenPaths.Count == 0;
+            }
+            finally
+            {
+                TryDeleteDirectory(tempFolder);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Extracts every file the entry needs into a scratch folder, keyed by checksum. Files whose checksum no
+        /// placement asks for are discarded as soon as they are read, so the scratch folder only ever holds what is
+        /// about to be written. Returns null where the archive could not be read.
+        /// </summary>
+        private static Dictionary<string, string>? ReadFilesByChecksum(string storedPath, string tempFolder, HashSet<string> neededChecksums)
+        {
+            var filesByChecksum = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // A loose file is its own single entry
+            if (IsArchiveFile(storedPath) is false)
+            {
+                var checksum = Toolkit.GetFileChecksum(storedPath);
+                if (checksum is null)
+                {
+                    return null;
+                }
+
+                if (neededChecksums.Contains(checksum))
+                {
+                    filesByChecksum[checksum] = storedPath;
+                }
+
+                return filesByChecksum;
+            }
+
+            try
+            {
+                Directory.CreateDirectory(tempFolder);
+
+                var fileNumber = 0;
+                using var archive = ArchiveFactory.OpenArchive(storedPath);
+                foreach (var archiveEntry in archive.Entries.Where(e => e.IsDirectory is false && String.IsNullOrEmpty(e.Key) is false))
+                {
+                    if (archiveEntry.Key!.Contains("__MACOSX", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    // Numbered rather than named, as the archive's names play no part in where anything goes
+                    var tempPath = Path.Combine(tempFolder, fileNumber.ToString());
+                    fileNumber += 1;
+
+                    archiveEntry.WriteToFile(tempPath, new ExtractionOptions() { ExtractFullPath = false, Overwrite = true });
+
+                    var checksum = Toolkit.GetFileChecksum(tempPath);
+                    if (checksum is null || neededChecksums.Contains(checksum) is false || filesByChecksum.ContainsKey(checksum))
+                    {
+                        TryDelete(tempPath);
+                        continue;
+                    }
+
+                    filesByChecksum[checksum] = tempPath;
+                }
+
+                return filesByChecksum;
+            }
+            catch (Exception ex)
+            {
+                Program.helper.Log($"Unable to read {storedPath} while matching its files by checksum: {ex}", Helper.Status.Alert);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Every file under the collection's folder, relative to it with forward slashes. Keyed without regard to
+        /// case and holding the path as it is on disk, so a placement written with different casing lands on the
+        /// existing file rather than beside it on a case-sensitive file system.
+        /// </summary>
+        private static Dictionary<string, string> BuildFileIndex(string installPath)
+        {
+            var fileIndex = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (Directory.Exists(installPath) is false)
+            {
+                return fileIndex;
+            }
+
+            foreach (var filePath in Directory.EnumerateFiles(installPath, "*", SearchOption.AllDirectories))
+            {
+                var relativePath = Path.GetRelativePath(installPath, filePath).Replace('\\', '/');
+                fileIndex.TryAdd(relativePath, relativePath);
+            }
+
+            return fileIndex;
+        }
+
+        /// <summary>
+        /// The mod folders a replicated entry's placements are anchored to, relative to the collection's folder.
+        /// Where the entry's rules name mods, only their folders are used, which keeps a file from landing in an
+        /// unrelated mod that happens to share a file name. Otherwise every mod folder in the collection is a
+        /// candidate and matching has to be stricter.
+        /// </summary>
+        private static (List<string> Folders, Dictionary<string, string> TargetsByFolder, bool IsLimitedToTargets) FindPlacementFolders(CollectionInstall collection, CollectionModEntry entry, Dictionary<string, string> fileIndex)
+        {
+            // A folder holding a manifest is a mod folder, wherever it sits
+            var manifestFolders = fileIndex.Values.Where(p => String.Equals(Path.GetFileName(p), "manifest.json", StringComparison.OrdinalIgnoreCase)).Select(p => Path.GetDirectoryName(p)?.Replace('\\', '/')).Where(p => String.IsNullOrEmpty(p) is false).Select(p => p!).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+            var targetsByFolder = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var target in collection.GetOverlayTargets(entry))
+            {
+                foreach (var installedMod in target.InstalledMods.Where(m => String.IsNullOrEmpty(m.FolderName) is false))
+                {
+                    foreach (var folder in manifestFolders.Where(f => String.Equals(GetLastSegment(f), installedMod.FolderName, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        targetsByFolder.TryAdd(folder, target.Name);
+                    }
+                }
+            }
+
+            if (targetsByFolder.Count > 0)
+            {
+                return (targetsByFolder.Keys.ToList(), targetsByFolder, true);
+            }
+
+            return (manifestFolders, targetsByFolder, false);
+        }
+
+        /// <summary>
+        /// Maps one of the curator's paths onto the collection's folder, trying each of these in turn:
+        ///
+        /// 1. The path exactly as recorded, where a file already sits there.
+        /// 2. Anchored on a mod folder: the deepest folder in the path that shares its name with one of the mod
+        ///    folders, with the rest of the path placed under that folder. This is what absorbs the curator's folder
+        ///    layout differing from Stardrop's above the mod folder itself.
+        /// 3. The longest ending of the path that matches exactly one existing file in the mod folders. A single
+        ///    file name only counts where the folders are limited to the entry's own targets.
+        /// 4. The path as recorded, as a new file.
+        ///
+        /// Whatever is chosen is corrected to the casing already on disk. Returns null for a path that tries to
+        /// climb out of the collection's folder.
+        /// </summary>
+        private static string? ResolveHashDestination(string recordedPath, Dictionary<string, string> fileIndex, List<string> modFolders, bool isLimitedToTargets)
+        {
+            var segments = recordedPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length == 0 || segments.Any(s => s == "." || s == ".."))
+            {
+                return null;
+            }
+
+            var normalizedPath = String.Join('/', segments);
+            if (fileIndex.TryGetValue(normalizedPath, out var existingPath))
+            {
+                return existingPath;
+            }
+
+            // Walked from the deepest folder up, so a wrapper folder sharing the mod's name never wins over the mod's own
+            for (int index = segments.Length - 2; index >= 0; index--)
+            {
+                var anchor = modFolders.FirstOrDefault(f => String.Equals(GetLastSegment(f), segments[index], StringComparison.OrdinalIgnoreCase));
+                if (anchor is null)
+                {
+                    continue;
+                }
+
+                var anchoredPath = $"{anchor}/{String.Join('/', segments.Skip(index + 1))}";
+
+                return fileIndex.TryGetValue(anchoredPath, out var anchoredExisting) ? anchoredExisting : MatchExistingCasing(anchoredPath, fileIndex);
+            }
+
+            var candidates = fileIndex.Values.Where(p => modFolders.Any(f => p.StartsWith(f + "/", StringComparison.OrdinalIgnoreCase))).ToList();
+            var shortestEnding = isLimitedToTargets ? 1 : 2;
+            for (int length = segments.Length - 1; length >= shortestEnding; length--)
+            {
+                var ending = "/" + String.Join('/', segments.Skip(segments.Length - length));
+                var matches = candidates.Where(p => ("/" + p).EndsWith(ending, StringComparison.OrdinalIgnoreCase)).ToList();
+                if (matches.Count == 1)
+                {
+                    return matches[0];
+                }
+
+                // Several files share this ending. A shorter one would only match more of them
+                if (matches.Count > 1)
+                {
+                    break;
+                }
+            }
+
+            return MatchExistingCasing(normalizedPath, fileIndex);
+        }
+
+        /// <summary>
+        /// Rewrites a new file's folders in the casing they already have on disk, so it joins the existing folder
+        /// on a case-sensitive file system rather than creating a second one beside it.
+        /// </summary>
+        private static string MatchExistingCasing(string relativePath, Dictionary<string, string> fileIndex)
+        {
+            var segments = relativePath.Split('/');
+            var folderDepth = segments.Length - 1;
+
+            for (int depth = folderDepth; depth > 0; depth--)
+            {
+                var folder = String.Join('/', segments.Take(depth));
+                var existingFile = fileIndex.Values.FirstOrDefault(p => p.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase));
+                if (existingFile is null)
+                {
+                    continue;
+                }
+
+                var existingFolder = existingFile.Substring(0, folder.Length);
+
+                return $"{existingFolder}/{String.Join('/', segments.Skip(depth))}";
+            }
+
+            return relativePath;
+        }
+
+        private static string GetLastSegment(string relativePath)
+        {
+            var separatorIndex = relativePath.LastIndexOf('/');
+
+            return separatorIndex < 0 ? relativePath : relativePath.Substring(separatorIndex + 1);
         }
 
         /// <summary>
@@ -1432,7 +2036,8 @@ namespace Stardrop.Views
             // The count of what a collection still needs is dropped while its window is open, as the details panel
             // above already carries it and repeating it in the footer says the same thing twice
             var summary = await InstallEntryIntoCollections(entryName, archivePath, matches, includeRemainingCount: _collectionsWindow is null);
-            var hasFailure = matches.Any(m => m.Entry.IsSatisfied() is false);
+            // Configuration held for its mods landed where it should, even though it has not been written yet
+            var hasFailure = matches.Any(m => m.Entry.IsSatisfied() is false && m.Entry.Status is not CollectionModStatus.AwaitingTargets);
 
             _viewModel.EvaluateRequirements();
             _viewModel.UpdateEndorsements();
@@ -1532,8 +2137,8 @@ namespace Stardrop.Views
             foreach (var match in matches)
             {
                 // Each collection installs into a folder of its own, so a file two of them pin lands in both
-                var wasInstalled = await InstallCollectionEntryArchive(match.Collection, match.Entry, archivePath);
-                if (wasInstalled)
+                var (wasInstalled, appliedOverlays) = await InstallCollectionEntryArchive(match.Collection, match.Entry, archivePath);
+                if (wasInstalled && match.Entry.IsOverlay() is false)
                 {
                     AddEntryToCollectionProfile(match.Collection, match.Entry);
                 }
@@ -1548,7 +2153,22 @@ namespace Stardrop.Views
                     continue;
                 }
 
-                summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_installed"), entryName, match.Collection.Name));
+                // Configuration that arrived ahead of its mods says what it is waiting on, so the user knows the
+                // setup is not finished and which downloads finish it
+                if (match.Entry.Status is CollectionModStatus.AwaitingTargets)
+                {
+                    var blockingNames = match.Collection.DescribeBlockingTargets(match.Entry, CollectionInstall.MAX_LISTED_TARGET_NAMES, Program.translation.Get("ui.message.collection_names_truncated"));
+                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_held"), entryName, match.Collection.Name, blockingNames));
+                }
+                else
+                {
+                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_installed"), entryName, match.Collection.Name));
+                }
+
+                foreach (var appliedOverlay in appliedOverlays)
+                {
+                    summary.Add(String.Format(Program.translation.Get("ui.message.collection_entry_released"), appliedOverlay.Name, match.Collection.Name));
+                }
 
                 if (includeRemainingCount is false)
                 {
@@ -1801,45 +2421,51 @@ namespace Stardrop.Views
         /// <summary>
         /// Installs a single archive into the collection it belongs to, taking the same two paths the main install
         /// does: an archive carrying a manifest goes through AddMods, while anything else is the curator's
-        /// configuration and is copied over the mods it targets.
+        /// configuration and is kept, then written once every mod it is ordered after is installed.
+        ///
+        /// A mod arriving here has missed its place in the install order. The configuration ordered after it is
+        /// written back over it. Any configuration that was only waiting on it is written for the first time.
         /// </summary>
-        private async Task<bool> InstallCollectionEntryArchive(CollectionInstall collection, CollectionModEntry entry, string archivePath)
+        /// <returns>Whether the entry was accounted for, along with any other configuration its arrival let through</returns>
+        private async Task<(bool WasInstalled, List<CollectionModEntry> AppliedOverlays)> InstallCollectionEntryArchive(CollectionInstall collection, CollectionModEntry entry, string archivePath)
         {
             var installPath = Pathing.GetCollectionInstallPath(collection.SourceId);
             Directory.CreateDirectory(installPath);
 
             entry.SourceArchivePath = archivePath;
 
-            // The rules decide which entry wins where two of them write the same path, and an entry arriving after
-            // the install has finished is written last whatever rank they gave it
+            // Configuration is written back over this mod further down, though another mod the rules rank after
+            // it is not, so this can still land on top of one where the two share a path
             var installOrder = collection.GetInstallOrder();
             var entryRank = installOrder.IndexOf(entry);
-            if (entryRank >= 0 && installOrder.Skip(entryRank + 1).Any(m => m.IsSatisfied()))
+            if (entryRank >= 0 && installOrder.Skip(entryRank + 1).Any(m => m.Status is CollectionModStatus.Installed))
             {
-                Program.helper.Log($"Writing {entry.Name} into {collection.Name} after entries the curator's rules place below it, as it arrived once the install had finished", Helper.Status.Warning);
+                Program.helper.Log($"Writing {entry.Name} into {collection.Name} after mods the curator's rules place below it, as it arrived once the install had finished", Helper.Status.Warning);
             }
 
             if (IsArchiveFile(archivePath) is false || ArchiveHasManifest(archivePath) is false)
             {
                 Program.helper.Log($"Handling {entry.Name} as configuration rather than as a mod, as it carries no manifest of its own");
 
-                var overwritten = GetOverwrittenTargets(collection, entry, archivePath);
-                if (TryExtractOverlay(archivePath, installPath) is false)
+                if (StoreOverlay(collection, entry, archivePath) is false)
                 {
-                    entry.Status = CollectionModStatus.Failed;
-                    entry.FailureReason = Program.translation.Get("ui.message.collection_reason_overlay_failed");
-
-                    return false;
+                    return (false, new List<CollectionModEntry>());
                 }
 
-                entry.OverlayTargets = overwritten;
-                entry.Status = CollectionModStatus.AppliedAsOverlay;
+                // Written straight away only where every mod it is ordered after is already installed. Otherwise it is
+                // held until they are. Anything ordered after this configuration can come through with it
+                var appliedOverlays = ApplyReadyOverlays(collection, installPath);
+                if (appliedOverlays.Count > 0)
+                {
+                    // Configuration only lands at this point, so the mods it touched need a second pass to report
+                    // that they now have a config
+                    _viewModel.DiscoverMods(Pathing.defaultModPath);
+                }
 
-                // Configuration only lands at this point, so the mods it touched need a second pass to report that
-                // they now have a config
-                _viewModel.DiscoverMods(Pathing.defaultModPath);
+                CompleteUpdateIfReady(collection);
 
-                return true;
+                // The entry itself is reported by the caller, so only what came through alongside it is handed back
+                return (entry.IsOverlay(), appliedOverlays.Where(o => o != entry).ToList());
             }
 
             var installedModsByArchive = new Dictionary<string, List<Mod>>(StringComparer.OrdinalIgnoreCase);
@@ -1851,15 +2477,39 @@ namespace Stardrop.Views
             var entriesByArchive = new Dictionary<string, CollectionModEntry>(StringComparer.OrdinalIgnoreCase) { [archivePath] = entry };
             RecordInstalledMods(entriesByArchive, installedModsByArchive, installedMods);
 
-            // The last outstanding entry of a stalled update is what completes it, and it usually arrives here
-            // rather than through the install pass
-            if (collection.TryCompleteUpdate())
+            var releasedOverlays = new List<CollectionModEntry>();
+            if (entry.Status is CollectionModStatus.Installed)
             {
-                Program.helper.Log($"Revision {collection.RevisionNumber} of {collection.Name} is now fully installed");
-                RefreshCollectionUpdateCount();
+                // Written back before anything held is looked at, so configuration already on disk is put back on
+                // top of this mod in the same order the main install would have written it
+                var reappliedCount = ReapplyOverlaysOverEntry(collection, entry, GetEntryModFolders(installPath, installedMods, entry), installPath);
+                releasedOverlays = ApplyReadyOverlays(collection, installPath);
+
+                if (reappliedCount > 0 || releasedOverlays.Count > 0)
+                {
+                    _viewModel.DiscoverMods(Pathing.defaultModPath);
+                }
             }
 
-            return entry.Status is CollectionModStatus.Installed;
+            CompleteUpdateIfReady(collection);
+
+            return (entry.Status is CollectionModStatus.Installed, releasedOverlays);
+        }
+
+        /// <summary>
+        /// Moves a stalled update onto its revision once nothing it needs is outstanding. The last outstanding entry
+        /// of an update is what completes it. It usually arrives through the single entry path rather than
+        /// through the install pass.
+        /// </summary>
+        private void CompleteUpdateIfReady(CollectionInstall collection)
+        {
+            if (collection.TryCompleteUpdate() is false)
+            {
+                return;
+            }
+
+            Program.helper.Log($"Revision {collection.RevisionNumber} of {collection.Name} is now fully installed");
+            RefreshCollectionUpdateCount();
         }
 
         /// <summary>
@@ -1943,6 +2593,9 @@ namespace Stardrop.Views
                 summary += BuildEntryLines(collection, failures, includeFailureReasons: true);
             }
 
+            summary += BuildHeldOverlaysSection(collection);
+            summary += BuildUnmatchedFilesSection(collection);
+
             if (conflicts.Count > 0)
             {
                 summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_conflicts"), conflicts.Count);
@@ -2003,6 +2656,9 @@ namespace Stardrop.Views
                 summary += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_failures"), failures.Count);
                 summary += BuildEntryLines(collection, failures, includeFailureReasons: true);
             }
+
+            summary += BuildHeldOverlaysSection(collection);
+            summary += BuildUnmatchedFilesSection(collection);
 
             // Says outright that the revision has not landed, as the collections window will keep reporting an
             // update until whatever is outstanding is dealt with
@@ -2141,6 +2797,59 @@ namespace Stardrop.Views
             }
 
             return lines;
+        }
+
+        /// <summary>
+        /// Names the configuration still waiting on its mods, which for a user without Premium is usually all of
+        /// it straight after the install. Empty where nothing is held, so callers can append it unconditionally.
+        /// </summary>
+        private static string BuildHeldOverlaysSection(CollectionInstall collection)
+        {
+            var heldOverlays = collection.GetHeldOverlays();
+            if (heldOverlays.Count == 0)
+            {
+                return String.Empty;
+            }
+
+            var section = Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_overlays_held"), heldOverlays.Count);
+            foreach (var overlay in heldOverlays.Take(_maxListedEntries))
+            {
+                var blockingNames = collection.DescribeBlockingTargets(overlay, CollectionInstall.MAX_LISTED_TARGET_NAMES, Program.translation.Get("ui.message.collection_names_truncated"));
+                section += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_overlay_held_entry"), overlay.Name, blockingNames))}";
+            }
+
+            if (heldOverlays.Count > _maxListedEntries)
+            {
+                section += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_entries_truncated"), heldOverlays.Count - _maxListedEntries))}";
+            }
+
+            return section;
+        }
+
+        /// <summary>
+        /// Names the replicated entries that went on with some of their files missing from the download. The entry
+        /// itself reads as applied, so without this the gap would only show up in game as an unchanged file.
+        /// </summary>
+        private static string BuildUnmatchedFilesSection(CollectionInstall collection)
+        {
+            var partialEntries = collection.Mods.Where(m => m.Status is CollectionModStatus.AppliedAsOverlay && m.UnmatchedFileCount > 0).ToList();
+            if (partialEntries.Count == 0)
+            {
+                return String.Empty;
+            }
+
+            var section = Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_files_unmatched"), partialEntries.Count);
+            foreach (var entry in partialEntries.Take(_maxListedEntries))
+            {
+                section += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_files_unmatched_entry"), entry.Name, entry.UnmatchedFileCount, entry.FileHashes.Count))}";
+            }
+
+            if (partialEntries.Count > _maxListedEntries)
+            {
+                section += Environment.NewLine + $"  {HyperlinkParser.Escape(String.Format(Program.translation.Get("ui.message.collection_entries_truncated"), partialEntries.Count - _maxListedEntries))}";
+            }
+
+            return section;
         }
 
         /// <summary>

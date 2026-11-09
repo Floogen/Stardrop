@@ -179,6 +179,7 @@ namespace Stardrop.Utilities.External
                     SizeBytes = collectionMod.Source.Size
                 };
 
+                entry.FileHashes = ReadFileHashes(collectionMod.Hashes);
                 entry.Status = GetInitialStatus(entry, isPremium);
                 install.Mods.Add(entry);
             }
@@ -186,6 +187,33 @@ namespace Stardrop.Utilities.External
             install.Rules = ResolveModRules(index.ModRules, install.Mods);
 
             return install;
+        }
+
+        /// <summary>
+        /// Keeps the placements that carry both a path and a checksum, with the path's separators turned to forward
+        /// slashes. Vortex writes them with backslashes whatever the platform. Every comparison made against
+        /// them later works in forward slashes.
+        /// </summary>
+        private static List<CollectionFileHash> ReadFileHashes(List<CollectionModFileHash>? hashes)
+        {
+            var fileHashes = new List<CollectionFileHash>();
+            if (hashes is null)
+            {
+                return fileHashes;
+            }
+
+            foreach (var hash in hashes)
+            {
+                if (String.IsNullOrWhiteSpace(hash.Path) || String.IsNullOrWhiteSpace(hash.MD5))
+                {
+                    continue;
+                }
+
+                var path = hash.Path.Replace('\\', '/').Trim('/');
+                fileHashes.Add(new CollectionFileHash(path, hash.MD5.Trim().ToLowerInvariant()));
+            }
+
+            return fileHashes;
         }
 
         /// <summary>

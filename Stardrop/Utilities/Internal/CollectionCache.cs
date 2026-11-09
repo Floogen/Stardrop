@@ -82,8 +82,8 @@ namespace Stardrop.Utilities.Internal
         }
 
         /// <summary>
-        /// Removes both the collection's record and its installed mods. The generated profile is left alone, as the
-        /// caller decides whether to delete it or keep it as a plain profile.
+        /// Removes the collection's record, its kept configuration archives and its installed mods. The generated
+        /// profile is left alone, as the caller decides whether to delete it or keep it as a plain profile.
         /// </summary>
         public static bool Delete(string sourceId, bool deleteInstalledMods = true)
         {
@@ -93,6 +93,13 @@ namespace Stardrop.Utilities.Internal
                 if (File.Exists(cachePath))
                 {
                     File.Delete(cachePath);
+                }
+
+                // Only ever written back from the record, so they go with it whether or not the mods stay
+                var overlaysPath = Pathing.GetCollectionOverlaysFolderPath(sourceId);
+                if (Directory.Exists(overlaysPath))
+                {
+                    Directory.Delete(overlaysPath, true);
                 }
 
                 if (deleteInstalledMods)
