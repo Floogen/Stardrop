@@ -68,22 +68,49 @@ namespace Stardrop.Views
             };
             this.FindControl<Button>("refreshThemesButton").Click += RefreshThemesButton_Click;
 
-            // Handle Nexus Mods preferred server
-            var descriptionToServerEnum = new Dictionary<string, NexusServers>();
-            foreach (NexusServers serverName in Enum.GetValues(typeof(NexusServers)))
+            // Handle Nexus Mods preferred server.
+            // Keep the enum as the item's value, so localization cannot affect the saved setting.
+            // The translated label is display-only: the value handed to the Nexus API is still the
+            // server's [Description], see the GetFileDownloadLink calls in MainWindow.
+            var serverDisplayKeys = new Dictionary<NexusServers, string>()
             {
-                if (EnumParser.GetDescription(serverName) is not null)
-                {
-                    descriptionToServerEnum[EnumParser.GetDescription(serverName)] = serverName;
-                }
-            }
+                { NexusServers.NexusCDN, "ui.settings_window.nexus_servers.nexus_cdn" },
+                { NexusServers.Chicago, "ui.settings_window.nexus_servers.chicago" },
+                { NexusServers.Paris, "ui.settings_window.nexus_servers.paris" },
+                { NexusServers.Amsterdam, "ui.settings_window.nexus_servers.amsterdam" },
+                { NexusServers.Prague, "ui.settings_window.nexus_servers.prague" },
+                { NexusServers.LosAngeles, "ui.settings_window.nexus_servers.los_angeles" },
+                { NexusServers.Miami, "ui.settings_window.nexus_servers.miami" },
+                { NexusServers.Singapore, "ui.settings_window.nexus_servers.singapore" }
+            };
 
             var preferredComboBox = this.FindControl<ComboBox>("preferredServerBox");
-            preferredComboBox.Items = descriptionToServerEnum.Keys;
-            preferredComboBox.SelectedItem = EnumParser.GetDescription(Program.settings.PreferredNexusServer);
+            preferredComboBox.Items = Enum.GetValues(typeof(NexusServers))
+                .Cast<NexusServers>()
+                .Select(server => new ComboBoxItem
+                {
+                    // Fall back to the [Description] so a server added upstream still shows up.
+                    Content = serverDisplayKeys.TryGetValue(server, out var displayKey)
+                        ? Program.translation.Get(displayKey)
+                        : EnumParser.GetDescription(server),
+                    Tag = server
+                })
+                .ToList();
+            // Use FirstOrDefault instead of First: if the stored setting holds a value outside
+            // NexusServers (a hand-edited config file), we simply leave the box unselected rather
+            // than throwing, which is what the previous description-based lookup did.
+            var selectedServer = preferredComboBox.Items.Cast<ComboBoxItem>()
+                .FirstOrDefault(option => option.Tag is NexusServers server && server == Program.settings.PreferredNexusServer);
+            if (selectedServer is not null)
+            {
+                preferredComboBox.SelectedItem = selectedServer;
+            }
             preferredComboBox.SelectionChanged += (sender, e) =>
             {
-                Program.settings.PreferredNexusServer = descriptionToServerEnum[preferredComboBox.SelectedItem.ToString()];
+                if (preferredComboBox.SelectedItem is ComboBoxItem { Tag: NexusServers server })
+                {
+                    Program.settings.PreferredNexusServer = server;
+                }
             };
 
             // Handle adding the languages
@@ -344,7 +371,7 @@ namespace Stardrop.Views
         {
             OpenFolderDialog dialog = new OpenFolderDialog()
             {
-                Title = "Select the mod folder"
+                Title = Program.translation.Get("ui.settings_window.dialogs.select_mod_folder")
             };
 
             if (!String.IsNullOrEmpty(Program.settings.ModFolderPath))
@@ -372,7 +399,7 @@ namespace Stardrop.Views
         {
             OpenFolderDialog dialog = new OpenFolderDialog()
             {
-                Title = "Select the output folder for mods installed via Stardrop"
+                Title = Program.translation.Get("ui.settings_window.dialogs.select_mod_install_folder")
             };
 
             if (!String.IsNullOrEmpty(Program.settings.ModInstallPath))
@@ -391,7 +418,7 @@ namespace Stardrop.Views
         {
             OpenFolderDialog dialog = new OpenFolderDialog()
             {
-                Title = "Select the folder that collections install their mods to"
+                Title = Program.translation.Get("ui.settings_window.dialogs.select_collection_install_folder")
             };
 
             var collectionInstallPathBox = this.FindControl<TextBox>("collectionInstallPathBox");

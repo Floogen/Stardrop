@@ -65,6 +65,10 @@
   "ui.main_window.combobox.author": "Author",
   "ui.main_window.combobox.requirements": "Voraussetzungen",
 
+  // Profile Editor Window - Dialogs
+  "ui.profile_editor.dialogs.open_profile": "Mod-Profil öffnen",
+  "ui.profile_editor.dialogs.json_filter": "JSON-Dateien",
+
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI Pfad",
   "ui.settings_window.labels.mod_path": "Mod Ordnerpfad",
@@ -72,6 +76,21 @@
   "ui.settings_window.labels.themes": "Themes",
   "ui.settings_window.labels.languages": "Sprache",
   "ui.settings_window.labels.miscellaneous": "Sonstiges",
+
+  // Settings Window - Dialogs
+  "ui.settings_window.dialogs.select_mod_folder": "Mod-Ordner auswählen",
+  "ui.settings_window.dialogs.select_mod_install_folder": "Ausgabeordner für von Stardrop installierte Mods auswählen",
+  "ui.settings_window.dialogs.select_collection_install_folder": "Ordner auswählen, in den Sammlungen ihre Mods installieren",
+
+  // Settings Window - Nexus Servers
+  "ui.settings_window.nexus_servers.nexus_cdn": "Nexus CDN",
+  "ui.settings_window.nexus_servers.chicago": "Chicago",
+  "ui.settings_window.nexus_servers.paris": "Paris",
+  "ui.settings_window.nexus_servers.amsterdam": "Amsterdam",
+  "ui.settings_window.nexus_servers.prague": "Prag",
+  "ui.settings_window.nexus_servers.los_angeles": "Los Angeles",
+  "ui.settings_window.nexus_servers.miami": "Miami",
+  "ui.settings_window.nexus_servers.singapore": "Singapur",
 
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "Versteckte Ordner ignorieren",

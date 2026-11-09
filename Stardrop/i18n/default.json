@@ -117,6 +117,10 @@
   // Profile Editor Window - Labels
   "ui.profile_editor.labels.from_collection": "From a collection",
 
+  // Profile Editor Window - Dialogs
+  "ui.profile_editor.dialogs.open_profile": "Open Mod Profile",
+  "ui.profile_editor.dialogs.json_filter": "JSON files",
+
   // Profile Export Window
   "ui.profile_export_window.text.options": "Options",
   "ui.profile_export_window.checkbox.include_mod_configs": "Include Mod Configs",
@@ -134,6 +138,21 @@
   "ui.settings_window.labels.miscellaneous": "Miscellaneous",
   "ui.settings_window.labels.nexus": "Nexus Mods",
   "ui.settings_window.labels.preferred_server": "Preferred Server:",
+
+  // Settings Window - Dialogs
+  "ui.settings_window.dialogs.select_mod_folder": "Select the mod folder",
+  "ui.settings_window.dialogs.select_mod_install_folder": "Select the output folder for mods installed via Stardrop",
+  "ui.settings_window.dialogs.select_collection_install_folder": "Select the folder that collections install their mods to",
+
+  // Settings Window - Nexus Servers
+  "ui.settings_window.nexus_servers.nexus_cdn": "Nexus CDN",
+  "ui.settings_window.nexus_servers.chicago": "Chicago",
+  "ui.settings_window.nexus_servers.paris": "Paris",
+  "ui.settings_window.nexus_servers.amsterdam": "Amsterdam",
+  "ui.settings_window.nexus_servers.prague": "Prague",
+  "ui.settings_window.nexus_servers.los_angeles": "Los Angeles",
+  "ui.settings_window.nexus_servers.miami": "Miami",
+  "ui.settings_window.nexus_servers.singapore": "Singapore",
 
   // Settings Window - Mod Grouping
   "ui.settings_window.mod_grouping.none": "None",

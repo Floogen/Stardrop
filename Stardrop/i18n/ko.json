@@ -96,6 +96,10 @@
   "ui.main_window.combobox.requirements": "선행 모드",
   "ui.main_window.combobox.group": "모드 그룹",
 
+  // Profile Editor Window - Dialogs
+  "ui.profile_editor.dialogs.open_profile": "모드 프로필 열기",
+  "ui.profile_editor.dialogs.json_filter": "JSON 파일",
+
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "SMAPI 경로",
   "ui.settings_window.labels.mod_path": "모드 폴더 경로",
@@ -106,6 +110,21 @@
   "ui.settings_window.labels.miscellaneous": "기타",
   "ui.settings_window.labels.nexus": "Nexus Mods",
   "ui.settings_window.labels.preferred_server": "선호하는 서버:",
+
+  // Settings Window - Dialogs
+  "ui.settings_window.dialogs.select_mod_folder": "모드 폴더 선택",
+  "ui.settings_window.dialogs.select_mod_install_folder": "Stardrop을 통해 설치된 모드의 폴더 선택",
+  "ui.settings_window.dialogs.select_collection_install_folder": "컬렉션이 모드를 설치하는 폴더 선택",
+
+  // Settings Window - Nexus Servers
+  "ui.settings_window.nexus_servers.nexus_cdn": "Nexus CDN",
+  "ui.settings_window.nexus_servers.chicago": "시카고",
+  "ui.settings_window.nexus_servers.paris": "파리",
+  "ui.settings_window.nexus_servers.amsterdam": "암스테르담",
+  "ui.settings_window.nexus_servers.prague": "프라하",
+  "ui.settings_window.nexus_servers.los_angeles": "로스앤젤레스",
+  "ui.settings_window.nexus_servers.miami": "마이애미",
+  "ui.settings_window.nexus_servers.singapore": "싱가포르",
 
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "숨겨진 폴더 무시",

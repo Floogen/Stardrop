@@ -96,6 +96,10 @@
   "ui.main_window.combobox.requirements": "Вимоги",
   "ui.main_window.combobox.group": "Група модифікацій",
 
+  // Profile Editor Window - Dialogs
+  "ui.profile_editor.dialogs.open_profile": "Відкрити профіль модифікацій",
+  "ui.profile_editor.dialogs.json_filter": "Файли JSON",
+
   // Settings Window - Labels
   "ui.settings_window.labels.smapi_path": "Шлях до SMAPI",
   "ui.settings_window.labels.mod_path": "Шлях до теки з модифікаціями",
@@ -106,6 +110,21 @@
   "ui.settings_window.labels.miscellaneous": "Інше",
   "ui.settings_window.labels.nexus": "Nexusmods",
   "ui.settings_window.labels.preferred_server": "Бажаний сервер:",
+
+  // Settings Window - Dialogs
+  "ui.settings_window.dialogs.select_mod_folder": "Виберіть теку з модифікаціями",
+  "ui.settings_window.dialogs.select_mod_install_folder": "Виберіть теку для модифікацій, що встановлюються через Stardrop",
+  "ui.settings_window.dialogs.select_collection_install_folder": "Виберіть теку, куди колекції встановлюють свої модифікації",
+
+  // Settings Window - Nexus Servers
+  "ui.settings_window.nexus_servers.nexus_cdn": "Nexus CDN",
+  "ui.settings_window.nexus_servers.chicago": "Чикаго",
+  "ui.settings_window.nexus_servers.paris": "Париж",
+  "ui.settings_window.nexus_servers.amsterdam": "Амстердам",
+  "ui.settings_window.nexus_servers.prague": "Прага",
+  "ui.settings_window.nexus_servers.los_angeles": "Лос-Анджелес",
+  "ui.settings_window.nexus_servers.miami": "Маямі",
+  "ui.settings_window.nexus_servers.singapore": "Сінгапур",
 
   // Settings Window - Buttons
   "ui.settings_window.buttons.ignore_hidden_folders": "Ігнорувати приховані теки",

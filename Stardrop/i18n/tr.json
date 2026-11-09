@@ -64,12 +64,31 @@
 	"ui.main_window.combobox.author": "Yapımcı",
 	"ui.main_window.combobox.requirements": "Gereksinimler",
 
+	// Profile Editor Window - Dialogs
+	"ui.profile_editor.dialogs.open_profile": "Mod profili aç",
+	"ui.profile_editor.dialogs.json_filter": "JSON dosyaları",
+
 	// Settings Window - Labels
 	"ui.settings_window.labels.smapi_path": "SMAPI Dosya Yolu",
 	"ui.settings_window.labels.mod_path": "Mod Klasör Yolu",
 	"ui.settings_window.labels.themes": "Temalar",
 	"ui.settings_window.labels.languages": "Diller",
 	"ui.settings_window.labels.miscellaneous": "Diğer",
+
+	// Settings Window - Dialogs
+	"ui.settings_window.dialogs.select_mod_folder": "Mod klasörünü seç",
+	"ui.settings_window.dialogs.select_mod_install_folder": "Stardrop ile kurulan modların çıktı klasörünü seç",
+	"ui.settings_window.dialogs.select_collection_install_folder": "Koleksiyonların modlarını kuracağı klasörü seç",
+
+	// Settings Window - Nexus Servers
+	"ui.settings_window.nexus_servers.nexus_cdn": "Nexus CDN",
+	"ui.settings_window.nexus_servers.chicago": "Chicago",
+	"ui.settings_window.nexus_servers.paris": "Paris",
+	"ui.settings_window.nexus_servers.amsterdam": "Amsterdam",
+	"ui.settings_window.nexus_servers.prague": "Prag",
+	"ui.settings_window.nexus_servers.los_angeles": "Los Angeles",
+	"ui.settings_window.nexus_servers.miami": "Miami",
+	"ui.settings_window.nexus_servers.singapore": "Singapur",
 
 	// Settings Window - Buttons
 	"ui.settings_window.buttons.ignore_hidden_folders": "Gizli Dosyaları Görmezden Gel",
