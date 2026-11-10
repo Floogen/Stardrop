@@ -74,13 +74,13 @@ namespace Stardrop.Views
         {
             var dialog = new OpenFileDialog
             {
-                Title = "Open Mod Profile",
+                Title = Program.translation.Get("ui.profile_editor.dialogs.open_profile"),
                 AllowMultiple = false,
                 Filters = new List<FileDialogFilter>
                 {
                     new FileDialogFilter
                     {
-                        Name = "JSON files",
+                        Name = Program.translation.Get("ui.profile_editor.dialogs.json_filter"),
                         Extensions = new List<string> { "json" }
                     }
                 }
