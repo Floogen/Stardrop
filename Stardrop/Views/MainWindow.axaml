@@ -17,7 +17,7 @@
         Width="1430"
         Height="800"
         Background="{DynamicResource ThemeBackgroundBrush}"
-        HasSystemDecorations="{Binding HasSystemDecorations}"
+        SystemDecorations="Full"
         ExtendClientAreaToDecorationsHint="true"
         ExtendClientAreaChromeHints="{Binding ChromeHint}"
         ExtendClientAreaTitleBarHeightHint="-1"

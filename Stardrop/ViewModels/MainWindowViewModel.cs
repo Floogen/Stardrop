@@ -28,7 +28,6 @@ namespace Stardrop.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         private string ChromeHint { get; set; } = "NoChrome";
-        private bool HasSystemDecorations { get; set; } = true;
         private bool ShowTitle { get; set; } = true;
         private bool ShowMainMenu { get; set; } = true;
         private bool ShowWindowMenu { get; set; } = true;

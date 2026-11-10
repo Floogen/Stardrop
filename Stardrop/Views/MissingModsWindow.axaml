@@ -13,7 +13,7 @@
         Width="800"
         Height="500"
         Background="{DynamicResource ThemeBackgroundBrush}"
-        HasSystemDecorations="true"
+        SystemDecorations="Full"
         ExtendClientAreaToDecorationsHint="true"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="-1"

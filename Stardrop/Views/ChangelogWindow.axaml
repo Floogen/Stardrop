@@ -19,7 +19,7 @@
 	ExtendClientAreaChromeHints="NoChrome"
 	ExtendClientAreaTitleBarHeightHint="-1"
 	ExtendClientAreaToDecorationsHint="true"
-	HasSystemDecorations="true"
+	SystemDecorations="Full"
 	Icon="/Assets/icon.ico"
 	mc:Ignorable="d">
 
