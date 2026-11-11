@@ -21,13 +21,13 @@ namespace Stardrop.Utilities.External
 {
     public static class Nexus
     {
-        private static readonly Uri _baseUrl = new Uri("https://api.nexusmods.com/v1/");
+        private static readonly Uri _baseUrl = new("https://api.nexusmods.com/v1/");
 
         public static NexusClient? Client { get; private set; }
 
         public delegate void NexusClientChangedHandler(NexusClient? oldClient, NexusClient? newClient);
         public static event NexusClientChangedHandler? ClientChanged = null;
-
+        private static readonly JsonSerializerOptions ReadOptions = new() { AllowTrailingCommas = true };
         /// <summary>
         /// If the user has entered their Nexus API key in a previous session, this will attempt to retreive
         /// it.
@@ -40,7 +40,7 @@ namespace Stardrop.Utilities.External
                 return null;
             }
 
-            var pairedKeys = JsonSerializer.Deserialize<PairedKeys>(File.ReadAllText(Pathing.GetNotionCachePath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+            var pairedKeys = JsonSerializer.Deserialize<PairedKeys>(File.ReadAllText(Pathing.GetNotionCachePath()), ReadOptions);
             if (pairedKeys?.Vector is null || pairedKeys?.Lock is null)
             {
                 return null;
@@ -68,8 +68,10 @@ namespace Stardrop.Utilities.External
         /// <returns>The created client, if successful. Null otherwise.</returns>
         public static async Task<NexusClient?> CreateClient(string apiKey)
         {
-            HttpClient client = new HttpClient();
-            client.BaseAddress = _baseUrl;
+            HttpClient client = new()
+            {
+                BaseAddress = _baseUrl
+            };
             client.DefaultRequestHeaders.Add("apiKey", apiKey);
             client.DefaultRequestHeaders.Add("Application-Name", "Stardrop");
             client.DefaultRequestHeaders.Add("Application-Version", Program.ApplicationVersion);
@@ -99,17 +101,20 @@ namespace Stardrop.Utilities.External
         }
     }
 
-    public partial class NexusClient
+    public partial class NexusClient(HttpClient client)
+
     {
-        private static readonly Uri _graphQLBaseUrl = new Uri("https://api.nexusmods.com/v2/graphql");
+        private static readonly Uri _graphQLBaseUrl = new("https://api.nexusmods.com/v2/graphql");
         internal const string NxmModPattern = @"nxm:\/\/(?<domain>stardewvalley)\/mods\/(?<mod>[0-9]+)\/files\/(?<file>[0-9]+)\?key=(?<key>.*)&expires=(?<expiry>[0-9]+)&user_id=(?<user>[0-9]+)";
         internal const string NxmCollectionPattern = @"nxm:\/\/(?<domain>[a-z0-9]+)\/collections\/(?<slug>[a-z0-9]+)\/revisions\/(?<revision>[0-9]+)";
-        private const string _nxmPattern = NxmModPattern;
+        // private const string _nxmPattern = NxmModPattern;
+        [GeneratedRegex(NxmModPattern)]
+        private static partial Regex NxmPattern();
 
         /// <summary>Nexus mod ID for SMAPI, which collections list as a mod but which Stardrop must never install into the mod folder</summary>
         internal const int SmapiNexusModId = 2400;
 
-        private readonly HttpClient _client;
+        private readonly HttpClient _client = client;
         private NexusUser _settings = null!;
 
         internal int DailyRequestsLimit { get; private set; }
@@ -120,10 +125,6 @@ namespace Stardrop.Utilities.External
         internal event EventHandler<ModDownloadCompletedEventArgs>? DownloadCompleted = null;
         internal event EventHandler<ModDownloadFailedEventArgs>? DownloadFailed = null;
 
-        public NexusClient(HttpClient client)
-        {
-            _client = client;
-        }
 
         /// <summary>
         /// Calls the /validate endpoint on Nexus Mods' API using the API key stored in this client upon creation.
@@ -151,9 +152,9 @@ namespace Stardrop.Utilities.External
 
 
                 string content = await response.Content.ReadAsStringAsync();
-                Validate validationModel = JsonSerializer.Deserialize<Validate>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+                Validate? validationModel = JsonSerializer.Deserialize<Validate>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                if (validationModel is null || String.IsNullOrEmpty(validationModel.Message) is false)
+                if (validationModel is null || string.IsNullOrEmpty(validationModel.Message) is false)
                 {
                     Program.helper.Log($"Unable to validate given API key for Nexus Mods");
 
@@ -187,8 +188,8 @@ namespace Stardrop.Utilities.External
                 return null;
             }
 
-            var match = Regex.Match(Regex.Unescape(nxmData.Link), _nxmPattern);
-            if (match.Success is false || match.Groups["domain"].ToString().ToLower() != "stardewvalley" || Int32.TryParse(match.Groups["mod"].ToString(), out int modId) is false)
+            var match = NxmPattern().Match(Regex.Unescape(nxmData.Link));
+            if (match.Success is false || match.Groups["domain"].ToString().ToLower() != "stardewvalley" || int.TryParse(match.Groups["mod"].ToString(), out int modId) is false)
             {
                 return null;
             }
@@ -199,7 +200,7 @@ namespace Stardrop.Utilities.External
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
                 {
                     string content = await response.Content.ReadAsStringAsync();
-                    ModDetails modDetails = JsonSerializer.Deserialize<ModDetails>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    ModDetails? modDetails = JsonSerializer.Deserialize<ModDetails>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                     if (modDetails is null)
                     {
@@ -283,13 +284,13 @@ namespace Stardrop.Utilities.External
 
         public async Task<ModFile?> GetFileByVersion(int modId, string version, string? modFlag = null, bool ignoreCategory = false)
         {
-            if (SemVersion.TryParse(version.Replace("v", String.Empty), SemVersionStyles.Any, out var targetVersion) is false)
+            if (SemVersion.TryParse(version.Replace("v", string.Empty), SemVersionStyles.Any, out var targetVersion) is false)
             {
                 Program.helper.Log($"Unable to parse given target version {version}");
                 return null;
             }
 
-            Program.helper.Log($"Requesting version {version} of mod {modId}{(String.IsNullOrEmpty(modFlag) is false ? $" with flag {modFlag}" : String.Empty)}");
+            Program.helper.Log($"Requesting version {version} of mod {modId}{(string.IsNullOrEmpty(modFlag) is false ? $" with flag {modFlag}" : string.Empty)}");
 
             try
             {
@@ -297,7 +298,7 @@ namespace Stardrop.Utilities.External
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
                 {
                     string content = await response.Content.ReadAsStringAsync();
-                    ModFiles modFiles = JsonSerializer.Deserialize<ModFiles>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    ModFiles? modFiles = JsonSerializer.Deserialize<ModFiles>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                     if (modFiles is null || modFiles.Files is null || modFiles.Files.Count == 0)
                     {
@@ -307,13 +308,13 @@ namespace Stardrop.Utilities.External
                     else
                     {
                         ModFile? selectedFile = null;
-                        foreach (var file in modFiles.Files.Where(x => String.IsNullOrEmpty(x.Version) is false && SemVersion.TryParse(x.Version.Replace("v", String.Empty), SemVersionStyles.Any, out var modVersion) && modVersion == targetVersion))
+                        foreach (var file in modFiles.Files.Where(x => string.IsNullOrEmpty(x.Version) is false && SemVersion.TryParse(x.Version.Replace("v", string.Empty), SemVersionStyles.Any, out var modVersion) && modVersion == targetVersion))
                         {
-                            if (String.IsNullOrEmpty(modFlag) is false && ((String.IsNullOrEmpty(file.Name) is false && file.Name.Contains(modFlag, StringComparison.OrdinalIgnoreCase)) || (String.IsNullOrEmpty(file.Description) is false && file.Description.Contains(modFlag, StringComparison.OrdinalIgnoreCase))))
+                            if (string.IsNullOrEmpty(modFlag) is false && ((string.IsNullOrEmpty(file.Name) is false && file.Name.Contains(modFlag, StringComparison.OrdinalIgnoreCase)) || (string.IsNullOrEmpty(file.Description) is false && file.Description.Contains(modFlag, StringComparison.OrdinalIgnoreCase))))
                             {
                                 selectedFile = file;
                             }
-                            else if (String.IsNullOrEmpty(modFlag) is true && String.IsNullOrEmpty(file.Category) is false && (ignoreCategory || file.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase)))
+                            else if (string.IsNullOrEmpty(modFlag) is true && string.IsNullOrEmpty(file.Category) is false && (ignoreCategory || file.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase)))
                             {
                                 selectedFile = file;
                             }
@@ -321,7 +322,7 @@ namespace Stardrop.Utilities.External
 
                         if (selectedFile is null)
                         {
-                            Program.helper.Log($"Unable to get a matching file for the mod {modId} with version {version}{(String.IsNullOrEmpty(modFlag) is false ? $" and with the flag {modFlag}" : String.Empty)} via Nexus Mods: \n{String.Join("\n", modFiles.Files.Select(m => $"{m.Name} | {m.Version}"))}");
+                            Program.helper.Log($"Unable to get a matching file for the mod {modId} with version {version}{(string.IsNullOrEmpty(modFlag) is false ? $" and with the flag {modFlag}" : string.Empty)} via Nexus Mods: \n{string.Join("\n", modFiles.Files.Select(m => $"{m.Name} | {m.Version}"))}");
                         }
 
                         UpdateRequestCounts(response.Headers);
@@ -359,16 +360,16 @@ namespace Stardrop.Utilities.External
         /// </summary>
         public static bool TryParseModNxmLink(string link, out string domainName, out int modId, out int fileId)
         {
-            domainName = String.Empty;
+            domainName = string.Empty;
             modId = 0;
             fileId = 0;
 
-            if (String.IsNullOrEmpty(link))
+            if (string.IsNullOrEmpty(link))
             {
                 return false;
             }
 
-            var match = Regex.Match(Regex.Unescape(link), NxmModPattern);
+            var match = NxmPattern().Match(Regex.Unescape(link));
             if (match.Success is false)
             {
                 return false;
@@ -376,7 +377,7 @@ namespace Stardrop.Utilities.External
 
             domainName = match.Groups["domain"].ToString().ToLower();
 
-            return Int32.TryParse(match.Groups["mod"].ToString(), out modId) && Int32.TryParse(match.Groups["file"].ToString(), out fileId);
+            return int.TryParse(match.Groups["mod"].ToString(), out modId) && int.TryParse(match.Groups["file"].ToString(), out fileId);
         }
 
         public async Task<string?> GetFileDownloadLink(NXM nxmData, string? serverName = null)
@@ -386,8 +387,9 @@ namespace Stardrop.Utilities.External
                 return null;
             }
 
-            var match = Regex.Match(Regex.Unescape(nxmData.Link), _nxmPattern);
-            if (match.Success is false || match.Groups["domain"].ToString().ToLower() != "stardewvalley" || Int32.TryParse(match.Groups["mod"].ToString(), out int modId) is false || Int32.TryParse(match.Groups["file"].ToString(), out int fileId) is false)
+
+            var match = NxmPattern().Match(Regex.Unescape(nxmData.Link));
+            if (match.Success is false || string.Equals(match.Groups["domain"].Value, "stardewvalley", StringComparison.OrdinalIgnoreCase) is false || int.TryParse(match.Groups["mod"].ToString(), out int modId) is false || int.TryParse(match.Groups["file"].ToString(), out int fileId) is false)
             {
                 return null;
             }
@@ -397,7 +399,7 @@ namespace Stardrop.Utilities.External
 
         public async Task<string?> GetFileDownloadLink(int modId, int fileId, string? nxmKey = null, string? nxmExpiry = null, string? serverName = null)
         {
-            if (String.IsNullOrEmpty(serverName) || _settings.IsPremium is false)
+            if (string.IsNullOrEmpty(serverName) || _settings.IsPremium is false)
             {
                 serverName = "Nexus CDN";
             }
@@ -405,7 +407,7 @@ namespace Stardrop.Utilities.External
             try
             {
                 string url = $"games/stardewvalley/mods/{modId}/files/{fileId}/download_link.json";
-                if (String.IsNullOrEmpty(nxmKey) is false && String.IsNullOrEmpty(nxmExpiry) is false)
+                if (string.IsNullOrEmpty(nxmKey) is false && string.IsNullOrEmpty(nxmExpiry) is false)
                 {
                     url = $"{url}?key={nxmKey}&expires={nxmExpiry}";
                 }
@@ -414,7 +416,7 @@ namespace Stardrop.Utilities.External
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
                 {
                     string content = await response.Content.ReadAsStringAsync();
-                    List<DownloadLink> downloadLinks = JsonSerializer.Deserialize<List<DownloadLink>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    List<DownloadLink>? downloadLinks = JsonSerializer.Deserialize<List<DownloadLink>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                     if (downloadLinks is null || downloadLinks.Count == 0)
                     {
@@ -534,7 +536,7 @@ namespace Stardrop.Utilities.External
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
                 {
                     string content = await response.Content.ReadAsStringAsync();
-                    List<Endorsement> endorsements = JsonSerializer.Deserialize<List<Endorsement>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    List<Endorsement>? endorsements = JsonSerializer.Deserialize<List<Endorsement>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                     if (endorsements is null)
                     {
@@ -571,7 +573,7 @@ namespace Stardrop.Utilities.External
                 Program.helper.Log($"Failed to get endorsements for Nexus Mods: {ex}", Helper.Status.Alert);
             }
 
-            return new List<Endorsement>();
+            return [];
         }
 
         public async Task<EndorsementResponse> SetModEndorsement(int modId, bool isEndorsed)
@@ -583,7 +585,7 @@ namespace Stardrop.Utilities.External
                 if (response.Content is not null)
                 {
                     string content = await response.Content.ReadAsStringAsync();
-                    EndorsementResult endorsementResult = JsonSerializer.Deserialize<EndorsementResult>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    EndorsementResult? endorsementResult = JsonSerializer.Deserialize<EndorsementResult>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                     if (endorsementResult is null)
                     {
@@ -615,7 +617,7 @@ namespace Stardrop.Utilities.External
                             {
                                 return EndorsementResponse.NotDownloadedMod;
                             }
-                            Program.helper.Log(parsedMessage);
+                            Program.helper.Log($"Unhandled error message for endorsement: {parsedMessage}");
                             break;
                         default:
                             Program.helper.Log($"Unhandled status for endorsement: {endorsementResult.Status} | {endorsementResult.Message}");
@@ -693,7 +695,7 @@ namespace Stardrop.Utilities.External
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content is not null)
                 {
                     string content = await response.Content.ReadAsStringAsync();
-                    ModDetails modDetails = JsonSerializer.Deserialize<ModDetails>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    ModDetails? modDetails = JsonSerializer.Deserialize<ModDetails>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                     if (modDetails is null)
                     {
@@ -748,12 +750,12 @@ namespace Stardrop.Utilities.External
 
         private void UpdateRequestCounts(HttpResponseHeaders headers)
         {
-            if (headers.TryGetValues("x-rl-daily-limit", out var limitValues) && Int32.TryParse(limitValues.First(), out int dailyLimit))
+            if (headers.TryGetValues("x-rl-daily-limit", out var limitValues) && int.TryParse(limitValues.First(), out int dailyLimit))
             {
                 DailyRequestsLimit = dailyLimit;
             }
 
-            if (headers.TryGetValues("x-rl-daily-remaining", out var remainingValues) && Int32.TryParse(remainingValues.First(), out int dailyRemaining))
+            if (headers.TryGetValues("x-rl-daily-remaining", out var remainingValues) && int.TryParse(remainingValues.First(), out int dailyRemaining))
             {
                 DailyRequestsRemaining = dailyRemaining;
             }
@@ -773,8 +775,8 @@ namespace Stardrop.Utilities.External
                 return null;
             }
 
-            var match = Regex.Match(Regex.Unescape(nxmData.Link), _nxmPattern);
-            if (match.Success is false || match.Groups["domain"].ToString().ToLower() != "stardewvalley" || Int32.TryParse(match.Groups["mod"].ToString(), out int modId) is false || Int32.TryParse(match.Groups["file"].ToString(), out int fileId) is false)
+            var match = NxmPattern().Match(Regex.Unescape(nxmData.Link));
+            if (match.Success is false || match.Groups["domain"].ToString().ToLower() != "stardewvalley" || int.TryParse(match.Groups["mod"].ToString(), out int modId) is false || int.TryParse(match.Groups["file"].ToString(), out int fileId) is false)
             {
                 return null;
             }

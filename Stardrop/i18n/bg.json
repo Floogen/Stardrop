@@ -214,7 +214,7 @@
   // Downloads Panel - Labels
   "ui.downloads_panel.download_canceled": "Прекратено",
   "ui.downloads_panel.download_failed": "Неуспешно",
-  "ui_downloads_panel.download_success": "Завършено!",
+  "ui.downloads_panel.download_success": "Завършено!",
   "ui.downloads_panel.no_downloads_label": "Няма активни изтегляния",
 
   // Downloads Panel - Tooltips

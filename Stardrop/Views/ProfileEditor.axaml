@@ -3,20 +3,20 @@
         xmlns:vm="using:Stardrop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:i="clr-namespace:Optris.Icons.Avalonia;assembly=Optris.Icons.Avalonia"
 		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
+		xmlns:models="using:Stardrop.Models"
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
         x:Class="Stardrop.Views.ProfileEditor"
+		x:DataType="vm:ProfileEditorViewModel"
         Title="{i18n:Translate ui.window.profiles.name}"
         MinWidth="400"
         MinHeight="300"
         Width="500"
         Height="400"
         Background="{DynamicResource ThemeBackgroundBrush}"
-        HasSystemDecorations="true"
-        ExtendClientAreaToDecorationsHint="true"
-        ExtendClientAreaChromeHints="NoChrome"
-        ExtendClientAreaTitleBarHeightHint="-1"
+		WindowDecorations="BorderOnly"
+		ExtendClientAreaToDecorationsHint="True"
         CanResize="True"
         Icon="/Assets/icon.ico">
 
@@ -70,7 +70,7 @@
 		<Border Grid.Row="1" Margin="20" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="2">
 			<ListBox Name="profileList" Background="{DynamicResource DataGridRowBackground}" Foreground="{DynamicResource ThemeForegroundBrush}">
 				<ListBox.ItemTemplate>
-					<DataTemplate>
+					<DataTemplate x:DataType="models:Profile">
 						<StackPanel>
 							<TextBlock Text="{Binding Path=Name}"/>
 							<TextBlock Text="{i18n:Translate ui.profile_editor.labels.from_collection}" IsVisible="{Binding IsFromCollection}" FontSize="11" Opacity="0.6"/>

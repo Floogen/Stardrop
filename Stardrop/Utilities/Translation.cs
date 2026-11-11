@@ -10,16 +10,10 @@ namespace Stardrop.Utilities
 {
     internal class Translation : INotifyPropertyChanged
     {
-        public sealed class LanguageOption
+        public sealed class LanguageOption(string code)
         {
-            public string Code { get; }
-            public string DisplayName { get; }
-
-            public LanguageOption(string code)
-            {
-                Code = code;
-                DisplayName = GetDisplayName(code);
-            }
+            public string Code { get; } = code;
+            public string DisplayName { get; } = GetDisplayName(code);
 
             public override string ToString()
             {
@@ -28,14 +22,14 @@ namespace Stardrop.Utilities
 
             private static string GetDisplayName(string code)
             {
-                if (String.Equals(code, "default", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(code, "default", StringComparison.OrdinalIgnoreCase))
                 {
                     return "English";
                 }
 
                 try
                 {
-                    return CultureInfo.GetCultureInfo(code).EnglishName;
+                    return CultureInfo.GetCultureInfo(code).NativeName;
                 }
                 catch (CultureNotFoundException)
                 {
@@ -68,6 +62,13 @@ namespace Stardrop.Utilities
         private const string IndexerName = "Item";
         private const string IndexerArrayName = "Item[]";
 
+        private static readonly JsonSerializerOptions TranslationOptions = new()
+        {
+            AllowTrailingCommas = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            PropertyNameCaseInsensitive = true
+        };
+
         public string GetLanguageFromAbbreviation(string abbreviation)
         {
             if (_languageTranslations.ContainsKey(abbreviation))
@@ -80,7 +81,7 @@ namespace Stardrop.Utilities
 
         public string NormalizeLanguage(string language)
         {
-            if (String.IsNullOrWhiteSpace(language))
+            if (string.IsNullOrWhiteSpace(language))
             {
                 return "default";
             }
@@ -110,7 +111,13 @@ namespace Stardrop.Utilities
                 try
                 {
                     var fileName = Path.GetFileNameWithoutExtension(fileFullName);
-                    _languageTranslations[fileName] = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(fileFullName), new JsonSerializerOptions { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, PropertyNameCaseInsensitive = true });
+                    Dictionary<string, string>? translations = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(fileFullName), TranslationOptions);
+                    if (translations is null)
+                    {
+                        Program.helper.Log($"Translation file {fileName} parsed to nothing", Helper.Status.Warning);
+                        continue;
+                    }
+                    _languageTranslations[fileName] = translations;
                     Program.helper.Log($"Loaded language {fileName}", Helper.Status.Debug);
                 }
                 catch (Exception ex)
@@ -123,7 +130,7 @@ namespace Stardrop.Utilities
         public List<LanguageOption> GetAvailableTranslations()
         {
             return _languageTranslations.Keys
-                .OrderBy(code => String.Equals(code, "default", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                .OrderBy(code => string.Equals(code, "default", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
                 .ThenBy(code => new LanguageOption(code).DisplayName, StringComparer.CurrentCultureIgnoreCase)
                 .Select(code => new LanguageOption(code))
                 .ToList();
@@ -151,7 +158,7 @@ namespace Stardrop.Utilities
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
         public void Invalidate()
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(IndexerName));
@@ -160,7 +167,7 @@ namespace Stardrop.Utilities
 
         private string GetCanonicalLanguageCode(string code)
         {
-            return _languageTranslations.Keys.First(key => String.Equals(key, code, StringComparison.OrdinalIgnoreCase));
+            return _languageTranslations.Keys.First(key => string.Equals(key, code, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

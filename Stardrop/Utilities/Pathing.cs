@@ -11,9 +11,9 @@ namespace Stardrop.Utilities
         // produced rather than one that collapses into its parent folder
         private const string _fallbackPathSegment = "unnamed";
 
-        internal static string defaultGamePath;
-        internal static string defaultModPath;
-        internal static string defaultHomePath;
+        internal static string defaultGamePath = null!;
+        internal static string defaultModPath = null!;
+        internal static string defaultHomePath = null!;
 
         internal static void SetHomePath(string homePath)
         {
@@ -138,7 +138,7 @@ namespace Stardrop.Utilities
         /// </summary>
         public static string GetCollectionsFolderPath()
         {
-            return String.IsNullOrWhiteSpace(Program.settings.CollectionInstallPath) ? GetDefaultCollectionsFolderPath() : Program.settings.CollectionInstallPath;
+            return string.IsNullOrWhiteSpace(Program.settings.CollectionInstallPath) ? GetDefaultCollectionsFolderPath() : Program.settings.CollectionInstallPath;
         }
 
         /// <summary>Where collections install to before the setting has been given a value of its own</summary>
@@ -185,14 +185,14 @@ namespace Stardrop.Utilities
         /// </summary>
         public static string GetSafePathSegment(string? name, char replacement = '_')
         {
-            if (String.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 return _fallbackPathSegment;
             }
 
             var safeName = ReplaceInvalidFileNameCharacters(name, replacement).Trim().TrimEnd('.', ' ');
 
-            return String.IsNullOrEmpty(safeName) ? _fallbackPathSegment : safeName;
+            return string.IsNullOrEmpty(safeName) ? _fallbackPathSegment : safeName;
         }
 
         /// <summary>
@@ -221,13 +221,13 @@ namespace Stardrop.Utilities
         /// </summary>
         public static string? GetSafeDestinationPath(string destinationFolder, string? relativePath)
         {
-            if (String.IsNullOrWhiteSpace(relativePath))
+            if (string.IsNullOrWhiteSpace(relativePath))
             {
                 return destinationFolder;
             }
 
             var safePath = destinationFolder;
-            foreach (var segment in relativePath.Split(new char[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var segment in relativePath.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries))
             {
                 if (segment == ".")
                 {
@@ -251,7 +251,7 @@ namespace Stardrop.Utilities
         /// </summary>
         public static string? GetCollectionSourceId(string? modDirectoryPath)
         {
-            if (String.IsNullOrEmpty(modDirectoryPath) || String.IsNullOrEmpty(defaultHomePath))
+            if (string.IsNullOrEmpty(modDirectoryPath) || string.IsNullOrEmpty(defaultHomePath))
             {
                 return null;
             }
@@ -275,12 +275,12 @@ namespace Stardrop.Utilities
             }
 
             var relativePath = modPath.Substring(collectionsRoot.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            if (String.IsNullOrEmpty(relativePath))
+            if (string.IsNullOrEmpty(relativePath))
             {
                 return null;
             }
 
-            var separatorIndex = relativePath.IndexOfAny(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+            var separatorIndex = relativePath.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]);
             return separatorIndex == -1 ? relativePath : relativePath.Substring(0, separatorIndex);
         }
 
@@ -297,7 +297,7 @@ namespace Stardrop.Utilities
                 return false;
             }
 
-            return String.Equals(AppendSeparator(fullFirst), AppendSeparator(fullSecond), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(AppendSeparator(fullFirst), AppendSeparator(fullSecond), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -327,7 +327,7 @@ namespace Stardrop.Utilities
         /// </summary>
         private static string? TryGetFullPath(string? path)
         {
-            if (String.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(path))
             {
                 return null;
             }

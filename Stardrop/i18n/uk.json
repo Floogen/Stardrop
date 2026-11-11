@@ -173,7 +173,7 @@
   // Downloads Panel - Labels
   "ui.downloads_panel.download_canceled": "Скасовано",
   "ui.downloads_panel.download_failed": "Помилка",
-  "ui_downloads_panel.download_success": "Завершено!",
+  "ui.downloads_panel.download_success": "Завершено!",
   "ui.downloads_panel.no_downloads_label":  "Актуальних завантажень немає.",
 
   // Downloads Panel - Tooltips

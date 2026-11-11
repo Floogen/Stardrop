@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+﻿using ReactiveUI.Reactive;
 using Semver;
 using Stardrop.Models;
 using Stardrop.Models.Data;
@@ -48,8 +48,8 @@ namespace Stardrop.ViewModels
             _collection = collection;
             _entry = entry;
 
-            Name = String.IsNullOrEmpty(entry.Name) ? Program.translation.Get("internal.unknown") : entry.Name;
-            Version = String.IsNullOrEmpty(entry.Version) ? String.Empty : entry.Version;
+            Name = string.IsNullOrEmpty(entry.Name) ? Program.translation.Get("internal.unknown") : entry.Name;
+            Version = string.IsNullOrEmpty(entry.Version) ? string.Empty : entry.Version;
             Status = DescribeStatus(collection, entry);
             SortableVersion = SemVersion.TryParse(Version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : null;
 
@@ -63,12 +63,12 @@ namespace Stardrop.ViewModels
             if (entry.Status is CollectionModStatus.AwaitingTargets)
             {
                 var blockingNames = collection.DescribeBlockingTargets(entry, CollectionInstall.MAX_LISTED_TARGET_NAMES, Program.translation.Get("ui.message.collection_names_truncated"));
-                if (String.IsNullOrEmpty(blockingNames))
+                if (string.IsNullOrEmpty(blockingNames))
                 {
                     return Program.translation.Get("ui.collections_window.status.awaiting_targets_unnamed");
                 }
 
-                return String.Format(Program.translation.Get("ui.collections_window.status.awaiting_targets"), blockingNames);
+                return string.Format(Program.translation.Get("ui.collections_window.status.awaiting_targets"), blockingNames);
             }
 
             // An optional entry Stardrop could not fetch on the user's behalf is theirs to decide on, so it says so
@@ -90,7 +90,7 @@ namespace Stardrop.ViewModels
             };
 
             // The reason is the useful half of a failure, so it rides along rather than hiding in a tooltip
-            if (entry.Status is CollectionModStatus.Failed && String.IsNullOrEmpty(entry.FailureReason) is false)
+            if (entry.Status is CollectionModStatus.Failed && string.IsNullOrEmpty(entry.FailureReason) is false)
             {
                 return $"{status} ({entry.FailureReason})";
             }
@@ -98,7 +98,7 @@ namespace Stardrop.ViewModels
             // Files the curator listed that were not in the download mean the replacement is only partly in place
             if (entry.Status is CollectionModStatus.AppliedAsOverlay && entry.UnmatchedFileCount > 0)
             {
-                return $"{status} ({String.Format(Program.translation.Get("ui.collections_window.status.files_missing"), entry.UnmatchedFileCount)})";
+                return $"{status} ({string.Format(Program.translation.Get("ui.collections_window.status.files_missing"), entry.UnmatchedFileCount)})";
             }
 
             return status;
@@ -145,13 +145,13 @@ namespace Stardrop.ViewModels
         {
             SourceId = collection.SourceId;
             ProfileName = collection.ProfileName;
-            Name = String.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
-            HasCurator = String.IsNullOrEmpty(collection.Curator) is false;
-            Curator = HasCurator ? String.Format(Program.translation.Get("ui.collections_window.labels.curator"), collection.Curator) : String.Empty;
-            Revision = String.Format(Program.translation.Get("ui.collections_window.labels.revision"), collection.RevisionNumber, collection.InstallTimestamp.ToShortDateString());
-            Profile = String.Format(Program.translation.Get("ui.collections_window.labels.profile"), collection.ProfileName);
+            Name = string.IsNullOrEmpty(collection.Name) ? collection.Slug : collection.Name;
+            HasCurator = string.IsNullOrEmpty(collection.Curator) is false;
+            Curator = HasCurator ? string.Format(Program.translation.Get("ui.collections_window.labels.curator"), collection.Curator) : string.Empty;
+            Revision = string.Format(Program.translation.Get("ui.collections_window.labels.revision"), collection.RevisionNumber, collection.InstallTimestamp.ToShortDateString());
+            Profile = string.Format(Program.translation.Get("ui.collections_window.labels.profile"), collection.ProfileName);
             InstalledModCount = collection.GetInstalledCount();
-            Progress = String.Format(Program.translation.Get("ui.collections_window.labels.installed"), InstalledModCount, collection.GetModCount());
+            Progress = string.Format(Program.translation.Get("ui.collections_window.labels.installed"), InstalledModCount, collection.GetModCount());
             PageUri = collection.GetPageUri();
 
             DomainName = collection.DomainName;
@@ -165,21 +165,21 @@ namespace Stardrop.ViewModels
             // user has already agreed to it and is looking at what is left of it
             if (IsUpdateInProgress)
             {
-                UpdateStatus = String.Format(Program.translation.Get("ui.collections_window.labels.update_in_progress"), collection.PendingRevisionNumber);
+                UpdateStatus = string.Format(Program.translation.Get("ui.collections_window.labels.update_in_progress"), collection.PendingRevisionNumber);
                 UpdateMarker = Program.translation.Get("ui.collections_window.labels.update_in_progress_marker");
                 UpdatePageUri = collection.GetRevisionPageUri(collection.PendingRevisionNumber!.Value);
             }
             else if (HasUpdate)
             {
-                UpdateStatus = String.Format(Program.translation.Get("ui.collections_window.labels.update_available"), collection.LatestRevisionNumber);
+                UpdateStatus = string.Format(Program.translation.Get("ui.collections_window.labels.update_available"), collection.LatestRevisionNumber);
                 UpdateMarker = Program.translation.Get("ui.collections_window.labels.update_marker");
                 UpdatePageUri = collection.GetRevisionPageUri(collection.LatestRevisionNumber!.Value);
             }
             else
             {
-                UpdateStatus = String.Empty;
-                UpdateMarker = String.Empty;
-                UpdatePageUri = String.Empty;
+                UpdateStatus = string.Empty;
+                UpdateMarker = string.Empty;
+                UpdatePageUri = string.Empty;
             }
 
             Entries = collection.Mods.Select(m => new CollectionEntryView(collection, m)).ToList();
@@ -188,8 +188,8 @@ namespace Stardrop.ViewModels
 
     public class CollectionsWindowViewModel : ViewModelBase
     {
-        public ObservableCollection<CollectionView> Collections { get; } = new ObservableCollection<CollectionView>();
-        public ObservableCollection<CollectionEntryView> Entries { get; } = new ObservableCollection<CollectionEntryView>();
+        public ObservableCollection<CollectionView> Collections { get; } = [];
+        public ObservableCollection<CollectionEntryView> Entries { get; } = [];
 
         private CollectionView? _selectedCollection;
         public CollectionView? SelectedCollection
@@ -236,7 +236,7 @@ namespace Stardrop.ViewModels
         private CollectionSortColumn _sortColumn = CollectionSortColumn.Status;
         private bool _sortDescending;
 
-        private string _statusMessage = String.Empty;
+        private string _statusMessage = string.Empty;
         /// <summary>
         /// The result of the last thing that landed while this window was open. Shown in the footer rather than in
         /// a dialog, since a user fetching a page of missing entries would otherwise have one to dismiss per mod.
@@ -259,7 +259,7 @@ namespace Stardrop.ViewModels
             set { this.RaiseAndSetIfChanged(ref _isStatusMessageFailure, value); }
         }
 
-        public bool HasStatusMessage { get { return String.IsNullOrEmpty(_statusMessage) is false; } }
+        public bool HasStatusMessage { get { return string.IsNullOrEmpty(_statusMessage) is false; } }
 
         public bool HasCollections { get { return Collections.Count > 0; } }
         /// <summary>Whether anything is mid-check, which the refresh button reads so it cannot be pressed twice</summary>
@@ -329,7 +329,7 @@ namespace Stardrop.ViewModels
 
             foreach (var entry in SortEntries(_selectedCollection.Entries.Where(e => e.IsMissing)))
             {
-                if (entry.PageUri is not string pageUri || String.IsNullOrEmpty(pageUri))
+                if (entry.PageUri is not string pageUri || string.IsNullOrEmpty(pageUri))
                 {
                     continue;
                 }

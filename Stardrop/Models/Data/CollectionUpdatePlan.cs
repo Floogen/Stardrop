@@ -15,24 +15,19 @@ namespace Stardrop.Models.Data
     /// so the install pass, the profile amendment and the summary all read the same answer rather than each working
     /// it out again.
     /// </summary>
-    public class CollectionUpdatePlan
+    public class CollectionUpdatePlan(CollectionInstall previous)
     {
         /// <summary>The record being replaced, kept for the profile amendment and for the summary</summary>
-        public CollectionInstall Previous { get; }
+        public CollectionInstall Previous { get; } = previous;
 
         /// <summary>Entries this revision introduces, which install like any other new entry</summary>
-        public List<CollectionModEntry> Added { get; } = new List<CollectionModEntry>();
+        public List<CollectionModEntry> Added { get; } = [];
         /// <summary>Entries whose pin has not moved, carried over with their install state intact</summary>
-        public List<CollectionModEntry> Unchanged { get; } = new List<CollectionModEntry>();
+        public List<CollectionModEntry> Unchanged { get; } = [];
         /// <summary>Entries the curator has pinned to a different file, which are downloaded again</summary>
-        public List<CollectionEntryReplacement> Replaced { get; } = new List<CollectionEntryReplacement>();
+        public List<CollectionEntryReplacement> Replaced { get; } = [];
         /// <summary>Entries this revision no longer lists. Their files stay on disk, though the profile drops them</summary>
-        public List<CollectionModEntry> Removed { get; } = new List<CollectionModEntry>();
-
-        public CollectionUpdatePlan(CollectionInstall previous)
-        {
-            Previous = previous;
-        }
+        public List<CollectionModEntry> Removed { get; } = [];
 
         /// <summary>Whether anything actually differs, so a revision bump with an identical mod list can say so</summary>
         public bool HasChanges()
@@ -77,11 +72,11 @@ namespace Stardrop.Models.Data
                     continue;
                 }
 
-                var writtenFolders = replacement.Updated.InstalledMods.Select(m => m.FolderName).Where(f => String.IsNullOrEmpty(f) is false).ToList();
+                var writtenFolders = replacement.Updated.InstalledMods.Select(m => m.FolderName).Where(f => string.IsNullOrEmpty(f) is false).ToList();
 
                 foreach (var installedMod in replacement.Previous.InstalledMods)
                 {
-                    if (String.IsNullOrEmpty(installedMod.FolderName))
+                    if (string.IsNullOrEmpty(installedMod.FolderName))
                     {
                         continue;
                     }
@@ -110,7 +105,7 @@ namespace Stardrop.Models.Data
             {
                 foreach (var installedMod in replacement.Previous.InstalledMods)
                 {
-                    if (String.IsNullOrEmpty(installedMod.FolderName))
+                    if (string.IsNullOrEmpty(installedMod.FolderName))
                     {
                         continue;
                     }

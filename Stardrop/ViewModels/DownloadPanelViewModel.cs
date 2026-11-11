@@ -2,7 +2,7 @@
 using DynamicData;
 using DynamicData.Aggregation;
 using DynamicData.Binding;
-using ReactiveUI;
+using ReactiveUI.Reactive;
 using Stardrop.Models.Data;
 using Stardrop.Utilities.External;
 using System;
@@ -13,11 +13,27 @@ namespace Stardrop.ViewModels
 {
     public class DownloadPanelViewModel : ViewModelBase
     {
-        private ObservableCollection<ModDownloadViewModel> _downloads = new();
-        public ObservableCollection<ModDownloadViewModel> Downloads { get => _downloads; set => this.RaiseAndSetIfChanged(ref _downloads, value); }
+        private ObservableCollection<ModDownloadViewModel> _downloads = [];
+        public ObservableCollection<ModDownloadViewModel> Downloads
+        {
+            get => _downloads;
+            set
+            {
+                if (ReferenceEquals(_downloads, value))
+                {
+                    return;
+                }
 
-        public IObservable<int> InProgressDownloads { get; init; }
+                _downloads.CollectionChanged -= OnDownloadsCollectionChanged;
+                this.RaiseAndSetIfChanged(ref _downloads, value);
+                _downloads.CollectionChanged += OnDownloadsCollectionChanged;
+                this.RaisePropertyChanged(nameof(HasDownloads));
+            }
+        }
 
+
+        public IObservable<int> InProgressDownloads { get; }
+        public bool HasDownloads => Downloads.Count > 0;
         public DownloadPanelViewModel(NexusClient? nexusClient)
         {
             Nexus.ClientChanged += NexusClientChanged;
@@ -30,9 +46,15 @@ namespace Stardrop.ViewModels
             // handled in some way by the user
             InProgressDownloads = Downloads
                 .ToObservableChangeSet(t => t.ModUri)
-                .AutoRefresh(x => x.DownloadStatus, scheduler: RxApp.MainThreadScheduler)
+                .AutoRefresh(x => x.DownloadStatus, scheduler: RxSchedulers.MainThreadScheduler)
                 .Filter(x => x.DownloadStatus != ModDownloadStatus.Successful)
                 .Count();
+            Downloads.CollectionChanged += OnDownloadsCollectionChanged;
+        }
+
+        private void OnDownloadsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            this.RaisePropertyChanged(nameof(HasDownloads));
         }
 
         private void NexusClientChanged(NexusClient? oldClient, NexusClient? newClient)
@@ -143,13 +165,17 @@ namespace Stardrop.ViewModels
                 throw new Exception("This constructor should only be called in design mode.");
             }
 
+            InProgressDownloads = System.Reactive.Linq.Observable.Return(0);
+
             var inProgressDownload = new ModDownloadViewModel(
                 new Uri("https://www.fakeurl.com/testMod"),
                 "Fake Test Mod Download",
                 1024 * 1024,
                 new()
-            );
-            inProgressDownload.DownloadStatus = ModDownloadStatus.InProgress;
+            )
+            {
+                DownloadStatus = ModDownloadStatus.InProgress
+            };
             inProgressDownload.DownloadedBytes = inProgressDownload.SizeBytes!.Value / 2;
             Downloads.Add(inProgressDownload);
 
@@ -158,9 +184,11 @@ namespace Stardrop.ViewModels
                 "Fake Succeeded Download",
                 1234,
                 new()
-            );
-            succeededDownload.DownloadStatus = ModDownloadStatus.Successful;
-            succeededDownload.DownloadedBytes = 1234;
+            )
+            {
+                DownloadStatus = ModDownloadStatus.Successful,
+                DownloadedBytes = 1234
+            };
             Downloads.Add(succeededDownload);
 
             var failedDownload = new ModDownloadViewModel(
@@ -188,9 +216,11 @@ namespace Stardrop.ViewModels
                 "In Progress Download of Unknown Size",
                 null,
                 new()
-            );
-            indeterminateInProgressDownload.DownloadedBytes = 1024 * 1024 * 2;
-            indeterminateInProgressDownload.DownloadStatus = ModDownloadStatus.InProgress;
+            )
+            {
+                DownloadedBytes = 1024 * 1024 * 2,
+                DownloadStatus = ModDownloadStatus.InProgress
+            };
             Downloads.Add(indeterminateInProgressDownload);
         }
     }

@@ -10,7 +10,7 @@ namespace Stardrop.Models
         {
             IsProtected = false;
 
-            ModData = new List<PortableModData>();
+            ModData = [];
         }
 
         public ProfileExternal(List<Mod> mods) : this()

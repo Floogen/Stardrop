@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using Stardrop.Models;
 using Stardrop.ViewModels;
 using System.Collections.Generic;
@@ -11,16 +12,17 @@ namespace Stardrop.Views
 {
     public partial class ProfileExportWindow : BaseWindow
     {
-        private Profile? _exportProfile;
-        private List<Mod>? _mods;
+        private readonly Profile? _exportProfile;
+        private readonly List<Mod>? _mods;
+        private static readonly JsonSerializerOptions WriteOptions = new() { WriteIndented = true };
 
         public ProfileExportWindow() : base()
         {
-            AvaloniaXamlLoader.Load(this);
-
+            InitializeComponent();
+            
             // Handle buttons
-            this.FindControl<Button>("cancelButton").Click += delegate { this.Close(); };
-            this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
+            this.FindControl<Button>("cancelButton")!.Click += delegate { Close(); };
+            this.FindControl<Button>("applyButton")!.Click += ApplyButton_Click;
         }
 
         public ProfileExportWindow(Profile profile, List<Mod>? mods) : this()
@@ -31,23 +33,25 @@ namespace Stardrop.Views
 
         private async void ApplyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            if (_exportProfile is null || DataContext is not ProfileExportWindowViewModel viewModel || viewModel is null)
+            if (_exportProfile is null || DataContext is not ProfileExportWindowViewModel viewModel)
             {
                 return;
             }
 
-            var dialog = new SaveFileDialog
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
                 Title = Program.translation.Get("ui.window.profiles_export.name"),
-                InitialFileName = $"{_exportProfile.Name}.json",
-                Filters = new List<FileDialogFilter>
-                {
-                    new FileDialogFilter { Name = "JSON", Extensions = { "json" } }
-                }
-            };
+                SuggestedFileName = $"{_exportProfile.Name}.json",
+                FileTypeChoices = 
+                [
+                    new FilePickerFileType("JSON")
+                    {
+                        Patterns = ["*.json"]
+                    }
+                ]
+            });
 
-            string? path = await dialog.ShowAsync(this);
-            if (path is not null)
+            if (file is not null)
             {
                 var externalProfile = new ProfileExternal() { Name = _exportProfile.Name, EnabledModIds = _exportProfile.EnabledModIds };
                 if (viewModel.IncludeModNotes)
@@ -68,9 +72,9 @@ namespace Stardrop.Views
                 }
 
                 // Save the exported profile
-                await File.WriteAllTextAsync(path, JsonSerializer.Serialize(externalProfile, new JsonSerializerOptions() { WriteIndented = true }));
+                await File.WriteAllTextAsync(file.Path.LocalPath, JsonSerializer.Serialize(externalProfile, WriteOptions));
 
-                this.Close();
+                Close();
             }
         }
     }

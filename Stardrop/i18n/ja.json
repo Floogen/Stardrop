@@ -174,7 +174,7 @@
   // Downloads Panel - Labels
   "ui.downloads_panel.download_canceled": "キャンセル済み",
   "ui.downloads_panel.download_failed": "失敗",
-  "ui_downloads_panel.download_success": "完了！",
+  "ui.downloads_panel.download_success": "完了！",
   "ui.downloads_panel.no_downloads_label": "進行中のダウンロードはありません",
 
   // Downloads Panel - Tooltips

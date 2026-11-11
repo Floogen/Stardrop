@@ -80,6 +80,11 @@
   "ui.main_window.hyperlinks.downloading": "Downloading...",
   "ui.main_window.hyperlinks.installing": "Installing...",
 
+  // Main Window - Tooltips
+  "ui.main_window.tooltips.has_config": "Has Config",
+  "ui.main_window.tooltips.true": "True",
+  "ui.main_window.tooltips.false": "False",
+
   // Main Window - Buttons
   "ui.main_window.buttons.save_configs": "Save Configs",
   "ui.main_window.buttons.save_profile": "Save Profile",
@@ -218,7 +223,7 @@
   // Downloads Panel - Labels
   "ui.downloads_panel.download_canceled": "Canceled",
   "ui.downloads_panel.download_failed": "Failed",
-  "ui_downloads_panel.download_success": "Complete!",
+  "ui.downloads_panel.download_success": "Complete!",
   "ui.downloads_panel.no_downloads_label": "No downloads in progress",
 
   // Downloads Panel - Tooltips
@@ -264,6 +269,7 @@
   "ui.warning.stardrop_unable_to_find_latest": "Unable to check Stardrop's GitHub repository for an update.\n\nPlease check GitHub for a possible update or try again later.",
   "ui.warning.stardrop_update_downloaded": "Downloaded the latest version successfully.\n\nStardrop will now restart.",
   "ui.warning.SMAPI_unable_to_download_latest": "Unable to download the latest release of SMAPI.\n\nPlease download the latest version manually.",
+  "ui.warning.SMAPI_unable_to_find_latest": "Unable to check SMAPI's GitHub repository for an update.\n\nPlease check GitHub for a possible update or try again later.",
   "ui.warning.SMAPI_unable_to_install_latest": "Unable to install the latest release of SMAPI.\n\nPlease download the latest version manually.",
   "ui.warning.unable_to_locate_log": "Unable to locate SMAPI-latest.txt! SMAPI is required to run successfully at least once for Stardrop to detect game details.",
   "ui.warning.unable_to_read_log": "Unable to read SMAPI's log file to grab game version.\n\nMods will not be checked for updates.",
@@ -331,6 +337,7 @@
   // Internals
   "internal.connected": "Connected",
   "internal.disconnected": "Disconnected",
+  "internal.nexus_daily_requests": "(Remaining Daily Requests: {0}) ",
   "internal.unknown": "Unknown",
   "internal.enable": "Enable",
   "internal.disable": "Disable",

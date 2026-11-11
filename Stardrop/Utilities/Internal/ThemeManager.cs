@@ -84,7 +84,7 @@ namespace Stardrop.Utilities.Internal
             foreach (var key in defaults.Resources.Keys.ToList())
             {
                 // A theme may declare resources at the Styles level or inside a child Style, so ask the theme as a whole
-                if (((IResourceProvider)theme).TryGetResource(key, out _))
+                if (((IResourceProvider)theme).TryGetResource(key, ThemeVariant.Default, out _))
                 {
                     continue;
                 }
@@ -99,7 +99,7 @@ namespace Stardrop.Utilities.Internal
         private static Styles? ParseDefaults()
         {
             var defaultsFileText = GetDefaultsFileText();
-            if (String.IsNullOrEmpty(defaultsFileText))
+            if (string.IsNullOrEmpty(defaultsFileText))
             {
                 return null;
             }
