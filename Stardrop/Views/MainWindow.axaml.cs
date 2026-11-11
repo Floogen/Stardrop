@@ -548,6 +548,17 @@ namespace Stardrop.Views
                 return;
             }
 
+            try
+            {
+                var fileInfo = new FileInfo(Pathing.GetLinksCachePath());
+                if (fileInfo.Length <= 5) // Only contains "[]", so no links to process
+                {
+                    File.Delete(Pathing.GetLinksCachePath());
+                    return;
+                }
+            }
+            catch { /* Ignore possible file access exceptions, let the following logic handle it */ }
+
             // Handling a link locks the main window, and a lock arriving under a dialog would close it out from
             // underneath whoever is waiting on it. The links stay in the cache file until the way is clear rather
             // than being read out and dropped, as a collection's summary is exactly the window a user is looking at
