@@ -264,6 +264,24 @@ namespace Stardrop.Views
                 _ = StartSMAPI();
             }
 
+            Program.translation.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == "Item" || e.PropertyName == "Item[]")
+                {
+                    UpdateDisabledModFilterComboBox();
+                    if (Nexus.Client is not null)
+                    {
+                        _viewModel.NexusLimits = string.Format(Program.translation.Get("internal.nexus_daily_requests"), Nexus.Client.DailyRequestsRemaining);
+                    }
+                    foreach (var mod in _viewModel.Mods)
+                    {
+                        // 触发通知，让 UI 重新计算 Summary 属性
+                        mod.NotifyPropertyChanged(nameof(Mod.Summary));
+                    }
+
+                }
+            };
+
             Program.helper.Log($"Initialization complete!");
 
 
@@ -272,13 +290,6 @@ namespace Stardrop.Views
                 var testManifest = new Manifest() { Author = "Author", Name = "Test Mod", UniqueID = "Stardrop.TestMod", Version = "1.0.0" };
                 _viewModel.Mods.Add(new Mod(testManifest));
             }
-            Program.translation.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == "Item" || e.PropertyName == "Item[]")
-                {
-                    UpdateDisabledModFilterComboBox();
-                }
-            };
         }
 
         private void OnGridBackgroundPressed(object? sender, PointerPressedEventArgs e)
@@ -2870,7 +2881,7 @@ namespace Stardrop.Views
             if (isKeyValid is true)
             {
                 _viewModel.IsNexusConnected = true;
-                _viewModel.NexusLimits = $"(Remaining Daily Requests: {Nexus.Client.DailyRequestsRemaining}) ";
+                _viewModel.NexusLimits = string.Format(Program.translation.Get("internal.nexus_daily_requests"), Nexus.Client.DailyRequestsRemaining);
 
                 // Gather any endorsements
                 _viewModel.UpdateEndorsements();
@@ -2996,7 +3007,7 @@ namespace Stardrop.Views
             if (client is not null)
             {
                 _viewModel.IsNexusConnected = true;
-                _viewModel.NexusLimits = $"(Remaining Daily Requests: {client.DailyRequestsRemaining}) ";
+                _viewModel.NexusLimits = string.Format(Program.translation.Get("internal.nexus_daily_requests"), client.DailyRequestsRemaining);
             }
         }
 

@@ -80,6 +80,11 @@
   "ui.main_window.hyperlinks.downloading": "正在下载...",
   "ui.main_window.hyperlinks.installing": "正在安装...",
 
+  // Main Window - Tooltips
+  "ui.main_window.tooltips.has_config": "配置文件",
+  "ui.main_window.tooltips.true": "有",
+  "ui.main_window.tooltips.false": "无",
+
   // Main Window - Buttons
   "ui.main_window.buttons.save_configs": "保存模组配置",
   "ui.main_window.buttons.save_profile": "保存配置方案",
@@ -328,6 +333,7 @@
   // Internals
   "internal.connected": "已连接",
   "internal.disconnected": "未连接",
+  "internal.nexus_daily_requests": "(今日剩余请求数: {0})",
   "internal.unknown": "未知",
   "internal.enable": "启用",
   "internal.disable": "禁用",

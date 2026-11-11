@@ -80,6 +80,11 @@
   "ui.main_window.hyperlinks.downloading": "Downloading...",
   "ui.main_window.hyperlinks.installing": "Installing...",
 
+  // Main Window - Tooltips
+  "ui.main_window.tooltips.has_config": "Has Config",
+  "ui.main_window.tooltips.true": "True",
+  "ui.main_window.tooltips.false": "False",
+
   // Main Window - Buttons
   "ui.main_window.buttons.save_configs": "Save Configs",
   "ui.main_window.buttons.save_profile": "Save Profile",
@@ -332,6 +337,7 @@
   // Internals
   "internal.connected": "Connected",
   "internal.disconnected": "Disconnected",
+  "internal.nexus_daily_requests": "(Remaining Daily Requests: {0}) ",
   "internal.unknown": "Unknown",
   "internal.enable": "Enable",
   "internal.disable": "Disable",

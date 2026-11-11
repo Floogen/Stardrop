@@ -60,7 +60,25 @@ namespace Stardrop.Models
         public string RootPath { get; private set; } = null!; // Root mod path inside installed mods path for grouping mod components in the same mod
         public string ManifestFilePath { get { return ModFileInfo.FullName; } }
         public string Description { get; set; }
-        public string Summary { get { return $"Author: {Author}\nVersion: {ParsedVersion}\nHas Config: {HasConfig}\n\n{Description}"; } }
+        public string Summary 
+        { 
+            get 
+            { 
+                var authorLabel = Program.translation.Get("ui.main_window.menu_headers.author");
+                var versionLabel = Program.translation.Get("ui.main_window.menu_headers.version");
+                var hasConfigLabel = Program.translation.Get("ui.main_window.tooltips.has_config");
+                
+                var hasConfigText = HasConfig ? Program.translation.Get("ui.main_window.tooltips.true") : Program.translation.Get("ui.main_window.tooltips.false");
+
+                var baseInfo = $"{authorLabel}: {Author}\n{versionLabel}: {ParsedVersion}\n{hasConfigLabel}: {hasConfigText}";
+                if (string.IsNullOrWhiteSpace(Description))
+                {
+                    return baseInfo;
+                }
+
+                return $"{baseInfo}\n\n{Description}"; 
+            } 
+        }
         public string Author { get; set; }
         public DateTime? InstallTimestamp { get; set; }
         /// <summary>
