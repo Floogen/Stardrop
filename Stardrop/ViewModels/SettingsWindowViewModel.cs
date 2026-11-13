@@ -16,6 +16,7 @@ namespace Stardrop.ViewModels
         public bool IgnoreHiddenFolders { get { return Program.settings.IgnoreHiddenFolders; } set { Program.settings.IgnoreHiddenFolders = value; } }
         public bool IsAskingBeforeAcceptingNXM { get { return Program.settings.IsAskingBeforeAcceptingNXM; } set { Program.settings.IsAskingBeforeAcceptingNXM = value; } }
         public bool EnableProfileSpecificModConfigs { get { return Program.settings.EnableProfileSpecificModConfigs; } set { Program.settings.EnableProfileSpecificModConfigs = value; } }
+        public double ArchiveRetentionDays { get { return Program.settings.ArchiveRetentionDays; } set { Program.settings.ArchiveRetentionDays = (int)Math.Max(0, Math.Round(value)); } }
         public bool EnableModsOnAdd { get { return Program.settings.EnableModsOnAdd; } set { Program.settings.EnableModsOnAdd = value; } }
         public bool AlwaysAskToDelete { get { return Program.settings.AlwaysAskToDelete; } set { Program.settings.AlwaysAskToDelete = value; } }
         public bool AlwaysAskForCollectionInstallTarget { get { return Program.settings.AlwaysAskForCollectionInstallTarget; } set { Program.settings.AlwaysAskForCollectionInstallTarget = value; } }
@@ -43,6 +44,7 @@ namespace Stardrop.ViewModels
         public string ToolTip_CollectionsSkipSMAPIUpdateCheck { get; set; }
         public string ToolTip_EnableProfileSpecificModConfigs { get; set; }
         public string ToolTip_EnableModsOnAdd { get; set; }
+        public string ToolTip_ArchiveRetentionDays { get; set; }
         public string ToolTip_ShouldAutomaticallySaveProfileChanges { get; set; }
         public string ToolTip_ShowModThumbnails { get; set; }
         public string ToolTip_Save { get; set; }
@@ -72,6 +74,7 @@ namespace Stardrop.ViewModels
             ToolTip_AlwaysAskForCollectionInstallTarget = Program.translation.Get("ui.settings_window.tooltips.always_ask_for_collection_install_target");
             ToolTip_CollectionsSkipSMAPIUpdateCheck = Program.translation.Get("ui.settings_window.tooltips.collections_skip_smapi_update_check");
             ToolTip_EnableProfileSpecificModConfigs = Program.translation.Get("ui.settings_window.tooltips.enable_profile_specific_configs");
+            ToolTip_ArchiveRetentionDays = Program.translation.Get("ui.settings_window.tooltips.archive_retention_days");
             ToolTip_EnableModsOnAdd = Program.translation.Get("ui.settings_window.tooltips.enable_mods_on_add");
             ToolTip_ShouldAutomaticallySaveProfileChanges = Program.translation.Get("ui.settings_window.tooltips.automatically_save_profile_changes");
             ToolTip_ShowModThumbnails = Program.translation.Get("ui.settings_window.tooltips.show_mod_thumbnails");

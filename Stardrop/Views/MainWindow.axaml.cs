@@ -1161,8 +1161,8 @@ namespace Stardrop.Views
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
-            // Delete the downloaded archived mod
-            if (File.Exists(downloadedFilePath))
+            // Delete the downloaded archived mod, unless it is being kept for other tools to collect
+            if (Program.settings.ArchiveRetentionDays <= 0 && File.Exists(downloadedFilePath))
             {
                 File.Delete(downloadedFilePath);
             }
@@ -2089,10 +2089,13 @@ namespace Stardrop.Views
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
-            // Delete the downloaded archived mods
-            foreach (var filePath in updateFilePaths.Where(p => File.Exists(p)))
+            // Delete the downloaded archived mods, unless they are being kept for other tools to collect
+            if (Program.settings.ArchiveRetentionDays <= 0)
             {
-                File.Delete(filePath);
+                foreach (var filePath in updateFilePaths.Where(p => File.Exists(p)))
+                {
+                    File.Delete(filePath);
+                }
             }
 
             _viewModel.EvaluateRequirements();
@@ -2271,8 +2274,8 @@ namespace Stardrop.Views
                 await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
                 await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
-                // Delete the downloaded archived mod
-                if (File.Exists(downloadedFilePath))
+                // Delete the downloaded archived mod, unless it is being kept for other tools to collect
+                if (Program.settings.ArchiveRetentionDays <= 0 && File.Exists(downloadedFilePath))
                 {
                     File.Delete(downloadedFilePath);
                 }

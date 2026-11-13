@@ -25,6 +25,11 @@ namespace Stardrop.Models
         public bool IgnoreHiddenFolders { get; set; } = true;
         public bool EnableProfileSpecificModConfigs { get; set; }
         public bool ShouldWriteToModConfigs { get; set; }
+        /// <summary>
+        /// How many days a downloaded mod archive is kept in the Nexus folder after it is installed, so that other
+        /// tools can collect it. 0 deletes the archive once it is installed, and any left over at startup.
+        /// </summary>
+        public int ArchiveRetentionDays { get; set; }
         public bool EnableModsOnAdd { get; set; }
         /// <summary>
         /// Whether to always ask before deleting a previous version of a mod when updating the mod.

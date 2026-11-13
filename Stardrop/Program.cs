@@ -147,9 +147,11 @@ namespace Stardrop
                     settings.NexusDetails = new NexusUser();
                 }
 
-                // Delete any files underneath the Nexus folder
+                // Delete the downloaded archives underneath the Nexus folder, once they are older than the retention
+                // period. With the default of 0 days every archive goes, as they are deleted right after installing
                 var nexusDirectory = new DirectoryInfo(Pathing.GetNexusPath());
-                foreach (FileInfo file in nexusDirectory.GetFiles())
+                var archiveCutoff = DateTime.Now.AddDays(-Math.Max(0, settings.ArchiveRetentionDays));
+                foreach (FileInfo file in nexusDirectory.GetFiles().Where(f => settings.ArchiveRetentionDays <= 0 || f.LastWriteTime < archiveCutoff))
                 {
                     file.Delete();
                 }
