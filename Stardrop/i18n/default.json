@@ -137,6 +137,7 @@
   "ui.settings_window.labels.languages": "Languages",
   "ui.settings_window.labels.grouping": "Mod Grouping",
   "ui.settings_window.labels.miscellaneous": "Miscellaneous",
+  "ui.settings_window.labels.archive_retention_days": "Keep Downloaded Mod Archives (Days)",
   "ui.settings_window.labels.nexus": "Nexus Mods",
   "ui.settings_window.labels.preferred_server": "Preferred Server:",
 
@@ -191,6 +192,7 @@
   "ui.settings_window.tooltips.enable_mods_on_add": "If checked, Stardrop will automatically enable newly added or updated mods",
   "ui.settings_window.tooltips.collections_skip_smapi_update_check": "Tells SMAPI to ignore collection mods out of the update check, so its console does not report updates that the collection is meant to handle.",
   "ui.settings_window.tooltips.always_ask_to_delete": "If checked, Stardrop will always ask whether to delete mod files when updating the mod",
+  "ui.settings_window.tooltips.archive_retention_days": "How many days to keep a downloaded mod archive after it is installed, so other tools (such as ModSyncCheck) can collect it.\n\nIf 0, the archive is deleted once the mod is installed.",
   "ui.settings_window.tooltips.always_ask_for_collection_install_target": "If checked, Stardrop will ask whether a mod added while using a collection profile should be added to that collection.\n\nIf unchecked, it is added to the collection without asking.",
   "ui.settings_window.tooltips.automatically_save_profile_changes": "If checked, Stardrop will automatically save changes made to the profile",
   "ui.settings_window.tooltips.show_mod_thumbnails": "If checked, displays the mod's thumbnail from Nexus Mods (where applicable).\n\nRequires a Stardrop API key from Nexus Mods.'",

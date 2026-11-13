@@ -1161,7 +1161,11 @@ namespace Stardrop.Views
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
-            // The downloaded archive is kept in the Nexus folder to be deleted later
+            // Delete the downloaded archived mod, unless it is being kept for other tools to collect
+            if (Program.settings.ArchiveRetentionDays <= 0 && File.Exists(downloadedFilePath))
+            {
+                File.Delete(downloadedFilePath);
+            }
 
             _viewModel.EvaluateRequirements();
             _viewModel.UpdateEndorsements();
@@ -2085,7 +2089,14 @@ namespace Stardrop.Views
             await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
             await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
-            // The downloaded archives are kept in the Nexus folder to be deleted later
+            // Delete the downloaded archived mods, unless they are being kept for other tools to collect
+            if (Program.settings.ArchiveRetentionDays <= 0)
+            {
+                foreach (var filePath in updateFilePaths.Where(p => File.Exists(p)))
+                {
+                    File.Delete(filePath);
+                }
+            }
 
             _viewModel.EvaluateRequirements();
             _viewModel.UpdateEndorsements();
@@ -2263,7 +2274,11 @@ namespace Stardrop.Views
                 await CheckForModUpdates(addedMods, useCache: true, skipCacheCheck: true);
                 await GetCachedModUpdates(_viewModel.Mods.ToList(), skipCacheCheck: true);
 
-                // The downloaded archive is kept in the Nexus folder to be deleted later
+                // Delete the downloaded archived mod, unless it is being kept for other tools to collect
+                if (Program.settings.ArchiveRetentionDays <= 0 && File.Exists(downloadedFilePath))
+                {
+                    File.Delete(downloadedFilePath);
+                }
 
                 _viewModel.EvaluateRequirements();
                 _viewModel.UpdateEndorsements();
