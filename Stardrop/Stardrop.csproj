@@ -92,4 +92,11 @@
 			<Generator>MSBuild:Compile</Generator>
 		</Content>
 	</ItemGroup>
+	<Target Name="RemoveNativePackagePdbs" AfterTargets="ResolvePackageAssets">
+		<ItemGroup>
+			<NativeCopyLocalItems 
+			Remove="@(NativeCopyLocalItems)" 
+			Condition="'$(Configuration)' == 'Release' AND '%(Extension)' == '.pdb'" />
+		</ItemGroup>
+	</Target>
 </Project>
