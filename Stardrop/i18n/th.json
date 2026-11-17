@@ -173,7 +173,7 @@
   // Downloads Panel - Labels
   "ui.downloads_panel.download_canceled": "ยกเลิกแล้ว",
   "ui.downloads_panel.download_failed": "ล้มเหลว",
-  "ui_downloads_panel.download_success": "เสร็จสมบูรณ์!",
+  "ui.downloads_panel.download_success": "เสร็จสมบูรณ์!",
   "ui.downloads_panel.no_downloads_label":  "ไม่มีการดาวน์โหลดอยู่ระหว่างดำเนินการ",
 
   // Downloads Panel - Tooltips

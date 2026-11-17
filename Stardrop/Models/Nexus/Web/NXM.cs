@@ -22,7 +22,7 @@ namespace Stardrop.Models.Nexus.Web
         /// </summary>
         public static NXMPurpose CalculatePurpose(NXM nxm)
         {
-            if (String.IsNullOrEmpty(nxm.Link))
+            if (string.IsNullOrEmpty(nxm.Link))
             {
                 return NXMPurpose.Unknown;
             }
@@ -46,10 +46,7 @@ namespace Stardrop.Models.Nexus.Web
         /// </summary>
         public NXMPurpose ResolvePurpose()
         {
-            if (Purpose is null)
-            {
-                Purpose = CalculatePurpose(this);
-            }
+            Purpose ??= CalculatePurpose(this);
 
             return Purpose.Value;
         }

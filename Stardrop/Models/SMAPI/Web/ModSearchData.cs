@@ -10,19 +10,19 @@ namespace Stardrop.Models.SMAPI.Web
         ** Accessors
         *********/
         /// <summary>The mods for which to find data.</summary>
-        public ModSearchEntry[] Mods { get; set; }
+        public ModSearchEntry[] Mods { get; set; } = null!;
 
         /// <summary>Whether to include extended metadata for each mod.</summary>
         public bool IncludeExtendedMetadata { get; set; }
 
         /// <summary>The SMAPI version installed by the player. This is used for version mapping in some cases.</summary>
-        public string ApiVersion { get; set; }
+        public string ApiVersion { get; set; } = null!;
 
         /// <summary>The Stardew Valley version installed by the player.</summary>
-        public string GameVersion { get; set; }
+        public string GameVersion { get; set; } = null!;
 
         /// <summary>The OS on which the player plays.</summary>
-        public string Platform { get; set; }
+        public string Platform { get; set; } = null!;
 
 
         /*********
@@ -42,11 +42,11 @@ namespace Stardrop.Models.SMAPI.Web
         /// <param name="includeExtendedMetadata">Whether to include extended metadata for each mod.</param>
         public ModSearchData(List<ModSearchEntry> mods, string apiVersion, string gameVersion, string platform, bool includeExtendedMetadata)
         {
-            this.Mods = mods.ToArray();
-            this.ApiVersion = apiVersion.ToString();
-            this.GameVersion = gameVersion.ToString();
-            this.Platform = platform;
-            this.IncludeExtendedMetadata = includeExtendedMetadata;
+            Mods = [.. mods];
+            ApiVersion = apiVersion.ToString();
+            GameVersion = gameVersion.ToString();
+            Platform = platform;
+            IncludeExtendedMetadata = includeExtendedMetadata;
         }
     }
 }

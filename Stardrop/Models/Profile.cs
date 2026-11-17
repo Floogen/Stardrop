@@ -41,19 +41,19 @@ namespace Stardrop.Models
         {
             Name = "Unknown";
             IsProtected = false;
-            EnabledModIds = new List<ModReference>();
-            PreservedModConfigs = new Dictionary<string, JsonDocument>();
-            Notes = new List<ModNote>();
+            EnabledModIds = [];
+            PreservedModConfigs = [];
+            Notes = [];
         }
 
-        public Profile(string name, bool isProtected = false, List<ModReference>? enabledMods = null, Dictionary<string, JsonDocument>? preservedModConfigs = null, List<ModNote> notes = null, string? sourceId = null)
+        public Profile(string name, bool isProtected = false, List<ModReference>? enabledMods = null, Dictionary<string, JsonDocument>? preservedModConfigs = null, List<ModNote>? notes = null, string? sourceId = null)
         {
             Name = name;
             IsProtected = isProtected;
             SourceId = sourceId;
-            EnabledModIds = enabledMods is null ? new List<ModReference>() : enabledMods;
-            PreservedModConfigs = preservedModConfigs is null ? new Dictionary<string, JsonDocument>() : preservedModConfigs;
-            Notes = notes is null ? new List<ModNote>() : notes;
+            EnabledModIds = enabledMods is null ? [] : enabledMods;
+            PreservedModConfigs = preservedModConfigs is null ? [] : preservedModConfigs;
+            Notes = notes is null ? [] : notes;
         }
 
         /// <summary>

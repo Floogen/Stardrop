@@ -13,12 +13,13 @@ namespace Stardrop.Utilities.Internal
     /// rather than the first one that happens to line up, or a rule written for one mod will attach itself to
     /// another that shares a single field.
     /// </summary>
-    internal static class CollectionReferenceMatcher
+    internal static partial class CollectionReferenceMatcher
     {
         // A duplicate download marker is dropped off an archive name before comparing, in either the download
         // manager's own format or the one browsers use
-        private static readonly Regex _duplicateSuffixPattern = new Regex(@"(?:\.\d+| \(\d+\))$", RegexOptions.Compiled);
-
+        // private static readonly Regex _duplicateSuffixPattern = new(@"(?:\.\d+| \(\d+\))$", RegexOptions.Compiled);
+        [GeneratedRegex(@"(?:\.\d+| \(\d+\))$", RegexOptions.Compiled)]
+        private static partial Regex DuplicateSuffixPattern();
         /// <summary>
         /// The entry a rule end points at, or -1 when nothing matches. The first match wins.
         /// </summary>
@@ -43,9 +44,9 @@ namespace Stardrop.Utilities.Internal
                 return false;
             }
 
-            if (String.IsNullOrEmpty(reference.Tag) is false)
+            if (string.IsNullOrEmpty(reference.Tag) is false)
             {
-                if (String.Equals(entry.Tag, reference.Tag, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(entry.Tag, reference.Tag, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -57,10 +58,10 @@ namespace Stardrop.Utilities.Internal
                 }
             }
 
-            var hashMatches = String.IsNullOrEmpty(reference.FileMD5) is false && String.Equals(entry.Md5Checksum, reference.FileMD5, StringComparison.OrdinalIgnoreCase);
+            var hashMatches = string.IsNullOrEmpty(reference.FileMD5) is false && string.Equals(entry.Md5Checksum, reference.FileMD5, StringComparison.OrdinalIgnoreCase);
 
             // A hash pins the file outright, so it has to agree unless the reference asks for a range of versions
-            if (String.IsNullOrEmpty(reference.FileMD5) is false && isFuzzy is false && hashMatches is false)
+            if (string.IsNullOrEmpty(reference.FileMD5) is false && isFuzzy is false && hashMatches is false)
             {
                 return false;
             }
@@ -87,43 +88,43 @@ namespace Stardrop.Utilities.Internal
 
         private static bool HasIdentifyingMarker(CollectionModEntry entry, CollectionModRuleReference reference, bool isFuzzy, bool allowTag)
         {
-            if (isFuzzy is false && String.IsNullOrEmpty(reference.FileMD5) is false && String.IsNullOrEmpty(entry.Md5Checksum) is false)
+            if (isFuzzy is false && string.IsNullOrEmpty(reference.FileMD5) is false && string.IsNullOrEmpty(entry.Md5Checksum) is false)
             {
                 return true;
             }
 
-            if (String.IsNullOrEmpty(reference.FileExpression) is false && (String.IsNullOrEmpty(entry.FileExpression) is false || String.IsNullOrEmpty(entry.Name) is false))
+            if (string.IsNullOrEmpty(reference.FileExpression) is false && (string.IsNullOrEmpty(entry.FileExpression) is false || string.IsNullOrEmpty(entry.Name) is false))
             {
                 return true;
             }
 
-            if (String.IsNullOrEmpty(reference.LogicalFileName) is false && String.IsNullOrEmpty(entry.LogicalFilename) is false)
+            if (string.IsNullOrEmpty(reference.LogicalFileName) is false && string.IsNullOrEmpty(entry.LogicalFilename) is false)
             {
                 return true;
             }
 
-            return allowTag && String.IsNullOrEmpty(reference.Tag) is false && String.IsNullOrEmpty(entry.Tag) is false;
+            return allowTag && string.IsNullOrEmpty(reference.Tag) is false && string.IsNullOrEmpty(entry.Tag) is false;
         }
 
         private static bool MatchesLogicalFileName(CollectionModEntry entry, CollectionModRuleReference reference)
         {
-            if (String.IsNullOrEmpty(reference.LogicalFileName))
+            if (string.IsNullOrEmpty(reference.LogicalFileName))
             {
                 return true;
             }
 
-            if (String.Equals(entry.LogicalFilename, reference.LogicalFileName, StringComparison.OrdinalIgnoreCase) || String.Equals(entry.Name, reference.LogicalFileName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(entry.LogicalFilename, reference.LogicalFileName, StringComparison.OrdinalIgnoreCase) || string.Equals(entry.Name, reference.LogicalFileName, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
             // A file expression is allowed to carry the match on its own, so a mismatch here is not the end of it
-            return String.IsNullOrEmpty(reference.FileExpression) is false;
+            return string.IsNullOrEmpty(reference.FileExpression) is false;
         }
 
         private static bool MatchesFileExpression(CollectionModEntry entry, CollectionModRuleReference reference)
         {
-            if (String.IsNullOrEmpty(reference.FileExpression))
+            if (string.IsNullOrEmpty(reference.FileExpression))
             {
                 return true;
             }
@@ -141,18 +142,18 @@ namespace Stardrop.Utilities.Internal
                 return true;
             }
 
-            return String.Equals(entry.Name, reference.FileExpression, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(entry.Name, reference.FileExpression, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool MatchesVersion(CollectionModEntry entry, CollectionModRuleReference reference)
         {
-            if (String.IsNullOrEmpty(reference.VersionMatch) || reference.VersionMatch == "*" || String.IsNullOrEmpty(entry.Version))
+            if (string.IsNullOrEmpty(reference.VersionMatch) || reference.VersionMatch == "*" || string.IsNullOrEmpty(entry.Version))
             {
                 return true;
             }
 
             var versionMatch = reference.VersionMatch.Split('+')[0];
-            if (String.Equals(entry.Version, reference.VersionMatch, StringComparison.OrdinalIgnoreCase) || String.Equals(entry.Version, versionMatch, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(entry.Version, reference.VersionMatch, StringComparison.OrdinalIgnoreCase) || string.Equals(entry.Version, versionMatch, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -177,7 +178,7 @@ namespace Stardrop.Utilities.Internal
         /// </summary>
         private static bool IsFuzzyVersion(string? versionMatch)
         {
-            if (String.IsNullOrEmpty(versionMatch))
+            if (string.IsNullOrEmpty(versionMatch))
             {
                 return false;
             }
@@ -197,12 +198,12 @@ namespace Stardrop.Utilities.Internal
 
         private static bool MatchesExpression(string? value, string expression)
         {
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
                 return false;
             }
 
-            if (String.Equals(value, expression, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(value, expression, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -220,12 +221,12 @@ namespace Stardrop.Utilities.Internal
 
         private static string? SanitizeExpression(string? filePath)
         {
-            if (String.IsNullOrEmpty(filePath))
+            if (string.IsNullOrEmpty(filePath))
             {
                 return null;
             }
 
-            return _duplicateSuffixPattern.Replace(Path.GetFileNameWithoutExtension(filePath), String.Empty);
+            return DuplicateSuffixPattern().Replace(Path.GetFileNameWithoutExtension(filePath), string.Empty);
         }
     }
 }

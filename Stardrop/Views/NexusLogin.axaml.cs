@@ -1,47 +1,44 @@
 using Avalonia;
+using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using DynamicData.Binding;
 using Stardrop.Utilities;
 using Stardrop.ViewModels;
-using System;
 
 namespace Stardrop.Views
 {
     public partial class NexusLogin : Window
     {
-        private NexusWebsocket? _nexusWebsocket;
+        private NexusWebsocket _nexusWebsocket = null!;
         public NexusLogin()
         {
             InitializeComponent();
             _nexusWebsocket = new NexusWebsocket();
 
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
 
         public NexusLogin(MainWindowViewModel viewModel) : this()
         {
             // Handle buttons
-            this.FindControl<Button>("cancelButton").Click += delegate { this.Close(null); };
-            this.FindControl<Button>("exitButton").Click += delegate { this.Close(null); };
-            this.FindControl<Button>("goToNexusButton").Click += delegate
+            this.FindControl<Button>("cancelButton")!.Click += delegate { Close(null); };
+            this.FindControl<Button>("exitButton")!.Click += delegate { Close(null); };
+            this.FindControl<Button>("goToNexusButton")!.Click += delegate
             {
                 Toolkit.OpenBrowser(_nexusWebsocket.ssoUrl);
                 HandleNexusFlow();
             };
 
-            var applyButton = this.FindControl<Button>("applyButton");
+            var applyButton = this.FindControl<Button>("applyButton")!;
             applyButton.Click += ApplyButton_Click;
             applyButton.IsEnabled = false;
 
-            var apiKeyBox = this.FindControl<TextBox>("apiBox");
-            apiKeyBox.WhenValueChanged(textbox => textbox.Text).Subscribe(text =>
-            {
-                applyButton.IsEnabled = string.IsNullOrEmpty(text) is false;
-            });
+            var apiKeyBox = this.FindControl<TextBox>("apiBox")!;
+            apiKeyBox.GetObservable(TextBox.TextProperty)
+                .Subscribe(text =>
+                {
+                    applyButton.IsEnabled = string.IsNullOrEmpty(text) is false;
+                });
             apiKeyBox.KeyDown += KeyBox_KeyDown;
         }
 
@@ -55,24 +52,27 @@ namespace Stardrop.Views
             }
             else
             {
-                var apiKeyBox = this.FindControl<TextBox>("apiBox");
+                var apiKeyBox = this.FindControl<TextBox>("apiBox")!;
                 apiKeyBox.Text = result.ApiKey ?? string.Empty;
 
-                var applyButton = this.FindControl<Button>("applyButton");
+                var applyButton = this.FindControl<Button>("applyButton")!;
                 applyButton.IsEnabled = true;
             }
         }
 
         private void ApplyChanges()
         {
-            var apiKeyBox = this.FindControl<TextBox>("apiBox");
+            var apiKeyBox = this.FindControl<TextBox>("apiBox")!;
 
-            this.Close(apiKeyBox.Text);
+            Close(apiKeyBox.Text);
         }
 
         private void KeyBox_KeyDown(object? sender, KeyEventArgs e)
         {
-            var apiKeyBox = sender as TextBox;
+            if (sender is not TextBox apiKeyBox)
+            {
+                return;
+            }
             if (e.Key == Key.Enter && string.IsNullOrEmpty(apiKeyBox.Text) is false)
             {
                 ApplyChanges();

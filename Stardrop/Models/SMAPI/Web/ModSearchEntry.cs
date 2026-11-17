@@ -10,13 +10,13 @@ namespace Stardrop.Models.SMAPI.Web
         ** Accessors
         *********/
         /// <summary>The unique mod ID.</summary>
-        public string Id { get; set; }
+        public string Id { get; set; } = null!;
 
         /// <summary>The namespaced mod update keys (if available).</summary>
-        public string[] UpdateKeys { get; set; }
+        public string[] UpdateKeys { get; set; } = null!;
 
         /// <summary>The mod version installed by the local player. This is used for version mapping in some cases.</summary>
-        public string InstalledVersion { get; set; }
+        public string InstalledVersion { get; set; } = null!;
 
 
         /*********
@@ -35,9 +35,9 @@ namespace Stardrop.Models.SMAPI.Web
         /// <param name="isBroken">Whether the installed version is broken or could not be loaded.</param>
         public ModSearchEntry(string id, SemVersion installedVersion, string[] updateKeys, bool isBroken = false)
         {
-            this.Id = id;
-            this.InstalledVersion = installedVersion.ToString();
-            this.UpdateKeys = updateKeys ?? new string[0];
+            Id = id;
+            InstalledVersion = installedVersion.ToString();
+            UpdateKeys = updateKeys ?? [];
         }
     }
 }

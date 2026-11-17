@@ -3,12 +3,12 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models;
+using Avalonia.Platform.Storage;
 using Stardrop.Utilities;
 using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 
 namespace Stardrop.Views
@@ -19,11 +19,11 @@ namespace Stardrop.Views
 
         public MissingModsWindow() : base()
         {
-            AvaloniaXamlLoader.Load(this);
+            InitializeComponent();
 
             // Handle buttons
-            this.FindControl<Button>("exitButton").Click += delegate { this.Close(); };
-            this.FindControl<Button>("continueButton").Click += delegate { this.Close(); };
+            this.FindControl<Button>("exitButton")!.Click += delegate { Close(); };
+            this.FindControl<Button>("continueButton")!.Click += delegate { Close(); };
 
             AddHandler(DragDrop.DragOverEvent, OnDragOver);
             AddHandler(DragDrop.DropEvent, OnDrop);
@@ -45,7 +45,7 @@ namespace Stardrop.Views
         private void OnDragOver(object? sender, DragEventArgs e)
         {
             // Only accept the drop if it actually contains files
-            e.DragEffects = e.Data.Contains(DataFormats.FileNames) ? DragDropEffects.Copy : DragDropEffects.None;
+            e.DragEffects = e.DataTransfer.Contains(DataFormat.File) ? DragDropEffects.Copy : DragDropEffects.None;
         }
 
         private async void OnDrop(object? sender, DragEventArgs e)
@@ -55,19 +55,27 @@ namespace Stardrop.Views
                 return;
             }
 
-            if (!e.Data.Contains(DataFormats.FileNames))
+            if (!e.DataTransfer.Contains(DataFormat.File))
             {
                 return;
             }
 
-            var files = e.Data.GetFileNames();
-            if (files is not null && DataContext is MissingModsWindowViewModel viewModel)
+            var storageItems = e.DataTransfer.TryGetFiles();
+            if (storageItems is not null && DataContext is MissingModsWindowViewModel viewModel)
             {
-                foreach (var path in files)
+                var filePaths = storageItems
+                    .Select(item => item.TryGetLocalPath())
+                    .Where(path => path is not null)
+                    .ToArray();
+
+                foreach (var path in filePaths)
                 {
-                    foreach (var addedMod in (await _addModDirectly.Invoke(path)).Where(m => m is not null))
+                    var addedMods = await _addModDirectly.Invoke(path!);
+                    if (addedMods is null) continue;
+
+                    foreach (var addedMod in addedMods.Where(m => m is not null))
                     {
-                        if (viewModel.MissingMods.FirstOrDefault(m => m.UniqueId.Equals(addedMod.UniqueId, StringComparison.OrdinalIgnoreCase)) is PortableModData portableModData && portableModData is not null)
+                        if (viewModel.MissingMods.FirstOrDefault(m => m.UniqueId.Equals(addedMod.UniqueId, StringComparison.OrdinalIgnoreCase)) is PortableModData portableModData)
                         {
                             viewModel.MissingMods.Remove(portableModData);
                         }

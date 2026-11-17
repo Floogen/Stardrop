@@ -8,10 +8,10 @@
         ** Accessors
         *********/
         /// <summary>The version number.</summary>
-        public string Version { get; set; }
+        public string Version { get; set; } = null!;
 
         /// <summary>The mod page URL.</summary>
-        public string Url { get; set; }
+        public string Url { get; set; } = null!;
 
 
         /*********
@@ -25,8 +25,8 @@
         /// <param name="url">The mod page URL.</param>
         public ModEntryVersion(string version, string url)
         {
-            this.Version = version;
-            this.Url = url;
+            Version = version;
+            Url = url;
         }
     }
 }

@@ -195,7 +195,7 @@
   // Downloads Panel - Labels
   "ui.downloads_panel.download_canceled": "Geannuleerd",
   "ui.downloads_panel.download_failed": "Mislukt",
-  "ui_downloads_panel.download_success": "Voltooid!",
+  "ui.downloads_panel.download_success": "Voltooid!",
   "ui.downloads_panel.no_downloads_label": "Geen downloads bezig",
 
   // Downloads Panel - Tooltips

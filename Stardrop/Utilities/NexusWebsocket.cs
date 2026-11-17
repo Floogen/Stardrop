@@ -22,7 +22,7 @@ namespace Stardrop.Utilities
 
         public NexusWebsocket()
         {
-            this.ssoUrl = $"https://www.nexusmods.com/sso?id={connectionUUID}&application={connectionSlug}";
+            ssoUrl = $"https://www.nexusmods.com/sso?id={connectionUUID}&application={connectionSlug}";
         }
 
         public async Task<NexusConnectionResult> ConnectAsync(CancellationToken cancellationToken = default)

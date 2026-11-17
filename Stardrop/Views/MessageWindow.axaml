@@ -3,16 +3,17 @@
         xmlns:vm="using:Stardrop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:i="clr-namespace:Optris.Icons.Avalonia;assembly=Optris.Icons.Avalonia"
+		x:DataType="vm:MessageWindowViewModel"
         mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="150"
         x:Class="Stardrop.Views.MessageWindow"
         Title="Message"
         MinWidth="300"
         MinHeight="150"
         Width="300"
-        Height="150"
+        SizeToContent="Height"
         Background="{DynamicResource ThemeBackgroundBrush}"
-        HasSystemDecorations="false"
+        WindowDecorations="None"
         Icon="/Assets/icon.ico">
 
 	<Window.Styles>

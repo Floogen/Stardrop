@@ -1,9 +1,7 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models.Data.Enums;
 using Stardrop.ViewModels;
-using System;
 
 namespace Stardrop.Views
 {
@@ -19,26 +17,23 @@ namespace Stardrop.Views
             _viewModel = new FlexibleOptionWindowViewModel();
             DataContext = _viewModel;
 
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
 
         public FlexibleOptionWindow(string messageText, string? firstButtonText = null, string? secondButtonText = null, string? thirdButtonText = null, double? windowWidth = null) : this()
         {
             _viewModel.MessageText = messageText;
 
-            if (String.IsNullOrEmpty(firstButtonText) is false)
+            if (string.IsNullOrEmpty(firstButtonText) is false)
             {
                 _viewModel.FirstButtonText = firstButtonText;
                 _viewModel.IsFirstButtonVisible = true;
             }
-            if (String.IsNullOrEmpty(secondButtonText) is false)
+            if (string.IsNullOrEmpty(secondButtonText) is false)
             {
                 _viewModel.SecondButtonText = secondButtonText;
                 _viewModel.IsSecondButtonVisible = true;
             }
-            if (String.IsNullOrEmpty(thirdButtonText) is false)
+            if (string.IsNullOrEmpty(thirdButtonText) is false)
             {
                 _viewModel.ThirdButtonText = thirdButtonText;
                 _viewModel.IsThirdButtonVisible = true;
@@ -49,29 +44,28 @@ namespace Stardrop.Views
                 _viewModel.WindowWidth = windowWidth.Value;
             }
 
-            this.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            this.SizeToContent = SizeToContent.Height;
+            WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            SizeToContent = SizeToContent.Height;
         }
 
         private void Button_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            Button? button = sender as Button;
-            if (button is null)
+            if (sender is not Button button)
             {
                 return;
             }
 
-            if (button.Content.Equals(_viewModel.FirstButtonText))
+            if (button.Content?.Equals(_viewModel.FirstButtonText) is true)
             {
-                this.Close(Choice.First);
+                Close(Choice.First);
             }
-            else if (button.Content.Equals(_viewModel.SecondButtonText))
+            else if (button.Content?.Equals(_viewModel.SecondButtonText) is true)
             {
-                this.Close(Choice.Second);
+                Close(Choice.Second);
             }
-            else if (button.Content.Equals(_viewModel.ThirdButtonText))
+            else if (button.Content?.Equals(_viewModel.ThirdButtonText) is true)
             {
-                this.Close(Choice.Third);
+                Close(Choice.Third);
             }
         }
 

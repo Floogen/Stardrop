@@ -11,7 +11,7 @@ namespace Stardrop.Models.Data
         public UpdateCache(DateTime lastRuntime)
         {
             LastRuntime = lastRuntime;
-            Mods = new List<ModUpdateInfo>();
+            Mods = [];
         }
     }
 }

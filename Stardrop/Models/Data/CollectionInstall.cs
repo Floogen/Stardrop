@@ -25,7 +25,7 @@ namespace Stardrop.Models.Data
     /// </summary>
     public class CollectionModEntry
     {
-        public string Name { get; set; } = String.Empty;
+        public string Name { get; set; } = string.Empty;
         public string? Version { get; set; }
         public string? Author { get; set; }
         public bool IsOptional { get; set; }
@@ -50,9 +50,9 @@ namespace Stardrop.Models.Data
         /// <summary>Name of the archive this entry was installed from. The archive itself is removed after installing, so this is a record rather than something to reuse</summary>
         public string? SourceArchivePath { get; set; }
         /// <summary>Everything this entry's archive placed on disk, taken from AddMods rather than matched by name</summary>
-        public List<InstalledModRecord> InstalledMods { get; set; } = new List<InstalledModRecord>();
+        public List<InstalledModRecord> InstalledMods { get; set; } = [];
         /// <summary>Names of the mods this entry's files were copied over, when it was applied as an overlay rather than installed</summary>
-        public List<string> OverlayTargets { get; set; } = new List<string>();
+        public List<string> OverlayTargets { get; set; } = [];
         /// <summary>
         /// File name of this entry's configuration archive under <see cref="Utilities.Pathing.GetCollectionOverlaysFolderPath"/>.
         /// Kept so the configuration can be written again once a mod it is ordered after arrives. Null for mods and
@@ -63,7 +63,7 @@ namespace Stardrop.Models.Data
         /// The curator's exact file placements, when the entry was replicated rather than installed as is. An entry
         /// with these and no manifest is placed file by file, which is how one mod's files replace another's
         /// </summary>
-        public List<CollectionFileHash> FileHashes { get; set; } = new List<CollectionFileHash>();
+        public List<CollectionFileHash> FileHashes { get; set; } = [];
         /// <summary>How many of <see cref="FileHashes"/> had no matching file in the archive the last time it was placed</summary>
         public int UnmatchedFileCount { get; set; }
         public CollectionModStatus Status { get; set; } = CollectionModStatus.Pending;
@@ -71,7 +71,7 @@ namespace Stardrop.Models.Data
 
         public bool IsPinnedExactly()
         {
-            return String.Equals(UpdatePolicy, "exact", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(UpdatePolicy, "exact", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -123,11 +123,11 @@ namespace Stardrop.Models.Data
         public const int MAX_LISTED_TARGET_NAMES = 3;
 
         /// <summary>Stable identifier used as both the folder name under the collections root and the SourceId on every mod it installs</summary>
-        public string SourceId { get; set; } = String.Empty;
-        public string Slug { get; set; } = String.Empty;
+        public string SourceId { get; set; } = string.Empty;
+        public string Slug { get; set; } = string.Empty;
         public string DomainName { get; set; } = "stardewvalley";
         public int RevisionNumber { get; set; }
-        public string Name { get; set; } = String.Empty;
+        public string Name { get; set; } = string.Empty;
         public string? Curator { get; set; }
         public string? Summary { get; set; }
         /// <summary>Free text from the curator that is worth surfacing once the install finishes</summary>
@@ -146,10 +146,10 @@ namespace Stardrop.Models.Data
         /// </summary>
         public int? PendingRevisionNumber { get; set; }
         /// <summary>Name of the profile generated for this collection, so the two can be re-linked after a rename</summary>
-        public string ProfileName { get; set; } = String.Empty;
-        public List<CollectionModEntry> Mods { get; set; } = new List<CollectionModEntry>();
+        public string ProfileName { get; set; } = string.Empty;
+        public List<CollectionModEntry> Mods { get; set; } = [];
         /// <summary>The curator's modRules, resolved against <see cref="Mods"/></summary>
-        public List<CollectionEntryRule> Rules { get; set; } = new List<CollectionEntryRule>();
+        public List<CollectionEntryRule> Rules { get; set; } = [];
 
         public CollectionInstall()
         {
@@ -174,9 +174,9 @@ namespace Stardrop.Models.Data
         /// </summary>
         public static string CreateSourceId(string domainName, string slug)
         {
-            var invalidCharacters = System.IO.Path.GetInvalidFileNameChars().Concat(new[] { '.', ' ' }).ToArray();
-            var safeSlug = String.Join("-", slug.Split(invalidCharacters, StringSplitOptions.RemoveEmptyEntries));
-            var safeDomain = String.Join("-", domainName.Split(invalidCharacters, StringSplitOptions.RemoveEmptyEntries));
+            var invalidCharacters = System.IO.Path.GetInvalidFileNameChars().Concat(['.', ' ']).ToArray();
+            var safeSlug = string.Join("-", slug.Split(invalidCharacters, StringSplitOptions.RemoveEmptyEntries));
+            var safeDomain = string.Join("-", domainName.Split(invalidCharacters, StringSplitOptions.RemoveEmptyEntries));
 
             return $"{safeDomain}-{safeSlug}";
         }
@@ -277,7 +277,7 @@ namespace Stardrop.Models.Data
         /// <summary>The collection's own page on Nexus Mods</summary>
         public string GetPageUri()
         {
-            var domainName = String.IsNullOrEmpty(DomainName) ? "stardewvalley" : DomainName;
+            var domainName = string.IsNullOrEmpty(DomainName) ? "stardewvalley" : DomainName;
 
             return $"https://next.nexusmods.com/{domainName}/collections/{Slug}";
         }
@@ -299,7 +299,7 @@ namespace Stardrop.Models.Data
         /// <param name="useModManagerLink">Whether a pinned file asks Nexus Mods for the mod manager download</param>
         public string? GetEntryPageUri(CollectionModEntry entry, bool useModManagerLink = true)
         {
-            if (String.IsNullOrEmpty(entry.ExternalUri) is false)
+            if (string.IsNullOrEmpty(entry.ExternalUri) is false)
             {
                 return entry.ExternalUri;
             }
@@ -309,7 +309,7 @@ namespace Stardrop.Models.Data
                 return null;
             }
 
-            var domainName = String.IsNullOrEmpty(DomainName) ? "stardewvalley" : DomainName;
+            var domainName = string.IsNullOrEmpty(DomainName) ? "stardewvalley" : DomainName;
             if (entry.NexusFileId is null)
             {
                 return $"https://www.nexusmods.com/{domainName}/mods/{entry.NexusModId}";
@@ -396,7 +396,7 @@ namespace Stardrop.Models.Data
             var dependents = new List<int>[Mods.Count];
             for (int index = 0; index < Mods.Count; index++)
             {
-                dependents[index] = new List<int>();
+                dependents[index] = [];
             }
 
             foreach (var rule in Rules.Where(r => r.IsResolved() && r.Type is CollectionModRuleType.After or CollectionModRuleType.Before))
@@ -500,10 +500,10 @@ namespace Stardrop.Models.Data
             var names = GetBlockingTargets(entry).Select(t => t.Name).ToList();
             if (names.Count <= maxNames)
             {
-                return String.Join(", ", names);
+                return string.Join(", ", names);
             }
 
-            return String.Format(overflowFormat, String.Join(", ", names.Take(maxNames)), names.Count - maxNames);
+            return string.Format(overflowFormat, string.Join(", ", names.Take(maxNames)), names.Count - maxNames);
         }
 
         /// <summary>Configuration entries, including those held back until their targets arrive</summary>

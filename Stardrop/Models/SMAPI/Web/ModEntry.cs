@@ -5,15 +5,15 @@
         // Based on SMAPI's ModEntryModel.cs: https://github.com/Pathoschild/SMAPI/blob/develop/src/SMAPI.Toolkit/Framework/Clients/WebApi/ModEntryModel.cs
 
         /// <summary>The mod's unique ID.</summary>
-        public string Id { get; set; }
+        public string Id { get; set; } = null!;
 
         /// <summary>The update version recommended by the web API based on its version update and mapping rules.</summary>
-        public ModEntryVersion SuggestedUpdate { get; set; }
+        public ModEntryVersion SuggestedUpdate { get; set; } = null!;
 
         /// <summary>Optional extended data which isn't needed for update checks.</summary>
-        public ModEntryMetadata Metadata { get; set; }
+        public ModEntryMetadata Metadata { get; set; } = null!;
 
         /// <summary>The errors that occurred while fetching update data.</summary>
-        public string[] Errors { get; set; } = new string[0];
+        public string[] Errors { get; set; } = [];
     }
 }

@@ -7,7 +7,6 @@ using Stardrop.Utilities;
 using Stardrop.Utilities.Internal;
 using Stardrop.Views;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -23,33 +22,67 @@ namespace Stardrop
             if (Program.helper is null)
             {
                 Program.helper = new Helper();
+                Program.translation.LoadTranslations();
             }
 
-            // Load in translations
-            Program.translation.LoadTranslations();
-
             // Handle adding the themes
-            Dictionary<string, IStyle> themes = new Dictionary<string, IStyle>();
-            foreach (string fileFullName in ThemeManager.GetThemeFilePaths())
+            // Dictionary<string, IStyle> themes = [];
+            // foreach (string fileFullName in ThemeManager.GetThemeFilePaths())
+            // {
+            //     try
+            //     {
+            //         var themeName = Path.GetFileNameWithoutExtension(fileFullName);
+            //         themes[themeName] = ThemeManager.Load(fileFullName);
+            //         Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         Program.helper.Log($"Unable to load theme on {Path.GetFileNameWithoutExtension(fileFullName)}: {ex}", Helper.Status.Warning);
+            //     }
+            // }
+
+            // Styles.Insert(ThemeManager.THEME_STYLE_INDEX, !themes.TryGetValue(Program.settings.Theme, out IStyle? value) ? themes.Values.First() : value);
+            var themeFilePaths = ThemeManager.GetThemeFilePaths().ToList();
+            string? targetThemePath = null;
+
+            foreach (var fileFullName in themeFilePaths)
+            {
+                var themeName = Path.GetFileNameWithoutExtension(fileFullName);
+                if (themeName.Equals(Program.settings.Theme, StringComparison.OrdinalIgnoreCase))
+                {
+                    targetThemePath = fileFullName;
+                    break;
+                }
+            }
+
+            if (targetThemePath is null && themeFilePaths.Count > 0)
+            {
+                targetThemePath = themeFilePaths.First();
+                Program.helper.Log($"Theme '{Program.settings.Theme}' not found, falling back to '{Path.GetFileNameWithoutExtension(targetThemePath)}'", Helper.Status.Warning);
+            }
+
+            if (targetThemePath is not null)
             {
                 try
                 {
-                    var themeName = Path.GetFileNameWithoutExtension(fileFullName);
-                    themes[themeName] = ThemeManager.Load(fileFullName);
-                    Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
+                    var selectedThemeStyle = ThemeManager.Load(targetThemePath);
+                    Styles.Insert(ThemeManager.THEME_STYLE_INDEX, selectedThemeStyle);
+                    Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(targetThemePath)}", Helper.Status.Debug);
                 }
                 catch (Exception ex)
                 {
-                    Program.helper.Log($"Unable to load theme on {Path.GetFileNameWithoutExtension(fileFullName)}: {ex}", Helper.Status.Warning);
+                    Program.helper.Log($"Unable to load theme {Path.GetFileNameWithoutExtension(targetThemePath)}: {ex}", Helper.Status.Warning);
                 }
             }
 
-            Current.Styles.Insert(ThemeManager.THEME_STYLE_INDEX, !themes.ContainsKey(Program.settings.Theme) ? themes.Values.First() : themes[Program.settings.Theme]);
+#if DEBUG
+                this.AttachDeveloperTools();
+#endif
         }
 
-        private async void OnUrlsOpen(object? sender, UrlOpenedEventArgs e, MainWindow mainWindow)
+        private static async void OnUrlsOpen(object? sender, UrlOpenedEventArgs e, MainWindow mainWindow)
         {
-            foreach (string? url in e.Urls.Where(u => String.IsNullOrEmpty(u) is false))
+            foreach (string? url in e.Urls.Where(u => string.IsNullOrEmpty(u) is false))
             {
                 await mainWindow.ProcessNXMLink(new NXM() { Link = url, Timestamp = DateTime.Now });
             }
@@ -63,7 +96,14 @@ namespace Stardrop
                 desktop.MainWindow = mainWindow;
 
                 // Register events
-                this.UrlsOpened += (sender, e) => OnUrlsOpen(sender, e, mainWindow);
+                if (Current?.TryGetFeature<IActivatableLifetime>() is { } activatable)
+                {
+                    activatable.Activated += (sender, args) =>
+                    {
+                        if (args is ProtocolActivatedEventArgs p)
+                            OnUrlsOpen(sender, new UrlOpenedEventArgs([p.Uri.ToString()]), mainWindow);
+                    };
+                }
             }
 
             base.OnFrameworkInitializationCompleted();

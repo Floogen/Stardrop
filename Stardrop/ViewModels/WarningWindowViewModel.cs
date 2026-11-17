@@ -1,6 +1,6 @@
 using Avalonia.Layout;
 using Avalonia.Media;
-using ReactiveUI;
+using ReactiveUI.Reactive;
 using Stardrop.Models.Data;
 using Stardrop.Utilities;
 using Stardrop.Utilities.Internal;
@@ -10,9 +10,9 @@ namespace Stardrop.ViewModels
 {
     public class WarningWindowViewModel : ViewModelBase
     {
-        private string _warningText;
+        private string _warningText = null!;
         public string WarningText { get { return _warningText; } set { this.RaiseAndSetIfChanged(ref _warningText, value); } }
-        private string _buttonText;
+        private string _buttonText = null!;
         public string ButtonText { get { return _buttonText; } set { this.RaiseAndSetIfChanged(ref _buttonText, value); } }
         private bool _isButtonVisible;
         public bool IsButtonVisible { get { return _isButtonVisible; } set { this.RaiseAndSetIfChanged(ref _isButtonVisible, value); } }
@@ -42,7 +42,7 @@ namespace Stardrop.ViewModels
         private bool _isRichTextVisible;
         /// <summary>Swaps the plain text block out for the segment based display, which can render links</summary>
         public bool IsRichTextVisible { get { return _isRichTextVisible; } set { this.RaiseAndSetIfChanged(ref _isRichTextVisible, value); } }
-        private ObservableCollection<RichTextLine> _warningLines = new ObservableCollection<RichTextLine>();
+        private ObservableCollection<RichTextLine> _warningLines = [];
         public ObservableCollection<RichTextLine> WarningLines { get { return _warningLines; } set { this.RaiseAndSetIfChanged(ref _warningLines, value); } }
 
         /// <summary>Padding kept clear on either side of a link, covering the window border and the scroll bar</summary>

@@ -19,7 +19,7 @@ namespace Stardrop.Models.SMAPI.Converters
             {
                 if (reader.TokenType == JsonTokenType.EndArray)
                 {
-                    return modKeys.ToArray();
+                    return [.. modKeys];
                 }
 
                 if (reader.TokenType == JsonTokenType.Number)
@@ -28,7 +28,7 @@ namespace Stardrop.Models.SMAPI.Converters
                 }
                 else
                 {
-                    modKeys.Add(reader.GetString());
+                    modKeys.Add(reader.GetString()!);
                 }
             }
 

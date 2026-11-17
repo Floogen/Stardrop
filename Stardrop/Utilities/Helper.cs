@@ -19,12 +19,12 @@ namespace Stardrop.Utilities
         // Used for identifying different statuses when logging
         public enum Status { Debug, Alert, Warning, Info };
 
-        public Helper(string fileName = "log", string fileExtension = ".txt", string path = null)
+        public Helper(string fileName = "log", string fileExtension = ".txt", string? path = null)
         {
             // Set the log file name and extension
             logFileName = fileName;
             logFileExtension = fileExtension;
-            basePath = String.IsNullOrEmpty(path) ? basePath : path;
+            basePath = string.IsNullOrEmpty(path) ? basePath : path;
 
             // Delete any previous log file
             if (File.Exists(GetLogPath()))
@@ -51,7 +51,7 @@ namespace Stardrop.Utilities
 
         public string GetLogPath()
         {
-            return Path.Combine(basePath, String.Concat(logFileName, logFileExtension));
+            return Path.Combine(basePath, string.Concat(logFileName, logFileExtension));
         }
 
         public void DisableTracing()
@@ -84,33 +84,33 @@ namespace Stardrop.Utilities
         {
             try
             {
-                Log(messageObj.ToString(), status, caller, line, path);
+                Log(messageObj.ToString()!, status, caller, line, path);
             }
             catch
             {
-                Log(String.Format($"Unable to parse {messageObj} to string!"), Status.Warning);
+                Log(string.Format($"Unable to parse {messageObj} to string!"), Status.Warning);
             }
         }
 
         #region Status related tracking
         public bool HasAlert()
         {
-            return totalAlert > 0 ? true : false;
+            return totalAlert > 0;
         }
 
         public bool HasWarning()
         {
-            return totalWarning > 0 ? true : false;
+            return totalWarning > 0;
         }
 
         public bool HasInfo()
         {
-            return totalInfo > 0 ? true : false;
+            return totalInfo > 0;
         }
 
         public bool HasDebug()
         {
-            return totalDebug > 0 ? true : false;
+            return totalDebug > 0;
         }
         #endregion
 

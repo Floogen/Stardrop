@@ -17,11 +17,20 @@ using System.Threading.Tasks;
 
 namespace Stardrop.Utilities.External
 {
-    static class SMAPI
+    static partial class SMAPI
     {
         internal static bool IsRunning = false;
-        internal static Process Process;
-        internal static readonly Regex responseHeadersPattern = new Regex(@"^HEADERS\r?\n=+", RegexOptions.Multiline);
+        internal static Process Process = null!;
+        [GeneratedRegex(@"^HEADERS\r?\n=+", RegexOptions.Multiline)]
+        internal static partial Regex ResponseHeadersPattern();
+
+        internal static readonly JsonSerializerOptions ResponseOptions = new() { PropertyNameCaseInsensitive = true };
+
+
+        internal static readonly JsonSerializerOptions RequestOptions = new() { 
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true
+        };
 
         public static ProcessStartInfo GetPrepareProcess(bool hideConsole)
         {
@@ -29,7 +38,7 @@ namespace Stardrop.Utilities.External
 
             var fileName = smapiInfo.FullName;
             var arguments = string.Empty;
-            var parsedModPath = string.Empty;
+            string? parsedModPath;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) is true)
             {
                 fileName = "/usr/bin/env";
@@ -96,7 +105,7 @@ namespace Stardrop.Utilities.External
         /// <returns>The update data, or null if smapi.io could not provide it (so a failed check is not mistaken for one that found nothing)</returns>
         public async static Task<List<ModEntry>?> GetModUpdateData(GameDetails gameDetails, List<Mod> mods)
         {
-            List<ModSearchEntry> searchEntries = new List<ModSearchEntry>();
+            List<ModSearchEntry> searchEntries = [];
 
             // Mods installed by a collection are pinned to whatever version their collection asks for, so they are
             // never sent to smapi.io. Their requirements below are still sent, as those feed the mod key name cache
@@ -113,7 +122,7 @@ namespace Stardrop.Utilities.External
             }
 
             // Create the body to be sent via the POST request
-            ModSearchData searchData = new ModSearchData(searchEntries, gameDetails.SmapiVersion, gameDetails.GameVersion, gameDetails.System.ToString(), true);
+            ModSearchData searchData = new(searchEntries, gameDetails.SmapiVersion, gameDetails.GameVersion, gameDetails.System.ToString(), true);
 
             // Create a throwaway client
             using HttpClient client = new HttpClient();
@@ -121,7 +130,7 @@ namespace Stardrop.Utilities.External
             client.DefaultRequestHeaders.Add("Application-Version", Program.ApplicationVersion);
             client.DefaultRequestHeaders.Add("User-Agent", $"Stardrop/{Program.ApplicationVersion} {Environment.OSVersion}");
 
-            var parsedRequest = JsonSerializer.Serialize(searchData, new JsonSerializerOptions() { WriteIndented = true, IgnoreNullValues = true });
+            var parsedRequest = JsonSerializer.Serialize(searchData, RequestOptions);
             var requestPackage = new StringContent(parsedRequest, Encoding.UTF8, "application/json");
 
             // Network failures and timeouts are reported as no data, so the caller treats them the same as an error status from smapi.io
@@ -143,7 +152,7 @@ namespace Stardrop.Utilities.External
                 string content = await response.Content.ReadAsStringAsync();
                 try
                 {
-                    modUpdateData = JsonSerializer.Deserialize<List<ModEntry>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    modUpdateData = JsonSerializer.Deserialize<List<ModEntry>>(content, ResponseOptions);
                 }
                 catch (JsonException ex)
                 {
@@ -185,7 +194,7 @@ namespace Stardrop.Utilities.External
         /// <summary>Drops the request headers smapi.io echoes back on its error page</summary>
         private static string GetLoggableResponse(string content)
         {
-            var headersMatch = responseHeadersPattern.Match(content);
+            var headersMatch = ResponseHeadersPattern().Match(content);
             if (headersMatch.Success is false)
             {
                 return content;

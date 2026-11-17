@@ -173,7 +173,7 @@
   // Letöltések panel - Feliratok
   "ui.downloads_panel.download_canceled": "Megszakítva",
   "ui.downloads_panel.download_failed": "Sikertelen",
-  "ui_downloads_panel.download_success": "Kész!",
+  "ui.downloads_panel.download_success": "Kész!",
   "ui.downloads_panel.no_downloads_label": "Nincs folyamatban lévő letöltés",
 
   // Letöltések panel - Eszköztipp

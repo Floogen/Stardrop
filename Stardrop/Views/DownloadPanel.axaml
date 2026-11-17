@@ -5,7 +5,7 @@
              mc:Ignorable="d"
              xmlns:sys="using:System"
              xmlns:scg="using:System.Collections.Generic"
-             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             xmlns:i="clr-namespace:Optris.Icons.Avalonia;assembly=Optris.Icons.Avalonia"
              xmlns:vm="using:Stardrop.ViewModels"
              xmlns:conv="using:Stardrop.Converters"
              xmlns:i18n="using:Stardrop.Utilities.Extension"
@@ -52,16 +52,16 @@
                        TextAlignment="Center"
                        VerticalAlignment="Center"
                        Text="{i18n:Translate ui.downloads_panel.no_downloads_label}"
-                       IsVisible="{Binding !Downloads.Count}"/>
+                       IsVisible="{Binding !HasDownloads}"/>
             <ItemsRepeater x:Name="DownloadItems" 
-                           Items="{Binding Downloads}"
+                           ItemsSource="{Binding Downloads}"
                            Margin="0 12 0 12"
-                           IsVisible="{Binding !!Downloads.Count}">
+                           IsVisible="{Binding HasDownloads}">
                 <ItemsRepeater.Layout>
                     <StackLayout Spacing="24"/>
                 </ItemsRepeater.Layout>                
                 <ItemsRepeater.ItemTemplate>
-                    <DataTemplate DataType="vm:ModDownloadViewModel">
+                    <DataTemplate x:DataType="vm:ModDownloadViewModel">
                         <!--Each of the Classes.className variables is a boolean. The converter checks the current DownloadStatus and sets
                         the appropriate Classes.className to 'True', which then causes the style to kick in and fill in the UI with one of the 
                         styles defined below. This simulates a Visual State Manager like WPF or UWP uses.-->
@@ -83,10 +83,10 @@
                         <Setter Property="Content" Value="{x:Null}"/>
                     </Style>
                     <!--UI for in-progress download-->
-                    <Style Selector="ContentControl.inProgress" x:DataType="vm:ModDownloadViewModel">
+                    <Style Selector="ContentControl.inProgress">
                         <Setter Property="Content">
                             <Template>
-                                <Grid RowDefinitions="Auto, Auto, Auto">
+                                <Grid x:DataType="vm:ModDownloadViewModel" RowDefinitions="Auto, Auto, Auto">
 
                                     <TextBlock Grid.Row="0" Classes="foreground" Text="{Binding Name}"/>
 
@@ -128,10 +128,10 @@
                         </Setter>
                     </Style>
                     <!--UI for successful download-->
-                    <Style Selector="ContentControl.successful" x:DataType="vm:DownloadPanelViewModel">
+                    <Style Selector="ContentControl.successful">
                         <Setter Property="Content">
                             <Template>
-                                <Grid RowDefinitions="Auto, Auto, Auto">
+                                <Grid x:DataType="vm:ModDownloadViewModel" RowDefinitions="Auto, Auto, Auto">
 
                                     <TextBlock Grid.Row="0" Classes="foreground" Text="{Binding Name}"/>
 
@@ -167,17 +167,17 @@
                                                Grid.Row="2"
                                                Classes="foreground"
                                                Margin="0 6 0 0"
-                                               Text="{i18n:Translate ui_downloads_panel.download_success}"/>
+                                               Text="{i18n:Translate ui.downloads_panel.download_success}"/>
 
                                 </Grid>
                             </Template>
                         </Setter>
                     </Style>
                     <!--UI for a canceled download-->
-                    <Style Selector="ContentControl.canceled" x:DataType="vm:DownloadPanelViewModel">
+                    <Style Selector="ContentControl.canceled">
                         <Setter Property="Content">
                             <Template>
-                                <Grid RowDefinitions="Auto, Auto, Auto">
+                                <Grid x:DataType="vm:ModDownloadViewModel" RowDefinitions="Auto, Auto, Auto">
 
                                     <TextBlock Grid.Row="0" Classes="foreground" Text="{Binding Name}"/>
 
@@ -220,10 +220,10 @@
                         </Setter>
                     </Style>
                     <!--UI for a failed download-->
-                    <Style Selector="ContentControl.failed" x:DataType="vm:DownloadPanelViewModel">
+                    <Style Selector="ContentControl.failed">
                         <Setter Property="Content">
                             <Template>
-                                <Grid RowDefinitions="Auto, Auto, Auto">
+                                <Grid x:DataType="vm:ModDownloadViewModel" RowDefinitions="Auto, Auto, Auto">
 
                                     <TextBlock Grid.Row="0" Classes="foreground" Text="{Binding Name}"/>
 

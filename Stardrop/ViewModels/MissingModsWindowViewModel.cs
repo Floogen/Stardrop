@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using ReactiveUI.Reactive;
 using Stardrop.Models;
 using System.Collections.ObjectModel;
 
@@ -6,11 +7,16 @@ namespace Stardrop.ViewModels
 {
     public class MissingModsWindowViewModel : ViewModelBase
     {
-        public ObservableCollection<PortableModData> MissingMods { get; set; }
+        private ObservableCollection<PortableModData> _missingMods = [];
+        public ObservableCollection<PortableModData> MissingMods
+        {
+            get { return _missingMods; }
+            set { this.RaiseAndSetIfChanged(ref _missingMods, value); }
+        }
 
         public MissingModsWindowViewModel()
         {
-            MissingMods = new ObservableCollection<PortableModData>();
+            MissingMods = [];
             if (Design.IsDesignMode)
             {
                 MissingMods =

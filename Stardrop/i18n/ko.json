@@ -173,7 +173,7 @@
   // Downloads Panel - Labels
   "ui.downloads_panel.download_canceled": "취소됨",
   "ui.downloads_panel.download_failed": "실패",
-  "ui_downloads_panel.download_success": "완료!",
+  "ui.downloads_panel.download_success": "완료!",
   "ui.downloads_panel.no_downloads_label":  "진행 중인 다운로드 없음",
 
   // Downloads Panel - Tooltips

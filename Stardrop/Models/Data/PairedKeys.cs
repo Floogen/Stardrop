@@ -2,7 +2,7 @@
 {
     public class PairedKeys
     {
-        public byte[] Lock { get; set; }
-        public byte[] Vector { get; set; }
+        public byte[] Lock { get; set; } = null!;
+        public byte[] Vector { get; set; } = null!;
     }
 }

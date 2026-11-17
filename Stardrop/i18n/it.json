@@ -192,7 +192,7 @@
   // Downloads Panel - Labels
   "ui.downloads_panel.download_canceled": "Cancellato",
   "ui.downloads_panel.download_failed": "Fallito",
-  "ui_downloads_panel.download_success": "Completato!",
+  "ui.downloads_panel.download_success": "Completato!",
   "ui.downloads_panel.no_downloads_label": "Nessun download in corso",
 
   // Downloads Panel - Tooltips

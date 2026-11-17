@@ -1,10 +1,10 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models;
 using Stardrop.Models.Data.Enums;
+using Avalonia.Platform.Storage;
 using Stardrop.Utilities;
 using Stardrop.Utilities.Internal;
 using Stardrop.ViewModels;
@@ -27,7 +27,7 @@ namespace Stardrop.Views
         // A browser given several addresses in one go will drop some of them, so they are spaced out
         private static readonly TimeSpan _bulkOpenDelay = TimeSpan.FromMilliseconds(250);
 
-        private readonly CollectionsWindowViewModel _viewModel = new CollectionsWindowViewModel();
+        private readonly CollectionsWindowViewModel _viewModel = new();
         private readonly ProfileEditorViewModel? _editorView;
         private readonly Action? _onCollectionRemoved;
         private readonly Func<string[], Task>? _onFilesDropped;
@@ -38,15 +38,11 @@ namespace Stardrop.Views
         {
             InitializeComponent();
 
-#if DEBUG
-            this.AttachDevTools();
-#endif
-
             DataContext = _viewModel;
 
             // Handle the menu bar for drag and related events
             var menuBar = this.FindControl<Menu>("menuBar");
-            menuBar.PointerPressed += MainBar_PointerPressed;
+            menuBar!.PointerPressed += MainBar_PointerPressed;
             menuBar.DoubleTapped += MainBar_DoubleTapped;
 
             // Handled at the window, as the panel below is the only thing that takes a drop and the event bubbles
@@ -55,12 +51,12 @@ namespace Stardrop.Views
             AddHandler(DragDrop.DragOverEvent, OnFilesDraggedOver);
 
             // Handle buttons
-            this.FindControl<Button>("exitButton").Click += delegate { this.Close(); };
-            this.FindControl<Button>("openPageButton").Click += OpenPageButton_Click;
-            this.FindControl<Button>("openMissingButton").Click += OpenMissingButton_Click;
-            this.FindControl<Button>("removeButton").Click += RemoveButton_Click;
-            this.FindControl<Button>("refreshButton").Click += RefreshButton_Click;
-            this.FindControl<Button>("updateButton").Click += UpdateButton_Click;
+            this.FindControl<Button>("exitButton")!.Click += delegate { Close(); };
+            this.FindControl<Button>("openPageButton")!.Click += OpenPageButton_Click;
+            this.FindControl<Button>("openMissingButton")!.Click += OpenMissingButton_Click;
+            this.FindControl<Button>("removeButton")!.Click += RemoveButton_Click;
+            this.FindControl<Button>("refreshButton")!.Click += RefreshButton_Click;
+            this.FindControl<Button>("updateButton")!.Click += UpdateButton_Click;
 
             // Skipped in the previewer, which has no paths set up to read the cache from
             if (Design.IsDesignMode is false)
@@ -125,13 +121,23 @@ namespace Stardrop.Views
         /// </summary>
         private async void OnFilesDropped(object? sender, DragEventArgs e)
         {
-            if (_onFilesDropped is null || e.Data.Contains(DataFormats.FileNames) is false)
+            if (_onFilesDropped is null || e.DataTransfer.Formats.Contains(DataFormat.File) is false)
+            {
+                return;
+            }
+            
+            var storageItems = e.DataTransfer.TryGetFiles();
+            if (storageItems is null)
             {
                 return;
             }
 
-            var filePaths = e.Data.GetFileNames()?.ToArray();
-            if (filePaths is null || filePaths.Length == 0)
+            var filePaths = storageItems
+                .OfType<IStorageFile>() // 确保是文件而非文件夹
+                .Select(f => f.Path.LocalPath) // 提取本地路径
+                .ToArray();
+
+            if (filePaths.Length == 0)
             {
                 return;
             }
@@ -143,7 +149,9 @@ namespace Stardrop.Views
 
         private void OnFilesDraggedOver(object? sender, DragEventArgs e)
         {
-            e.DragEffects = _onFilesDropped is not null && e.Data.Contains(DataFormats.FileNames) ? DragDropEffects.Copy : DragDropEffects.None;
+            e.DragEffects = _onFilesDropped is not null && e.DataTransfer.Formats.Contains(DataFormat.File) 
+                ? DragDropEffects.Copy 
+                : DragDropEffects.None;
         }
 
         /// <summary>
@@ -194,7 +202,7 @@ namespace Stardrop.Views
             // this button is likely to have meant
             if (pageUris.Count > _bulkOpenConfirmationThreshold)
             {
-                var requestWindow = new MessageWindow(String.Format(Program.translation.Get("ui.message.confirm_open_missing_pages"), pageUris.Count))
+                var requestWindow = new MessageWindow(string.Format(Program.translation.Get("ui.message.confirm_open_missing_pages"), pageUris.Count))
                 {
                     Topmost = true
                 };
@@ -229,10 +237,10 @@ namespace Stardrop.Views
 
             var dependentProfiles = CollectionsWindowViewModel.GetDependentProfiles(_editorView.Profiles, collection);
 
-            var message = String.Format(Program.translation.Get("ui.message.confirm_collection_delete"), collection.Name, collection.InstalledModCount);
+            var message = string.Format(Program.translation.Get("ui.message.confirm_collection_delete"), collection.Name, collection.InstalledModCount);
             if (dependentProfiles.Count > 0)
             {
-                message += Environment.NewLine + Environment.NewLine + String.Format(Program.translation.Get("ui.message.collection_delete_dependents"), dependentProfiles.Count);
+                message += Environment.NewLine + Environment.NewLine + string.Format(Program.translation.Get("ui.message.collection_delete_dependents"), dependentProfiles.Count);
             }
 
             message += Environment.NewLine + Environment.NewLine + Program.translation.Get("ui.message.collection_delete_keep_note");
@@ -260,8 +268,21 @@ namespace Stardrop.Views
 
         private void HandleGeneratedProfile(CollectionView collection, bool deleteInstalledMods)
         {
-            if (_editorView is null || _editorView.Profiles.FirstOrDefault(p => p.Name.Equals(collection.ProfileName, StringComparison.OrdinalIgnoreCase)) is not Profile profile)
+            if (_editorView is null)
             {
+                return;
+            }
+
+            var profile = _editorView.Profiles.FirstOrDefault(p => 
+                !string.IsNullOrEmpty(p.SourceId) && 
+                p.SourceId.Equals(collection.SourceId, StringComparison.OrdinalIgnoreCase));
+            
+            profile ??= _editorView.Profiles.FirstOrDefault(p => 
+                    p.Name.Equals(collection.ProfileName, StringComparison.OrdinalIgnoreCase));
+
+            if (profile is null)
+            {
+                Program.helper.Log($"No profile found for the collection {collection.SourceId} to remove or detach");
                 return;
             }
 
@@ -282,7 +303,7 @@ namespace Stardrop.Views
         /// </summary>
         private void OnUpdateStatusTapped(object? sender, RoutedEventArgs e)
         {
-            if (_viewModel.SelectedCollection is null || String.IsNullOrEmpty(_viewModel.SelectedCollection.UpdatePageUri))
+            if (_viewModel.SelectedCollection is null || string.IsNullOrEmpty(_viewModel.SelectedCollection.UpdatePageUri))
             {
                 return;
             }
@@ -311,7 +332,7 @@ namespace Stardrop.Views
         /// </summary>
         private void OnEntryDoubleTapped(object? sender, RoutedEventArgs e)
         {
-            if (sender is not Control { DataContext: CollectionEntryView entry } || String.IsNullOrEmpty(entry.PageUri))
+            if (sender is not Control { DataContext: CollectionEntryView entry } || string.IsNullOrEmpty(entry.PageUri))
             {
                 return;
             }
@@ -331,15 +352,15 @@ namespace Stardrop.Views
         {
             if (e.Handled is false)
             {
-                this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
+                WindowState = WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
             }
         }
 
-        private void MainBar_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private void MainBar_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
             if (e.Pointer.IsPrimary && e.Handled is false)
             {
-                this.BeginMoveDrag(e);
+                BeginMoveDrag(e);
             }
         }
 

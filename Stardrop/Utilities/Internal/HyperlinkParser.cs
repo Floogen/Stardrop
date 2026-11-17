@@ -1,5 +1,4 @@
 using Stardrop.Models.Data;
-using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -10,14 +9,22 @@ namespace Stardrop.Utilities.Internal
     /// Curator supplied text arrives as either plain text or light markdown, so bare addresses and [label](url)
     /// pairs are both handled.
     /// </summary>
-    internal static class HyperlinkParser
+    internal static partial class HyperlinkParser
     {
-        private static readonly Regex _markdownLinkPattern = new Regex(@"\[((?:\\.|[^\]\\])*)\]\(\s*(\S+?)\s*\)", RegexOptions.Compiled);
-        private static readonly Regex _bareLinkPattern = new Regex(@"(?:https?://|www\.)\S+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex _wordPattern = new Regex(@"\S+", RegexOptions.Compiled);
-        private static readonly Regex _escapeSequencePattern = new Regex(@"\\(.)", RegexOptions.Compiled);
-        private static readonly char[] _lineWhitespace = new char[] { ' ', '\t' };
-        private static readonly char[] _trailingPunctuation = new char[] { '.', ',', ';', ':', '!', '?', '"', '\'', ')', ']', '}', '>' };
+        //private static readonly Regex _markdownLinkPattern = new(@"\[((?:\\.|[^\]\\])*)\]\(\s*(\S+?)\s*\)", RegexOptions.Compiled);
+        //private static readonly Regex _bareLinkPattern = new(@"(?:https?://|www\.)\S+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        //private static readonly Regex _wordPattern = new(@"\S+", RegexOptions.Compiled);
+        //private static readonly Regex _escapeSequencePattern = new(@"\\(.)", RegexOptions.Compiled);
+        [GeneratedRegex(@"\[((?:\\.|[^\]\\])*)\]\(\s*(\S+?)\s*\)", RegexOptions.Compiled)]
+        private static partial Regex MarkdownLinkPattern();
+        [GeneratedRegex(@"(?:https?://|www\.)\S+", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+        private static partial Regex BareLinkPattern();
+        [GeneratedRegex(@"\S+", RegexOptions.Compiled)]
+        private static partial Regex WordPattern();
+        [GeneratedRegex(@"\\(.)", RegexOptions.Compiled)]
+        private static partial Regex EscapeSequencePattern();
+        private static readonly char[] _lineWhitespace = [' ', '\t'];
+        private static readonly char[] _trailingPunctuation = ['.', ',', ';', ':', '!', '?', '"', '\'', ')', ']', '}', '>'];
 
         /// <summary>Width given to each leading space, so indented list entries keep their shape</summary>
         private const double _indentWidthPerSpace = 4;
@@ -37,7 +44,7 @@ namespace Stardrop.Utilities.Internal
         public static List<RichTextLine> Parse(string? text)
         {
             var lines = new List<RichTextLine>();
-            if (String.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text))
             {
                 return lines;
             }
@@ -70,9 +77,9 @@ namespace Stardrop.Utilities.Internal
         /// </summary>
         public static string Escape(string? text)
         {
-            if (String.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text))
             {
-                return String.Empty;
+                return string.Empty;
             }
 
             return text.Replace("\\", "\\\\").Replace("[", "\\[").Replace("]", "\\]");
@@ -84,7 +91,7 @@ namespace Stardrop.Utilities.Internal
             var line = new RichTextLine() { IndentWidth = (rawLine.Length - content.Length) * _indentWidthPerSpace };
 
             // A line with no segments would collapse to no height, taking the blank line separating each list with it
-            if (String.IsNullOrWhiteSpace(content))
+            if (string.IsNullOrWhiteSpace(content))
             {
                 line.Segments.Add(RichTextSegment.CreateText(_spacePlaceholder));
                 return line;
@@ -98,7 +105,7 @@ namespace Stardrop.Utilities.Internal
 
                 // Carried as its own segment rather than as part of the label, to keep the underline off the gap
                 var spacing = GetSpacing(content, link.End);
-                if (String.IsNullOrEmpty(spacing) is false)
+                if (string.IsNullOrEmpty(spacing) is false)
                 {
                     line.Segments.Add(RichTextSegment.CreateText(spacing));
                 }
@@ -119,10 +126,10 @@ namespace Stardrop.Utilities.Internal
             var links = new List<LinkMatch>();
             int index = 0;
 
-            foreach (Match match in _markdownLinkPattern.Matches(content))
+            foreach (Match match in MarkdownLinkPattern().Matches(content))
             {
                 var label = Unescape(match.Groups[1].Value);
-                if (String.IsNullOrWhiteSpace(label) || Toolkit.TryGetWebAddress(match.Groups[2].Value, out var webAddress) is false)
+                if (string.IsNullOrWhiteSpace(label) || Toolkit.TryGetWebAddress(match.Groups[2].Value, out var webAddress) is false)
                 {
                     continue;
                 }
@@ -144,7 +151,7 @@ namespace Stardrop.Utilities.Internal
                 return links;
             }
 
-            foreach (Match match in _bareLinkPattern.Matches(content.Substring(start, end - start)))
+            foreach (Match match in BareLinkPattern().Matches(content.Substring(start, end - start)))
             {
                 // Sentence punctuation sitting against an address belongs to the sentence rather than to the address
                 var candidate = match.Value.TrimEnd(_trailingPunctuation);
@@ -167,7 +174,7 @@ namespace Stardrop.Utilities.Internal
                 return;
             }
 
-            foreach (Match match in _wordPattern.Matches(content.Substring(start, end - start)))
+            foreach (Match match in WordPattern().Matches(content.Substring(start, end - start)))
             {
                 var wordEnd = start + match.Index + match.Length;
                 line.Segments.Add(RichTextSegment.CreateText(Unescape(match.Value) + GetSpacing(content, wordEnd)));
@@ -176,17 +183,17 @@ namespace Stardrop.Utilities.Internal
 
         private static string GetSpacing(string content, int index)
         {
-            if (index < content.Length && Char.IsWhiteSpace(content[index]))
+            if (index < content.Length && char.IsWhiteSpace(content[index]))
             {
                 return _spacePlaceholder;
             }
 
-            return String.Empty;
+            return string.Empty;
         }
 
         private static string Unescape(string text)
         {
-            return _escapeSequencePattern.Replace(text, "$1");
+            return EscapeSequencePattern().Replace(text, "$1");
         }
     }
 }

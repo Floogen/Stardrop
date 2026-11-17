@@ -7,13 +7,13 @@ namespace Stardrop.Models
     public class Settings
     {
         public string Theme { get; set; } = "Stardrop";
-        public string Language { get; set; }
+        public string Language { get; set; } = null!;
         public ModGrouping ModGroupingMethod { get; set; } = ModGrouping.None;
-        public string Version { get; set; }
-        public string LastSelectedProfileName { get; set; }
-        public string SMAPIFolderPath { get; set; }
-        public string ModFolderPath { get; set; }
-        public string ModInstallPath { get; set; }
+        public string Version { get; set; } = null!;
+        public string LastSelectedProfileName { get; set; } = null!;
+        public string SMAPIFolderPath { get; set; } = null!;
+        public string ModFolderPath { get; set; } = null!;
+        public string ModInstallPath { get; set; } = null!;
         /// <summary>
         /// Where a collection installs the mods it pins. Kept outside the mod folder, as a collection installs its
         /// own copy of every mod and SMAPI skips every copy of a duplicated unique ID rather than picking one. An
@@ -21,7 +21,7 @@ namespace Stardrop.Models
         /// follow this: the collection records stay alongside the profiles under the data folder, as they are small
         /// and are keyed by source ID rather than by path.
         /// </summary>
-        public string CollectionInstallPath { get; set; }
+        public string CollectionInstallPath { get; set; } = null!;
         public bool IgnoreHiddenFolders { get; set; } = true;
         public bool EnableProfileSpecificModConfigs { get; set; }
         public bool ShouldWriteToModConfigs { get; set; }
@@ -47,12 +47,12 @@ namespace Stardrop.Models
         /// updates the user is not meant to act on.
         /// </summary>
         public bool CollectionsSkipSMAPIUpdateCheck { get; set; } = true;
-        public GameDetails GameDetails { get; set; }
-        public NexusUser NexusDetails { get; set; }
+        public GameDetails GameDetails { get; set; } = null!;
+        public NexusUser NexusDetails { get; set; } = null!;
 
         public Settings ShallowCopy()
         {
-            return (Settings)this.MemberwiseClone();
+            return (Settings)MemberwiseClone();
         }
     }
 }

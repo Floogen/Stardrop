@@ -12,11 +12,11 @@ namespace Stardrop.Utilities.Internal
     /// </summary>
     internal static class CollectionCache
     {
-        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions() { WriteIndented = true, PropertyNameCaseInsensitive = true };
+        private static readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true, PropertyNameCaseInsensitive = true };
 
         public static List<CollectionInstall> LoadAll()
         {
-            List<CollectionInstall> collections = new List<CollectionInstall>();
+            List<CollectionInstall> collections = [];
 
             var cacheFolder = Pathing.GetCollectionsCacheFolderPath();
             if (Directory.Exists(cacheFolder) is false)
@@ -29,7 +29,7 @@ namespace Stardrop.Utilities.Internal
                 try
                 {
                     var collection = JsonSerializer.Deserialize<CollectionInstall>(File.ReadAllText(fileInfo.FullName), _serializerOptions);
-                    if (collection is null || String.IsNullOrEmpty(collection.SourceId))
+                    if (collection is null || string.IsNullOrEmpty(collection.SourceId))
                     {
                         Program.helper.Log($"The collection record at {fileInfo.FullName} was empty or not deserializable", Helper.Status.Alert);
                         continue;

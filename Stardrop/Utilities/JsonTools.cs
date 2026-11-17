@@ -14,7 +14,7 @@ namespace Stardrop.Utilities
         {
             using (var stream = new MemoryStream())
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+                Utf8JsonWriter writer = new(stream, new JsonWriterOptions { Indented = true });
                 jdoc.WriteTo(writer);
                 writer.Flush();
 

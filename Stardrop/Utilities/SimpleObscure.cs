@@ -30,11 +30,11 @@ namespace Stardrop.Utilities
                 ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
 
                 // Create the streams used for encryption.
-                using (MemoryStream msEncrypt = new MemoryStream())
+                using (MemoryStream msEncrypt = new())
                 {
-                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                    using (CryptoStream csEncrypt = new(msEncrypt, encryptor, CryptoStreamMode.Write))
                     {
-                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                        using (StreamWriter swEncrypt = new(csEncrypt))
                         {
                             swEncrypt.Write(plainText);
                         }
@@ -48,30 +48,17 @@ namespace Stardrop.Utilities
 
         internal static string Decrypt(byte[] cipherText, byte[] Key, byte[] IV)
         {
-            string plaintext = null;
+            using Aes aes = Aes.Create();
+            aes.Key = Key;
+            aes.IV = IV;
 
-            using (Aes aes = Aes.Create())
-            {
-                aes.Key = Key;
-                aes.IV = IV;
+            ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
-                // Create a decryptor to perform the stream transform.
-                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+            using MemoryStream msDecrypt = new(cipherText);
+            using CryptoStream csDecrypt = new(msDecrypt, decryptor, CryptoStreamMode.Read);
+            using StreamReader srDecrypt = new(csDecrypt);
 
-                // Create the streams used for decryption.
-                using (MemoryStream msDecrypt = new MemoryStream(cipherText))
-                {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                        {
-                            plaintext = srDecrypt.ReadToEnd();
-                        }
-                    }
-                }
-            }
-
-            return plaintext;
+            return srDecrypt.ReadToEnd();
         }
     }
 }

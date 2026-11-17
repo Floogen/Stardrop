@@ -2,10 +2,10 @@
 {
     public class NexusUser
     {
-        public string Username { get; set; }
+        public string Username { get; set; } = null!;
         public bool IsPremium { get; set; }
 
-        public byte[] Key { get; set; }
+        public byte[] Key { get; set; } = null!;
 
         public NexusUser()
         {

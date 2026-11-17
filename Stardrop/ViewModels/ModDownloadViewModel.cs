@@ -1,9 +1,9 @@
-﻿using ReactiveUI;
+﻿using ReactiveUI.Reactive;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Threading;
 
 namespace Stardrop.ViewModels
 {
@@ -74,24 +74,24 @@ namespace Stardrop.ViewModels
             RemoveCommand = ReactiveCommand.Create(Remove);
 
             // SizeBytes null-ness to IsSizeUnknown converison
-            this.WhenAnyValue(x => x.SizeBytes)
+            this.WhenAnyValueUnsafe(x => x.SizeBytes)
                 .Select(x => x.HasValue is false)
                 .ToProperty(this, x => x.IsSizeUnknown, out _isSizeUnknown);
 
             // DownloadedBytes to DownloadSpeedLabel conversion
-            this.WhenAnyValue(x => x.DownloadedBytes)
-                .Sample(TimeSpan.FromMilliseconds(500), RxApp.MainThreadScheduler)
+            this.WhenAnyValueUnsafe(x => x.DownloadedBytes)
+                .Sample(TimeSpan.FromMilliseconds(500), RxSchedulers.MainThreadScheduler)
                 .Select(bytes =>
                 {
                     double elapsedSeconds = (DateTimeOffset.UtcNow - _startTime).TotalSeconds;
                     double bytesPerSecond = bytes / elapsedSeconds;
                     if (bytesPerSecond > 1024 * 1024)  // MB 
                     {
-                        return $"{(bytesPerSecond / (1024 * 1024)):N2} {Program.translation.Get("internal.measurements.megabytes_per_second")}";
+                        return $"{bytesPerSecond / (1024 * 1024):N2} {Program.translation.Get("internal.measurements.megabytes_per_second")}";
                     }
                     else if (bytesPerSecond > 1024) // KB
                     {
-                        return $"{(bytesPerSecond / 1024):N2} {Program.translation.Get("internal.measurements.kilobytes_per_second")}";
+                        return $"{bytesPerSecond / 1024:N2} {Program.translation.Get("internal.measurements.kilobytes_per_second")}";
                     }
                     else // Bytes
                     {
@@ -100,9 +100,12 @@ namespace Stardrop.ViewModels
                 }).ToProperty(this, x => x.DownloadSpeedLabel, out _downloadSpeedLabel);
 
             // DownloadedBytes and SizeBytes to DownloadProgressLabel conversion
-            this.WhenAnyValue(x => x.DownloadedBytes, x => x.SizeBytes)
-                .Sample(TimeSpan.FromMilliseconds(500), RxApp.MainThreadScheduler)
-                .Select(((long Bytes, long? Total) x) =>
+            this.WhenAnyValueUnsafe(
+                    x => x.DownloadedBytes, 
+                    x => x.SizeBytes, 
+                    (bytes, total) => (bytes, total))   // 选择器直接产出元组
+                .Sample(TimeSpan.FromMilliseconds(500), RxSchedulers.MainThreadScheduler)
+                .Select(((long Bytes, long? Total) x) => 
                 {
                     string bytesString = ToHumanReadable(x.Bytes);
                     if (x.Total is null)
@@ -119,11 +122,11 @@ namespace Stardrop.ViewModels
                     {
                         if (bytes > 1024 * 1024) // MB
                         {
-                            return $"{(bytes / (1024.0 * 1024.0)):N2} {Program.translation.Get("internal.measurements.megabytes_size")}";
+                            return $"{bytes / (1024.0 * 1024.0):N2} {Program.translation.Get("internal.measurements.megabytes_size")}";
                         }
                         else if (bytes > 1024) // KB
                         {
-                            return $"{(bytes / 1024.0):N2} {Program.translation.Get("internal.measurements.kilobytes_size")}";
+                            return $"{bytes / 1024.0:N2} {Program.translation.Get("internal.measurements.kilobytes_size")}";
                         }
                         else
                         {
@@ -136,8 +139,8 @@ namespace Stardrop.ViewModels
             {
                 // DownloadedBytes to Completion conversion
                 this.WhenAnyValue(x => x.DownloadedBytes)
-                    .Sample(TimeSpan.FromMilliseconds(500), RxApp.MainThreadScheduler)
-                    .Select(x => (DownloadedBytes / (double)SizeBytes) * 100)
+                    .Sample(TimeSpan.FromMilliseconds(500), RxSchedulers.MainThreadScheduler)
+                    .Select(x => DownloadedBytes / (double)SizeBytes * 100)
                     .ToProperty(this, x => x.Completion, out _completion);
             }
         }

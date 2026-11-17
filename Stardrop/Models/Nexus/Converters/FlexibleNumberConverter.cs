@@ -49,7 +49,7 @@ namespace Stardrop.Models.Nexus.Converters
             if (reader.TokenType is JsonTokenType.String)
             {
                 var parsed = FlexibleNumberReader.ParseInt64(reader.GetString());
-                if (parsed is null || parsed.Value > Int32.MaxValue || parsed.Value < Int32.MinValue)
+                if (parsed is null || parsed.Value > int.MaxValue || parsed.Value < int.MinValue)
                 {
                     return null;
                 }
@@ -76,18 +76,18 @@ namespace Stardrop.Models.Nexus.Converters
     {
         public static long? ParseInt64(string? raw)
         {
-            if (String.IsNullOrWhiteSpace(raw))
+            if (string.IsNullOrWhiteSpace(raw))
             {
                 return null;
             }
 
-            if (Int64.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+            if (long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
             {
                 return value;
             }
 
             // Byte sizes occasionally arrive with a decimal component
-            if (Double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var doubleValue))
+            if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var doubleValue))
             {
                 return (long)doubleValue;
             }

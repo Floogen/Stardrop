@@ -12,7 +12,9 @@ namespace Stardrop.ViewModels
         {
             if (Design.IsDesignMode)
             {
-
+                IncludeModConfigs = true;
+                IncludeDisabledMods = false;
+                IncludeModNotes = true;
             }
         }
     }

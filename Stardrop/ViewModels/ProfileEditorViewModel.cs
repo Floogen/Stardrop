@@ -16,8 +16,8 @@ namespace Stardrop.ViewModels
     {
         public ObservableCollection<Profile> Profiles { get; set; }
         public List<Profile> OldProfiles { get; set; }
-        public string ToolTip_Save { get; set; }
-        public string ToolTip_Cancel { get; set; }
+        public string ToolTip_Save { get; set; } = null!;
+        public string ToolTip_Cancel { get; set; } = null!;
 
         private readonly string _profileFilePath;
         private List<Mod> _mods;
@@ -29,13 +29,13 @@ namespace Stardrop.ViewModels
 
         public ProfileEditorViewModel(string profilesFilePath, List<Mod> mods)
         {
-            OldProfiles = new List<Profile>();
-            Profiles = new ObservableCollection<Profile>();
+            OldProfiles = [];
+            Profiles = [];
 
             _profileFilePath = profilesFilePath;
             _mods = mods;
 
-            DirectoryInfo profileDirectory = new DirectoryInfo(_profileFilePath);
+            DirectoryInfo profileDirectory = new(_profileFilePath);
             foreach (var fileInfo in profileDirectory.GetFiles("*.json", SearchOption.AllDirectories))
             {
                 if (fileInfo.DirectoryName is null)
@@ -48,7 +48,7 @@ namespace Stardrop.ViewModels
                     var profile = JsonSerializer.Deserialize<Profile>(File.ReadAllText(fileInfo.FullName), new JsonSerializerOptions { AllowTrailingCommas = true });
                     if (profile is null)
                     {
-                        Program.helper.Log($"The profile file {fileInfo.Name} was empty or not deserializable from {fileInfo.DirectoryName}", Utilities.Helper.Status.Alert);
+                        Program.helper.Log($"The profile file {fileInfo.Name} was empty or not deserializable from {fileInfo.DirectoryName}", Helper.Status.Alert);
                         continue;
                     }
 
@@ -56,7 +56,7 @@ namespace Stardrop.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Program.helper.Log($"Unable to load the profile file {fileInfo.Name} from {fileInfo.DirectoryName}: {ex}", Utilities.Helper.Status.Alert);
+                    Program.helper.Log($"Unable to load the profile file {fileInfo.Name} from {fileInfo.DirectoryName}: {ex}", Helper.Status.Alert);
                 }
             }
 
@@ -193,7 +193,7 @@ namespace Stardrop.ViewModels
             string fileFullName = GetProfileFilePath(profile.Name);
             if (File.Exists(fileFullName) && !force)
             {
-                Program.helper.Log($"Attempted to create an already existing profile file ({profile.Name}) at the path {fileFullName}", Utilities.Helper.Status.Warning);
+                Program.helper.Log($"Attempted to create an already existing profile file ({profile.Name}) at the path {fileFullName}", Helper.Status.Warning);
                 return;
             }
 
@@ -218,7 +218,7 @@ namespace Stardrop.ViewModels
             string fileFullName = GetProfileFilePath(profile.Name);
             if (File.Exists(fileFullName) is false)
             {
-                Program.helper.Log($"Attempted to delete a non-existent profile file ({profile.Name}) at the path {fileFullName}", Utilities.Helper.Status.Warning);
+                Program.helper.Log($"Attempted to delete a non-existent profile file ({profile.Name}) at the path {fileFullName}", Helper.Status.Warning);
             }
             else
             {

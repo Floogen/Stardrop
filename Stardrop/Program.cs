@@ -1,10 +1,9 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.ReactiveUI;
-using Avalonia.Shared.PlatformSupport;
-using CommandLine;
-using Projektanker.Icons.Avalonia;
-using Projektanker.Icons.Avalonia.MaterialDesign;
+using ReactiveUI.Avalonia.Reactive;
+using Optris.Icons.Avalonia;
+using Optris.Icons.Avalonia.MaterialDesign;
+using System.CommandLine;
 using Semver;
 using Stardrop.Models;
 using Stardrop.Models.Nexus;
@@ -24,28 +23,51 @@ using System.Threading;
 
 namespace Stardrop
 {
-    class Program
+    partial class Program
     {
-        internal static Helper helper;
-        internal static Settings settings = new Settings();
-        internal static Translation translation = new Translation();
-        internal static AssetLoader assetLoader = new AssetLoader();
+        internal static Helper helper = null!;
+        internal static Settings settings = new();
+        internal static Translation translation = new();
+        // internal static AssetLoader assetLoader = new AssetLoader();
 
         internal static bool onBootStartSMAPI = false;
         internal static string? nxmLink = null;
         internal static readonly string defaultProfileName = "Default";
         internal static readonly string executablePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Stardrop.exe");
-        internal static readonly Regex gameDetailsPattern = new Regex(@"SMAPI (?<smapiVersion>.+) with Stardew Valley (?<gameVersion>.+) on (?<system>.+)");
+        [GeneratedRegex(@"SMAPI (?<smapiVersion>.+) with Stardew Valley (?<gameVersion>.+) on (?<system>.+)")]
+        internal static partial Regex GameDetailsPattern();
+        private static readonly JsonSerializerOptions readOptions = new() { AllowTrailingCommas = true };
+        private static readonly JsonSerializerOptions writeOptions = new() { WriteIndented = true };
 
         public static string ApplicationVersion { get { return $"{_applicationVersion.WithoutMetadata()}"; } }
-        private static readonly SemVersion _applicationVersion = SemVersion.Parse(typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, SemVersionStyles.Any);
+        private static readonly SemVersion _applicationVersion = SemVersion.Parse(typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion, SemVersionStyles.Any);
 
-        public class Options
+        // public class Options
+        // {
+        //     [Option("start-smapi", Required = false, HelpText = "Automatically starts SMAPI based on the last selected mod profile.")]
+        //     public bool StartSmapi { get; set; }
+        //     [Option("nxm", Required = false, HelpText = "Downloads the given NXM file from Nexus Mods.")]
+        //     public string? NXMLink { get; set; }
+        // }
+
+        private static RootCommand BuildRootCommand()
         {
-            [Option("start-smapi", Required = false, HelpText = "Automatically starts SMAPI based on the last selected mod profile.")]
-            public bool StartSmapi { get; set; }
-            [Option("nxm", Required = false, HelpText = "Downloads the given NXM file from Nexus Mods.")]
-            public string? NXMLink { get; set; }
+            // Use Option<T> instead of OptionAttribute to define options
+            var startSmapiOption = new Option<bool>("--start-smapi")
+            {
+                Description = "Automatically starts SMAPI based on the last selected mod profile."
+            };
+
+            var nxmOption = new Option<string?>("--nxm")
+            {
+                Description = "Downloads the given NXM file from Nexus Mods."
+            };
+
+            var rootCommand = new RootCommand();
+            rootCommand.Options.Add(startSmapiOption);
+            rootCommand.Options.Add(nxmOption);
+            
+            return rootCommand;
         }
 
         // Initialization code. Don't use any Avalonia, third-party APIs or any
@@ -55,7 +77,7 @@ namespace Stardrop
         public static void Main(string[] args)
         {
             // Enforce the directory's path
-            Directory.SetCurrentDirectory(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule!.FileName)!);
 
             // Establish file and folders paths
             Pathing.SetHomePath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
@@ -78,11 +100,17 @@ namespace Stardrop
                 helper.Log($"{Environment.NewLine}-- Startup Data --{Environment.NewLine}Time: {DateTime.Now}{Environment.NewLine}OS: [{operatingSystem}] {RuntimeInformation.OSDescription}{Environment.NewLine}Settings Directory: {Pathing.defaultHomePath}{Environment.NewLine}Active Directory: {Directory.GetCurrentDirectory()}{Environment.NewLine}Version: v{ApplicationVersion}{Environment.NewLine}----------------------{Environment.NewLine}");
 
                 // Set the argument values
-                Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(o =>
-                {
-                    onBootStartSMAPI = o.StartSmapi;
-                    nxmLink = o.NXMLink;
-                });
+                // Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(o =>
+                // {
+                //     onBootStartSMAPI = o.StartSmapi;
+                //     nxmLink = o.NXMLink;
+                // });
+
+                var rootCommand = BuildRootCommand();
+                var parseResult = rootCommand.Parse(args);
+
+                onBootStartSMAPI = parseResult.GetValue<bool>("--start-smapi");
+                nxmLink = parseResult.GetValue<string?>("--nxm");
 
                 // Log which application Windows will hand NXM links to
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -106,7 +134,7 @@ namespace Stardrop
                 {
                     try
                     {
-                        settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(Pathing.GetSettingsPath()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                        settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(Pathing.GetSettingsPath()), readOptions) ?? new Settings();
                     }
                     catch (JsonException ex)
                     {
@@ -116,7 +144,7 @@ namespace Stardrop
                 }
 
                 // Set the default paths
-                if (!String.IsNullOrEmpty(settings.ModFolderPath))
+                if (!string.IsNullOrEmpty(settings.ModFolderPath))
                 {
                     Pathing.SetSmapiPath(settings.SMAPIFolderPath);
                     Pathing.SetModPath(settings.ModFolderPath);
@@ -128,7 +156,7 @@ namespace Stardrop
                 }
 
                 // Set the default mod install path (for mods that are installed by Stardrop)
-                if (!String.IsNullOrEmpty(Pathing.defaultModPath) && String.IsNullOrEmpty(settings.ModInstallPath))
+                if (!string.IsNullOrEmpty(Pathing.defaultModPath) && string.IsNullOrEmpty(settings.ModInstallPath))
                 {
                     settings.ModInstallPath = Path.Combine(Pathing.defaultModPath, "Stardrop Installed Mods");
                 }
@@ -136,16 +164,13 @@ namespace Stardrop
                 // Set the default collection install path (for mods that are installed by a collection). Unlike the
                 // mod install path this does not depend on where the mod folder points, as collections deliberately
                 // live outside it
-                if (String.IsNullOrEmpty(settings.CollectionInstallPath))
+                if (string.IsNullOrEmpty(settings.CollectionInstallPath))
                 {
                     settings.CollectionInstallPath = Pathing.GetDefaultCollectionsFolderPath();
                 }
 
                 // Set the default Nexus Mods information
-                if (settings.NexusDetails is null)
-                {
-                    settings.NexusDetails = new NexusUser();
-                }
+                settings.NexusDetails ??= new NexusUser();
 
                 // Delete any files underneath the Nexus folder
                 var nexusDirectory = new DirectoryInfo(Pathing.GetNexusPath());
@@ -160,7 +185,7 @@ namespace Stardrop
 
                 // Load the translations before selecting one, since the available languages are discovered from i18n.
                 translation.LoadTranslations();
-                if (String.IsNullOrEmpty(settings.Language))
+                if (string.IsNullOrEmpty(settings.Language))
                 {
                     settings.Language = translation.GetLanguageFromAbbreviation(CultureInfo.CurrentCulture.TwoLetterISOLanguageName);
                 }
@@ -177,63 +202,56 @@ namespace Stardrop
 
         private static void HandleSecondaryInstance(string[] args)
         {
-            Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(o =>
-            {
-                nxmLink = o.NXMLink;
-            });
+            var rootCommand = BuildRootCommand();
+            var parseResult = rootCommand.Parse(args);
+            nxmLink = parseResult.GetValue<string?>("--nxm");
 
             // Verify NXM link is valid
-            if (String.IsNullOrEmpty(nxmLink))
+            if (string.IsNullOrEmpty(nxmLink))
             {
-                Program.helper.Log("Given empty NXM link");
+                helper.Log("Given empty NXM link");
                 return;
             }
 
             // Write to bridge file
             int attempts = 0;
 
-            Program.helper.Log("STARTING");
+            helper.Log("STARTING");
             while (true)
             {
                 try
                 {
-                    using (FileStream stream = new FileStream(Pathing.GetLinksCachePath(), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+                    using FileStream stream = new(Pathing.GetLinksCachePath(), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                    List<NXM> links;
+                    try
                     {
-                        List<NXM> links;
-                        try
-                        {
-                            links = JsonSerializer.DeserializeAsync<List<NXM>>(stream, new JsonSerializerOptions { AllowTrailingCommas = true }).Result;
+                        links = JsonSerializer.Deserialize<List<NXM>>(stream, readOptions) ?? [];
 
-                            if (links is null)
-                            {
-                                links = new List<NXM>();
-                            }
-                        }
-                        catch (JsonException ex)
-                        {
-                            links = new List<NXM>();
-                        }
+                    }
+                    catch (JsonException)    
+                    {
+                        links = [];
+                    }
 
-                        try
-                        {
-                            links.Add(new NXM() { Link = nxmLink, Timestamp = DateTime.Now });
-                            Program.helper.Log(links.Count());
+                    try
+                    {
+                        links.Add(new NXM() { Link = nxmLink, Timestamp = DateTime.Now });
+                        helper.Log(links.Count);
 
-                            stream.SetLength(0);
+                        stream.SetLength(0);
 
-                            JsonSerializer.SerializeAsync(stream, links, new JsonSerializerOptions() { WriteIndented = true });
+                        JsonSerializer.SerializeAsync(stream, links, writeOptions);
 
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
-                            Program.helper.Log(ex);
-                        }
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        helper.Log(ex);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Program.helper.Log(ex);
+                    helper.Log(ex);
                 }
 
                 if (attempts >= 3)
@@ -247,7 +265,7 @@ namespace Stardrop
                 }
             }
 
-            Program.helper.Log("DONE");
+            helper.Log("DONE");
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.
@@ -259,12 +277,12 @@ namespace Stardrop
                 Pathing.SetHomePath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
             }
 
+            IconProvider.Current.Register<MaterialDesignIconProvider>();
+            
             return AppBuilder.Configure<App>()
-                .UseReactiveUI()
+                .UseReactiveUI(_ => { })
                 .UsePlatformDetect()
-                .LogToTrace()
-                .WithIcons(container => container
-                .Register<MaterialDesignIconProvider>());
+                .LogToTrace();
         }
     }
 }

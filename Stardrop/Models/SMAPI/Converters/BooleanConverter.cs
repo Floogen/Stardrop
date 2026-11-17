@@ -13,8 +13,8 @@ namespace Stardrop.Models.SMAPI.Converters
                 return reader.GetBoolean();
             }
 
-            string value = reader.GetString();
-            if (Boolean.TryParse(value, out bool result))
+            string? value = reader.GetString();
+            if (bool.TryParse(value, out bool result))
             {
                 return result;
             }

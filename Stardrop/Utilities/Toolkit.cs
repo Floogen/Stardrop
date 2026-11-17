@@ -15,17 +15,17 @@ namespace Stardrop.Utilities
         {
             if (bytes >= 1024L * 1024L * 1024L)
             {
-                return $"{(bytes / (1024.0 * 1024.0 * 1024.0)):N2} {Program.translation.Get("internal.measurements.gigabytes_size")}";
+                return $"{bytes / (1024.0 * 1024.0 * 1024.0):N2} {Program.translation.Get("internal.measurements.gigabytes_size")}";
             }
 
             if (bytes >= 1024L * 1024L)
             {
-                return $"{(bytes / (1024.0 * 1024.0)):N2} {Program.translation.Get("internal.measurements.megabytes_size")}";
+                return $"{bytes / (1024.0 * 1024.0):N2} {Program.translation.Get("internal.measurements.megabytes_size")}";
             }
 
             if (bytes >= 1024L)
             {
-                return $"{(bytes / 1024.0):N2} {Program.translation.Get("internal.measurements.kilobytes_size")}";
+                return $"{bytes / 1024.0:N2} {Program.translation.Get("internal.measurements.kilobytes_size")}";
             }
 
             return $"{bytes:N0} {Program.translation.Get("internal.measurements.bytes_size")}";
@@ -54,14 +54,14 @@ namespace Stardrop.Utilities
 
         public static void OpenBrowser(string url)
         {
-            if (String.IsNullOrEmpty(url))
+            if (string.IsNullOrEmpty(url))
             {
                 return;
             }
 
             try
             {
-                using Process process = Process.Start(new ProcessStartInfo
+                using Process? process = Process.Start(new ProcessStartInfo
                 {
                     FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url :
                         RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" : "xdg-open",
@@ -82,8 +82,8 @@ namespace Stardrop.Utilities
         /// </summary>
         public static bool TryGetWebAddress(string? url, out string webAddress)
         {
-            webAddress = String.Empty;
-            if (String.IsNullOrWhiteSpace(url))
+            webAddress = string.Empty;
+            if (string.IsNullOrWhiteSpace(url))
             {
                 return false;
             }

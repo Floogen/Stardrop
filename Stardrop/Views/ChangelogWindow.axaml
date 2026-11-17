@@ -3,10 +3,12 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+	xmlns:i="clr-namespace:Optris.Icons.Avalonia;assembly=Optris.Icons.Avalonia"
 	xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:Stardrop.ViewModels"
+	xmlns:models="using:Stardrop.Models.Nexus.Web"
+    x:DataType="vm:ChangelogWindowViewModel"
 	Title="{i18n:Translate ui.window.changelog.name}"
 	Width="600"
 	Height="500"
@@ -16,10 +18,9 @@
 	d:DesignWidth="600"
 	Background="{DynamicResource ThemeBackgroundBrush}"
 	CanResize="True"
-	ExtendClientAreaChromeHints="NoChrome"
 	ExtendClientAreaTitleBarHeightHint="-1"
-	ExtendClientAreaToDecorationsHint="true"
-	HasSystemDecorations="true"
+	ExtendClientAreaToDecorationsHint="True"
+	WindowDecorations="BorderOnly"
 	Icon="/Assets/icon.ico"
 	mc:Ignorable="d">
 
@@ -91,17 +92,17 @@
 					Text="{Binding EmptyMessage}"
 					TextWrapping="Wrap" />
 
-				<ItemsControl IsVisible="{Binding HasChanges}" Items="{Binding Versions}">
+				<ItemsControl IsVisible="{Binding HasChanges}" ItemsSource="{Binding Versions}">
 					<ItemsControl.ItemTemplate>
-						<DataTemplate>
+						<DataTemplate x:DataType="models:ChangelogVersion">
 							<StackPanel Margin="0,0,0,16">
 								<TextBlock
 									Margin="0,0,0,6"
 									Classes="version"
 									Text="{Binding Version}" />
-								<ItemsControl Items="{Binding Changes}">
+								<ItemsControl ItemsSource="{Binding Changes}">
 									<ItemsControl.ItemTemplate>
-										<DataTemplate>
+										<DataTemplate x:DataType="x:String">
 											<Grid Margin="4,2,4,2" ColumnDefinitions="Auto *">
 												<TextBlock
 													Grid.Column="0"

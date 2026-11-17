@@ -1,12 +1,11 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using Stardrop.Models;
 using Stardrop.Models.Data.Enums;
 using Stardrop.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -16,18 +15,14 @@ namespace Stardrop.Views
 {
     public partial class ProfileEditor : Window
     {
-        private readonly ProfileEditorViewModel _viewModel;
+        private readonly ProfileEditorViewModel _viewModel = null!;
         private readonly Func<string, Task<List<Mod>>>? _addModDirectly;
         private readonly Func<Task>? _refreshModList;
         private bool _hasAppliedChanges;
-
+        private static readonly JsonSerializerOptions ReadOptions = new() { AllowTrailingCommas = true };
         public ProfileEditor()
         {
             InitializeComponent();
-
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
 
         public ProfileEditor(ProfileEditorViewModel viewModel, Func<string, Task<List<Mod>>> addModDirectly, Func<Task>? refreshModList) : this()
@@ -37,61 +32,59 @@ namespace Stardrop.Views
             _refreshModList = refreshModList;
 
             // Load the profiles
-            var profileListBox = this.FindControl<ListBox>("profileList");
-            profileListBox.Items = _viewModel.Profiles;
+            var profileListBox = this.FindControl<ListBox>("profileList")!;
+            profileListBox.ItemsSource  = _viewModel.Profiles;
             profileListBox.SelectedIndex = 0;
             profileListBox.SelectionChanged += ProfileListBox_SelectionChanged;
 
             // Handle the mainMenu bar for drag and related events
-            var menuBar = this.FindControl<Menu>("menuBar");
+            var menuBar = this.FindControl<Menu>("menuBar")!;
             menuBar.PointerPressed += MainBar_PointerPressed;
             menuBar.DoubleTapped += MainBar_DoubleTapped;
 
             // Handle buttons
-            this.FindControl<Button>("exitButton").Click += delegate { this.Close(); };
-            this.FindControl<Button>("cancelButton").Click += delegate { this.Close(); };
-            this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
-            this.FindControl<Button>("addButton").Click += AddButton_Click;
-            this.FindControl<Button>("deleteButton").Click += DeleteButton_Click;
-            this.FindControl<Button>("renameButton").Click += RenameButton_Click;
-            this.FindControl<Button>("copyButton").Click += CopyButton_Click;
-            this.FindControl<Button>("exportButton").Click += ExportButton_Click;
-            this.FindControl<Button>("importButton").Click += ImportButton_Click;
+            this.FindControl<Button>("exitButton")!.Click += delegate { Close(); };
+            this.FindControl<Button>("cancelButton")!.Click += delegate { Close(); };
+            this.FindControl<Button>("applyButton")!.Click += ApplyButton_Click;
+            this.FindControl<Button>("addButton")!.Click += AddButton_Click;
+            this.FindControl<Button>("deleteButton")!.Click += DeleteButton_Click;
+            this.FindControl<Button>("renameButton")!.Click += RenameButton_Click;
+            this.FindControl<Button>("copyButton")!.Click += CopyButton_Click;
+            this.FindControl<Button>("exportButton")!.Click += ExportButton_Click;
+            this.FindControl<Button>("importButton")!.Click += ImportButton_Click;
         }
 
         private void ProfileListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var profile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
+            var profile = this.FindControl<ListBox>("profileList")!.SelectedItem as Profile;
             if (profile is not null)
             {
                 // A collection profile is protected against editing, though it still has to be removable
-                this.FindControl<Button>("deleteButton").IsEnabled = profile.IsProtected is false;
-                this.FindControl<Button>("renameButton").IsEnabled = profile.IsProtected is false;
+                this.FindControl<Button>("deleteButton")!.IsEnabled = profile.IsProtected is false;
+                this.FindControl<Button>("renameButton")!.IsEnabled = profile.IsProtected is false;
             }
         }
 
         private async void ImportButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var dialog = new OpenFileDialog
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = Program.translation.Get("ui.profile_editor.dialogs.open_profile"),
                 AllowMultiple = false,
-                Filters = new List<FileDialogFilter>
-                {
-                    new FileDialogFilter
+                FileTypeFilter =
+                [
+                    new FilePickerFileType(Program.translation.Get("ui.profile_editor.dialogs.json_filter"))
                     {
-                        Name = Program.translation.Get("ui.profile_editor.dialogs.json_filter"),
-                        Extensions = new List<string> { "json" }
+                        Patterns = ["*.json"]
                     }
-                }
-            };
+                ]
+            });
 
-            string[]? files = await dialog.ShowAsync(this);
-            if (files is not null && files.Length > 0)
+            if (files.Count > 0)
             {
                 try
                 {
-                    var externalProfile = JsonSerializer.Deserialize<ProfileExternal>(File.ReadAllText(files.First()), new JsonSerializerOptions { AllowTrailingCommas = true });
+                    var externalProfile = JsonSerializer.Deserialize<ProfileExternal>(File.ReadAllText(files[0].Path.LocalPath), ReadOptions);
                     if (externalProfile is null)
                     {
                         Program.helper.Log($"Deserialized empty external profile during import");
@@ -128,11 +121,11 @@ namespace Stardrop.Views
                         var missingModParsed = string.Join(Environment.NewLine, missingMods.Select(m => m.UniqueId).Take(displayOffsetCount));
                         if (missingMods.Count > displayOffsetCount)
                         {
-                            missingModParsed += String.Format(Program.translation.Get("ui.message.missing_mod_extra_count"), missingMods.Count - displayOffsetCount);
+                            missingModParsed += string.Format(Program.translation.Get("ui.message.missing_mod_extra_count"), missingMods.Count - displayOffsetCount);
                         }
 
                         //String.Format(Program.translation.Get("ui.message.confirm_mod_deletion"), mod.Name))
-                        var requestWindow = new FlexibleOptionWindow(String.Format(Program.translation.Get("ui.message.confirm_missing_mod_handling"), externalProfile.Name, missingModParsed), Program.translation.Get("internal.yes"), Program.translation.Get("internal.ignore"), Program.translation.Get("internal.cancel"))
+                        var requestWindow = new FlexibleOptionWindow(string.Format(Program.translation.Get("ui.message.confirm_missing_mod_handling"), externalProfile.Name, missingModParsed), Program.translation.Get("internal.yes"), Program.translation.Get("internal.ignore"), Program.translation.Get("internal.cancel"))
                         {
                             Topmost = true
                         };
@@ -141,8 +134,10 @@ namespace Stardrop.Views
                         if (response == Choice.First)
                         {
                             // Open window for showing missing mods with their URI
-                            var missingModsWindow = new MissingModsWindow(missingMods, _addModDirectly);
-                            missingModsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                            var missingModsWindow = new MissingModsWindow(missingMods, _addModDirectly!)
+                            {
+                                WindowStartupLocation = WindowStartupLocation.CenterOwner
+                            };
                             await missingModsWindow.ShowDialog(this);
 
                             // Handle refreshing mod list, to handle any new mod additions
@@ -169,22 +164,22 @@ namespace Stardrop.Views
 
         private async void ExportButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var selectedProfile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
-            if (selectedProfile is null)
+            if (this.FindControl<ListBox>("profileList")!.SelectedItem is not Profile selectedProfile)
             {
                 return;
             }
 
             // Display the ProfileExportWindow
-            var profileExportWindow = new ProfileExportWindow(selectedProfile, _viewModel.GetMods());
-            profileExportWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var profileExportWindow = new ProfileExportWindow(selectedProfile, _viewModel.GetMods())
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
             await profileExportWindow.ShowDialog(this);
         }
 
         private void CopyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var selectedProfile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
-            if (selectedProfile is null)
+            if (this.FindControl<ListBox>("profileList")!.SelectedItem is not Profile selectedProfile)
             {
                 return;
             }
@@ -202,16 +197,17 @@ namespace Stardrop.Views
 
         private void RenameButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var profileListBox = this.FindControl<ListBox>("profileList");
-            var naming = new ProfileNaming(_viewModel, profileListBox.SelectedItem as Profile);
-            naming.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var profileListBox = this.FindControl<ListBox>("profileList")!;
+            var naming = new ProfileNaming(_viewModel, profileListBox.SelectedItem as Profile)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
             naming.ShowDialog(this);
         }
 
         private void DeleteButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var profile = this.FindControl<ListBox>("profileList").SelectedItem as Profile;
-            if (profile is null)
+            if (this.FindControl<ListBox>("profileList")!.SelectedItem is not Profile profile)
             {
                 return;
             }
@@ -221,14 +217,16 @@ namespace Stardrop.Views
 
         private async void AddButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var namingWindow = new ProfileNaming(_viewModel);
-            namingWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var namingWindow = new ProfileNaming(_viewModel)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
 
             var profile = await namingWindow.ShowDialog<Profile>(this);
             // Checked against the live list, as the naming window also rejects names clashing on their file name
             if (profile is not null && _viewModel.Profiles.Contains(profile) is false)
             {
-                await new WarningWindow(String.Format(Program.translation.Get("ui.warning.unable_to_add_profile"), profile.Name), Program.translation.Get("internal.ok")).ShowDialog(this);
+                await new WarningWindow(string.Format(Program.translation.Get("ui.warning.unable_to_add_profile"), profile.Name), Program.translation.Get("internal.ok")).ShowDialog(this);
             }
         }
 
@@ -255,14 +253,14 @@ namespace Stardrop.Views
             _viewModel.OldProfiles = currentProfileList.ToList();
 
             _hasAppliedChanges = true;
-            this.Close();
+            Close();
         }
 
         /// <summary>
         /// Anything short of applying discards the changes. Handled here rather than on the cancel button so that
         /// the exit button and the escape key behave the same way.
         /// </summary>
-        protected override void OnClosing(CancelEventArgs e)
+        protected override void OnClosing(WindowClosingEventArgs e)
         {
             if (_hasAppliedChanges is false && _viewModel is not null)
             {
@@ -277,7 +275,7 @@ namespace Stardrop.Views
         {
             if (!e.Handled)
             {
-                this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
+                WindowState = WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
             }
         }
 
@@ -285,7 +283,7 @@ namespace Stardrop.Views
         {
             if (e.Pointer.IsPrimary && !e.Handled)
             {
-                this.BeginMoveDrag(e);
+                BeginMoveDrag(e);
             }
         }
 

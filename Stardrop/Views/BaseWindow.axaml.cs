@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
@@ -8,10 +7,6 @@ public partial class BaseWindow : Window
 {
     public BaseWindow()
     {
-        AvaloniaXamlLoader.Load(this);
-
-#if DEBUG
-        this.AttachDevTools();
-#endif
+        // AvaloniaXamlLoader.Load(this);
     }
 }

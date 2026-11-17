@@ -47,7 +47,7 @@ namespace Stardrop.Utilities
         /// <summary>
         /// A display name for whichever application currently owns the protocol (used for warning messages)
         /// </summary>
-        public string HandlerName { get; init; } = String.Empty;
+        public string HandlerName { get; init; } = string.Empty;
     }
 
     internal sealed class NXMUnregistrationResult
@@ -96,34 +96,34 @@ namespace Stardrop.Utilities
                 // The dedicated ProgId is what Windows offers under Settings > Default apps
                 using (RegistryKey progIdKey = Registry.CurrentUser.CreateSubKey($@"{ClassesPath}\{ProgId}"))
                 {
-                    progIdKey.SetValue(String.Empty, "URL:Nexus Mods Protocol");
-                    progIdKey.SetValue("URL Protocol", String.Empty);
+                    progIdKey.SetValue(string.Empty, "URL:Nexus Mods Protocol");
+                    progIdKey.SetValue("URL Protocol", string.Empty);
 
                     using (RegistryKey iconKey = progIdKey.CreateSubKey("DefaultIcon"))
                     {
-                        iconKey.SetValue(String.Empty, icon);
+                        iconKey.SetValue(string.Empty, icon);
                     }
 
                     using (RegistryKey commandKey = progIdKey.CreateSubKey(@"shell\open\command"))
                     {
-                        commandKey.SetValue(String.Empty, command);
+                        commandKey.SetValue(string.Empty, command);
                     }
                 }
 
                 // The bare protocol key is the fallback Windows uses when no UserChoice has been made
                 using (RegistryKey protocolKey = Registry.CurrentUser.CreateSubKey($@"{ClassesPath}\{ProtocolName}"))
                 {
-                    protocolKey.SetValue(String.Empty, "URL:Nexus Mods Protocol");
-                    protocolKey.SetValue("URL Protocol", String.Empty);
+                    protocolKey.SetValue(string.Empty, "URL:Nexus Mods Protocol");
+                    protocolKey.SetValue("URL Protocol", string.Empty);
 
                     using (RegistryKey iconKey = protocolKey.CreateSubKey("DefaultIcon"))
                     {
-                        iconKey.SetValue(String.Empty, icon);
+                        iconKey.SetValue(string.Empty, icon);
                     }
 
                     using (RegistryKey commandKey = protocolKey.CreateSubKey(@"shell\open\command"))
                     {
-                        commandKey.SetValue(String.Empty, command);
+                        commandKey.SetValue(string.Empty, command);
                     }
                 }
 
@@ -176,7 +176,7 @@ namespace Stardrop.Utilities
 
                 // Windows resolves UserChoice ahead of the class keys, so one left pointing at Stardrop would break NXM links outright
                 string? userChoiceProgId = GetUserChoiceProgId();
-                if (String.IsNullOrEmpty(userChoiceProgId) is false && IsStardropHandler(userChoiceProgId, expectedCommand))
+                if (string.IsNullOrEmpty(userChoiceProgId) is false && IsStardropHandler(userChoiceProgId, expectedCommand))
                 {
                     if (TryDeleteUserChoice())
                     {
@@ -247,7 +247,7 @@ namespace Stardrop.Utilities
 
                 // Windows checks UserChoice before it looks at the protocol's class key, so anything set there wins
                 string? userChoiceProgId = GetUserChoiceProgId();
-                if (String.IsNullOrEmpty(userChoiceProgId) || String.Equals(userChoiceProgId, ProtocolName, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(userChoiceProgId) || string.Equals(userChoiceProgId, ProtocolName, StringComparison.OrdinalIgnoreCase))
                 {
                     return new NXMAssociationState()
                     {
@@ -259,7 +259,7 @@ namespace Stardrop.Utilities
                 }
 
                 string? userChoiceCommand = GetCommandForProgId(userChoiceProgId);
-                if (String.Equals(userChoiceProgId, ProgId, StringComparison.OrdinalIgnoreCase) || IsExpectedCommand(userChoiceCommand, expectedCommand))
+                if (string.Equals(userChoiceProgId, ProgId, StringComparison.OrdinalIgnoreCase) || IsExpectedCommand(userChoiceCommand, expectedCommand))
                 {
                     return new NXMAssociationState()
                     {
@@ -305,7 +305,7 @@ namespace Stardrop.Utilities
             {
                 NXMAssociationState state = GetState(applicationPath);
 
-                StringBuilder report = new StringBuilder();
+                StringBuilder report = new();
                 report.AppendLine($"{Environment.NewLine}-- NXM Protocol --");
                 report.AppendLine($"Status: {state.Status}");
                 report.AppendLine($"Expected Command: {GetExpectedCommand(applicationPath)}");
@@ -333,12 +333,12 @@ namespace Stardrop.Utilities
 
         private static bool IsExpectedCommand(string? command, string expectedCommand)
         {
-            return String.Equals(command, expectedCommand, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(command, expectedCommand, StringComparison.OrdinalIgnoreCase);
         }
 
         private static string GetLoggableValue(string? value)
         {
-            return String.IsNullOrEmpty(value) ? "(none)" : value;
+            return string.IsNullOrEmpty(value) ? "(none)" : value;
         }
 
         [SupportedOSPlatform("windows")]
@@ -353,7 +353,7 @@ namespace Stardrop.Utilities
         private static string? GetCommandForProgId(string progId)
         {
             string? command = GetUserCommandForProgId(progId);
-            if (String.IsNullOrEmpty(command) is false)
+            if (string.IsNullOrEmpty(command) is false)
             {
                 return command;
             }
@@ -370,7 +370,7 @@ namespace Stardrop.Utilities
         {
             using RegistryKey? userKey = Registry.CurrentUser.OpenSubKey($@"{ClassesPath}\{progId}\shell\open\command");
 
-            return userKey?.GetValue(String.Empty)?.ToString();
+            return userKey?.GetValue(string.Empty)?.ToString();
         }
 
         [SupportedOSPlatform("windows")]
@@ -378,21 +378,21 @@ namespace Stardrop.Utilities
         {
             using RegistryKey? machineKey = Registry.LocalMachine.OpenSubKey($@"{ClassesPath}\{progId}\shell\open\command");
 
-            return machineKey?.GetValue(String.Empty)?.ToString();
+            return machineKey?.GetValue(string.Empty)?.ToString();
         }
 
         [SupportedOSPlatform("windows")]
         private static bool HasCapabilities()
         {
             using RegistryKey? urlAssociationsKey = Registry.CurrentUser.OpenSubKey($@"{CapabilitiesPath}\UrlAssociations");
-            if (String.Equals(urlAssociationsKey?.GetValue(ProtocolName)?.ToString(), ProgId, StringComparison.OrdinalIgnoreCase) is false)
+            if (string.Equals(urlAssociationsKey?.GetValue(ProtocolName)?.ToString(), ProgId, StringComparison.OrdinalIgnoreCase) is false)
             {
                 return false;
             }
 
             using RegistryKey? registeredApplicationsKey = Registry.CurrentUser.OpenSubKey(RegisteredApplicationsPath);
 
-            return String.Equals(registeredApplicationsKey?.GetValue(RegisteredApplicationName)?.ToString(), CapabilitiesPath, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(registeredApplicationsKey?.GetValue(RegisteredApplicationName)?.ToString(), CapabilitiesPath, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -413,14 +413,14 @@ namespace Stardrop.Utilities
 
             // A UserChoice can outlive the keys it points at, so a dangling one still counts as something to clean up
             string? userChoiceProgId = GetUserChoiceProgId();
-            if (String.IsNullOrEmpty(userChoiceProgId) is false && IsStardropHandler(userChoiceProgId, expectedCommand))
+            if (string.IsNullOrEmpty(userChoiceProgId) is false && IsStardropHandler(userChoiceProgId, expectedCommand))
             {
                 return true;
             }
 
             using RegistryKey? registeredApplicationsKey = Registry.CurrentUser.OpenSubKey(RegisteredApplicationsPath);
 
-            return String.Equals(registeredApplicationsKey?.GetValue(RegisteredApplicationName)?.ToString(), CapabilitiesPath, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(registeredApplicationsKey?.GetValue(RegisteredApplicationName)?.ToString(), CapabilitiesPath, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -430,7 +430,7 @@ namespace Stardrop.Utilities
         [SupportedOSPlatform("windows")]
         private static bool IsStardropHandler(string progId, string expectedCommand)
         {
-            if (String.Equals(progId, ProgId, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(progId, ProgId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -469,7 +469,7 @@ namespace Stardrop.Utilities
             using (RegistryKey? registeredApplicationsKey = Registry.CurrentUser.OpenSubKey(RegisteredApplicationsPath, true))
             {
                 // Only the entry pointing at Stardrop's own capabilities path is removed
-                if (registeredApplicationsKey is not null && String.Equals(registeredApplicationsKey.GetValue(RegisteredApplicationName)?.ToString(), CapabilitiesPath, StringComparison.OrdinalIgnoreCase))
+                if (registeredApplicationsKey is not null && string.Equals(registeredApplicationsKey.GetValue(RegisteredApplicationName)?.ToString(), CapabilitiesPath, StringComparison.OrdinalIgnoreCase))
                 {
                     registeredApplicationsKey.DeleteValue(RegisteredApplicationName, false);
                     removedCapabilities = true;
@@ -544,7 +544,7 @@ namespace Stardrop.Utilities
         /// </summary>
         private static string GetDisplayName(string progId, string? command)
         {
-            if (String.IsNullOrEmpty(command) is false)
+            if (string.IsNullOrEmpty(command) is false)
             {
                 string executable = command.Trim();
                 if (executable.StartsWith('"'))
@@ -561,7 +561,7 @@ namespace Stardrop.Utilities
                 try
                 {
                     string name = Path.GetFileNameWithoutExtension(executable);
-                    if (String.IsNullOrEmpty(name) is false)
+                    if (string.IsNullOrEmpty(name) is false)
                     {
                         return name;
                     }

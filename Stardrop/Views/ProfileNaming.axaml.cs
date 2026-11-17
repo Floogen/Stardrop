@@ -1,25 +1,19 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Stardrop.Models;
 using Stardrop.ViewModels;
-using System;
-using System.Linq;
 
 namespace Stardrop.Views
 {
     public partial class ProfileNaming : Window
     {
-        private readonly ProfileEditorViewModel _profileEditor;
-        private Profile? _renameTarget;
+        private readonly ProfileEditorViewModel _profileEditor = null!;
+        private readonly Profile? _renameTarget;
 
         public ProfileNaming()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
 
         public ProfileNaming(ProfileEditorViewModel parentView, Profile? renameTarget = null) : this()
@@ -28,11 +22,11 @@ namespace Stardrop.Views
             _renameTarget = renameTarget;
 
             // Handle buttons
-            this.FindControl<Button>("cancelButton").Click += delegate { this.Close(null); };
-            this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
+            this.FindControl<Button>("cancelButton")!.Click += delegate { Close(null); };
+            this.FindControl<Button>("applyButton")!.Click += ApplyButton_Click;
 
             // Give focus to textbox
-            var profileNameBox = this.FindControl<TextBox>("profileNameBox");
+            var profileNameBox = this.FindControl<TextBox>("profileNameBox")!;
             profileNameBox.AttachedToVisualTree += (s, e) => profileNameBox.Focus();
             profileNameBox.KeyDown += ProfileNameBox_KeyDown;
         }
@@ -40,10 +34,10 @@ namespace Stardrop.Views
         private void ApplyChanges()
         {
             // Save any changes made
-            var profileNameBox = this.FindControl<TextBox>("profileNameBox");
+            var profileNameBox = this.FindControl<TextBox>("profileNameBox")!;
 
-            Profile addedProfile = null;
-            if (!String.IsNullOrEmpty(profileNameBox.Text))
+            Profile? addedProfile = null;
+            if (!string.IsNullOrEmpty(profileNameBox.Text))
             {
                 if (_renameTarget is not null)
                 {
@@ -58,7 +52,7 @@ namespace Stardrop.Views
                 }
             }
 
-            this.Close(addedProfile);
+            Close(addedProfile);
         }
 
         private void ProfileNameBox_KeyDown(object? sender, KeyEventArgs e)
@@ -78,15 +72,15 @@ namespace Stardrop.Views
         {
             if (!e.Handled)
             {
-                this.WindowState = this.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
+                WindowState = WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
             }
         }
 
-        private void MainMenu_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private void MainMenu_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
             if (e.Pointer.IsPrimary && !e.Handled)
             {
-                this.BeginMoveDrag(e);
+                BeginMoveDrag(e);
             }
         }
 

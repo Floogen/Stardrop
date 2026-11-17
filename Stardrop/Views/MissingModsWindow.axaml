@@ -3,20 +3,20 @@
         xmlns:vm="using:Stardrop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:i="clr-namespace:Optris.Icons.Avalonia;assembly=Optris.Icons.Avalonia"
 		xmlns:i18n="clr-namespace:Stardrop.Utilities.Extension"
+		xmlns:models="using:Stardrop.Models"
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
         x:Class="Stardrop.Views.MissingModsWindow"
+		x:DataType="vm:MissingModsWindowViewModel"
         Title="{i18n:Translate ui.window.missing_mods.name}"
         MinWidth="800"
         MinHeight="500"
         Width="800"
         Height="500"
         Background="{DynamicResource ThemeBackgroundBrush}"
-        HasSystemDecorations="true"
-        ExtendClientAreaToDecorationsHint="true"
-        ExtendClientAreaChromeHints="NoChrome"
-        ExtendClientAreaTitleBarHeightHint="-1"
+        WindowDecorations="Full"
+		ExtendClientAreaToDecorationsHint="True"
         CanResize="True"
         Icon="/Assets/icon.ico">
 	
@@ -100,9 +100,9 @@
 
 				<Border DockPanel.Dock="Top" BorderBrush="Gray" BorderThickness="0 0 0 0" Margin="0 0 0 0" />
 
-				<ListBox Items="{Binding MissingMods}">
+				<ListBox ItemsSource="{Binding MissingMods}">
 					<ListBox.ItemTemplate>
-						<DataTemplate>
+						<DataTemplate x:DataType="models:PortableModData">
 							<Grid ColumnDefinitions="1.25* 0.5* 2*" Background="Transparent" Tapped="OnGridTapped">
 								<TextBlock Classes="row" Grid.Column="0" Text="{Binding Name}" />
 								<TextBlock Classes="row" Grid.Column="1" Text="{Binding Version}" />

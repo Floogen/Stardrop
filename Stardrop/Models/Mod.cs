@@ -16,10 +16,12 @@ using static Stardrop.Models.SMAPI.Web.ModEntryMetadata;
 namespace Stardrop.Models
 {
     public record PortableModData(string UniqueId, string Version, string Name, string Author, string ModPageUri);
-    public class Mod : INotifyPropertyChanged
+    public
+     class Mod : INotifyPropertyChanged
     {
-        internal readonly FileInfo ModFileInfo;
+        internal readonly FileInfo ModFileInfo = null!;
         internal readonly Manifest Manifest;
+
 
         public string UniqueId { get; set; }
         /// <summary>
@@ -27,7 +29,7 @@ namespace Stardrop.Models
         /// forms the mod's real identity, as a collection can pin a version the user also has installed loosely.
         /// </summary>
         public string? SourceId { get; set; }
-        public bool IsFromCollection { get { return String.IsNullOrEmpty(SourceId) is false; } }
+        public bool IsFromCollection { get { return string.IsNullOrEmpty(SourceId) is false; } }
         private string? _collectionName;
         /// <summary>
         /// The display name of the collection this copy belongs to, or null for a loose install. SourceId is a
@@ -47,18 +49,36 @@ namespace Stardrop.Models
         /// <summary>Whether the collection's curator pinned this copy, which is true of every collection mod but an add-on</summary>
         public bool IsCuratedByCollection { get { return IsFromCollection && IsCollectionAddOn is false; } }
         /// <summary>What the collection icon says on hover: the collection's name, and for an add-on what being one means</summary>
-        public string? CollectionLabel { get { return IsCollectionAddOn ? String.Format(Program.translation.Get("ui.main_window.tooltips.collection_add_on"), CollectionName) : CollectionName; } }
+        public string? CollectionLabel { get { return IsCollectionAddOn ? string.Format(Program.translation.Get("ui.main_window.tooltips.collection_add_on"), CollectionName) : CollectionName; } }
         public SemVersion Version { get; set; }
         public string ParsedVersion { get { return Version.ToString(); } }
-        private string _suggestedVersion { get; set; }
+        private string _suggestedVersion = null!;
         public string SuggestedVersion { get { return _suggestedVersion; } set { _suggestedVersion = value; NotifyPropertyChanged(nameof(SuggestedVersion)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasNewerVersion)); NotifyPropertyChanged(nameof(IsUpdateIgnored)); NotifyPropertyChanged(nameof(HasAvailableUpdate)); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(HasChangelog)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
         public string Name { get; set; }
         public string Path { get { return _path; } set { _path = value; RootPath = GetRootPath(value); } } // Whole mod path inside installed mods path for grouping mod components in the same mod
-        private string _path { get; set; }
-        public string RootPath { get; private set; } // Root mod path inside installed mods path for grouping mod components in the same mod
+        private string _path = null!;
+        public string RootPath { get; private set; } = null!; // Root mod path inside installed mods path for grouping mod components in the same mod
         public string ManifestFilePath { get { return ModFileInfo.FullName; } }
         public string Description { get; set; }
-        public string Summary { get { return $"Author: {Author}\nVersion: {ParsedVersion}\nHas Config: {HasConfig}\n\n{Description}"; } }
+        public string Summary 
+        { 
+            get 
+            { 
+                var authorLabel = Program.translation.Get("ui.main_window.menu_headers.author");
+                var versionLabel = Program.translation.Get("ui.main_window.menu_headers.version");
+                var hasConfigLabel = Program.translation.Get("ui.main_window.tooltips.has_config");
+                
+                var hasConfigText = HasConfig ? Program.translation.Get("ui.main_window.tooltips.true") : Program.translation.Get("ui.main_window.tooltips.false");
+
+                var baseInfo = $"{authorLabel}: {Author}\n{versionLabel}: {ParsedVersion}\n{hasConfigLabel}: {hasConfigText}";
+                if (string.IsNullOrWhiteSpace(Description))
+                {
+                    return baseInfo;
+                }
+
+                return $"{baseInfo}\n\n{Description}"; 
+            } 
+        }
         public string Author { get; set; }
         public DateTime? InstallTimestamp { get; set; }
         /// <summary>
@@ -68,37 +88,37 @@ namespace Stardrop.Models
         /// </summary>
         public DateTime? LastUpdateTimestamp { get; set; }
         public Config? _config { get; set; }
-        public Config? Config { get { return _config; } set { _config = value; NotifyPropertyChanged("Config"); NotifyPropertyChanged("HasConfig"); } }
+        public Config? Config { get { return _config; } set { _config = value; NotifyPropertyChanged(nameof(Config)); NotifyPropertyChanged(nameof(HasConfig)); } }
         public bool HasConfig { get { return Config is not null; } }
         public string FrameworkID { get; set; } = string.Empty;
-        private List<ManifestDependency> _requirements { get; set; }
-        public List<ManifestDependency> Requirements { get { return _requirements; } set { _requirements = value; NotifyPropertyChanged("Requirements"); NotifyPropertyChanged("MissingRequirements"); NotifyPropertyChanged("HardRequirements"); } }
-        public List<ManifestDependency> MissingRequirements { get { return _requirements is null ? null : _requirements.Where(r => !String.IsNullOrEmpty(r.Name) && r.IsMissing && r.IsRequired).ToList(); } }
-        public List<ManifestDependency> HardRequirements { get { return _requirements is null ? null : _requirements.Where(r => !String.IsNullOrEmpty(r.Name) && !r.IsMissing && r.IsRequired).ToList(); } }
-        private string _updateUri { get; set; }
-        public string UpdateUri { get { return _updateUri; } set { _updateUri = value; NotifyPropertyChanged("UpdateUri"); } }
-        private string _modPageUri { get; set; }
-        public string ModPageUri { get { return _modPageUri; } set { _modPageUri = value; NotifyPropertyChanged("ModPageUri"); } }
+        private List<ManifestDependency> _requirements = null!;
+        public List<ManifestDependency> Requirements { get { return _requirements; } set { _requirements = value; NotifyPropertyChanged(nameof(Requirements)); NotifyPropertyChanged(nameof(MissingRequirements)); NotifyPropertyChanged(nameof(HardRequirements)); } }
+        public List<ManifestDependency>? MissingRequirements { get { return _requirements is null ? null : [.. _requirements.Where(r => !string.IsNullOrEmpty(r.Name) && r.IsMissing && r.IsRequired)]; } }
+        public List<ManifestDependency>? HardRequirements { get { return _requirements is null ? null : [.. _requirements.Where(r => !string.IsNullOrEmpty(r.Name) && !r.IsMissing && r.IsRequired)]; } }
+        private string _updateUri = null!;
+        public string UpdateUri { get { return _updateUri; } set { _updateUri = value; NotifyPropertyChanged(nameof(UpdateUri)); } }
+        private string _modPageUri = null!;
+        public string ModPageUri { get { return _modPageUri; } set { _modPageUri = value; NotifyPropertyChanged(nameof(ModPageUri)); } }
         public int? NexusModId { get { return GetNexusId(); } }
         private string? _nexusModThumbnailPath { get; set; }
-        public string? NexusModThumbnailPath { get { return _nexusModThumbnailPath; } set { _nexusModThumbnailPath = value; NexusModThumbnailFile = TryLoadThumbnail(value); NotifyPropertyChanged("NexusModThumbnailFile"); } }
+        public string? NexusModThumbnailPath { get { return _nexusModThumbnailPath; } set { _nexusModThumbnailPath = value; NexusModThumbnailFile = TryLoadThumbnail(value); NotifyPropertyChanged(nameof(NexusModThumbnailFile)); } }
         public Bitmap? NexusModThumbnailFile { get; set; }
-        private bool _isEnabled { get; set; }
+        private bool _isEnabled;
         public bool IsEnabled
         {
             get { return _isEnabled; }
             set
             {
                 _isEnabled = value;
-                NotifyPropertyChanged("IsEnabled");
-                NotifyPropertyChanged("ChangeStateText");
-                NotifyPropertyChanged("ChangeWholeModGroupStateText");
+                NotifyPropertyChanged(nameof(IsEnabled));
+                NotifyPropertyChanged(nameof(ChangeStateText));
+                NotifyPropertyChanged(nameof(ChangeWholeModGroupStateText));
             }
         }
-        private bool _isHidden { get; set; }
-        public bool IsHidden { get { return _isHidden; } set { _isHidden = value; NotifyPropertyChanged("IsHidden"); } }
-        private bool _isEndorsement { get; set; }
-        public bool IsEndorsed { get { return _isEndorsement; } set { _isEndorsement = value; NotifyPropertyChanged("IsEndorsed"); } }
+        private bool _isHidden;
+        public bool IsHidden { get { return _isHidden; } set { _isHidden = value; NotifyPropertyChanged(nameof(IsHidden)); } }
+        private bool _isEndorsement;
+        public bool IsEndorsed { get { return _isEndorsement; } set { _isEndorsement = value; NotifyPropertyChanged(nameof(IsEndorsed)); } }
         public string ChangeStateText { get { return IsEnabled ? Program.translation.Get("internal.disable") : Program.translation.Get("internal.enable"); } }
         public string ChangeWholeModGroupStateText { get { return IsEnabled ? Program.translation.Get("internal.disable_whole_mod") : Program.translation.Get("internal.enable_whole_mod"); } }
         /// <summary>
@@ -112,7 +132,7 @@ namespace Stardrop.Models
             get
             {
                 // TryParse first, as IsModOutdated parses outright and this getter is reached from a binding
-                if (String.IsNullOrEmpty(SuggestedVersion) || SemVersion.TryParse(SuggestedVersion, SemVersionStyles.Any, out _) is false)
+                if (string.IsNullOrEmpty(SuggestedVersion) || SemVersion.TryParse(SuggestedVersion, SemVersionStyles.Any, out _) is false)
                 {
                     return false;
                 }
@@ -124,7 +144,7 @@ namespace Stardrop.Models
         /// Whether the currently suggested version is the one the user chose to ignore. A newer suggestion than the
         /// ignored one leaves this false, which is what lets an ignore lapse on its own once the mod moves on.
         /// </summary>
-        public bool IsUpdateIgnored { get { return !String.IsNullOrEmpty(SuggestedVersion) && !String.IsNullOrEmpty(IgnoredVersion) && IgnoredVersion.Equals(SuggestedVersion, StringComparison.OrdinalIgnoreCase); } }
+        public bool IsUpdateIgnored { get { return !string.IsNullOrEmpty(SuggestedVersion) && !string.IsNullOrEmpty(IgnoredVersion) && IgnoredVersion.Equals(SuggestedVersion, StringComparison.OrdinalIgnoreCase); } }
         public string IgnoreUpdateText { get { return IsUpdateIgnored ? Program.translation.Get("internal.stop_ignoring_update") : Program.translation.Get("internal.ignore_update"); } }
         /// <summary>
         /// Whether the mod counts towards the updatable total. This is the single rule that both a fresh smapi.io
@@ -150,7 +170,7 @@ namespace Stardrop.Models
             }
         }
         private WikiCompatibilityStatus _status { get; set; }
-        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged("Status"); NotifyPropertyChanged("ParsedStatus"); NotifyPropertyChanged("InstallStatus"); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(HasChangelog)); } }
+        public WikiCompatibilityStatus Status { get { return _status; } set { _status = value; NotifyPropertyChanged(nameof(Status)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(HasChangelog)); } }
         public string ParsedStatus
         {
             get
@@ -166,23 +186,23 @@ namespace Stardrop.Models
                 // one and nothing would hint that the context menu can undo it
                 if (IsUpdateIgnored)
                 {
-                    return String.Format(Program.translation.Get("ui.main_window.hyperlinks.update_ignored"), SuggestedVersion);
+                    return string.Format(Program.translation.Get("ui.main_window.hyperlinks.update_ignored"), SuggestedVersion);
                 }
 
-                if (!String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
+                if (!string.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
                 {
                     if (_status == WikiCompatibilityStatus.Unofficial)
                     {
-                        return String.Format(Program.translation.Get("ui.main_window.hyperlinks.unofficial_update_available"), SuggestedVersion);
+                        return string.Format(Program.translation.Get("ui.main_window.hyperlinks.unofficial_update_available"), SuggestedVersion);
                     }
-                    return String.Format(Program.translation.Get("ui.main_window.hyperlinks.update_available"), SuggestedVersion);
+                    return string.Format(Program.translation.Get("ui.main_window.hyperlinks.update_available"), SuggestedVersion);
                 }
 
-                return String.Empty;
+                return string.Empty;
             }
         }
-        private InstallState _installState { get; set; }
-        public InstallState InstallState { get { return _installState; } set { _installState = value; NotifyPropertyChanged("InstallState"); } }
+        private InstallState _installState;
+        public InstallState InstallState { get { return _installState; } set { _installState = value; NotifyPropertyChanged(nameof(InstallState)); } }
         public string InstallStatus
         {
             get
@@ -190,15 +210,15 @@ namespace Stardrop.Models
                 // If the suggested version is the same as an ignored version, treat as no update
                 if (IsUpdateIgnored)
                 {
-                    return String.Empty;
+                    return string.Empty;
                 }
 
-                if (!String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
+                if (!string.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion))
                 {
                     var nexusModId = GetNexusId();
                     if (_status == WikiCompatibilityStatus.Unofficial || nexusModId is null)
                     {
-                        return String.Empty;
+                        return string.Empty;
                     }
                     else if (InstallState == InstallState.Unknown)
                     {
@@ -208,24 +228,24 @@ namespace Stardrop.Models
                     return InstallState == InstallState.Downloading ? Program.translation.Get("ui.main_window.hyperlinks.downloading") : Program.translation.Get("ui.main_window.hyperlinks.installing");
                 }
 
-                return String.Empty;
+                return string.Empty;
             }
         }
 
-        private ChangelogState _changelogState { get; set; }
-        public ChangelogState ChangelogState { get { return _changelogState; } set { _changelogState = value; NotifyPropertyChanged("ChangelogState"); } }
+        private ChangelogState _changelogState;
+        public ChangelogState ChangelogState { get { return _changelogState; } set { _changelogState = value; NotifyPropertyChanged(nameof(ChangelogState)); } }
 
         public bool HasChangelog
         {
             get
             {
-                return !String.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion) && GetNexusId() is not null;
+                return !string.IsNullOrEmpty(SuggestedVersion) && IsModOutdated(SuggestedVersion) && GetNexusId() is not null;
             }
         }
 
-        private string _note { get; set; }
-        public string Note { get { return _note; } set { _note = value; NotifyPropertyChanged("Note"); } }
-        private string? _ignoredVersion { get; set; }
+        private string _note = null!;
+        public string Note { get { return _note; } set { _note = value; NotifyPropertyChanged(nameof(Note)); } }
+        private string? _ignoredVersion;
         public string? IgnoredVersion { get { return _ignoredVersion; } set { _ignoredVersion = value; NotifyPropertyChanged(nameof(IgnoredVersion)); NotifyPropertyChanged(nameof(IsUpdateIgnored)); NotifyPropertyChanged(nameof(ParsedStatus)); NotifyPropertyChanged(nameof(InstallStatus)); NotifyPropertyChanged(nameof(HasAvailableUpdate)); NotifyPropertyChanged(nameof(HasActionableStatus)); NotifyPropertyChanged(nameof(IgnoreUpdateText)); } }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -237,11 +257,11 @@ namespace Stardrop.Models
             UniqueId = uniqueId;
             SourceId = Pathing.GetCollectionSourceId(modFileInfo.DirectoryName);
             Version = SemVersion.TryParse(version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : SemVersion.ParsedFrom(0, 0, 0, "bad-version");
-            Name = String.IsNullOrEmpty(name) ? uniqueId : name;
+            Name = string.IsNullOrEmpty(name) ? uniqueId : name;
             Path = ComputeModPath(modFileInfo);
-            Description = String.IsNullOrEmpty(description) ? String.Empty : description;
-            Author = String.IsNullOrEmpty(author) ? Program.translation.Get("internal.unknown") : author;
-            Requirements = new List<ManifestDependency>();
+            Description = string.IsNullOrEmpty(description) ? string.Empty : description;
+            Author = string.IsNullOrEmpty(author) ? Program.translation.Get("internal.unknown") : author;
+            Requirements = [];
         }
 
         /// <summary>
@@ -258,10 +278,10 @@ namespace Stardrop.Models
             Manifest = manifest;
             UniqueId = manifest.UniqueID;
             Version = SemVersion.TryParse(manifest.Version, SemVersionStyles.Any, out var parsedVersion) ? parsedVersion : SemVersion.ParsedFrom(0, 0, 0, "bad-version");
-            Name = String.IsNullOrEmpty(manifest.Name) ? manifest.UniqueID : manifest.Name;
-            Description = String.IsNullOrEmpty(manifest.Description) ? String.Empty : manifest.Description;
-            Author = String.IsNullOrEmpty(manifest.Author) ? Program.translation.Get("internal.unknown") : manifest.Author;
-            Requirements = new List<ManifestDependency>();
+            Name = string.IsNullOrEmpty(manifest.Name) ? manifest.UniqueID : manifest.Name;
+            Description = string.IsNullOrEmpty(manifest.Description) ? string.Empty : manifest.Description;
+            Author = string.IsNullOrEmpty(manifest.Author) ? Program.translation.Get("internal.unknown") : manifest.Author;
+            Requirements = [];
         }
 
 
@@ -270,14 +290,14 @@ namespace Stardrop.Models
         /// The mod folder is tested first so that grouping there is unchanged, then the collections folder, which
         /// sits outside the mod folder and would otherwise match neither.
         /// </summary>
-        private string ComputeModPath(FileInfo modFileInfo)
+        private static string ComputeModPath(FileInfo modFileInfo)
         {
             // Set whole mod path for grouping with other mods from the same mod.
             var modNamePath = GetPathUnderRoot(modFileInfo.DirectoryName, Program.settings.ModFolderPath) ?? GetPathUnderRoot(modFileInfo.DirectoryName, Pathing.GetCollectionsFolderPath());
 
             // Grouped as unknown rather than thrown over. This runs from the constructor, so throwing takes down
             // whatever was building the mod, which for an install is the whole archive
-            if (String.IsNullOrEmpty(modNamePath))
+            if (string.IsNullOrEmpty(modNamePath))
             {
                 Program.helper.Log($"The mod at {modFileInfo.DirectoryName} sits under neither the mod folder nor the collections folder, so it has no group", Helper.Status.Warning);
                 return Program.translation.Get("internal.unknown");
@@ -294,8 +314,8 @@ namespace Stardrop.Models
             var foundIndex = modNamePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar);
 
             var nameLength = foundIndex == -1 ? modNamePath.Length : foundIndex;
-            var finalPath = modNamePath.Substring(0, nameLength);
-            return String.IsNullOrEmpty(finalPath) ? Program.translation.Get("internal.unknown") : finalPath;
+            var finalPath = modNamePath[..nameLength];
+            return string.IsNullOrEmpty(finalPath) ? Program.translation.Get("internal.unknown") : finalPath;
         }
 
         /// <summary>
@@ -305,7 +325,7 @@ namespace Stardrop.Models
         /// </summary>
         private static string? GetPathUnderRoot(string? modDirectoryName, string? root)
         {
-            if (String.IsNullOrEmpty(modDirectoryName) || String.IsNullOrEmpty(root))
+            if (string.IsNullOrEmpty(modDirectoryName) || string.IsNullOrEmpty(root))
             {
                 return null;
             }
@@ -319,7 +339,7 @@ namespace Stardrop.Models
             return modDirectoryName.Substring(prefix.Length);
         }
 
-        private string GetRootPath(string path)
+        private static string GetRootPath(string path)
         {
             var foundIndex = path.IndexOf(System.IO.Path.DirectorySeparatorChar);
             if (foundIndex == -1)
@@ -327,12 +347,12 @@ namespace Stardrop.Models
                 return path;
             }
 
-            return path.Substring(0, foundIndex);
+            return path[..foundIndex];
         }
 
         public bool IsModOutdated(string version)
         {
-            if (String.IsNullOrEmpty(version) || !HasValidVersion())
+            if (string.IsNullOrEmpty(version) || !HasValidVersion())
             {
                 return false;
             }
@@ -352,7 +372,7 @@ namespace Stardrop.Models
 
         public bool HasUpdateKeys()
         {
-            if (Manifest is not null && Manifest.UpdateKeys is not null && !Manifest.UpdateKeys.Any(k => String.IsNullOrEmpty(k)))
+            if (Manifest is not null && Manifest.UpdateKeys is not null && !Manifest.UpdateKeys.Any(k => string.IsNullOrEmpty(k)))
             {
                 return true;
             }
@@ -433,7 +453,7 @@ namespace Stardrop.Models
                 var thumbnail = new Bitmap(filePath);
                 return thumbnail;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Program.helper.Log($"Failed to load thumbnail for mod {UniqueId} using following path {filePath}");
                 return null;
@@ -453,12 +473,10 @@ namespace Stardrop.Models
             return new ModReference(UniqueId, SourceId);
         }
 
-        internal void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        internal void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
     }
 }

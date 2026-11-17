@@ -35,19 +35,19 @@ namespace Stardrop.Models.SMAPI.Web
 
         // Based on SMAPI's ModExtendedMetadataModel.cs: https://github.com/Pathoschild/SMAPI/blob/develop/src/SMAPI.Toolkit/Framework/Clients/WebApi/ModExtendedMetadataModel.cs
         /// <summary>The mod's display name.</summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         /// <summary>The main version.</summary>
-        public ModEntryVersion Main { get; set; }
+        public ModEntryVersion Main { get; set; } = null!;
 
         /// <summary>The latest unofficial version, if newer than <see cref="Main"/> and <see cref="Optional"/>.</summary>
-        public ModEntryVersion Unofficial { get; set; }
-        public string CustomUrl { get; set; }
+        public ModEntryVersion Unofficial { get; set; } = null!;
+        public string CustomUrl { get; set; } = null!;
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public WikiCompatibilityStatus CompatibilityStatus { get; set; }
 
         /// <summary>The human-readable summary of the compatibility status or workaround, without HTML formatting.</summary>
-        public string CompatibilitySummary { get; set; }
+        public string CompatibilitySummary { get; set; } = null!;
     }
 }

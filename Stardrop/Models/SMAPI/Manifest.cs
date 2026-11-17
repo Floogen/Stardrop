@@ -8,31 +8,31 @@ namespace Stardrop.Models.SMAPI
         // Based on SMAPI's Manfiest.cs: https://github.com/Pathoschild/SMAPI/blob/c10685b03574e967c1bf48aafc814f60196812ec/src/SMAPI.Toolkit/Serialization/Models/Manifest.cs
 
         /// <summary>The mod name.</summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         /// <summary>A brief description of the mod.</summary>
-        public string Description { get; set; }
+        public string Description { get; set; } = null!;
 
         /// <summary>The namespaced mod IDs to query for updates (like <c>Nexus:541</c>).</summary>
         [JsonConverter(typeof(ModKeyConverter))]
-        public string[] UpdateKeys { get; set; }
+        public string[] UpdateKeys { get; set; } = null!;
 
         /// <summary>The mod author's name.</summary>
-        public string Author { get; set; }
+        public string Author { get; set; } = null!;
 
         /// <summary>The mod version.</summary>
-        public string Version { get; set; }
+        public string Version { get; set; } = null!;
 
         /// <summary>The unique mod ID.</summary>
-        public string UniqueID { get; set; }
+        public string UniqueID { get; set; } = null!;
 
         /// <summary>The mod which will read this as a content pack. Mutually exclusive with <see cref="Manifest.EntryDll"/>.</summary>
         //[JsonConverter(typeof(ManifestContentPackForConverter))]
-        public ManifestContentPackFor ContentPackFor { get; set; }
+        public ManifestContentPackFor ContentPackFor { get; set; } = null!;
 
         /// <summary>The other mods that must be loaded before this mod.</summary>
         //[JsonConverter(typeof(ManifestDependencyArrayConverter))]
-        public ManifestDependency[] Dependencies { get; set; }
+        public ManifestDependency[] Dependencies { get; set; } = null!;
 
         /// <summary>Custom property for Stardrop.</summary>
         public bool DeleteOldVersion { get; set; }

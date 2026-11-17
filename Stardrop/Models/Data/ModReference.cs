@@ -12,7 +12,7 @@ namespace Stardrop.Models.Data
     [JsonConverter(typeof(ModReferenceConverter))]
     public record ModReference(string UniqueId, string? SourceId = null)
     {
-        public bool IsFromCollection => String.IsNullOrEmpty(SourceId) is false;
+        public bool IsFromCollection => string.IsNullOrEmpty(SourceId) is false;
 
         public bool Matches(Mod mod)
         {
@@ -31,7 +31,7 @@ namespace Stardrop.Models.Data
                 return false;
             }
 
-            return String.Equals(SourceId, sourceId, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(SourceId, sourceId, StringComparison.OrdinalIgnoreCase);
         }
 
         // Manifests are inconsistent about casing, so equality has to ignore it or profiles will silently lose mods
@@ -47,7 +47,7 @@ namespace Stardrop.Models.Data
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(UniqueId.ToLowerInvariant(), SourceId is null ? String.Empty : SourceId.ToLowerInvariant());
+            return HashCode.Combine(UniqueId.ToLowerInvariant(), SourceId is null ? string.Empty : SourceId.ToLowerInvariant());
         }
 
         public override string ToString()
@@ -72,7 +72,7 @@ namespace Stardrop.Models.Data
             if (reader.TokenType is JsonTokenType.String)
             {
                 var legacyId = reader.GetString();
-                return String.IsNullOrEmpty(legacyId) ? null : new ModReference(legacyId);
+                return string.IsNullOrEmpty(legacyId) ? null : new ModReference(legacyId);
             }
 
             if (reader.TokenType is not JsonTokenType.StartObject)
@@ -97,11 +97,11 @@ namespace Stardrop.Models.Data
                 var propertyName = reader.GetString();
                 reader.Read();
 
-                if (String.Equals(propertyName, nameof(ModReference.UniqueId), StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(propertyName, nameof(ModReference.UniqueId), StringComparison.OrdinalIgnoreCase))
                 {
                     uniqueId = reader.GetString();
                 }
-                else if (String.Equals(propertyName, nameof(ModReference.SourceId), StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(propertyName, nameof(ModReference.SourceId), StringComparison.OrdinalIgnoreCase))
                 {
                     sourceId = reader.TokenType is JsonTokenType.Null ? null : reader.GetString();
                 }
@@ -111,7 +111,7 @@ namespace Stardrop.Models.Data
                 }
             }
 
-            return String.IsNullOrEmpty(uniqueId) ? null : new ModReference(uniqueId, sourceId);
+            return string.IsNullOrEmpty(uniqueId) ? null : new ModReference(uniqueId, sourceId);
         }
 
         public override void Write(Utf8JsonWriter writer, ModReference value, JsonSerializerOptions options)

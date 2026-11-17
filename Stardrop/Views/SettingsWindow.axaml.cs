@@ -2,7 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Styling;
+using Avalonia.Platform.Storage;
 using Stardrop.Models;
 using Stardrop.Models.Data.Enums;
 using Stardrop.Utilities;
@@ -14,6 +14,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Runtime.Versioning;
+using System.Threading.Tasks;
 
 namespace Stardrop.Views
 {
@@ -31,47 +33,136 @@ namespace Stardrop.Views
             DataContext = _viewModel;
 
             // Handle buttons
-            this.FindControl<Button>("exitButton").Click += Exit_Click;
-            this.FindControl<Button>("cancelButton").Click += Exit_Click;
-            this.FindControl<Button>("smapiFolderButton").Click += SmapiFolderButton_Click;
-            this.FindControl<Button>("modFolderButton").Click += ModFolderButton_Click;
-            this.FindControl<Button>("modInstallButton").Click += ModInstallButton_Click;
-            this.FindControl<Button>("collectionInstallButton").Click += CollectionInstallButton_Click;
-            this.FindControl<Button>("registerNXMButton").Click += RegisterNXMButton_Click;
-            this.FindControl<Button>("removeNXMButton").Click += RemoveNXMButton_Click;
-            this.FindControl<Button>("applyButton").Click += ApplyButton_Click;
+            this.FindControl<Button>("exitButton")!.Click += Exit_Click;
+            this.FindControl<Button>("cancelButton")!.Click += Exit_Click;
+            this.FindControl<Button>("smapiFolderButton")!.Click += SmapiFolderButton_Click;
+            this.FindControl<Button>("modFolderButton")!.Click += ModFolderButton_Click;
+            this.FindControl<Button>("modInstallButton")!.Click += ModInstallButton_Click;
+            this.FindControl<Button>("collectionInstallButton")!.Click += CollectionInstallButton_Click;
+            if (OperatingSystem.IsWindows())
+            {
+                this.FindControl<Button>("registerNXMButton")!.Click += RegisterNXMButton_Click;
+                this.FindControl<Button>("removeNXMButton")!.Click += RemoveNXMButton_Click;
+            }
+            this.FindControl<Button>("applyButton")!.Click += ApplyButton_Click;
 
             // Push the focus for the textboxes to the end of their strings
-            var smapiTextBox = this.FindControl<TextBox>("smapiFolderPathBox");
-            var modFolderTextBox = this.FindControl<TextBox>("modFolderPathBox");
-            var modInstallTextBox = this.FindControl<TextBox>("modInstallPathBox");
-            var collectionInstallTextBox = this.FindControl<TextBox>("collectionInstallPathBox");
-            SetTextboxTextFocusToEnd(smapiTextBox, smapiTextBox.Text);
-            SetTextboxTextFocusToEnd(modFolderTextBox, modFolderTextBox.Text);
-            SetTextboxTextFocusToEnd(modInstallTextBox, modInstallTextBox.Text);
-            SetTextboxTextFocusToEnd(collectionInstallTextBox, collectionInstallTextBox.Text);
+            var smapiTextBox = this.FindControl<TextBox>("smapiFolderPathBox")!;
+            var modFolderTextBox = this.FindControl<TextBox>("modFolderPathBox")!;
+            var modInstallTextBox = this.FindControl<TextBox>("modInstallPathBox")!;
+            var collectionInstallTextBox = this.FindControl<TextBox>("collectionInstallPathBox")!;
+            SetTextboxTextFocusToEnd(smapiTextBox, smapiTextBox.Text!);
+            SetTextboxTextFocusToEnd(modFolderTextBox, modFolderTextBox.Text!);
+            SetTextboxTextFocusToEnd(modInstallTextBox, modInstallTextBox.Text!);
+            SetTextboxTextFocusToEnd(collectionInstallTextBox, collectionInstallTextBox.Text!);
 
             // Handle adding the themes
             LoadThemes();
 
-            var themeComboBox = this.FindControl<ComboBox>("themeComboBox");
-            themeComboBox.Items = _viewModel.Themes;
+            var themeComboBox = this.FindControl<ComboBox>("themeComboBox")!;
+            themeComboBox.ItemsSource = _viewModel.Themes;
             themeComboBox.SelectedItem = GetThemeByName(Program.settings.Theme);
             themeComboBox.SelectionChanged += (sender, e) =>
             {
                 Theme? theme = themeComboBox.SelectedItem as Theme;
-                if (theme is not null && theme.Style is not null)
+                if (theme is not null && !string.IsNullOrEmpty(theme.FilePath))
                 {
-                    Application.Current.Styles[ThemeManager.THEME_STYLE_INDEX] = theme.Style;
+                    try
+                    {
+                        theme.Style = ThemeManager.Load(theme.FilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Program.helper.Log($"Unable to load theme on {theme.Name}: {ex}", Helper.Status.Alert);
+                        return;
+                    }
+                }
+                if (theme?.Style is not null)
+                {
+                    Application.Current!.Styles[ThemeManager.THEME_STYLE_INDEX] = theme.Style;
                     Program.settings.Theme = theme.Name;
                 }
             };
-            this.FindControl<Button>("refreshThemesButton").Click += RefreshThemesButton_Click;
+            this.FindControl<Button>("refreshThemesButton")!.Click += RefreshThemesButton_Click;
 
-            // Handle Nexus Mods preferred server.
-            // Keep the enum as the item's value, so localization cannot affect the saved setting.
-            // The translated label is display-only: the value handed to the Nexus API is still the
-            // server's [Description], see the GetFileDownloadLink calls in MainWindow.
+            UpdateServerComboBox();
+            var preferredComboBox = this.FindControl<ComboBox>("preferredServerBox")!;
+            preferredComboBox.SelectionChanged += (sender, e) =>
+            {
+                if (preferredComboBox.SelectedItem is ComboBoxItem { Tag: NexusServers server })
+                {
+                    Program.settings.PreferredNexusServer = server;
+                }
+            };
+
+            // Handle adding the languages
+            var languageComboBox = this.FindControl<ComboBox>("languageComboBox")!;
+            var availableLanguages = Program.translation.GetAvailableTranslations();
+            languageComboBox.ItemsSource = availableLanguages;
+            languageComboBox.SelectedItem = string.IsNullOrEmpty(Program.settings.Language)
+                ? availableLanguages.First()
+                : availableLanguages.FirstOrDefault(language => string.Equals(language.Code, Program.translation.NormalizeLanguage(Program.settings.Language), StringComparison.OrdinalIgnoreCase)) ?? availableLanguages.First();
+            languageComboBox.SelectionChanged += (sender, e) =>
+            {
+                if (languageComboBox.SelectedItem is Translation.LanguageOption language)
+                {
+                    Program.translation.SetLanguage(language.Code);
+                    Program.settings.Language = language.Code;
+                    UpdateGroupingComboBox();
+                    UpdateServerComboBox();
+                }
+            };
+
+            // Handle adding the mod grouping methods.
+            UpdateGroupingComboBox();
+
+            var groupingComboBox = this.FindControl<ComboBox>("groupingComboBox")!;
+            groupingComboBox.SelectionChanged += (sender, e) =>
+            {
+                if (groupingComboBox.SelectedItem is ComboBoxItem { Tag: ModGrouping grouping })
+                {
+                    Program.settings.ModGroupingMethod = grouping;
+                }
+            };
+
+            FontFamily = new Avalonia.Media.FontFamily("Segoe UI Symbol");
+
+            // Cache the old settings
+            _oldSettings = Program.settings.ShallowCopy();
+        }
+
+        public SettingsWindow(double parentWindowHeight) : this()
+        {
+            // Adjust the height of the this window to be slightly smaller than the parent
+            Height = parentWindowHeight - (parentWindowHeight / 4);
+        }
+        private void UpdateGroupingComboBox()
+        {
+            var groupingComboBox = this.FindControl<ComboBox>("groupingComboBox")!;
+            
+            var currentSelectedGrouping = (groupingComboBox.SelectedItem as ComboBoxItem)?.Tag as ModGrouping? 
+                                        ?? Program.settings.ModGroupingMethod;
+
+            var items = new List<ComboBoxItem>
+            {
+                new() { Content = Program.translation.Get("ui.settings_window.mod_grouping.none"), Tag = ModGrouping.None },
+                new() { Content = Program.translation.Get("ui.settings_window.mod_grouping.content_pack"), Tag = ModGrouping.ContentPack },
+                new() { Content = Program.translation.Get("ui.settings_window.mod_grouping.folder"), Tag = ModGrouping.Folder },
+                new() { Content = Program.translation.Get("ui.settings_window.mod_grouping.folder_condensed"), Tag = ModGrouping.FolderCondensed }
+            };
+
+            groupingComboBox.ItemsSource = items;
+            
+            groupingComboBox.SelectedItem = items.FirstOrDefault(i => i.Tag is ModGrouping g && g == currentSelectedGrouping);
+        }
+
+        private void UpdateServerComboBox()
+        {
+            var preferredComboBox = this.FindControl<ComboBox>("preferredServerBox");
+            if (preferredComboBox is null) return;
+
+            var currentServer = (preferredComboBox.SelectedItem as ComboBoxItem)?.Tag as NexusServers? ?? Program.settings.PreferredNexusServer;
+
             var serverDisplayKeys = new Dictionary<NexusServers, string>()
             {
                 { NexusServers.NexusCDN, "ui.settings_window.nexus_servers.nexus_cdn" },
@@ -84,104 +175,24 @@ namespace Stardrop.Views
                 { NexusServers.Singapore, "ui.settings_window.nexus_servers.singapore" }
             };
 
-            var preferredComboBox = this.FindControl<ComboBox>("preferredServerBox");
-            preferredComboBox.Items = Enum.GetValues(typeof(NexusServers))
-                .Cast<NexusServers>()
+            var newItems = Enum.GetValues<NexusServers>()
                 .Select(server => new ComboBoxItem
                 {
-                    // Fall back to the [Description] so a server added upstream still shows up.
                     Content = serverDisplayKeys.TryGetValue(server, out var displayKey)
                         ? Program.translation.Get(displayKey)
                         : EnumParser.GetDescription(server),
                     Tag = server
                 })
                 .ToList();
-            // Use FirstOrDefault instead of First: if the stored setting holds a value outside
-            // NexusServers (a hand-edited config file), we simply leave the box unselected rather
-            // than throwing, which is what the previous description-based lookup did.
-            var selectedServer = preferredComboBox.Items.Cast<ComboBoxItem>()
-                .FirstOrDefault(option => option.Tag is NexusServers server && server == Program.settings.PreferredNexusServer);
-            if (selectedServer is not null)
-            {
-                preferredComboBox.SelectedItem = selectedServer;
-            }
-            preferredComboBox.SelectionChanged += (sender, e) =>
-            {
-                if (preferredComboBox.SelectedItem is ComboBoxItem { Tag: NexusServers server })
-                {
-                    Program.settings.PreferredNexusServer = server;
-                }
-            };
 
-            // Handle adding the languages
-            var languageComboBox = this.FindControl<ComboBox>("languageComboBox");
-            var availableLanguages = Program.translation.GetAvailableTranslations();
-            languageComboBox.Items = availableLanguages;
-            languageComboBox.SelectedItem = String.IsNullOrEmpty(Program.settings.Language)
-                ? availableLanguages.First()
-                : availableLanguages.FirstOrDefault(language => String.Equals(language.Code, Program.translation.NormalizeLanguage(Program.settings.Language), StringComparison.OrdinalIgnoreCase)) ?? availableLanguages.First();
-            languageComboBox.SelectionChanged += (sender, e) =>
-            {
-                if (languageComboBox.SelectedItem is Translation.LanguageOption language)
-                {
-                    Program.translation.SetLanguage(language.Code);
-                    Program.settings.Language = language.Code;
-                }
-            };
+            preferredComboBox.ItemsSource = newItems;
 
-            // Handle adding the mod grouping methods.
-            // Keep the enum as the item's value, so localization cannot affect the saved setting.
-            var modGroupingOptions = new Dictionary<ModGrouping, string>()
-            {
-                { ModGrouping.None, Program.translation.Get("ui.settings_window.mod_grouping.none") },
-                { ModGrouping.ContentPack, Program.translation.Get("ui.settings_window.mod_grouping.content_pack") },
-                { ModGrouping.Folder, Program.translation.Get("ui.settings_window.mod_grouping.folder") },
-                { ModGrouping.FolderCondensed, Program.translation.Get("ui.settings_window.mod_grouping.folder_condensed") }
-            };
-
-            var groupingComboBox = this.FindControl<ComboBox>("groupingComboBox");
-            groupingComboBox.Items = modGroupingOptions.Select(option => new ComboBoxItem
-            {
-                Content = option.Value,
-                Tag = option.Key
-            }).ToList();
-            groupingComboBox.SelectedItem = groupingComboBox.Items.Cast<ComboBoxItem>()
-                .First(option => option.Tag is ModGrouping grouping && grouping == Program.settings.ModGroupingMethod);
-            groupingComboBox.SelectionChanged += (sender, e) =>
-            {
-                if (groupingComboBox.SelectedItem is ComboBoxItem { Tag: ModGrouping grouping })
-                {
-                    Program.settings.ModGroupingMethod = grouping;
-                }
-            };
-
-            this.FontFamily = new Avalonia.Media.FontFamily("Segoe UI Symbol");
-
-            // Cache the old settings
-            _oldSettings = Program.settings.ShallowCopy();
-
-#if DEBUG
-            this.AttachDevTools();
-#endif
+            preferredComboBox.SelectedItem = newItems.FirstOrDefault(option => option.Tag is NexusServers server && server == currentServer) ?? newItems.FirstOrDefault();
         }
 
-        public SettingsWindow(double parentWindowHeight) : this()
-        {
-            // Adjust the height of the this window to be slightly smaller than the parent
-            this.Height = parentWindowHeight - (parentWindowHeight / 4);
-        }
-
+        [SupportedOSPlatform("windows")]
         private async void RegisterNXMButton_Click(object? sender, RoutedEventArgs e)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false)
-            {
-                await new WarningWindow(
-                        Program.translation.Get("ui.warning.unsupported_platform"),
-                        Program.translation.Get("internal.ok"))
-                    .ShowDialog(this);
-                return;
-            }
-
             NXMAssociationState state = NXMProtocol.GetState(Program.executablePath);
             if (state.Status is NXMAssociationStatus.Registered)
             {
@@ -201,7 +212,7 @@ namespace Stardrop.Views
                     }
                 }
 
-                await new WarningWindow(String.Format(Program.translation.Get("ui.warning.nxm_association_overridden"), state.HandlerName), Program.translation.Get("internal.ok")).ShowDialog(this);
+                await new WarningWindow(string.Format(Program.translation.Get("ui.warning.nxm_association_overridden"), state.HandlerName), Program.translation.Get("internal.ok")).ShowDialog(this);
                 return;
             }
 
@@ -217,9 +228,10 @@ namespace Stardrop.Views
             }
         }
 
+        [SupportedOSPlatform("windows")]
         private async void RemoveNXMButton_Click(object? sender, RoutedEventArgs e)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false)
+            if (OperatingSystem.IsWindows() is false)
             {
                 await new WarningWindow(
                         Program.translation.Get("ui.warning.unsupported_platform"),
@@ -262,13 +274,13 @@ namespace Stardrop.Views
         {
             // Built as a new list rather than cleared in place, as the combo box only notices a changed reference
             var themes = new List<Theme>();
-
             string? lastContributorName = null;
+
             foreach (string fileFullName in ThemeManager.GetThemeFilePaths())
             {
                 try
                 {
-                    var contributorName = new DirectoryInfo(Path.GetDirectoryName(fileFullName)).Name;
+                    var contributorName = new DirectoryInfo(Path.GetDirectoryName(fileFullName)!).Name;
                     if (contributorName is not null && contributorName.Equals(ThemeManager.THEMES_FOLDER_NAME, StringComparison.OrdinalIgnoreCase))
                     {
                         contributorName = null;
@@ -286,17 +298,14 @@ namespace Stardrop.Views
                     lastContributorName = contributorName;
 
                     var themeName = Path.GetFileNameWithoutExtension(fileFullName);
-                    var style = ThemeManager.Load(fileFullName);
-
                     themes.Add(new Theme()
                     {
-                        Author = contributorName is not null ? $"by {contributorName}" : "",
                         Name = themeName,
-                        Style = style,
-                        IsEnabled = true
+                        Author = contributorName is not null ? $"by {contributorName}" : "",
+                        IsEnabled = true,
+                        FilePath = fileFullName,
+                        Style = null
                     });
-
-                    Program.helper.Log($"Loaded theme {Path.GetFileNameWithoutExtension(fileFullName)}", Helper.Status.Debug);
                 }
                 catch (Exception ex)
                 {
@@ -314,16 +323,15 @@ namespace Stardrop.Views
 
         private void RefreshThemesButton_Click(object? sender, RoutedEventArgs e)
         {
-            var themeComboBox = this.FindControl<ComboBox>("themeComboBox");
-            var selectedTheme = themeComboBox.SelectedItem as Theme;
-            var selectedThemeName = selectedTheme is null ? Program.settings.Theme : selectedTheme.Name;
+            var themeComboBox = this.FindControl<ComboBox>("themeComboBox")!;
+            var selectedThemeName = themeComboBox.SelectedItem is not Theme selectedTheme ? Program.settings.Theme : selectedTheme.Name;
 
             // Drop the cached defaults file too, otherwise edits to Themes/Defaults.xaml would be missed
             ThemeManager.ClearCache();
             LoadThemes();
 
             // Swapping the list clears the selection, which fires SelectionChanged with a null theme and is ignored
-            themeComboBox.Items = _viewModel.Themes;
+            themeComboBox.ItemsSource = _viewModel.Themes;
 
             // Reselecting is what pushes the freshly parsed style into the application
             themeComboBox.SelectedItem = GetThemeByName(selectedThemeName) ?? _viewModel.Themes.FirstOrDefault(theme => theme.IsEnabled);
@@ -334,103 +342,109 @@ namespace Stardrop.Views
             var oldTheme = _viewModel.Themes.FirstOrDefault(t => t.Name.Equals(_oldSettings.Theme));
             if (oldTheme is not null && oldTheme.Style is not null)
             {
-                Application.Current.Styles[ThemeManager.THEME_STYLE_INDEX] = oldTheme.Style;
+                Application.Current!.Styles[ThemeManager.THEME_STYLE_INDEX] = oldTheme.Style;
             }
 
             Program.settings = _oldSettings;
             Program.translation.SetLanguage(Program.settings.Language);
 
-            this.Close(false);
+            Close(false);
         }
 
-        private async void SmapiFolderButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void SmapiFolderButton_Click(object? sender, RoutedEventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
+            var fileTypes = new List<FilePickerFileType>();
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                dialog.Filters.Add(new FileDialogFilter() { Name = "StardewModdingAPI.exe", Extensions = { "exe" } });
+                fileTypes.Add(new FilePickerFileType("StardewModdingAPI.exe") { Patterns = ["*.exe"] });
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                dialog.Filters.Add(new FileDialogFilter() { Name = "StardewModdingAPI.dll" });
+                fileTypes.Add(new FilePickerFileType("StardewModdingAPI.dll"));
             }
             else
             {
-                dialog.Filters.Add(new FileDialogFilter() { Name = "StardewModdingAPI.dll", Extensions = { "*" } });
+                fileTypes.Add(new FilePickerFileType("StardewModdingAPI.dll") { Patterns = ["*"] });
             }
-            dialog.AllowMultiple = false;
 
-            var filePaths = await dialog.ShowAsync(this);
-            if (filePaths is not null && filePaths.Count() > 0)
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                this.SetSMAPIPath(filePaths.First());
+                AllowMultiple = false,
+                FileTypeFilter = fileTypes
+            });
+
+            if (files.Count > 0)
+            {
+                SetSMAPIPath(files[0].Path.LocalPath);
             }
         }
-
-        private async void ModFolderButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        /// <summary>
+        /// Converts a folder path string into an IStorageFolder for use as a picker's SuggestedStartLocation.
+        /// Returns null when the path is empty, missing, or the platform cannot resolve it.
+        /// </summary>
+        private async Task<IStorageFolder?> GetFolderFromPathAsync(string? path)
         {
-            OpenFolderDialog dialog = new OpenFolderDialog()
+            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
             {
-                Title = Program.translation.Get("ui.settings_window.dialogs.select_mod_folder")
-            };
-
-            if (!String.IsNullOrEmpty(Program.settings.ModFolderPath))
-            {
-                dialog.Directory = Program.settings.ModFolderPath;
+                return null;
             }
 
-            var folderPath = await dialog.ShowAsync(this);
-            if (!String.IsNullOrEmpty(folderPath))
+            return await StorageProvider.TryGetFolderFromPathAsync(new Uri(path));
+        }
+
+        private async void ModFolderButton_Click(object? sender, RoutedEventArgs e)
+        {
+            var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                var modFolderPathBox = this.FindControl<TextBox>("modFolderPathBox");
+                Title = Program.translation.Get("ui.settings_window.dialogs.select_mod_folder"),
+                AllowMultiple = false,
+                SuggestedStartLocation = await GetFolderFromPathAsync(Program.settings.ModFolderPath)
+            });
+
+            if (folders.Count > 0)
+            {
+                var folderPath = folders[0].Path.LocalPath;
+                var modFolderPathBox = this.FindControl<TextBox>("modFolderPathBox")!;
                 SetTextboxTextFocusToEnd(modFolderPathBox, folderPath);
 
-                var modInstallPathBox = this.FindControl<TextBox>("modInstallPathBox");
-                if (String.IsNullOrEmpty(modInstallPathBox.Text) || !Directory.Exists(modInstallPathBox.Text) || !modInstallPathBox.Text.Contains(modFolderPathBox.Text, StringComparison.OrdinalIgnoreCase))
+                var modInstallPathBox = this.FindControl<TextBox>("modInstallPathBox")!;
+                if (string.IsNullOrEmpty(modInstallPathBox.Text) || !Directory.Exists(modInstallPathBox.Text) || !modInstallPathBox.Text.Contains(folderPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    modInstallPathBox.Text = Path.Combine(modFolderPathBox.Text, "Stardrop Installed Mods");
+                    modInstallPathBox.Text = Path.Combine(folderPath, "Stardrop Installed Mods");
                     SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
-                    return;
                 }
             }
         }
 
-        private async void ModInstallButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void ModInstallButton_Click(object? sender, RoutedEventArgs e)
         {
-            OpenFolderDialog dialog = new OpenFolderDialog()
-            {
-                Title = Program.translation.Get("ui.settings_window.dialogs.select_mod_install_folder")
-            };
+            var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+    {
+                Title = Program.translation.Get("ui.settings_window.dialogs.select_mod_install_folder"),
+                AllowMultiple = false,
+                SuggestedStartLocation = await GetFolderFromPathAsync(Program.settings.ModInstallPath)
+            });
 
-            if (!String.IsNullOrEmpty(Program.settings.ModInstallPath))
+            if (folders.Count > 0)
             {
-                dialog.Directory = Program.settings.ModInstallPath;
-            }
-
-            var folderPath = await dialog.ShowAsync(this);
-            if (!String.IsNullOrEmpty(folderPath))
-            {
-                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modInstallPathBox"), folderPath);
+                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modInstallPathBox")!, folders[0].Path.LocalPath);
             }
         }
 
-        private async void CollectionInstallButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void CollectionInstallButton_Click(object? sender, RoutedEventArgs e)
         {
-            OpenFolderDialog dialog = new OpenFolderDialog()
+            var collectionInstallPathBox = this.FindControl<TextBox>("collectionInstallPathBox")!;
+            var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = Program.translation.Get("ui.settings_window.dialogs.select_collection_install_folder")
-            };
+                Title = Program.translation.Get("ui.settings_window.dialogs.select_collection_install_folder"),
+                AllowMultiple = false,
+                SuggestedStartLocation = await GetFolderFromPathAsync(collectionInstallPathBox.Text)
+            });
 
-            var collectionInstallPathBox = this.FindControl<TextBox>("collectionInstallPathBox");
-            if (!String.IsNullOrEmpty(collectionInstallPathBox.Text))
+            if (folders.Count > 0)
             {
-                dialog.Directory = collectionInstallPathBox.Text;
-            }
-
-            var folderPath = await dialog.ShowAsync(this);
-            if (!String.IsNullOrEmpty(folderPath))
-            {
-                SetTextboxTextFocusToEnd(collectionInstallPathBox, folderPath);
+                SetTextboxTextFocusToEnd(collectionInstallPathBox, folders[0].Path.LocalPath);
             }
         }
 
@@ -454,50 +468,50 @@ namespace Stardrop.Views
 
         private async void ApplyButton_Click(object? sender, RoutedEventArgs e)
         {
-            var smapiFolderPathBox = this.FindControl<TextBox>("smapiFolderPathBox");
-            var smapiPath = String.IsNullOrEmpty(smapiFolderPathBox.Text) || smapiFolderPathBox.Text.Contains(GetTargetSmapiName(), StringComparison.OrdinalIgnoreCase) ? smapiFolderPathBox.Text : Path.Combine(smapiFolderPathBox.Text, GetTargetSmapiName());
+            var smapiFolderPathBox = this.FindControl<TextBox>("smapiFolderPathBox")!;
+            var smapiPath = string.IsNullOrEmpty(smapiFolderPathBox.Text) || smapiFolderPathBox.Text.Contains(GetTargetSmapiName(), StringComparison.OrdinalIgnoreCase) ? smapiFolderPathBox.Text : Path.Combine(smapiFolderPathBox.Text, GetTargetSmapiName());
             if (!SetSMAPIPath(smapiPath))
             {
                 SetTextboxTextFocusToEnd(smapiFolderPathBox, _oldSettings.SMAPIFolderPath);
                 return;
             }
 
-            var modFolderPathBox = this.FindControl<TextBox>("modFolderPathBox");
-            if (String.IsNullOrEmpty(modFolderPathBox.Text) || !Directory.Exists(modFolderPathBox.Text))
+            var modFolderPathBox = this.FindControl<TextBox>("modFolderPathBox")!;
+            if (string.IsNullOrEmpty(modFolderPathBox.Text) || !Directory.Exists(modFolderPathBox.Text))
             {
                 await new WarningWindow(Program.translation.Get("ui.warning.given_mod_folder_does_not_exist"), Program.translation.Get("internal.ok")).ShowDialog(this);
                 SetTextboxTextFocusToEnd(modFolderPathBox, _oldSettings.ModFolderPath);
                 return;
             }
 
-            var modInstallPathBox = this.FindControl<TextBox>("modInstallPathBox");
-            if (String.IsNullOrEmpty(modInstallPathBox.Text) || !Directory.Exists(modInstallPathBox.Text))
+            var modInstallPathBox = this.FindControl<TextBox>("modInstallPathBox")!;
+            if (string.IsNullOrEmpty(modInstallPathBox.Text) || !Directory.Exists(modInstallPathBox.Text))
             {
                 if (Directory.Exists(_oldSettings.ModInstallPath) is false)
                 {
                     _oldSettings.ModInstallPath = Path.Combine(modFolderPathBox.Text, "Stardrop Installed Mods");
                     Directory.CreateDirectory(_oldSettings.ModInstallPath);
 
-                    await new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist_default"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
+                    await new WarningWindow(string.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist_default"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
                     SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
                     return;
                 }
                 else
                 {
-                    await new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
+                    await new WarningWindow(string.Format(Program.translation.Get("ui.warning.given_install_folder_not_exist"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
                     SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
                     return;
                 }
             }
             else if (!modInstallPathBox.Text.Contains(modFolderPathBox.Text, StringComparison.OrdinalIgnoreCase))
             {
-                await new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_install_folder_not_under_mod_folder"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
+                await new WarningWindow(string.Format(Program.translation.Get("ui.warning.given_install_folder_not_under_mod_folder"), modFolderPathBox.Text), Program.translation.Get("internal.ok")).ShowDialog(this);
                 SetTextboxTextFocusToEnd(modInstallPathBox, _oldSettings.ModInstallPath);
                 return;
             }
 
-            var collectionInstallPathBox = this.FindControl<TextBox>("collectionInstallPathBox");
-            if (String.IsNullOrWhiteSpace(collectionInstallPathBox.Text) || !Directory.Exists(collectionInstallPathBox.Text))
+            var collectionInstallPathBox = this.FindControl<TextBox>("collectionInstallPathBox")!;
+            if (string.IsNullOrWhiteSpace(collectionInstallPathBox.Text) || !Directory.Exists(collectionInstallPathBox.Text))
             {
                 await new WarningWindow(Program.translation.Get("ui.warning.given_collection_folder_does_not_exist"), Program.translation.Get("internal.ok")).ShowDialog(this);
                 SetTextboxTextFocusToEnd(collectionInstallPathBox, _oldSettings.CollectionInstallPath);
@@ -511,7 +525,7 @@ namespace Stardrop.Views
             // checked separately, as it is already required to sit under the mod folder
             if (Pathing.IsSameOrUnder(collectionInstallPathBox.Text, modFolderPathBox.Text) || Pathing.IsSameOrUnder(modFolderPathBox.Text, collectionInstallPathBox.Text))
             {
-                await new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_collection_folder_conflicts_with_mod_folder"), modFolderPathBox.Text), Program.translation.Get("internal.ok"), windowWidth: 500).ShowDialog(this);
+                await new WarningWindow(string.Format(Program.translation.Get("ui.warning.given_collection_folder_conflicts_with_mod_folder"), modFolderPathBox.Text), Program.translation.Get("internal.ok"), windowWidth: 500).ShowDialog(this);
                 SetTextboxTextFocusToEnd(collectionInstallPathBox, _oldSettings.CollectionInstallPath);
                 return;
             }
@@ -528,11 +542,11 @@ namespace Stardrop.Views
             // Nothing is moved on the user's behalf, so this notice is the only thing standing between them and a
             // set of collections that quietly stops being found. Raised only where the old folder still holds one,
             // and worked out before the settings file is written so it can still name where the mods are now
-            var oldCollectionPath = String.IsNullOrWhiteSpace(_oldSettings.CollectionInstallPath) ? Pathing.GetDefaultCollectionsFolderPath() : _oldSettings.CollectionInstallPath;
+            var oldCollectionPath = string.IsNullOrWhiteSpace(_oldSettings.CollectionInstallPath) ? Pathing.GetDefaultCollectionsFolderPath() : _oldSettings.CollectionInstallPath;
             string? collectionMoveNotice = null;
             if (Pathing.IsSamePath(collectionInstallPathBox.Text, oldCollectionPath) is false && HasInstalledCollections(oldCollectionPath))
             {
-                collectionMoveNotice = String.Format(Program.translation.Get("ui.warning.collection_folder_changed"), oldCollectionPath, collectionInstallPathBox.Text);
+                collectionMoveNotice = string.Format(Program.translation.Get("ui.warning.collection_folder_changed"), oldCollectionPath, collectionInstallPathBox.Text);
             }
 
             // Write the settings cache
@@ -544,36 +558,36 @@ namespace Stardrop.Views
                 await new WarningWindow(collectionMoveNotice, Program.translation.Get("internal.ok"), windowWidth: 500).ShowDialog(this);
             }
 
-            this.Close(true);
+            Close(true);
         }
 
-        private bool SetSMAPIPath(string filePath)
+        private bool SetSMAPIPath(string? filePath)
         {
-            if (String.IsNullOrEmpty(filePath))
+            if (string.IsNullOrEmpty(filePath))
             {
-                new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_invalid_smapi_executable"), GetTargetSmapiName()), Program.translation.Get("internal.ok")).ShowDialog(this);
+                new WarningWindow(string.Format(Program.translation.Get("ui.warning.given_invalid_smapi_executable"), GetTargetSmapiName()), Program.translation.Get("internal.ok")).ShowDialog(this);
                 return false;
             }
 
             var smapiFileInfo = new FileInfo(filePath);
             if (!smapiFileInfo.Exists || !smapiFileInfo.Name.Equals(GetTargetSmapiName(), StringComparison.OrdinalIgnoreCase))
             {
-                new WarningWindow(String.Format(Program.translation.Get("ui.warning.given_invalid_smapi_executable"), GetTargetSmapiName()), Program.translation.Get("internal.ok")).ShowDialog(this);
+                new WarningWindow(string.Format(Program.translation.Get("ui.warning.given_invalid_smapi_executable"), GetTargetSmapiName()), Program.translation.Get("internal.ok")).ShowDialog(this);
                 return false;
             }
 
-            var modFolderPathBox = this.FindControl<TextBox>("modFolderPathBox");
-            var modInstallPathBox = this.FindControl<TextBox>("modInstallPathBox");
+            var modFolderPathBox = this.FindControl<TextBox>("modFolderPathBox")!;
+            var modInstallPathBox = this.FindControl<TextBox>("modInstallPathBox")!;
 
-            SetTextboxTextFocusToEnd(this.FindControl<TextBox>("smapiFolderPathBox"), smapiFileInfo.DirectoryName);
-            if (String.IsNullOrEmpty(Program.settings.ModFolderPath) || !Directory.Exists(modFolderPathBox.Text))
+            SetTextboxTextFocusToEnd(this.FindControl<TextBox>("smapiFolderPathBox")!, smapiFileInfo.DirectoryName!);
+            if (string.IsNullOrEmpty(Program.settings.ModFolderPath) || !Directory.Exists(modFolderPathBox.Text))
             {
-                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modFolderPathBox"), Path.Combine(smapiFileInfo.DirectoryName, "Mods"));
+                SetTextboxTextFocusToEnd(modFolderPathBox, Path.Combine(smapiFileInfo.DirectoryName!, "Mods"));
             }
 
-            if (String.IsNullOrEmpty(Program.settings.ModInstallPath) || !Directory.Exists(modInstallPathBox.Text))
+            if (string.IsNullOrEmpty(Program.settings.ModInstallPath) || !Directory.Exists(modInstallPathBox.Text))
             {
-                SetTextboxTextFocusToEnd(this.FindControl<TextBox>("modInstallPathBox"), Path.Combine(smapiFileInfo.DirectoryName, "Mods", "Stardrop Installed Mods"));
+                SetTextboxTextFocusToEnd(modInstallPathBox, Path.Combine(smapiFileInfo.DirectoryName!, "Mods", "Stardrop Installed Mods"));
             }
 
             return true;
@@ -592,7 +606,7 @@ namespace Stardrop.Views
 
         private void SetTextboxTextFocusToEnd(TextBox textBox, string text)
         {
-            if (String.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text))
             {
                 return;
             }
