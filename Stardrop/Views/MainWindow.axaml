@@ -293,7 +293,7 @@
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
 			<Setter Property="Background" Value="{DynamicResource DataGridHeaderBrush}"/>
 			<Setter Property="HorizontalContentAlignment" Value="Center"/>
-			<Setter Property="Padding" Value="26 0 0 0"/>
+			<Setter Property="Padding" Value="32 0 0 0"/>
 		</Style>
 		<Style Selector="DataGridColumnHeader[Content=]">
 			<Setter Property="Padding" Value="0"/>
