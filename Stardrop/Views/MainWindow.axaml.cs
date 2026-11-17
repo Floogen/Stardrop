@@ -387,16 +387,13 @@ namespace Stardrop.Views
             {
                 ClientData localDataCache = JsonSerializer.Deserialize<ClientData>(File.ReadAllText(Pathing.GetDataCachePath()), ReadOptions) ?? new ClientData();
 
-                if (localDataCache is not null)
-                {
-                    localDataCache.LastSessionData = new LastSessionData()
+                localDataCache?.LastSessionData = new LastSessionData()
                     {
                         Height = Height,
                         Width = Width,
                         PositionX = Position.X,
                         PositionY = Position.Y
                     };
-                }
 
                 File.WriteAllText(Pathing.GetDataCachePath(), JsonSerializer.Serialize(localDataCache, WriteOptions));
             }
@@ -448,6 +445,8 @@ namespace Stardrop.Views
 
             if (Pathing.defaultGamePath is null || File.Exists(Pathing.GetSmapiPath()) is false)
             {
+                Program.settings.GameDetails?.SmapiVersion = string.Empty;
+                _viewModel.SmapiVersion = string.Empty;
                 await DisplayInvalidSMAPIWarning();
             }
             else
@@ -1595,6 +1594,14 @@ namespace Stardrop.Views
                 return;
             }
 
+            // Update SMAPI version UI
+            var currentSMAPIVersion = SMAPI.GetVersion();
+            if (currentSMAPIVersion is not null)
+            {
+                _viewModel.SmapiVersion = currentSMAPIVersion.ToString();
+                Program.settings.GameDetails?.SmapiVersion = currentSMAPIVersion.ToString();
+            }
+
             // Set the environment variable for the mod path
             var enabledModsPath = Pathing.GetSelectedModsFolderPath();
             Environment.SetEnvironmentVariable("SMAPI_MODS_PATH", enabledModsPath);
@@ -1907,10 +1914,10 @@ namespace Stardrop.Views
 
             // Check for SMAPI updates
             var currentSmapiVersion = SMAPI.GetVersion();
-            if (currentSmapiVersion is not null && Program.settings.GameDetails is not null)
+            if (currentSmapiVersion is not null)
             {
-                Program.settings.GameDetails.SmapiVersion = currentSmapiVersion.ToString();
-                _viewModel.SmapiVersion = Program.settings.GameDetails.SmapiVersion;
+                Program.settings.GameDetails?.SmapiVersion = currentSmapiVersion.ToString();
+                _viewModel.SmapiVersion = currentSmapiVersion.ToString();
             }
 
             KeyValuePair<string, string>? latestSmapiToUri = await GitHub.GetLatestSMAPIRelease();
@@ -2428,10 +2435,7 @@ namespace Stardrop.Views
         private async Task<T> ShowDialogOverLock<T>(Window dialog)
         {
             var lockWindow = _lockWindow;
-            if (lockWindow is not null)
-            {
-                lockWindow.Topmost = false;
-            }
+            lockWindow?.Topmost = false;
 
             try
             {
@@ -2461,11 +2465,8 @@ namespace Stardrop.Views
             // Only the window this state opened. Closing everything the main window owns takes any dialog the user
             // is partway through with it, and an awaited ShowDialog closed from underneath returns the same result
             // as the user dismissing it, so its caller carries on as though they had answered
-            if (_lockWindow is not null)
-            {
-                _lockWindow.Close();
-                _lockWindow = null;
-            }
+            _lockWindow?.Close();
+            _lockWindow = null;
         }
 
         private void UpdateLockWindow(string? lockReason = null, int? progress = null, int? maxProgress = null)
@@ -3735,6 +3736,9 @@ namespace Stardrop.Views
             {
                 return true;
             }
+            
+            Program.settings.GameDetails?.SmapiVersion = string.Empty;
+            _viewModel.SmapiVersion = string.Empty;
 
             await DisplayInvalidSMAPIWarning();
 
