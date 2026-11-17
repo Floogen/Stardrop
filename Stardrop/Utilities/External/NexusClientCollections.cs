@@ -137,9 +137,9 @@ namespace Stardrop.Utilities.External
             var install = new CollectionInstall(domainName, slug, revisionNumber)
             {
                 Name = index.Info is not null && string.IsNullOrEmpty(index.Info.Name) is false ? index.Info.Name : slug,
-                Curator = index.Info is null ? null : index.Info.Author,
-                Summary = index.Info is null ? null : index.Info.Description,
-                InstallInstructions = index.Info is null ? null : index.Info.InstallInstructions,
+                Curator = index.Info?.Author,
+                Summary = index.Info?.Description,
+                InstallInstructions = index.Info?.InstallInstructions,
                 RecommendsNewProfile = index.Config is null || index.Config.RecommendNewProfile
             };
             install.ProfileName = install.Name;

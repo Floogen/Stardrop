@@ -510,10 +510,7 @@ namespace Stardrop.Views
                 UpdateCollectionProgress(currentEntryName, currentIndex, pendingMods.Count, bytesByUri.Values.Sum(), totalDownloadSize);
             }
 
-            if (Nexus.Client is not null)
-            {
-                Nexus.Client.DownloadProgressChanged += OnDownloadProgress;
-            }
+            Nexus.Client?.DownloadProgressChanged += OnDownloadProgress;
 
             SetLockState(true, string.Format(Program.translation.Get("ui.message.collection_preparing"), collection.Name), cancellationSource);
 
@@ -544,10 +541,7 @@ namespace Stardrop.Views
             }
             finally
             {
-                if (Nexus.Client is not null)
-                {
-                    Nexus.Client.DownloadProgressChanged -= OnDownloadProgress;
-                }
+                Nexus.Client?.DownloadProgressChanged -= OnDownloadProgress;
             }
 
             // A cancelled install leaves nothing behind. Installing a partial collection would produce a profile that

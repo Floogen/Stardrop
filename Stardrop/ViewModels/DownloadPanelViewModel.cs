@@ -131,19 +131,13 @@ namespace Stardrop.ViewModels
         private void DownloadCompleted(object? sender, ModDownloadCompletedEventArgs e)
         {
             var download = Downloads.SingleOrDefault(x => x.ModUri == e.Uri);
-            if (download is not null)
-            {
-                download.DownloadStatus = ModDownloadStatus.Successful;
-            }
+            download?.DownloadStatus = ModDownloadStatus.Successful;
         }
 
         private void DownloadFailed(object? sender, ModDownloadFailedEventArgs e)
         {
             var download = Downloads.SingleOrDefault(x => x.ModUri == e.Uri);
-            if (download is not null)
-            {
-                download.DownloadStatus = ModDownloadStatus.Failed;
-            }
+            download?.DownloadStatus = ModDownloadStatus.Failed;
         }
 
         private void DownloadRemovalRequested(object? sender, EventArgs _)
