@@ -1,7 +1,8 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using Avalonia.Shared.PlatformSupport;
+using Avalonia.X11;
 using CommandLine;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.MaterialDesign;
@@ -262,6 +263,13 @@ namespace Stardrop
             return AppBuilder.Configure<App>()
                 .UseReactiveUI()
                 .UsePlatformDetect()
+                // Gamescope (SteamOS Gaming Mode's compositor) mishandles X11 override-redirect popups, causing
+                // dropdowns/menus/tooltips to be mispositioned or invisible. OverlayPopups renders them inside the
+                // main window instead, avoiding the issue. Only affects the X11 backend (Linux/XWayland).
+                .With(new X11PlatformOptions
+                {
+                    OverlayPopups = true
+                })
                 .LogToTrace()
                 .WithIcons(container => container
                 .Register<MaterialDesignIconProvider>());
